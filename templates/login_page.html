@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+
+<div class="mt-5 align-middle">
+  <div class="row justify-content-center">
+    <div class="col col-md-offset-4 col-md-4">
+      {% if error %}
+      <div class="alert alert-danger" role="alert">
+        {{ error }}
+        <span class="close" aria-label="Close"> &times;</span>
+      </div>
+      {% endif %}
+      <form method="POST" enctype="multipart/form-data" action="{{ url_for('login_page.login') }}">
+        <h2 class="text-center">Data Warehouse</h2>
+        <div class="form-group mt-3">
+          <label for="email">Email address</label>
+          <input type="email" class="form-control" id="email" name="email" placeholder="email@example.com">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+        </div>
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="remember_me">
+          <label class="form-check-label" for="remember_me">
+            Remember me
+          </label>
+        </div>
+          <button type="submit" class="btn btn-primary mt-3">Log in</button>
+        </form>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" href="#">Not registered?</a>
+        <a class="dropdown-item" href="#">Forgot password?</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

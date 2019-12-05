@@ -1,0 +1,13 @@
+__pycache__
+*egg-info
+
+data
+
+.env
+.idea
+.vscode
+.DS_store
+
+import/*
+!import/.gitkeep
+dev_import.ini

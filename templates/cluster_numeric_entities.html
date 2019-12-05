@@ -1,0 +1,146 @@
+{% extends "layout.html" %}
+{% block body %}
+    <table><form action="" method="POST">
+    <tr>
+        <td>
+            <label>Numeric entities:</label><br />
+            <select multiple name="numeric_entities" width="300px" size=20>
+                <option value="">Choose entities</option>
+            {% for entity in all_numeric_entities %}
+                <option value="{{ entity }}">{{ entity }}</option>
+            {% endfor %}
+            </select>
+        </td>
+        <td>
+            <label>Categorical entities:</label><br />
+            <select multiple name="categorical_entities" width="300px" size=20>
+                <option value="">Choose entities</option>
+            {% for entity in all_categorical_entities %}
+                <option value="{{ entity }}">{{ entity }}</option>
+            {% endfor %}
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label>Standardize:</label>
+            <input type="radio" name="standardize" value="yes" checked>Yes</input>
+            <input type="radio" name="standardize" value="no">No</input>
+        </td>
+        <td>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label>Missing data:</label>
+            <select name="missing" width=300>
+                <option value="drop">Drop</option>
+                <option value="mean">Mean</option>
+                <option value="median">Median</option>
+                <option value="most_frequent">Mode</option>
+            </select>
+        </td>
+        <td>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <input class="button1" type="submit" name="count_numeric" value="Count" />
+            <input class="button1" type="submit" name="cluster_numeric" value="Cluster" />
+        </td>
+        <td>
+            <input class="button1" type="submit" name="count_categorical" value="Count" />
+            <input class="button1" type="submit" name="cluster_categorical" value="Cluster" />
+        </td>
+    </tr>
+    </table>
+
+    {% if numeric_label_uses is not none %}
+        <table>
+            <tr>
+                <td><strong>Cluster</strong></td>
+                <td><strong>Patient count</strong></td>
+                <td><strong>Patient percent</strong></td>
+                {% for e in numeric_entities %}
+                    <td><strong>{{e}}</strong></td>
+                {% endfor %}
+            </tr>
+
+            {% for cluster in numeric_label_uses.keys()|sort %}
+                <tr>
+                    <td>{{cluster}}</td>
+                    <td>{{numeric_label_uses[cluster]}}</td>
+                    <td>{{ "{0:.2f}".format(numeric_m.weights_[cluster]) }}</td>
+                    {% for i, e in enumerate(numeric_entities) %}
+                        <td>{{ "{0:.2f}".format(numeric_m.means_[cluster][i]) }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+
+        </table>
+
+        
+        {% if numeric_cluster_image is not none %}
+            <img src="{{ url_for('numeric_cluster_image', entities=','.join(numeric_entities), standardize=numeric_standardize, missing=numeric_missing) }}" alt="Numeric clusters">
+        {% endif %}
+
+    {% endif %}
+
+    {% if categorical_label_uses is not none %}
+        <table>
+            <tr>
+                <td><strong>Cluster</strong></td>
+                <td><strong>Patient count</strong></td>
+                <td><strong>Patient percent</strong></td>
+                {% for e in category_values %}
+                    <td><strong>{{e}}</strong></td>
+                {% endfor %}
+            </tr>
+
+            {% for cluster, uses in categorical_label_uses.items() %}
+                <tr>
+                    <td>{{cluster}}</td>
+                    <td>{{uses}}</td>
+                    <td>{{ "{0:.2f}".format(uses / any_present) }}</td>
+                    {% for v in category_values %}
+                        <td>{{ "{0:d}".format(cluster_category_values[cluster][v]) }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+
+        </table>
+
+        {% if categorical_cluster_image is not none %}
+            <img src="{{ url_for('categorical_cluster_image', entities=','.join(categorical_entities)) }}" alt="Categorical clusters">
+        {% endif %}
+
+    {% endif %}
+
+
+    {% if counts is not none %}
+        <table>
+            <tr>
+                <td><strong>Entity</strong></td>
+                <td><strong>Count</strong></td>
+            </tr>
+
+            <tr>
+                <td><strong>Any entity</strong></td>
+                <td> {{ any_present }}</td>
+            </tr>
+
+            {% for f in counts.index %}
+                <tr>
+                    <td> {{ f }}</td>
+                    <td> {{ counts[f] }}</td>
+                </tr>
+            {% endfor %}
+
+            <tr>
+                <td><strong>All entities</strong></td>
+                <td> {{ all_present }} </td>
+            </tr>
+        </table>
+    {%endif%}
+
+{% endblock %}

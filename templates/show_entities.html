@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block body %}
+    <table><form action="" method="POST">
+    <tr>
+    <td>
+        <label>Categorical entities :</label>
+        <select multiple name="entity" width="300px">
+            <option value="">Choose category</option>
+        {% for entity in entities %}
+            <option value="{{ entity }}">{{ entity }}</option>
+        {% endfor %}
+        </select>
+    </td>
+    <td>
+        <input class="button1" type="submit" value="Choose category">
+    </td>
+    </tr>
+    {% if categories is not none %}
+    <tr>
+    <td>
+        <label>Category values :</label>
+        <select multiple name="value" width="300px">
+            <option value="">Choose value</option>
+        {% for category in categories %}
+            <option value="{{ category }}">{{ category }}</option>
+        {% endfor %}
+        </select>
+    </td>
+    <td>
+        <input class="button1" type="submit" value="Choose value">
+    </td>
+    </tr>
+    {% endif %}
+
+
+    </table>
+
+    {{ num_patients }}
+
+{% endblock %}

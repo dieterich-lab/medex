@@ -1,0 +1,83 @@
+{# Categorical tab. Using bootstrap classes. The tab container (div#statistics) and navigation links (ul#statistics_tab)
+            are defined in statistics.html #}
+<div class="tab-pane fade {% if categorical_tab %}show active{% endif %}" id="categorical_tab"
+     role="tabpanel" aria-labelledby="c_settings_header">
+    <div id="categorical_accordion">
+        <div class="card">
+            <div class="card-header" id="c_settings_header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#categorical_settings"
+                        {% if selected_c_entities %} aria-expanded="true" {% endif %} aria-controls="categorical_settings">
+                        Settings
+                    </button>
+                </h5>
+            </div>
+            <div id="categorical_settings" class="collapse {% if not selected_c_entities or error %} show {% endif %}"
+                 aria-labelledby="c_settings_header" data-parent="#categorical_accordion">
+                <div class="card-body">
+                    {% if error %}
+                      <div class="alert alert-danger mt-2" role="alert">
+                        <div class="row">
+                          <div class="col col-xs-10">{{ error }}</div>
+                          <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
+                        </div>
+                      </div>
+                    {% endif %}
+                    <form action="" method="POST">
+                        <label for="categorical_entities">Categorical entities:</label>
+                        <select multiple name="categorical_entities" id="categorical_entities" placeholder="Search entity">
+                        {% for entity in all_categorical_entities %}
+                            <option value="{{ entity }}" {% if entity in selected_c_entities %}selected{% endif %}>{{ entity }}</option>
+                        {% endfor %}
+                        </select>
+                        <div class="row ml-1">
+                            <button type="submit" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" id="results_header">
+                  <h5 class="mb-0">
+                      <button class="btn btn-link" data-toggle="collapse" data-target="#categorical_results"
+                              {% if selected_c_entities %} aria-expanded="true" {% endif %} aria-controls="#categorical_results">
+                          Results
+                      </button>
+                </h5>
+            </div>
+            <div id="categorical_results" class="collapse {% if selected_c_entities %} show {% endif %}"
+                 aria-labelledby="c_results_header" data-parent="#categorical_accordion">
+                <div class="card-body">
+                    {% if basic_stats_c %}
+                    <div class="dropdown mt-4 float-right">
+                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Export table
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="export_button">
+                            <a id='export_excel' class="dropdown-item">.xl</a>
+                            <a id="export_csv" class="dropdown-item">.csv</a>
+                        </div>
+                    </div>
+                    <table class="table table-stripped">
+                        <thead>
+                            <tr>
+                                <th>Entity</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entity in selected_c_entities %}
+                            <tr>
+                                <td>{{ entity }}</td>
+                                <td>{{ basic_stats_c[entity]['count'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

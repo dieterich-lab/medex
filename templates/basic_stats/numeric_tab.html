@@ -1,0 +1,136 @@
+{# Numeric tab. Using bootstrap classes. The tab container (div.#statistics) and navigation links (ul#statistics_tab)
+            are defined in basic_stats.html. #}
+<div class="tab-pane fade {% if numeric_tab %}show active{% endif %}"
+     id="numeric_tab" role="tabpanel" aria-labelledby="n_settings_header">
+    <div id="numeric_accordion">
+        <div class="card">
+            <div class="card-header" id="n_settings_header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_settings"
+                        {% if not selected_n_entities %} aria-expanded="true" {% endif %} aria-controls="numeric_settings">
+                        Settings
+                    </button>
+                </h5>
+            </div>
+            <div id="numeric_settings" class="collapse {% if not selected_n_entities or error %} show {% endif %}"
+                 aria-labelledby="n_settings_header" data-parent="#numeric_accordion">
+                <div class="card-body">
+                    <form action="" method="POST">
+
+                        {% if error %}
+                          <div class="alert alert-danger mt-2" role="alert">
+                            <div class="row">
+                              <div class="col col-xs-10">{{ error }}</div>
+                              <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
+                            </div>
+                          </div>
+                        {% endif %}
+                        <div class="form-group">
+                            <label for="numeric_entities">Numeric entities:</label>
+                            <select multiple name="numeric_entities" id="numeric_entities" placeholder="Search entity">
+                            {% for entity in all_numeric_entities %}
+                                <option value="{{ entity }}" {% if entity in selected_n_entities %}selected{% endif %}>{{ entity }}</option>
+                            {% endfor %}
+                            </select>
+                        </div>
+
+                        <label>Include following statistics:</label>
+                        <div class="row ml-2">
+                            <div class="custom-control custom-checkbox mr-2">
+                                <input type="checkbox" class="custom-control-input" id="counts" name="counts"
+                                checked="{% if basic_stats and 'counts' not in basic_stats %}false{% else %}true{% endif %}">
+                                <label class="custom-control-label" for="counts">Counts</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mr-2">
+                                <input type="checkbox" class="custom-control-input" id="mean" name="mean"
+                                checked="{% if basic_stats and 'mean' not in basic_stats %}false{% else %}true{% endif %}">
+                                <label class="custom-control-label" for="mean">Mean</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mr-2">
+                                <input type="checkbox" class="custom-control-input" id="median" name="median"
+                                checked="{% if basic_stats and 'median' not in basic_stats %}false{% else %}true{% endif %}">
+                                <label class="custom-control-label" for="median">Median</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mr-2">
+                                <input type="checkbox" class="custom-control-input" id="min" name="min"
+                                   checked="{% if basic_stats and 'min' not in basic_stats %}false{% else %}true{% endif %}">
+                                <label class="custom-control-label" for="min">Min</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mr-2">
+                                <input type="checkbox" class="custom-control-input" id="max" name="max"
+                                   checked="{% if basic_stats and 'max' not in basic_stats %}false{% else %}true{% endif %}">
+                                <label class="custom-control-label" for="max">Max</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mr-2">
+                                <input type="checkbox" class="custom-control-input" id="std_err" name="std_err"
+                                   checked="{% if basic_stats and 'std_err' not in basic_stats %}false{% else %}true{% endif %}">
+                                <label class="custom-control-label" for="std_err">Std. Error</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mr-2">
+                                <input type="checkbox" class="custom-control-input" id="std_dev" name="std_dev"
+                                   checked="{% if basic_stats and 'std_dev' not in basic_stats %}false{% else %}true{% endif %}">
+                                <label class="custom-control-label" for="std_dev">Std. Deviation</label>
+                            </div>
+                        </div>
+                        <div class="row ml-1 mt-3">
+                            <button type="submit" name="basic_stats" class="btn btn-outline-info">Basic Stats</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" id="results_header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                        {% if selected_n_entities %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                        Results
+                    </button>
+                </h5>
+            </div>
+            <div id="numeric_results" class="collapse {% if selected_n_entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+                <div class="card-body">
+                    {% if basic_stats and any_present %}
+                        <div class="dropdown mt-4 float-right">
+                            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Export table
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="export_button">
+                                <a id='export_excel' class="dropdown-item">.xl</a>
+                                <a id="export_csv" class="dropdown-item">.csv</a>
+                            </div>
+                        </div>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Entity</th>
+                                    {% if 'counts' in basic_stats %}<th>Counts</th>{% endif %}
+                                    {% if 'min' in basic_stats %}<th>Min</th>{% endif %}
+                                    {% if 'max' in basic_stats %}<th>Max</th>{% endif %}
+                                    {% if 'mean' in basic_stats %}<th>Mean</th>{% endif %}
+                                    {% if 'median' in basic_stats %}<th>Median</th>{% endif %}
+                                    {% if 'std_dev' in basic_stats %}<th>Std. Deviation</th>{% endif %}
+                                    {% if 'std_err' in basic_stats %}<th>Std. Error</th>{% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entity in selected_n_entities %}
+                                <tr>
+                                    <td>{{ entity }}</td>
+                                    {% if 'counts' in basic_stats %}<td>{{ basic_stats['counts'][entity] }}</td>{% endif %}
+                                    {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity] }}</td>{% endif %}
+                                    {% if 'max' in basic_stats %}<td>{{ basic_stats['max'][entity] }}</td>{% endif %}
+                                    {% if 'mean' in basic_stats %}<td>{{ basic_stats['mean'][entity] }}</td>{% endif %}
+                                    {% if 'median' in basic_stats %}<td>{{ basic_stats['median'][entity] }}</td>{% endif %}
+                                    {% if 'std_dev' in basic_stats %}<td>{{ basic_stats['std_dev'][entity] }}</td>{% endif %}
+                                    {% if 'std_err' in basic_stats %}<td>{{ basic_stats['std_err'][entity] }}</td>{% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

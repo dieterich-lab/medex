@@ -1,0 +1,27 @@
+[Unit]
+Description=data-warehouse docker service
+After=docker.service
+BindsTo=docker.service
+Conflicts=shutdown.target reboot.target halt.target
+
+[Service]
+#Environment=APP='server'
+TimeoutStartSec=0
+TimeoutStopSec=30
+Restart=always
+RestartSec=10
+
+WorkingDirectory=/path/to/dir
+
+ExecStartPre=-/usr/local/bin/docker-compose kill
+ExecStartPre=-/usr/local/bin/docker-compose rm -f
+ExecStartPre=-/usr/local/bin/docker-compose pull
+
+ExecStart=/usr/local/bin/docker-compose up --build --force-recreate
+
+ExecStop=/usr/local/bin/docker-compose stop
+
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

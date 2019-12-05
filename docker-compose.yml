@@ -1,0 +1,12 @@
+version: '3'
+services:
+  frontend:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+     - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./import:/app/import
+  redis:
+    image: redis:5-alpine
