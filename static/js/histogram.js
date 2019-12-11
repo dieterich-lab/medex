@@ -8,6 +8,7 @@ $(function () {
     var min_val = $('#histogram_chart').attr('data-min-val');
     var max_val = $('#histogram_chart').attr('data-max-val');
     var entity = $('#entity').val();
+    var group_by = $('#group_by').val();
     if (histogram_data.length != 0) {
         histogram_data = JSON.parse(histogram_data);
         // delete attribute
@@ -25,7 +26,7 @@ $(function () {
                 },
                 yaxis: {
                     title: {
-                        text: 'Number of patients'
+                        text: group_by,
                     }
                 }
             },

@@ -29,7 +29,7 @@ def post_statistics():
 
     entity = request.form.get('entity')
     group_by = request.form.get('group_by')
-    #number_of_bins = request.form.get('number_of_bins')
+    number_of_bins = request.form.get('number_of_bins')
     if not entity or not group_by or entity == "Choose entity" or group_by == "Choose entity":
         error = "Please select entity and group_by"
 
@@ -56,11 +56,11 @@ def post_statistics():
                 'name'    : group,
                 # 'autobinx': 'false',
                 # 'xbins': number_of_bins,
-                # 'xbins'   : {
-                    # 'end': 4,
-                    #'size': number_of_bins,
-                    # 'start': -3.2
-                    #}
+                'xbins'   : {
+                    'end': max_val,
+                    'size': number_of_bins,
+                    'start': min_val
+                    }
                 })
 
     return render_template('histogram.html',
@@ -70,6 +70,6 @@ def post_statistics():
                            group_by=group_by,
                            plot_series=plot_series,
                            min_val=min_val,
-                           max_val=max_val
-                           #number_of_bins=number_of_bins,
+                           max_val=max_val,
+                           number_of_bins=number_of_bins,
                            )
