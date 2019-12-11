@@ -2,6 +2,7 @@ $(function () {
     var boxplot_data = $('#boxplot_chart').attr('data-plot-series').replace(/'/g, '"'); //");
     var min_val = $('#boxplot_chart').attr('data-min-val');
     var max_val = $('#boxplot_chart').attr('data-max-val');
+    var entity = $('#entity').val();
     if (boxplot_data.length != 0) {
         boxplot_data = JSON.parse(boxplot_data);
         // delete attribute
@@ -12,7 +13,10 @@ $(function () {
             boxplot_data,
             {barmode: "overlay",
             yaxis: {
-                range: [min_val, max_val]
+                range: [min_val, max_val],
+                title: {
+                    text: entity,
+                }
               }
             },
         );
