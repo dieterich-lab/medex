@@ -42,6 +42,7 @@ def post_statistics():
     merged_df = pd.merge(numeric_df, categorical_df, how='inner', on='patient_id')
     min_val = numeric_df[entity].min()
     max_val = numeric_df[entity].max()
+    count = categorical_df[group_by].count()
 
     groups = set(categorical_df[group_by].values.tolist())
     plot_series = []
@@ -72,4 +73,5 @@ def post_statistics():
                            min_val=min_val,
                            max_val=max_val,
                            number_of_bins=number_of_bins,
+                           count=count
                            )
