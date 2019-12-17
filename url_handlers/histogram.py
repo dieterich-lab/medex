@@ -43,7 +43,15 @@ def post_statistics():
     min_val = numeric_df[entity].min()
     max_val = numeric_df[entity].max()
     count = categorical_df[group_by].count()
-
+    max_val_int = max_val.astype(int)
+    min_val_int = min_val.astype(int)
+    adjusted_bins = (max_val_int - min_val_int)
+    if number_of_bins == "":
+        bin_numbers = (adjusted_bins / 20)
+        print(bin_numbers)
+    else:
+        int_number_of_bins = int(number_of_bins)
+        bin_numbers = (adjusted_bins / int_number_of_bins)
     groups = set(categorical_df[group_by].values.tolist())
     plot_series = []
     for group in groups:
@@ -55,11 +63,9 @@ def post_statistics():
                 'type'    : "histogram",
                 'opacity' : 0.5,
                 'name'    : group,
-                # 'autobinx': 'false',
-                # 'xbins': number_of_bins,
                 'xbins'   : {
                     'end': max_val,
-                    'size': number_of_bins,
+                    'size': bin_numbers,
                     'start': min_val
                     }
                 })

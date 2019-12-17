@@ -20,7 +20,7 @@ python-dotenv = "*"
 click = "*"
 flask = "*"
 misc = {git = "https://bitbucket.org/bmmalone/misc.git"}
-autosklearn = {ref = "development", git = "https://github.com/automl/auto-sklearn.git"}
+autosklearn = {ref = "development",git = "https://github.com/automl/auto-sklearn.git"}
 flask-redis = "*"
 sklearn = "*"
 seaborn = "*"
@@ -33,6 +33,7 @@ apscheduler = "*"
 waitress = "*"
 
 [dev-packages]
+pylint = "*"
 
 [requires]
 python_version = "3.7"
