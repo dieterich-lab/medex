@@ -43,12 +43,9 @@ def post_statistics():
     min_val = numeric_df[entity].min()
     max_val = numeric_df[entity].max()
     count = categorical_df[group_by].count()
-    max_val_int = max_val.astype(int)
-    min_val_int = min_val.astype(int)
-    adjusted_bins = (max_val_int - min_val_int)
+    adjusted_bins = (max_val - min_val)
     if number_of_bins == "":
         bin_numbers = (adjusted_bins / 20)
-        print(bin_numbers)
     else:
         int_number_of_bins = int(number_of_bins)
         bin_numbers = (adjusted_bins / int_number_of_bins)
