@@ -44,11 +44,18 @@ def post_statistics():
     max_val = numeric_df[entity].max()
     count = categorical_df[group_by].count()
     adjusted_bins = (max_val - min_val)
-    if number_of_bins == "":
+    if number_of_bins.isdigit():
+        int_number_of_bins = int(number_of_bins)
+        if int_number_of_bins > 0:
+            int_number_of_bins = int(number_of_bins)
+            bin_numbers = (adjusted_bins / int_number_of_bins)          
+    elif number_of_bins == "":
         bin_numbers = (adjusted_bins / 20)
     else:
-        int_number_of_bins = int(number_of_bins)
-        bin_numbers = (adjusted_bins / int_number_of_bins)
+        error = "You have entered non-integer or negetive value. Please use positive integer"
+        return render_template('histogram.html', categorical_entities=all_categorical_entities,
+                                   numeric_entities=all_numeric_entities,
+                                   error=error, ) 
     groups = set(categorical_df[group_by].values.tolist())
     plot_series = []
     for group in groups:
