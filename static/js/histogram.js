@@ -27,7 +27,7 @@ $(function () {
                 },
                 yaxis: {
                     title: {
-                        text: "Number of Patients = " + count,
+                        text: "Number of Patients (Total count: " + count + ")",
                     }
                 }
             },
