@@ -46,6 +46,29 @@ def post_plots():
                                        numeric_tab=True,
                                        all_numeric_entities=all_numeric_entities,
                                        all_categorical_entities=all_categorical_only_entities)
+            if x_axis == y_axis:
+                error = "You can't compare the same entity"
+                return render_template('plots/plots.html',
+                                       error=error,
+                                       numeric_tab=True,
+                                       all_numeric_entities=all_numeric_entities,
+                                       all_categorical_entities=all_categorical_only_entities)
+            else:    
+                numeric_df = rwh.get_joined_numeric_values([x_axis, y_axis], rdb)
+                # change columns order and drop NaN values (this will show only the patients with both values)
+                numeric_df = numeric_df.dropna()[[x_axis, y_axis, 'patient_id']]
+                # rename columns
+                numeric_df.columns = ['x', 'y', 'patient_id']
+                data_to_plot = list(numeric_df.T.to_dict().values())
+                # data_to_plot = numeric_df.values.tolist()
+                return render_template('plots/plots.html',
+                                   numeric_tab=True,
+                                   all_numeric_entities=all_numeric_entities,
+                                   all_categorical_entities=all_categorical_only_entities,
+                                   x_axis=x_axis,
+                                   y_axis=y_axis,
+                                   plot_data=data_to_plot,
+                                   plot_type=plot_type)
             numeric_df = rwh.get_joined_numeric_values([x_axis, y_axis], rdb)
             # change columns order and drop NaN values (this will show only the patients with both values)
             numeric_df = numeric_df.dropna()[[x_axis, y_axis, 'patient_id']]
@@ -128,6 +151,13 @@ def post_plots():
                                    plot_type=plot_type,
                                    plot_data=plot_data,
                                    )
+        else:
+            error = "Please select type of plots"
+            return render_template('plots/plots.html',
+                                   numeric_tab=True,
+                                   all_numeric_entities=all_numeric_entities,
+                                   all_categorical_entities=all_categorical_only_entities,
+                                   error=error)
 
     if 'plot_categorical' in request.form:
         plot_type = request.form.get('plot_type')
