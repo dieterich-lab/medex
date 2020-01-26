@@ -36,16 +36,20 @@ def post_plots():
 
     if 'plot_numeric' in request.form:
         plot_type = request.form['plot_type']
-        if plot_type == 'scatter_plot_n':
+        error = None
+        if not plot_type or plot_type == 'select_plot':
+            return render_template('plots/plots.html',
+                                       error="Please select plot type",
+                                       numeric_tab=True,
+                                       all_numeric_entities=all_numeric_entities,
+                                       all_categorical_entities=all_categorical_only_entities)
+
+        elif plot_type == 'scatter_plot_n':
             x_axis = request.form.get('x_axis')
             y_axis = request.form.get('y_axis')
             if not x_axis or not y_axis or x_axis == "Choose entity" or y_axis == "Choose entity":
                 error = "Please select x_axis and y_axis"
-                return render_template('plots/plots.html',
-                                       error=error,
-                                       numeric_tab=True,
-                                       all_numeric_entities=all_numeric_entities,
-                                       all_categorical_entities=all_categorical_only_entities)
+
             if x_axis == y_axis:
                 error = "You can't compare the same entity"
                 return render_template('plots/plots.html',
@@ -53,23 +57,17 @@ def post_plots():
                                        numeric_tab=True,
                                        all_numeric_entities=all_numeric_entities,
                                        all_categorical_entities=all_categorical_only_entities)
-            else:    
-                numeric_df = rwh.get_joined_numeric_values([x_axis, y_axis], rdb)
-                # change columns order and drop NaN values (this will show only the patients with both values)
-                numeric_df = numeric_df.dropna()[[x_axis, y_axis, 'patient_id']]
-                # rename columns
-                numeric_df.columns = ['x', 'y', 'patient_id']
-                data_to_plot = list(numeric_df.T.to_dict().values())
-                # data_to_plot = numeric_df.values.tolist()
+            
+            numeric_df, err = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error else (None, error)
+            error = "Parameter " + x_axis + " and " + y_axis + " do not contain any values. " + \
+                    "Please select another parameter" if not error and err else error
+                    
+            if error:
                 return render_template('plots/plots.html',
-                                   numeric_tab=True,
-                                   all_numeric_entities=all_numeric_entities,
-                                   all_categorical_entities=all_categorical_only_entities,
-                                   x_axis=x_axis,
-                                   y_axis=y_axis,
-                                   plot_data=data_to_plot,
-                                   plot_type=plot_type)
-            numeric_df = rwh.get_joined_numeric_values([x_axis, y_axis], rdb)
+                                       error=error,
+                                       numeric_tab=True,
+                                       all_numeric_entities=all_numeric_entities,
+                                       all_categorical_entities=all_categorical_only_entities)
             # change columns order and drop NaN values (this will show only the patients with both values)
             numeric_df = numeric_df.dropna()[[x_axis, y_axis, 'patient_id']]
             # rename columns
@@ -99,9 +97,18 @@ def post_plots():
 
             min_max_filter = { }
             for entity in selected_entities:
-                min_max_value = list(eval(request.form['min_max_{}'.format(entity.replace('.', '__'))]))
-                min_max_filter[entity] = min_max_value
-            numeric_df = rwh.get_joined_numeric_values(selected_entities, rdb, min_max_filter)
+                if 'min_max_{}'.format(entity.replace('.', '__')) in request.form:
+                    min_max_value = list(eval(request.form['min_max_{}'.format(entity.replace('.', '__'))]))
+                    min_max_filter[entity] = min_max_value
+                
+            numeric_df, err = rwh.get_joined_numeric_values(selected_entities, rdb, min_max_filter)
+            if err:
+                error = "The selected entities (" + ", ".join(selected_entities) + ") do not contain any values. "
+                return render_template('plots/plots.html',
+                                       error=error,
+                                       numeric_tab=True,
+                                       all_numeric_entities=all_numeric_entities,
+                                       all_categorical_entities=all_categorical_only_entities)
 
             # remove patient id and drop NaN values (this will show only the patients with both values)
             numeric_df = numeric_df[selected_entities]
@@ -151,26 +158,27 @@ def post_plots():
                                    plot_type=plot_type,
                                    plot_data=plot_data,
                                    )
-        else:
-            error = "Please select type of plots"
-            return render_template('plots/plots.html',
-                                   numeric_tab=True,
-                                   all_numeric_entities=all_numeric_entities,
-                                   all_categorical_entities=all_categorical_only_entities,
-                                   error=error)
 
     if 'plot_categorical' in request.form:
         plot_type = request.form.get('plot_type')
         selected_entities = request.form.getlist('categorical_entities')
-        if not selected_entities:
+        error = None
+        if selected_entities:
+            categorical_df, c_error = rwh.get_joined_categorical_values(selected_entities, rdb)
+            error = "No data based on the selected entities ( " + ", ".join(selected_entities) + " ) " if c_error else None 
+        else:
             error = "Please select entities"
-            return render_template('plots/plots.html',
-                                   categorical_tab=True,
-                                   all_numeric_entities=all_numeric_entities,
-                                   all_categorical_entities=all_categorical_only_entities,
-                                   error=error)
 
-        categorical_df = rwh.get_joined_categorical_values(selected_entities, rdb)
+        
+        if error:
+            return render_template('plots/plots.html',
+                        categorical_tab=True,
+                        all_numeric_entities=all_numeric_entities,
+                        selected_c_entities=selected_entities,
+                        all_categorical_entities=all_categorical_only_entities,
+                        error=error)
+
+
         entity_values = { }
         if plot_type == "simple":
             x_categories = None
@@ -238,6 +246,9 @@ def get_min_max(entity):
     rdb = get_db()
 
     vals = rwh.get_entity_values(entity, rdb)
+    if len(vals) == 0:
+        return "There are no values related to the given entity", 400
+    
     min_val = vals.min()
     max_val = vals.max()
     min_max_values = {
