@@ -31,6 +31,7 @@ passlib = "*"
 pytest = "*"
 apscheduler = "*"
 waitress = "*"
+ipdb = "*"
 
 [dev-packages]
 pylint = "*"
