@@ -158,7 +158,10 @@ def _retrieve_numeric_fieds_df(entities, r, standardize=True, missing='drop', mi
         raise ValueError(msg)
 
 
-    df = rwh.get_joined_numeric_values(entities, r, min_max_filter)
+    df, error = rwh.get_joined_numeric_values(entities, r, min_max_filter)
+    if error:
+        # df, scaler
+        return None, None, error
 
     if missing == "drop":
         df = df.dropna()
@@ -174,7 +177,7 @@ def _retrieve_numeric_fieds_df(entities, r, standardize=True, missing='drop', mi
         X = scaler.fit_transform(X)
 
     df[entities] = X
-    return df, scaler
+    return df, scaler, None
 
 
 def cluster_numeric_fields(entities, r, standardize=True, missing='drop', min_max_filter=None):
@@ -212,13 +215,16 @@ def cluster_numeric_fields(entities, r, standardize=True, missing='drop', min_ma
     """
     import misc.math_utils as math_utils
 
-    df, scaler = _retrieve_numeric_fieds_df(
+    df, scaler, error = _retrieve_numeric_fieds_df(
         entities, 
         r, 
         standardize=standardize, 
         missing=missing,
         min_max_filter=min_max_filter
     )
+    if error:
+        # cluster_data, cluster_labels, df
+        return None, None, None,  error
     X = df[entities].values
     
     # make sure we do not use too many components
@@ -248,7 +254,7 @@ def cluster_numeric_fields(entities, r, standardize=True, missing='drop', min_ma
         for i, means in enumerate(cluster_data.means_):
             cluster_data.means_[i] = scaler.inverse_transform(means)
 
-    return cluster_data, cluster_labels, df
+    return cluster_data, cluster_labels, df, None
 
 def _get_patient_categorical_rep(row, categorical_entities):
     ret = {}
@@ -309,7 +315,10 @@ def cluster_categorical_entities(entities, r, eps=0.1, min_samples=5,
         The data frame containing entity values for each patient
     """
     # pull the values from the database
-    cat_df = rwh.get_joined_categorical_values(entities, r) #.dropna()
+    cat_df, error = rwh.get_joined_categorical_values(entities, r) #.dropna()
+    if error:
+        # cluster_category_values, cat_rep_np, category_values, label_uses, cat_df
+        return None, None, None, None, None, error
     # the error is here. cat_rep returns dicts with empty values
     # get the binary representation
     cat_rep = parallel.apply_df_simple(
@@ -350,7 +359,7 @@ def cluster_categorical_entities(entities, r, eps=0.1, min_samples=5,
         label_uses[l] = np.sum(m_class)
         cluster_category_values[l] = cat_rep_df[m_class].count()
 
-    return cluster_category_values, cat_rep_np, category_values, label_uses, cat_df
+    return cluster_category_values, cat_rep_np, category_values, label_uses, cat_df, None
 
 
 

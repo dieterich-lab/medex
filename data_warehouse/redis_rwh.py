@@ -7,7 +7,6 @@ import collections
 import numpy as np
 import pandas as pd
 
-
 def get_connection(host="localhost", port=6379, url=None):
     """ Get a connection to the redis database server. 
     
@@ -259,12 +258,14 @@ def get_joined_numeric_values(entities, r, min_max_filter=None):
         min_value, max_value = min_max_filter[entity] if min_max_filter else ('-inf', '+inf')
         values = r.zrangebyscore(entity, min_value, max_value, withscores=True)
         df = pd.DataFrame(values)
-        df.columns = ['patient_id', entity]
-        merged_df = df.copy() if merged_df is None else \
-            pd.merge(merged_df, df, how='outer', on='patient_id')
+        if len(df) > 0:
+            df.columns = ['patient_id', entity]
+            merged_df = df.copy() if merged_df is None else pd.merge(merged_df, df, how='outer', on='patient_id')
 
+    if merged_df is None:
+        return None, "Values are Empty"
     merged_df['patient_id'] = merged_df['patient_id'].apply(lambda x: x.decode())
-    return merged_df
+    return merged_df, None
 
 
 def get_all_patients_category_value(entity, r):
@@ -353,8 +354,12 @@ def get_joined_categorical_values(entities, r):
         rows.append(row)
 
     values_df = pd.DataFrame(rows)
-    values_df['patient_id'] = values_df['patient_id'].apply(lambda x: x.decode())
-    return values_df
+    # values_df['patient_id'] = values_df['patient_id'].apply(lambda x: x.decode())
+    # return values_df
+    if len(values_df) > 0 and 'patient_id' in values_df:
+        values_df['patient_id'] = values_df['patient_id'].apply(lambda x: x.decode())
+        return values_df, None
+    return None, "No data"
 
 
 def get_patient_info(

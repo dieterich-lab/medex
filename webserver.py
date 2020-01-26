@@ -321,7 +321,10 @@ def categorical_cluster_image(entities):
             r
             )
 
-    ccv, cat_rep_np, category_values, categorical_label_uses, cat_df = cluster_info
+    ccv, cat_rep_np, category_values, categorical_label_uses, cat_df, error = cluster_info
+    if error:
+        # TODO: check if this affects anything
+        return None
     ccv_df = pd.DataFrame(ccv)
 
     # this should all be pulled into a function
@@ -405,7 +408,10 @@ def patient_categorical_cluster_image(entities):
             min_samples=min_samples
             )
 
-    ccv, cat_rep_np, category_values, categorical_label_uses, cat_df = cluster_info
+    ccv, cat_rep_np, category_values, categorical_label_uses, cat_df, error = cluster_info
+    if error:
+        # TODO: check if this affects anything
+        return None
 
     np.random.seed(8675309)
     tsne = sklearn.manifold.TSNE(n_components=2)
@@ -462,7 +468,11 @@ def numeric_cluster_image(entities):
             missing=missing
             )
 
-    numeric_m, numeric_label_uses, patient_df = cluster_info
+    numeric_m, numeric_label_uses, patient_df, error = cluster_info
+    if error:
+        # TODO: check if this affects anything
+        return None
+
 
     # this should be a function
     X = patient_df[numeric_entities].values
@@ -534,7 +544,11 @@ def patient_numeric_cluster_image(entities):
             missing=missing
             )
 
-    numeric_m, numeric_label_uses, patient_df = cluster_info
+    numeric_m, numeric_label_uses, patient_df, error = cluster_info
+    if error:
+        # TODO: check if this affects anything
+        return None
+
 
     np.random.seed(8675309)
     tsne = sklearn.manifold.TSNE(n_components=2)
