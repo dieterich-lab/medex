@@ -1,4 +1,9 @@
 $(function () {
+    // close error message
+    $(document).on('click', 'span.close', function() {
+        $(this).closest('div.alert').addClass('d-none');
+    });
+
     var boxplot_data = $('#boxplot_chart').attr('data-plot-series').replace(/'/g, '"'); //");
     var min_val = $('#boxplot_chart').attr('data-min-val');
     var max_val = $('#boxplot_chart').attr('data-max-val');
