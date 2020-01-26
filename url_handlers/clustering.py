@@ -65,24 +65,36 @@ def post_clustering():
         numeric_missing = request.form['n_missing']
         min_max_filter = { }
         for entity in numeric_entities:
-            min_value, max_value = list(eval(request.form.get('min_max_{}'.format(entity.replace('.', '__')))))
-            min_max_filter[entity] = min_value, max_value
+            min_max_entity = 'min_max_{}'.format(entity.replace('.', '__'))
+            if min_max_entity in request.form:
+                min_value, max_value = list(eval(request.form.get(min_max_entity)))
+                min_max_filter[entity] = min_value, max_value
 
-            min_max_values[entity] = {
-                'min' : min_value,
-                'max' : max_value,
-                'step': (max_value - min_value) / float(100),
-                }
+                min_max_values[entity] = {
+                    'min' : min_value,
+                    'max' : max_value,
+                    'step': (max_value - min_value) / float(100),
+                    }
 
         if any([entity for entity in numeric_entities]):
             np.random.seed(8675309)  # what is this number?
-            cluster_data, cluster_labels, df = dwu.cluster_numeric_fields(
+            cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(
                     numeric_entities,
                     rdb,
                     standardize=numeric_standardize,
                     missing=numeric_missing,
                     min_max_filter=min_max_filter,
                     )
+            if error:
+                return render_template('clustering/clustering.html',
+                                    numeric_tab=True,
+                                    selected_n_entities=numeric_entities,
+                                    all_numeric_entities=all_numeric_entities,
+                                    all_categorical_entities=all_categorical_only_entities,
+                                    min_max_values=min_max_values,
+                                    selected_min_max=min_max_filter,
+                                    error=error,
+                                    )
             table_data = { }
             plot_data = []
             for cluster in sorted(cluster_labels.keys()):
@@ -138,7 +150,18 @@ def post_clustering():
                     min_samples=min_samples
                     )
 
-            ccv, cat_rep_np, category_values, categorical_label_uses, cat_df = cluster_info
+            ccv, cat_rep_np, category_values, categorical_label_uses, cat_df, error = cluster_info
+            if error:
+                return render_template('clustering/clustering.html',
+                                   categorical_tab=True,
+                                   all_numeric_entities=all_numeric_entities,
+                                   all_categorical_entities=all_categorical_only_entities,
+                                   selected_c_entities=categorical_entities,
+                                   c_cluster_info=cluster_info,
+                                   ccv=cvv_dict,
+                                   min_max_values=min_max_values,
+                                   error=error
+                                   )
             any_present = cat_df.shape[0]
             all_present = cat_df.dropna().shape[0]
 
