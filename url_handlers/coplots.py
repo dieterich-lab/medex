@@ -51,6 +51,18 @@ def post_coplots():
         error_message = 'Please select x_axis'
     elif y_axis is None or y_axis == 'Choose entity':
         error_message = 'Please select y_axis'
+    elif x_axis == y_axis and category1 == category2:
+        error_message = "You can't compare the same entities and categories"
+    elif x_axis == y_axis:
+        error_message = "You can't compare the same entities for x and y axis"
+    elif category1 == category2:
+        error_message = "You can't compare the same category"
+    # get joined categorical values
+    if not error_message:
+        categorical_df, error_message = rwh.get_joined_categorical_values([category1, category2], rdb)
+        numeric_df, error = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error_message else (None, error_message)
+        error_message = "No data based on the selected options" if error_message else None
+
     if error_message:
         return render_template('coplots.html',
                                all_numeric_entities=all_numeric_entities,
@@ -67,8 +79,8 @@ def post_coplots():
                                y_max=selected_y_max,
                                select_scale=select_scale)
 
-    categorical_df = rwh.get_joined_categorical_values([category1, category2], rdb).dropna()
-    numeric_df = rwh.get_joined_numeric_values([x_axis, y_axis], rdb).dropna()
+    categorical_df = categorical_df.dropna()
+    numeric_df = numeric_df.dropna()
     merged_df = pd.merge(numeric_df, categorical_df, how='inner', on='patient_id')
 
     x_min = merged_df[x_axis].min() if not select_scale else selected_x_min
