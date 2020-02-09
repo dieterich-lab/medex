@@ -255,15 +255,15 @@ def get_joined_numeric_values(entities, r, min_max_filter=None):
 
     merged_df = None
     for entity in entities:
-        min_value, max_value = min_max_filter[entity] if min_max_filter else ('-inf', '+inf')
+        min_value, max_value = min_max_filter[entity] if min_max_filter and entity in min_max_filter else ('-inf', '+inf')
         values = r.zrangebyscore(entity, min_value, max_value, withscores=True)
         df = pd.DataFrame(values)
-        if len(df) > 0:
-            df.columns = ['patient_id', entity]
-            merged_df = df.copy() if merged_df is None else pd.merge(merged_df, df, how='outer', on='patient_id')
+        if len(df) == 0:
+            # stop the join if atleast one entity has no values
+            return None, entity + " has no values"
+        df.columns = ['patient_id', entity]
+        merged_df = df.copy() if merged_df is None else pd.merge(merged_df, df, how='outer', on='patient_id')
 
-    if merged_df is None:
-        return None, "Values are Empty"
     merged_df['patient_id'] = merged_df['patient_id'].apply(lambda x: x.decode())
     return merged_df, None
 
@@ -335,6 +335,8 @@ def get_joined_categorical_values(entities, r):
     for entity in entities:
         # first, we need to get all of the values for this category
         category_values = get_category_values(entity, r)
+        if len(category_values) == 0:
+            return None, entity + " has no values"
         # now, find all the patients with each value
         for category_value in category_values:
             # for some reason the value has spaces between charachters
@@ -356,10 +358,8 @@ def get_joined_categorical_values(entities, r):
     values_df = pd.DataFrame(rows)
     # values_df['patient_id'] = values_df['patient_id'].apply(lambda x: x.decode())
     # return values_df
-    if len(values_df) > 0 and 'patient_id' in values_df:
-        values_df['patient_id'] = values_df['patient_id'].apply(lambda x: x.decode())
-        return values_df, None
-    return None, "No data"
+    values_df['patient_id'] = values_df['patient_id'].apply(lambda x: x.decode())
+    return values_df, None
 
 
 def get_patient_info(
