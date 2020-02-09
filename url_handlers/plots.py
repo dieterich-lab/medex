@@ -59,13 +59,15 @@ def post_plots():
                                        all_categorical_entities=all_categorical_only_entities)
             
             numeric_df, err = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error else (None, error)
-            error = "Parameter " + x_axis + " and " + y_axis + " do not contain any values. " + \
-                    "Please select another parameter" if not error and err else error
+            error = err if not error else error
                     
             if error:
                 return render_template('plots/plots.html',
                                        error=error,
                                        numeric_tab=True,
+                                       x_axis=x_axis,
+                                       y_axis=y_axis,
+                                       plot_type=plot_type,
                                        all_numeric_entities=all_numeric_entities,
                                        all_categorical_entities=all_categorical_only_entities)
             # change columns order and drop NaN values (this will show only the patients with both values)
@@ -103,10 +105,10 @@ def post_plots():
                 
             numeric_df, err = rwh.get_joined_numeric_values(selected_entities, rdb, min_max_filter)
             if err:
-                error = "The selected entities (" + ", ".join(selected_entities) + ") do not contain any values. "
                 return render_template('plots/plots.html',
-                                       error=error,
+                                       error=err,
                                        numeric_tab=True,
+                                       plot_type=plot_type,
                                        all_numeric_entities=all_numeric_entities,
                                        all_categorical_entities=all_categorical_only_entities)
 
@@ -162,12 +164,7 @@ def post_plots():
     if 'plot_categorical' in request.form:
         plot_type = request.form.get('plot_type')
         selected_entities = request.form.getlist('categorical_entities')
-        error = None
-        if selected_entities:
-            categorical_df, c_error = rwh.get_joined_categorical_values(selected_entities, rdb)
-            error = "No data based on the selected entities ( " + ", ".join(selected_entities) + " ) " if c_error else None 
-        else:
-            error = "Please select entities"
+        categorical_df, error = rwh.get_joined_categorical_values(selected_entities, rdb) if selected_entities else (None, "Please select entities")
 
         
         if error:
