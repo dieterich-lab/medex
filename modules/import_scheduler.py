@@ -6,12 +6,14 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
+# Class which create file dev_import necessary to import data. Inside the file we have cod of files dataset amd entities
+# Class check if file are changes if yes create new file dev_import with has for new files
 class ImportSettings():
     def __init__(self):
         if os.environ['FLASK_ENV'] == 'production':
             self.path = "./import/import.ini"
         else:
-            self.path = './dev_import.ini'
+            self.path = './import/dev_import.ini'
         self.config = ConfigParser()
         self.config.read(self.path)
         if 'hashes' not in self.config.sections():
@@ -36,6 +38,7 @@ class ImportSettings():
         return os.popen(f"sha512sum {path}").read() \
             .split(' ')[0]
 
+    # Check that data in enities and dataset was changed
     def is_entity_changed(self, path):
         hash = self.get_hash(path)
         return self.config['hashes']['entity'] != hash
@@ -59,15 +62,15 @@ def start_import():
         return print("Could not import to database either or both entities and dataset is missing", file=sys.stderr)
 
     if not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
-        return
-    print(settings.config['hashes']['entity'])
+        return print("Data set not changed", file=sys.stderr)
+
     numeric_entities, categorical_entities = id.import_entity_types(entities)
 
     id.import_dataset(os.environ['REDIS_URL'], dataset, numeric_entities, categorical_entities)
     settings.update(dataset_path=dataset, entities_path=entities)
     settings.save()
 
-
+# BackgroundScheduler runs in a thread inside existing application
 class Scheduler():
     def __init__(self, day_of_week, hour, minute):
         self.bgs = BackgroundScheduler()
