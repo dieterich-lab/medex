@@ -60,7 +60,7 @@ def post_coplots():
     # get joined categorical values
     if not error_message:
         categorical_df, error_message = rwh.get_joined_categorical_values([category1, category2], rdb)
-        numeric_df, error_message = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error_message else (None, error_message)
+        numeric_df, error = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error_message else (None, error_message)
         error_message = "No data based on the selected options" if error_message else None
 
     if error_message:

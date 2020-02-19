@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% block body %}
+<script src="{{ url_for('static', filename='js/logout.js') }}"></script>
+<form method="GET" enctype="multipart/form-data" action="{{ url_for('logout') }}">
+    <h2 class="text-center">Data Warehouse</h2>
+</form>
+
+{% endblock %}

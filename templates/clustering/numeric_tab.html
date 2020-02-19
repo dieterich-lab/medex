@@ -33,30 +33,28 @@
                             <ul class="list-group mb-3" id="selected_entities" data-min-max-values="{{ min_max_values }}">
                             {% if selected_n_entities and selected_min_max %}
                                 {% for entity in selected_n_entities %}
-                                {% if entity in selected_min_max %}
-                                        {% set min_value, max_value = selected_min_max[entity] %}
-                                        <li class="list-group-item">
-                                            <div class="row">
-                                                <div class="col col-sm-4">
-                                                    <label>{{ entity }}</label>
-                                                </div>
-                                                <div class="col col-sm-6" data-toggle="tooltip" data-placement="top"
-                                                    title="[{{ min_max_values[entity]['min'] }},{{ min_max_values[entity]['max'] }}]">
-                                                    <label class="mr-3 min">{{ min_value }} >=</label>
-                                                    <input type="text" class="slider" value="" data-slider-min="{{ min_max_values[entity]['min'] }}"
-                                                        data-slider-max="{{ min_max_values[entity]['max'] }}"
-                                                        data-slider-step="{{ min_max_values[entity]['step'] }}"
-                                                        data-slider-value="[{{ min_value }},{{ max_value }}]"
-                                                        name="min_max_{{ entity.replace('.', '__') }}"/>
-                                                    <label class="ml-3 max"><= {{ max_value }}</label>
-                                                </div>
-                                                <div class="col col-sm-2">
-                                                    <span class="close" aria-label="Close"> &times;</span>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    {% endif %}
-                                {% endfor %} 
+                                {% set min_value, max_value = selected_min_max[entity] %}
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col col-sm-4">
+                                            <label>{{ entity }}</label>
+                                        </div>
+                                        <div class="col col-sm-6" data-toggle="tooltip" data-placement="top"
+                                            title="[{{ min_max_values[entity]['min'] }},{{ min_max_values[entity]['max'] }}]">
+                                            <label class="mr-3 min">{{ min_value }} >=</label>
+                                            <input type="text" class="slider" value="" data-slider-min="{{ min_max_values[entity]['min'] }}"
+                                                   data-slider-max="{{ min_max_values[entity]['max'] }}"
+                                                   data-slider-step="{{ min_max_values[entity]['step'] }}"
+                                                   data-slider-value="[{{ min_value }},{{ max_value }}]"
+                                                   name="min_max_{{ entity.replace('.', '__') }}"/>
+                                            <label class="ml-3 max"><= {{ max_value }}</label>
+                                        </div>
+                                        <div class="col col-sm-2">
+                                            <span class="close" aria-label="Close"> &times;</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
                             {% endif %}
                             </ul>
                                 <div class="row ml-1">

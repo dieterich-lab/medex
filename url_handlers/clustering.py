@@ -158,7 +158,6 @@ def post_clustering():
                                    all_categorical_entities=all_categorical_only_entities,
                                    selected_c_entities=categorical_entities,
                                    c_cluster_info=cluster_info,
-                                   ccv=cvv_dict,
                                    min_max_values=min_max_values,
                                    error=error
                                    )

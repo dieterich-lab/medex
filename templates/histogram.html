@@ -4,6 +4,8 @@
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/histogram.js') }}"></script>
+    <script src="{{ url_for('static', filename='highcharts.js') }}"></script>
+    <script src="{{ url_for('static', filename='exporting.js') }}"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 {# end of imports #}
 
@@ -11,7 +13,7 @@
   <div class="alert alert-danger mt-2" role="alert">
     <div class="row">
       <div class="col col-xs-10">{{ error }}</div>
-      <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
+      <div class="col col-sm-2"><span class="close" aria-label="Close">  </span></div>
     </div>
   </div>
 {% endif %}
