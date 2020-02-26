@@ -5,9 +5,104 @@ $(function () {
         $(this).closest('div.alert').addClass('d-none');
     });
 
+    var chart_containers = [];
+    var plot_series = [];
+    var x_axis_text = [];
+    var y_axis_text = [];
+    var titles = [];
+    var check_add_group_by = [];
     // scatter plot
     if ($('#scatter_plot_n').length != 0) {
-        var x_axis = $('#scatter_plot_n').attr('data-plot-x');
+        if (check_add_group_by = $('input:checkbox:checked').val()) {
+            var PLOT_SERIES = $('#scatter_plot_n').attr('data-plot-series').replace(/'/g, '"');
+            if (PLOT_SERIES.length != 0) {
+                PLOT_SERIES = JSON.parse(PLOT_SERIES);
+                $('#scatter_plot_n').removeAttr('data-plot-series');
+
+                var x_axis = $('#x_axis').val();
+                var y_axis = $('#y_axis').val();
+                var cat = $('#category').val();
+
+                chart_containers.push('scatter_plot_n')
+                titles.push('Comparison of:<b>' + x_axis + '</b> and <b>' + y_axis + '</b>')
+                x_axis_text.push(x_axis);
+                y_axis_text.push(y_axis);
+                plot_series.push(PLOT_SERIES);
+            }
+
+                for(i=0; i<chart_containers.length; i++) {
+                    // initializing plot(s)
+                    Highcharts.chart(chart_containers[i], {
+                        chart: {
+                            type: 'scatter',
+                            zoomType: 'xy',
+                            height: 400,
+                        },
+                        title: {
+                            text: titles[i]
+                        },
+                        xAxis: {
+                            title: {
+                                text: x_axis_text[i],
+                            },
+                            
+                        },
+                        yAxis: {
+                            title: {
+                                text: y_axis_text[i],
+                            },
+                            
+                        },
+                        legend: {
+                            labelFormatter: function () {
+                                return "<b>" + cat + "</b>: " + this.options.cat;
+                            }
+                        },
+                        plotOptions: {
+                            scatter: {
+                                marker: {
+                                    radius: 5,
+                                    states: {
+                                        hover: {
+                                            enabled: true,
+                                            lineColor: 'rgb(100,100,100)'
+                                        }
+                                    }
+                                },
+                                states: {
+                                    hover: {
+                                        marker: {
+                                            enabled: false
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    pointFormat: '<b>' + x_axis + ' :</b> {point.x}<br><b>' +
+                                                '<br><b>' + y_axis + ' : </b> {point.y}' +
+                                                '<br><b>' + cat + '</b> {point.cat}' +
+                                                '<br><b>patient_id:</b> {point.patient_id}' +
+                                                '<br><b>group size:</b> {point.series.options.series_length}',
+                                }
+                            }
+                        },
+                        series: plot_series[i],
+                        // series: [{
+                        //     regression: true,
+                        //     regressionSettings: {
+                        //         type: 'linear',
+                        //         color: 'black',
+                        //         name: 'Linear regression: r: %r (%eq)', // show equation and r
+                        //     },
+                        //     data: plot_series[i],
+                        //     name: 'Patients',
+                        //     // disable max length of data-series
+                        //     turboThreshold: 0,
+                        // }],
+                    });
+                }
+                
+        } else {
+            var x_axis = $('#scatter_plot_n').attr('data-plot-x');
         var y_axis = $('#scatter_plot_n').attr('data-plot-y');
         var plot_data = $('#scatter_plot_n').attr('data-plot-series').replace(/'/g, '"'); //");
         Highcharts.chart('scatter_plot_n', {
@@ -54,6 +149,8 @@ $(function () {
                 turboThreshold: 0,
             }],
         });
+        }
+        
     }
 
     // pretify the select input for categorical entities
@@ -144,6 +241,23 @@ $(function () {
         }
     });
 
+    // // apply filters for separate regression
+    // $(document).on('change', '#add_separate_regression', function() {
+    //     if(this.checked) {
+    //       $('#add_separate_regression').removeClass('d-none');
+    //     } else {
+    //         $('#add_separate_regression').addClass('d-none');
+    //     }
+    // });
+
+    // apply filter 
+    $(document).on('change', '#add_group_by', function() {
+        if(this.checked) {
+          $('#add_group').removeClass('d-none');
+        } else {
+            $('#add_group').addClass('d-none');
+        }
+    });
 
     // add entity to the list when selected in select input
     $('#numeric_entities').on('addItem', function(event) {

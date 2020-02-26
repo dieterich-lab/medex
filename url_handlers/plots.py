@@ -34,6 +34,8 @@ def post_plots():
     all_categorical_entities = rwh.get_categorical_entities(rdb)
     all_categorical_only_entities = sorted(set(all_categorical_entities) - set(all_numeric_entities))
 
+    plot_series = []
+
     if 'plot_numeric' in request.form:
         plot_type = request.form['plot_type']
         error = None
@@ -47,17 +49,11 @@ def post_plots():
         elif plot_type == 'scatter_plot_n':
             x_axis = request.form.get('x_axis')
             y_axis = request.form.get('y_axis')
+            category = request.form.get('category')
+            add_group_by = request.form.get('add_group_by') is not None
             if not x_axis or not y_axis or x_axis == "Choose entity" or y_axis == "Choose entity":
                 error = "Please select x_axis and y_axis"
-
-            if x_axis == y_axis:
-                error = "You can't compare the same entity"
-                return render_template('plots/plots.html',
-                                       error=error,
-                                       numeric_tab=True,
-                                       all_numeric_entities=all_numeric_entities,
-                                       all_categorical_entities=all_categorical_only_entities)
-            
+            categorical_df, err = rwh.get_joined_categorical_values([category], rdb)
             numeric_df, err = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error else (None, error)
             error = err if not error else error
                     
@@ -67,22 +63,66 @@ def post_plots():
                                        numeric_tab=True,
                                        x_axis=x_axis,
                                        y_axis=y_axis,
+                                       category=category,
                                        plot_type=plot_type,
                                        all_numeric_entities=all_numeric_entities,
+                                       all_categorical_entities=all_categorical_only_entities,
+                                       add_group_by=add_group_by)
+                
+            if x_axis == y_axis:
+                error = "You can't compare the same entity"
+                return render_template('plots/plots.html',
+                                       error=error,
+                                       numeric_tab=True,
+                                       x_axis=x_axis,
+                                       y_axis=y_axis,
+                                       category=category,
+                                       plot_type=plot_type,
+                                       add_group_by=add_group_by,
+                                       all_numeric_entities=all_numeric_entities,
                                        all_categorical_entities=all_categorical_only_entities)
-            # change columns order and drop NaN values (this will show only the patients with both values)
-            numeric_df = numeric_df.dropna()[[x_axis, y_axis, 'patient_id']]
-            # rename columns
-            numeric_df.columns = ['x', 'y', 'patient_id']
-            data_to_plot = list(numeric_df.T.to_dict().values())
-            # data_to_plot = numeric_df.values.tolist()
+            if not add_group_by:
+                plot_series = []
+                category_values = []
+                # change columns order and drop NaN values (this will show only the patients with both values)
+                numeric_df = numeric_df.dropna()[[x_axis, y_axis, 'patient_id']]
+                # rename columns
+                numeric_df.columns = ['x', 'y', 'patient_id']
+                # data_to_plot = list(numeric_df.T.to_dict().values())
+                plot_series = list(numeric_df.T.to_dict().values())
+                # data_to_plot = numeric_df.values.tolist()
+            else:
+                numeric_df = numeric_df.dropna()
+                categorical_df = categorical_df.dropna()
+                merged_df = pd.merge(numeric_df, categorical_df, how='inner', on='patient_id')
+
+                # category = merged_df[category] if not add_group_by else category
+
+                category_values = merged_df[category].unique()
+
+                plot_series = []
+                for cat_value in category_values:
+                    df = merged_df.loc[(merged_df[category] == cat_value)].dropna()
+                    df.columns = ['patient_id', 'x', 'y', 'cat']
+                    series = {
+                        'name'          : cat_value,
+                        'turboThreshold': len(df),
+                        'data'          : list(df.T.to_dict().values()),
+                        'cat'           : cat_value,
+                        'series_length' : len(df),
+                    }
+                    plot_series.append(series)
             return render_template('plots/plots.html',
                                    numeric_tab=True,
                                    all_numeric_entities=all_numeric_entities,
                                    all_categorical_entities=all_categorical_only_entities,
                                    x_axis=x_axis,
                                    y_axis=y_axis,
-                                   plot_data=data_to_plot,
+                                   category=category,
+                                   cat_values=list(category_values),
+                                   add_group_by=add_group_by,
+                                   plot_series=plot_series,
+                                #    plot_data=data_to_plot,
                                    plot_type=plot_type)
         elif plot_type == 'heat_map_n':
             selected_entities = request.form.getlist('numeric_entities')
@@ -164,6 +204,7 @@ def post_plots():
     if 'plot_categorical' in request.form:
         plot_type = request.form.get('plot_type')
         selected_entities = request.form.getlist('categorical_entities')
+        
         categorical_df, error = rwh.get_joined_categorical_values(selected_entities, rdb) if selected_entities else (None, "Please select entities")
 
         
