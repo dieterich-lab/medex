@@ -51,8 +51,16 @@ def post_plots():
             y_axis = request.form.get('y_axis')
             category = request.form.get('category')
             add_group_by = request.form.get('add_group_by') is not None
+            add_separate_regression = request.form.get('add_separate_regression') is not None
+
+            # Check for input errors
             if not x_axis or not y_axis or x_axis == "Choose entity" or y_axis == "Choose entity":
                 error = "Please select x_axis and y_axis"
+            elif x_axis == y_axis:
+                error = "You can't compare the same entity"
+            elif add_group_by and category == "Choose entity":
+                error = "Please select a categorical value to group by"
+            
             categorical_df, err = rwh.get_joined_categorical_values([category], rdb)
             numeric_df, err = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error else (None, error)
             error = err if not error else error
@@ -67,20 +75,9 @@ def post_plots():
                                        plot_type=plot_type,
                                        all_numeric_entities=all_numeric_entities,
                                        all_categorical_entities=all_categorical_only_entities,
-                                       add_group_by=add_group_by)
-                
-            if x_axis == y_axis:
-                error = "You can't compare the same entity"
-                return render_template('plots/plots.html',
-                                       error=error,
-                                       numeric_tab=True,
-                                       x_axis=x_axis,
-                                       y_axis=y_axis,
-                                       category=category,
-                                       plot_type=plot_type,
                                        add_group_by=add_group_by,
-                                       all_numeric_entities=all_numeric_entities,
-                                       all_categorical_entities=all_categorical_only_entities)
+                                       add_separate_regression=add_separate_regression)
+                
             if not add_group_by:
                 plot_series = []
                 category_values = []
@@ -121,6 +118,7 @@ def post_plots():
                                    category=category,
                                    cat_values=list(category_values),
                                    add_group_by=add_group_by,
+                                   add_separate_regression=add_separate_regression,
                                    plot_series=plot_series,
                                 #    plot_data=data_to_plot,
                                    plot_type=plot_type)
