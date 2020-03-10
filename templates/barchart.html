@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block body %}
+
+{# imports #}
+    {# our own js #}
+    <script src="{{ url_for('static', filename='js/barchart.js') }}"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+{# pretty multiselect inputs #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='choices.min.css') }}">
+    <script src="{{ url_for('static', filename='choices.min.js') }}"></script>
+
+    {# export tables #}
+    <script type="text/javascript" src="{{ url_for('static', filename='table2excel.js') }}" ></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='tabletoCSV.js') }}" ></script>
+
+
+{# end of imports #}
+
+
+{% if error %}
+  <div class="alert alert-danger mt-2" role="alert">
+    <div class="row">
+      <div class="col col-xs-10">{{ error }}</div>
+      <div class="col col-sm-2"><span class="close" aria-label="Close">  </span></div>
+    </div>
+  </div>
+{% endif %}
+
+
+<form action="" method="POST">
+   {# plot type #}
+    <div class="form-group">
+    <label for="categorical_entities">Categorical entities:</label>
+    <select multiple  name="categorical_entities" id="categorical_entities" placeholder="Search entity">
+    {% for entity in all_categorical_entities %}
+         <option value="{{ entity }}" {% if entity in selected_c_entities %}selected{% endif %}>{{ entity }}</option>
+     {% endfor %}
+     </select>
+    <label for="category1">Category1:</label>
+		<select class="custom-select mb-2" name="category1" id="category1" placeholder="Search entity">
+				<option {% if not category1 %} selected {% endif %}>Choose entity</option>
+		{% for entity in all_categorical_entities %}
+				<option value="{{ entity }}" {% if entity == category1 %}selected{% endif %}>{{ entity }}</option>
+		{% endfor %}
+		</select>
+     </div>
+    <div class="row ml-1">
+        <button type="submit" name="barchart" class="btn btn-outline-info">Plot</button>
+    </div>
+</form>
+
+
+
+
+<div class="card-body">
+    {% if plot_series %}
+    <div class="chart" id="bargraph">
+        <script>
+            var graphs = {{plot | safe}};
+            Plotly.plot('bargraph',graphs,{});
+        </script>
+    </div>
+    {% endif %}
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <div class="dropdown mt-4 float-right">
+                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Export table
+                </button>
+                <div class="dropdown-menu" aria-labelledby="export_button">
+                    <a id='export_excel' class="dropdown-item">.xl</a>
+                    <a id="export_csv" class="dropdown-item">.csv</a>
+                </div>
+            </div>
+        </tr>
+        <tr>
+            <th>Entity</th>
+            <th>Value</th>
+            <th>Number of patients</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entity in entity_values %}
+        {% for value in entity_values[entity] %}
+        <tr>
+            <td>{{ entity }}</td>
+            <td>{{ value }}</td>
+            <td>{{ entity_values[entity][value] }}</td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+
+
+
+{% endblock %}
