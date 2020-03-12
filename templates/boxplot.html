@@ -5,7 +5,6 @@
     {# our own js #}
     <script src="{{ url_for('static', filename='js/boxplot.js') }}"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="{{ url_for('static', filename='exporting.js') }}"></script>
 {# end of imports #}
 
 {% if error %}
@@ -36,10 +35,15 @@
             {% endfor %}
         </select>
     </div>
-    <button type="submit" name="plot_boxplot" class="btn btn-outline-info">Plot boxplot</button>
+    <button type="submit" name="plot_boxplot" class="btn btn-outline-info">Plot</button>
 </form>
 
 {% if plot_series %}
-<div id="boxplot_chart" data-plot-series="{{ plot_series }}" data-min-val="{{ min_val }}" data-max-val="{{ max_val }}"></div>
+<div class="chart" id="bargraph">
+    <script>
+        var graphs = {{plot | safe}};
+        Plotly.plot('bargraph',graphs,{});
+    </script>
+</div>
 {% endif %}
 {% endblock %}

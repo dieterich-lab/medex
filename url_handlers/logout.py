@@ -5,5 +5,4 @@ logout_page = Blueprint('logout', __name__,
 
 @logout_page.route('/logout', methods=['GET', 'POST'])
 def logout():
-    by ="Hello world!"
     return render_template('logout.html')

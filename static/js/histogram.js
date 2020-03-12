@@ -30,8 +30,7 @@ $(function () {
                         text: "Number of Patients (Total count: " + count + ")",
                     }
                 }
-            },
-        );
+            },);
     }
 });
 

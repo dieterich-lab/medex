@@ -17,14 +17,14 @@ $(function () {
         Plotly.newPlot("boxplot_chart",
             boxplot_data,
             {barmode: "overlay",
+            title: "Sample",
             yaxis: {
                 range: [min_val, max_val],
                 title: {
                     text: entity,
                 }
               }
-            },
-        );
+            },);
     }
 });
 

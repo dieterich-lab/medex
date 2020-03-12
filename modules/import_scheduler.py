@@ -6,9 +6,15 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
-# Class which create file dev_import necessary to import data. Inside the file we have cod of files dataset amd entities
-# Class check if file are changes if yes create new file dev_import with has for new files
+
 class ImportSettings():
+    """
+    Class which create file dev_import necessary to import data.
+    Inside the file we have two unique cods for files dataset and entities.
+    The codes change every time we change anything in the files dataset and entites.
+    If the codes has been changed the program loads new data.
+    More about th code : https://www.computerhope.com/unix/sha512sum.htm
+    """
     def __init__(self):
         if os.environ['FLASK_ENV'] == 'production':
             self.path = "./import/import.ini"
@@ -54,10 +60,13 @@ class ImportSettings():
 
 
 def start_import():
+    """ Import data from entities and dataset files"""
+
     settings = ImportSettings()
     print('starting import', datetime.now().strftime('%H:%M:%S'))
     dataset = './import/dataset.csv'
     entities = './import/entities.csv'
+
     if not os.path.isfile(dataset) or not os.path.isfile(entities):
         return print("Could not import to database either or both entities and dataset is missing", file=sys.stderr)
 
@@ -70,8 +79,12 @@ def start_import():
     settings.update(dataset_path=dataset, entities_path=entities)
     settings.save()
 
-# BackgroundScheduler runs in a thread inside existing application
+
 class Scheduler():
+    """
+    BackgroundScheduler runs in a thread inside existing application.
+    Importing data check the data. Import data every day at 05.05 if the program see any changes.
+    """
     def __init__(self, day_of_week, hour, minute):
         self.bgs = BackgroundScheduler()
         start_import()

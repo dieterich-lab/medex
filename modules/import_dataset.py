@@ -24,6 +24,18 @@ python import_dataset.py <input_data_file> <input_entities_file>
 
 
 def import_entity_types(entity_file):
+    """ Divide the key into categories and numerical values
+
+     Parameters
+     ----------
+     entities : value from "entities file"
+
+     Returns
+     -------
+     numeric_enities: set of keys with a numeric values
+     categorical_entities: set of keys with a categorical values
+
+     """
     entities = pd.read_csv(entity_file)
     # Name is first, Type is second column
     numeric_entities = set(entities[(entities["datatype"] == "Double") | (entities["datatype"] == "Integer")]["entity"])
@@ -33,16 +45,36 @@ def import_entity_types(entity_file):
     return numeric_entities, categorical_entities
 
 
+
 def clear_database(rdb):
+    """Delete all the keys of all the existing databases,
+    not just the currently selected one."""
     rdb.flushall()
 
 
 def import_dataset(url, input_file, numeric_entities, categorical_entities):
+    """ Connection wit Redis database and input values from file to Redis database
+    divided into numerical and categorical values
+
+    Parameters
+    ----------
+    url : we adress to connect to the Redis database (in our case localhost)
+    input_file : dataset file with values and keys
+    numeric_enities: set of keys with a numeric values
+    categorical_entities: set of keys with a categorical values
+
+    Returns
+    -------
+
+    """
+
     num_imp, cat_imp, num_err, not_imp = [0, 0, 0, 0]
     numeric_value_errors = { }
     categorical_values = { }
+
     rdb = rwh.get_connection(url=url)
     clear_database(rdb)
+
     print("Starting putting data into redis")
     # run again to have the categories and numerics now ready and write the data
     with open(input_file) as infile:
@@ -78,12 +110,7 @@ def import_dataset(url, input_file, numeric_entities, categorical_entities):
                 not_imp += 1
                 pass
                 # we assume that we can add everything that was not cleaned (not in entity file) as string, but mark it "unclean"
-                # print(rwh_Value, "was not added, no entity type defined. Line: ", line)
-                ##rwh_Key = "uncleaned_" + rwh_Key
-                ##rdb.sadd('{}.{}'.format(rwh_Key, rwh_Value), Patient_ID)
-                # Add value to the dictionary of possible values (setdefault avoids duplicates)
-                ##categorical_values.setdefault(rwh_Key, [])
-                ##categorical_values[rwh_Key].append(rwh_Value)
+
 
     # Add the specified members to the set stored at key.
     for entity in numeric_entities:
@@ -96,6 +123,7 @@ def import_dataset(url, input_file, numeric_entities, categorical_entities):
         entity = "{}_values".format(category)
         for value in values:
             rdb.sadd(entity, value)
+
     print("The following numerics were not valid and therefore not added:\n", numeric_value_errors)
     print("\nNumeric values imported: %i\nCategorical values imported: %i\nErrors in numeric values: %i\nOther errors: %i\n" % (
         num_imp, cat_imp, num_err, not_imp))

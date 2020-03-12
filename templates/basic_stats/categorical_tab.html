@@ -24,14 +24,14 @@
                       </div>
                     {% endif %}
                     <form action="" method="POST">
-                        <label for="categorical_entities">Categorical entities:</label>
-                        <select multiple name="categorical_entities" id="categorical_entities" placeholder="Search entity">
-                        {% for entity in all_categorical_entities %}
-                            <option value="{{ entity }}" {% if entity in selected_c_entities %}selected{% endif %}>{{ entity }}</option>
-                        {% endfor %}
-                        </select>
-                        <div class="row ml-1">
-                            <button type="submit" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
+                            <label for="categorical_entities">Categorical entities:</label>
+                                <select multiple name="categorical_entities" id="categorical_entities" placeholder="Search entity">
+                                {% for entity in all_categorical_entities %}
+                                    <option value="{{ entity }}" {% if entity == categorical_entities %}selected{% endif %}>{{ entity }}</option>
+                                {% endfor %}
+                                </select>
+                            <div class="row ml-1">
+                                <button type="submit" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
                         </div>
                     </form>
                 </div>

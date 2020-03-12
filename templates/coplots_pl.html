@@ -72,53 +72,6 @@
 		{% endfor %}
 		</select>
 
-		{# select scale #}
-		<div class="form-check mt-4">
-			<input class="form-check-input" type="checkbox" value="true" id="select_scale" name="select_scale"
-				{% if select_scale %} checked {% endif %}>
-			<label class="form-check-label" for="select_scale">Select plots scale</label>
-		</div>
-
-	 <div class="row ml-2 {% if not select_scale %}d-none {% endif %}" id="scale_values">
-            <div class="list-group col-sm-6" id="x_axis_filter">
-              <div class="list-group-item">
-                <h4 class="list-item-heading">X Axis Scale</h4>
-                <div class="list-group-item-text">
-                  <div class="row">
-                    <div class="col-sm-4">
-                      <label class="mt-2" for="x_axis_min">Min value:</label><br>
-                      <label class="mt-2" for="x_axis_max">Max value:</label>
-                    </div>
-                    <div class="col-sm-8">
-                      <input class="form-control input-sm mt-1" type="number" name="x_axis_min" id="x_axis_min"
-                         value="{% if select_scale %}{{ x_min }}{% else %}0{% endif %}">
-                      <input class="form-control input-sm" type="number" name="x_axis_max" id="x_axis_max"
-                         value="{% if selected_scale %}{{ x_max }}{% else %}0{% endif %}">
-                    </div>
-                  </div>
-                </div>
-              </div>
-			</div>
-            <div class="list-group col-sm-6" id="y_axis_filter">
-              <div class="list-group-item">
-              <h4 class="list-item-heading">Y Axis Scale</h4>
-                <div class="list-group-item-text">
-                  <div class="row">
-                    <div class="col-sm-4">
-                      <label class="mt-2" for="y_axis_min">Min value:</label><br>
-                      <label class="mt-2" for="y_axis_max">Max value:</label>
-                    </div>
-                    <div class="col-sm-8">
-                      <input class="form-control input-sm mt-1" type="number" name="y_axis_min" id="y_axis_min"
-                        value="{% if select_scale %}{{ y_min }}{% else %}0{% endif %}">
-                      <input class="form-control input-sm" type="number" name="y_axis_max" id="y_axis_max"
-                         value="{% if selected_scale %}{{ y_max }}{% else %}0{% endif %}">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-	 </div>
 
 	 <label class="mt-3">Display as one plot/multiple plots?</label>
 		<div class="custom-control custom-radio">

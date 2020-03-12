@@ -36,16 +36,15 @@ def post_statistics():
 
 
     selected_entities = request.form.getlist('categorical_entities')
-    category1 = request.form.get('category1')
+
 
     error = None
-    if category1 is None:
-        error = 'Please select category1'
-    elif selected_entities is None:
+    if not selected_entities:
         error = "Please select entities"
-    if not error:
-        categorical_df, c_error = rwh.get_joined_categorical_values(selected_entities, rdb)
-        error = "No data based on the selected options " if error else None
+    elif selected_entities:
+        categorical_df, error = rwh.get_joined_categorical_values(selected_entities, rdb)
+        error = "No data based on the selected entities ( " + ", ".join(categorical_df) + " ) " if error else None
+
 
 
     if error:
@@ -53,13 +52,11 @@ def post_statistics():
                                categorical_tab=True,
                                all_categorical_entities=all_categorical_only_entities,
                                selected_c_entities=selected_entities,
-                               error=error,
-                               category1=category1
+                               error=error
                                )
 
     entity_values = {}
     key =[]
-    data =[]
     plot_series = []
     data = []
     for entity in selected_entities:
@@ -97,7 +94,6 @@ def post_statistics():
                            all_categorical_entities=all_categorical_only_entities,
                            plot = graphJSON,
                            entity_values=entity_values,
-                           category1=category1,
                            selected_c_entities=selected_entities,
                            plot_series=plot_series
                            )

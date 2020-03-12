@@ -1,14 +1,20 @@
 from flask import Blueprint, render_template, request
-
+import collections
 import data_warehouse.redis_rwh as rwh
 
 basic_stats_page = Blueprint('basic_stats', __name__,
                              template_folder='basic_stats')
 
 
+
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
-    # this import has to be here!!
+    """
+
+    Returns
+    -------
+
+    """
     from webserver import get_db
     rdb = get_db()
     all_numeric_entities = rwh.get_numeric_entities(rdb)
@@ -23,6 +29,13 @@ def get_statistics():
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
+    """
+
+    Returns
+    -------
+
+    """
+
     from webserver import get_db
     rdb = get_db()
     all_numeric_entities = rwh.get_numeric_entities(rdb)
@@ -113,10 +126,13 @@ def get_basic_stats():
             basic_stats_c[entity] = { }
             # if entity in categorical_df.columns:
             count = categorical_df[categorical_df.columns.intersection([entity])].count()[entity]
+            counter = collections.Counter(categorical_df[entity])
+            values_c = list(counter.values())
+            key_c = list(counter.keys())
             # else:
             #     count = 0
             basic_stats_c[entity]['count'] = count
-
+            print(values_c,key_c)
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,
                                all_categorical_entities=all_categorical_only_entities,

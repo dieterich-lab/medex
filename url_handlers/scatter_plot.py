@@ -2,10 +2,9 @@ from flask import Blueprint, render_template, request, jsonify
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-import plotly.express as px
 import plotly
 import json
-import random
+
 
 import data_warehouse.redis_rwh as rwh
 
@@ -52,10 +51,11 @@ def post_plots():
         error = "You can't compare the same entity"
     elif add_group_by and category == "Choose entity":
         error = "Please select a categorical value to group by"
+    elif add_group_by and category:
+        categorical_df, error = rwh.get_joined_categorical_values([category], rdb)
+        error = "No data based on the selected entities ( " + ", ".join([category]) + " ) " if error else None
 
-    categorical_df, err = rwh.get_joined_categorical_values([category], rdb)
-    numeric_df, err = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error else (None, error)
-    error = err if not error else error
+    numeric_df, error = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error else (None, error)
 
     if error:
         return render_template('scatter_plot.html',
