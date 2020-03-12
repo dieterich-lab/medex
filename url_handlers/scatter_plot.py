@@ -105,6 +105,7 @@ def post_plots():
             'y': list(numeric_df['y']),
             'mode': 'markers',
             'type': 'scatter',
+            'name' : 'Patients',
             'text': list(numeric_df['patient_id']),
         })
 
@@ -138,7 +139,7 @@ def post_plots():
             m, b = np.polyfit(np.array(df['x']), np.array(df['y']), 1)
             bestfit_y = (np.array(df['x']) * m + b)
             data.append(go.Scatter(x=list(df['x']), y=list(df['y']), mode= 'markers',name =cat_value, marker=dict(color =colorGen[i])))
-            data.append(go.Scatter(x=list(df['x']), y=bestfit_y, mode='lines',line =dict(color =colorGen[i]),name = 'Linear regression {0}: <br /> (y={1:.2f}x + {1:.2f})'.format(cat_value,m,b)))
+            data.append(go.Scatter(x=list(df['x']), y=bestfit_y, mode='lines',line =dict(color =colorGen[i]),name = 'Linear regression {0}: <br /> (y={1:.2f}x + {2:.2f})'.format(cat_value,m,b)))
             i += 1
             layout = go.Layout(
                 title = dict(text ='Compare values of <b>' + x_axis + '</b> and <b>' + y_axis + '</b>'),
@@ -167,7 +168,7 @@ def post_plots():
                 'x': list(df['x']),
                 'y': list(bestfit_y),
                 'type': 'scatter',
-                'name' : 'Linear regression {0}: <br /> (y={1:.2f}x + {1:.2f})'.format(cat_value, m, b),
+                'name' : 'Linear regression {0}: <br /> (y={1:.2f}x + {2:.2f})'.format(cat_value, m, b),
                 'mode' : 'lines',
                 'line' : {'color' : colorGen[i]}
             })
