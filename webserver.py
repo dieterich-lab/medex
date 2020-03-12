@@ -100,3 +100,5 @@ if os.environ.get('IMPORT_DISABLED') is None:
     scheduler.start()
     scheduler.stop()
 
+def main():
+    return app

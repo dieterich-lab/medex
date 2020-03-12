@@ -79,8 +79,6 @@ def post_statistics():
             entity_values[entity][value] = len(entity_df.loc[entity_df[entity] == value])
 
 
-
-    print(key_c)
     layout = go.Layout(
         barmode='stack',
         template = 'plotly_white'

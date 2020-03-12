@@ -1,8 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
 import numpy as np
 import pandas as pd
-import plotly.graph_objs as go
-import plotly
 import json
 
 
@@ -84,7 +82,7 @@ def post_plots():
         m, b = np.polyfit(np.array(numeric_df['x']), np.array(numeric_df['y']), 1)
         bestfit_y = (np.array(numeric_df['x']) * m + b)
 
-
+        """
         data.append(go.Scatter(x=numeric_df['x'], y=numeric_df['y'],mode='markers',name = 'Patients',text= list(numeric_df['patient_id'])))
         data.append(go.Scatter(x=numeric_df['x'], y=bestfit_y,mode='lines',name = 'Linear regression: <br /> (y={0:.2f}x + {1:.2f})'.format(m,b) ))
         layout =go.Layout(
@@ -99,7 +97,7 @@ def post_plots():
             ),
             template = 'plotly_white'
             )
-
+        """
         plot_series.append({
             'x': list(numeric_df['x']),
             'y': list(numeric_df['y']),
@@ -138,9 +136,11 @@ def post_plots():
             # fit lin to data to plot
             m, b = np.polyfit(np.array(df['x']), np.array(df['y']), 1)
             bestfit_y = (np.array(df['x']) * m + b)
+            i += 1
+            """
             data.append(go.Scatter(x=list(df['x']), y=list(df['y']), mode= 'markers',name =cat_value, marker=dict(color =colorGen[i])))
             data.append(go.Scatter(x=list(df['x']), y=bestfit_y, mode='lines',line =dict(color =colorGen[i]),name = 'Linear regression {0}: <br /> (y={1:.2f}x + {2:.2f})'.format(cat_value,m,b)))
-            i += 1
+            
             layout = go.Layout(
                 title = dict(text ='Compare values of <b>' + x_axis + '</b> and <b>' + y_axis + '</b>'),
                 hovermode='closest',
@@ -153,6 +153,7 @@ def post_plots():
                 ),
                 template='plotly_white'
             )
+            """
             plot_series.append({
                 'x': list(df['x']),
                 'y': list(df['y']),
@@ -173,8 +174,8 @@ def post_plots():
                 'line' : {'color' : colorGen[i]}
             })
 
-    data =go.Figure(data=data,layout=layout)
-    graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+#    data =go.Figure(data=data,layout=layout)
+#    graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
 
     return render_template('scatter_plot.html',
                            numeric_tab=True,
@@ -183,7 +184,7 @@ def post_plots():
                            x_axis=x_axis,
                            y_axis=y_axis,
                            category=category,
-                           plot= graphJSON,
+#                           plot= graphJSON,
 #                           cat_values=list(category_values),
                            add_group_by=add_group_by,
                            add_separate_regression=add_separate_regression,

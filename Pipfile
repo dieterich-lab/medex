@@ -26,11 +26,13 @@ matplotlib = "*"
 jinja2 = "*"
 flask-login = "*"
 passlib = "*"
+plotly = "*"
 pytest = "*"
 apscheduler = "*"
 waitress = "*"
 ipdb = "*"
 sqlalchemy = "*"
+
 
 [dev-packages]
 pylint = "*"
