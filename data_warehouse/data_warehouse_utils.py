@@ -1,32 +1,12 @@
 import collections
-import numpy as np
 import pandas as pd
 import sklearn.cluster
 import sklearn.metrics.pairwise
 import sklearn.mixture
 import sklearn.preprocessing
-import misc.parallel as parallel
-import misc.utils as utils
+import modules.load_data_postgre as ps
 
 import data_warehouse.redis_rwh as rwh
-
-
-def clean_entity_names(entity_names):
-    """ Remove prefixes and similar from the entity names
-
-    Parameters
-    ----------
-    entity_names: pd.Series
-        The raw entity names
-
-    Returns
-    -------
-    cleaned_entity_names: pd.Series
-        The entity names with prefixes and such removed
-    """
-    entity_names = entity_names.str.replace("diagnostik.labor.", "")
-    return entity_names
-
 
 ALLOWED_MISSING = {
     "drop",
@@ -72,10 +52,8 @@ def _retrieve_numeric_fieds_df(entities, r, standardize=True, missing='drop', mi
         msg = "Invalid \"missing\" argument: {}".format(missing)
         raise ValueError(msg)
 
-    df, error = rwh.get_joined_numeric_values(entities, r, min_max_filter)
-    if error:
-        # df, scaler
-        return None, None, error
+    df = ps.get_values(entities, r)
+
 
     if missing == "drop":
         df = df.dropna()
@@ -172,108 +150,6 @@ def cluster_numeric_fields(entities, r, standardize=True, missing='drop', min_ma
     return cluster_data, cluster_labels, df, None
 
 
-def _get_patient_categorical_rep(row, categorical_entities):
-    ret = {}
-
-    for categorical_entity in categorical_entities:
-        vals = row[categorical_entity]
-
-        # make sure this is a list of values, which is what
-        # we expect from rwh.get_joined_categorical_values
-        if not utils.is_sequence(vals):
-            continue
-
-        for val in vals:
-            key = "{}.{}".format(categorical_entity, val)
-            ret[key] = 1
-    return ret
 
 
-# use in clustering
-def cluster_categorical_entities(entities, r, eps=0.1, min_samples=5, seed=8675309):
-    """ Cluster patients based on the given categorical entities using DBSCAN.
-    The Jaccard distance is used for clustering.
 
-    Paramters
-    ---------
-    entities: list of strings
-        The names of the numeric entities
-
-    r: redis.StrictRedis
-        The redis database connection
-
-    eps: float
-        The maximum distance between two samples to clsuter them together.
-        Please see sklearn.cluster.DBSCAN for more details.
-
-    min_samples: int
-        The minimum number of samples in each cluster
-
-    seed: int
-        The random seed
-
-    Returns
-    -------
-    cluster_category_values: dict
-        Mapping from cluster label to the count of each category value observed
-        for patients in that cluster
-
-    patient_np: 2-dimensional (binary) np.array
-        The indicator matrix of each (entity,value) for each patient
-
-    category_values: list of pairs of strings
-        All observed (category,value) pairs
-
-    label_uses : dict
-        A dictionary mapping from each label to the number of items with that
-        label.
-
-    patient_df: pd.DataFrame
-        The data frame containing entity values for each patient
-    """
-    # pull the values from the database
-    cat_df, error = rwh.get_joined_categorical_values(entities, r)  # .dropna()
-    if error:
-        # cluster_category_values, cat_rep_np, category_values, label_uses, cat_df
-        return None, None, None, None, None, error
-    # the error is here. cat_rep returns dicts with empty values
-    # get the binary representation
-    cat_rep = parallel.apply_df_simple(
-        cat_df,
-        _get_patient_categorical_rep,
-        entities
-    )
-
-    # convert it to a numpy 2-d array; each row is a patient
-    cat_rep_df = pd.DataFrame(cat_rep)
-    category_values = sorted(cat_rep_df.columns)
-    cat_rep_np = cat_rep_df.fillna(0).values
-
-    # calculate the jaccard distances between all patients
-    distance = sklearn.metrics.pairwise.pairwise_distances(
-        cat_rep_np,
-        metric='jaccard'
-    )
-
-    # cluster the patients based on the jaccard distances
-    db = sklearn.cluster.DBSCAN(
-        eps=eps,
-        min_samples=min_samples,
-        metric='precomputed' \
-        )
-    db.fit(distance)
-
-    # add the clustering information to the
-    cat_df['cluster'] = db.labels_
-
-    # collect the usage information
-    unique_labels = set(db.labels_)
-    label_uses = {}
-    cluster_category_values = {}
-
-    for l in unique_labels:
-        m_class = (db.labels_ == l)
-        label_uses[l] = np.sum(m_class)
-        cluster_category_values[l] = cat_rep_df[m_class].count()
-
-    return cluster_category_values, cat_rep_np, category_values, label_uses, cat_df, None

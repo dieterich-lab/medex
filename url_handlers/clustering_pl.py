@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request
 import numpy as np
+import modules.load_data_postgre as ps
 
 import data_warehouse.redis_rwh as rwh
 import data_warehouse.data_warehouse_utils as dwu
@@ -13,9 +14,7 @@ def cluster():
     # this import has to be here!!
     from webserver import get_db
     rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-
-
+    all_numeric_entities = ps.get_numeric_entities(rdb)
 
     min_max_values = { }
 
@@ -29,9 +28,9 @@ def cluster():
 @clustering_plot_page.route('/clustering_pl', methods=['POST'])
 def post_clustering():
     # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
+    from webserver import get_db2
+    rdb = get_db2()
+    all_numeric_entities = ps.get_numeric_entities(rdb)
     min_max_values = { }
 
 
@@ -64,6 +63,7 @@ def post_clustering():
 
     if any([entity for entity in numeric_entities]):
         np.random.seed(8675309)  # what is this number?
+        print(numeric_entities)
         cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(
                 numeric_entities,
                 rdb,
