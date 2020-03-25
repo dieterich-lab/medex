@@ -1,7 +1,7 @@
 # import the Flask class from the flask module
 from flask import Flask, session, g, redirect, flash
 from flask_redis import FlaskRedis
-
+import psycopg2.extras
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
 
@@ -38,16 +38,23 @@ def connect_db():
     """ connects to our redis database """
     # Set this connection URL in an environment variable, and then load it into your application configuration using
     # os.environ, like this
-    app.config["REDIS_URL"] = os.environ["REDIS_URL"]
+    app.config["DATABASE_URL"] = os.environ["DATABASE_URL"]
     # To add a Redis client to your application
     redis_store = FlaskRedis(app)
     return redis_store
 
 
-def get_db():
+def get_db2():
     """ opens a new database connection if there is none yet for the
         current application context
     """
+    app = os.environ["DATABASE_URL"]
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = psycopg2.connect(app)
+    return db
+
+def get_db():
     if not hasattr(g, 'redis_db'):
         g.redis_db = connect_db()
     return g.redis_db

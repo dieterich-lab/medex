@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request
-import pandas as pd
 import numpy as np
-import data_warehouse.redis_rwh as rwh
+import modules.load_data_postgre as ps
 
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
@@ -9,40 +8,41 @@ histogram_page = Blueprint('histogram', __name__,
 
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
-    # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
+    
+    # connection and load data from database
+    from webserver import get_db2
+    rdb = get_db2()
+    all_numeric_entities = ps.get_numeric_entities(rdb)
+    all_categorical_entities = ps.get_categorical_entities(rdb)
 
-    return render_template('histogram.html', categorical_entities=all_categorical_entities,
+    return render_template('histogram.html',
+                           categorical_entities=all_categorical_entities,
                            numeric_entities=all_numeric_entities)
 
 
 @histogram_page.route('/histogram', methods=['POST'])
 def post_statistics():
-    # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
+    # connection with database and load name of entities
+    from webserver import get_db2
+    rdb = get_db2()
+    all_numeric_entities = ps.get_numeric_entities(rdb)
+    all_categorical_entities = ps.get_categorical_entities(rdb)
 
+
+    # get selected entities
     entity = request.form.get('entity')
     group_by = request.form.get('group_by')
     number_of_bins = request.form.get('number_of_bins')
+
+    # handling errors and load data from database
     error = None
     if not entity or not group_by or entity == "Choose entity" or group_by == "Choose entity":
         error = "Please select entity and group_by"
 
-    if number_of_bins.isdigit():
-        int_number_of_bins = int(number_of_bins)
-        if int_number_of_bins < 2:
-            error = "Nuber of bins need to be bigger then 1"
-
     # get joined numerical and categorical values
     if not error:
-        numeric_df, error = rwh.get_joined_numeric_values([entity], rdb)
-        categorical_df, error = rwh.get_joined_categorical_values([group_by], rdb) if not error else (None, error)
+        data = ps.get_values([entity,group_by],rdb)
+
     if error:
         return render_template('histogram.html',
                                categorical_entities=all_categorical_entities,
@@ -52,32 +52,32 @@ def post_statistics():
                                error=error, )
 
 
-    merged_df = pd.merge(numeric_df, categorical_df, how='inner', on='patient_id')
-    min_val = numeric_df[entity].min()
-    max_val = numeric_df[entity].max()
-    count = categorical_df[group_by].count()
+
+
+    min_val = data[entity].min()
+    max_val = data[entity].max()
+    count = data[group_by].count()
     adjusted_bins = (max_val - min_val)
 
-
-    if number_of_bins.isdigit():
+    # handling errors if number of bins is less then 2
+    if number_of_bins.isdigit() and int(number_of_bins) > 2:
         int_number_of_bins = int(number_of_bins)
-        if int_number_of_bins > 1:
-            int_number_of_bins = int(number_of_bins)
-            bin_numbers = (adjusted_bins / int_number_of_bins)
+        bin_numbers = (adjusted_bins / int_number_of_bins)
     elif number_of_bins == "":
         bin_numbers = (adjusted_bins / 20)
     else:
         error = "You have entered non-integer or negetive value. Please use positive integer"
-        return render_template('histogram.html', categorical_entities=all_categorical_entities,
-                                   numeric_entities=all_numeric_entities,
-                                   error=error, )
+        return render_template('histogram.html',
+                                categorical_entities=all_categorical_entities,
+                                numeric_entities=all_numeric_entities,
+                                error=error)
 
 
-    groups = set(categorical_df[group_by].values.tolist())
+    groups = set(data[group_by].values.tolist())
     plot_series = []
     table_data={}
     for group in groups:
-        df = merged_df.loc[merged_df[group_by] == group]
+        df = data.loc[data[group_by] == group]
         values = df[entity].values.tolist()
         if number_of_bins.isdigit():
             hist=np.histogram(values, bins=int(number_of_bins),range = (min_val,max_val))
@@ -98,7 +98,7 @@ def post_statistics():
                     'start': min_val
                     }
                 })
-    print(table_data)
+
     return render_template('histogram.html',
                            categorical_entities=all_categorical_entities,
                            numeric_entities=all_numeric_entities,

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request
-import collections
-import data_warehouse.redis_rwh as rwh
+import modules.load_data_postgre as ps
+
 
 basic_stats_page = Blueprint('basic_stats', __name__,
                              template_folder='basic_stats')
@@ -9,55 +9,51 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
-    """
 
-    Returns
-    -------
-
-    """
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
-    all_categorical_only_entities = sorted(set(all_categorical_entities) - set(all_numeric_entities))
+    # connection and load data from database
+    from webserver import get_db2
+    rdb = get_db2()
+    all_numeric_entities = ps.get_numeric_entities(rdb)
+    all_categorical_entities = ps.get_categorical_entities(rdb)
 
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_only_entities)
+                           all_categorical_entities=all_categorical_entities)
 
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
-    """
+    # connection with database and load name of entities
+    from webserver import get_db2
+    rdb = get_db2()
+    all_numeric_entities = ps.get_numeric_entities(rdb)
+    all_categorical_entities = ps.get_categorical_entities(rdb)
 
-    Returns
-    -------
 
-    """
-
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
-    all_categorical_only_entities = sorted(set(all_categorical_entities) - set(all_numeric_entities))
 
     if 'basic_stats' in request.form:
+        """ calculation for numeric values"""
+
+        # get selected entities
         numeric_entities = request.form.getlist('numeric_entities')
+
+        # handling errors and load data from database
         error = None
         if numeric_entities:
-            numeric_df, error = rwh.get_joined_numeric_values(numeric_entities, rdb)
+            numeric_df = ps.get_values(numeric_entities, rdb)
             error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. " if error else None
         else:
             error = "Please select numeric entities"
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
-                                   all_categorical_entities=all_categorical_only_entities,
+                                   all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    selected_n_entities=numeric_entities,
                                    error=error)
 
+        """calculation basic stats (maybe should I do this in SQL)"""
         # to avoid key error
         numeric_df = numeric_df[numeric_df.columns.intersection(numeric_entities)]
         basic_stats = { }
@@ -86,7 +82,7 @@ def get_basic_stats():
             error_message = "You must select at least some statistics"
             return render_template('basic_stats/basic_stats.html',
                                 numeric_tab=True,
-                                all_categorical_entities=all_categorical_only_entities,
+                                all_categorical_entities=all_categorical_entities,
                                 all_numeric_entities=all_numeric_entities,
                                 selected_n_entities=numeric_entities,
                                 basic_stats=basic_stats,
@@ -97,46 +93,51 @@ def get_basic_stats():
             all_present = numeric_df.dropna().shape[0]
             return render_template('basic_stats/basic_stats.html',
                                 numeric_tab=True,
-                                all_categorical_entities=all_categorical_only_entities,
+                                all_categorical_entities=all_categorical_entities,
                                 all_numeric_entities=all_numeric_entities,
                                 selected_n_entities=numeric_entities,
                                 basic_stats=basic_stats,
                                 any_present=any_present,
                                 all_present=all_present)
 
+
+
     if 'basic_stats_c' in request.form:
+        """ calculation for categorical values"""
+
+        # list selected data by client
         categorical_entities = request.form.getlist('categorical_entities')
-        # if not categorical_entities:
+
+
+        # handling errors and load data from database
         error = None
         if categorical_entities:
-            categorical_df, error = rwh.get_joined_categorical_values(categorical_entities, rdb)
+            categorical_df = ps.get_values(categorical_entities, rdb)
             error = "No data based on the selected entities ( " + ", ".join(categorical_entities) + " ) " if error else None
         else:
             error = "Please select entities"
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    categorical_tab=True,
-                                   all_categorical_entities=all_categorical_only_entities,
+                                   all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    selected_c_entities=categorical_entities,
                                    error=error)
-                        
+
+
+        """calculation basic stats (maybe should I do this in SQL)"""
         basic_stats_c = { }
         for entity in categorical_entities:
             basic_stats_c[entity] = { }
             # if entity in categorical_df.columns:
             count = categorical_df[categorical_df.columns.intersection([entity])].count()[entity]
-            counter = collections.Counter(categorical_df[entity])
-            values_c = list(counter.values())
-            key_c = list(counter.keys())
-            # else:
-            #     count = 0
             basic_stats_c[entity]['count'] = count
-            print(values_c,key_c)
+
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,
-                               all_categorical_entities=all_categorical_only_entities,
+                               all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                selected_c_entities=categorical_entities,
                                basic_stats_c=basic_stats_c)
+
 

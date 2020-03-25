@@ -1,8 +1,7 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request
 import pandas as pd
 from scipy.stats import pearsonr
-
-import data_warehouse.redis_rwh as rwh
+import modules.load_data_postgre as ps
 
 heatmap_plot_page = Blueprint('heatmap', __name__,
                        template_folder='tepmlates')
@@ -10,53 +9,45 @@ heatmap_plot_page = Blueprint('heatmap', __name__,
 
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
-    # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
-    all_categorical_only_entities = sorted(set(all_categorical_entities) - set(all_numeric_entities))
+    
+    # connection and load data from database
+    from webserver import get_db2
+    rdb = get_db2()
+    all_numeric_entities = ps.get_numeric_entities(rdb)
 
     return render_template('heatmap.html',
                            numeric_tab=True,
-                           all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_only_entities)
+                           all_numeric_entities=all_numeric_entities)
 
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
-# @login_required
 def post_plots():
-    # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
-    all_categorical_only_entities = sorted(set(all_categorical_entities) - set(all_numeric_entities))
+    
+    # connection with database and load name of entities
+    from webserver import get_db2
+    rdb = get_db2()
+    all_numeric_entities = ps.get_numeric_entities(rdb)
 
+    # get selected entities
+    numeric_entities = request.form.getlist('numeric_entities')
 
-
-    selected_entities = request.form.getlist('numeric_entities')
-
-    if not selected_entities:
-        error = "Please select entities"
-        return render_template('heatmap.html',
+    # handling errors and load data from database
+    error = None
+    if numeric_entities:
+        numeric_df = ps.get_values(numeric_entities, rdb)
+        error = "The selected entities (" + ", ".join(
+            numeric_entities) + ") do not contain any values. " if error else None
+    else:
+        error = "Please select numeric entities"
+    if error:
+        return render_template('basic_stats/basic_stats.html',
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
-                               all_categorical_entities=all_categorical_only_entities,
+                               selected_n_entities=numeric_entities,
                                error=error)
+    
 
-
-    numeric_df, err = rwh.get_joined_numeric_values(selected_entities, rdb)
-    if err:
-        return render_template('heatmap.html',
-                               error=err,
-                               numeric_tab=True,
-                               all_numeric_entities=all_numeric_entities,
-                               all_categorical_entities=all_categorical_only_entities)
-
-    # remove patient id and drop NaN values (this will show only the patients with both values)
-    numeric_df = numeric_df[selected_entities]
-    # numeric_df = numeric_df.dropna()[selected_entities]
+    numeric_df = numeric_df[numeric_entities]
     dfcols = pd.DataFrame(columns=numeric_df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
     corr_values = dfcols.transpose().join(dfcols, how='outer')
@@ -79,8 +70,8 @@ def post_plots():
 
     plot_series = []
     plot_series.append({'z': corr_values,
-                        'x' : selected_entities,
-                        'y' : selected_entities,
+                        'x' : numeric_entities,
+                        'y' : numeric_entities,
                         'type': "heatmap"
                         })
 
@@ -89,8 +80,7 @@ def post_plots():
     return render_template('heatmap.html',
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_only_entities,
-                           selected_n_entities=selected_entities,
+                           selected_n_entities=numeric_entities,
                            plot_series=plot_series
                            )
 

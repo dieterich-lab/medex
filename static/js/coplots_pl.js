@@ -30,7 +30,7 @@ $(document).ready(function() {
             Plotly.newPlot('coplot',
             PLOT_SERIES,
             {
-            title: 'Compare values',
+            title: 'Compare values of <b>' + x_axis + '</b> and <b>' + y_axis + '</b>',
                     'xaxis': {
                         'title': {
                                 'text': x_axis,

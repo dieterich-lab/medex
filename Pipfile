@@ -32,7 +32,7 @@ apscheduler = "*"
 waitress = "*"
 ipdb = "*"
 sqlalchemy = "*"
-
+psycopg2 = "*"
 
 [dev-packages]
 pylint = "*"
