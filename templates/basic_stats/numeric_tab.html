@@ -42,6 +42,11 @@
                                 <label class="custom-control-label" for="counts">Counts</label>
                             </div>
                             <div class="custom-control custom-checkbox mr-2">
+                                <input type="checkbox" class="custom-control-input" id="counts NaN" name="counts NaN"
+                                checked="{% if basic_stats and 'counts NaN' not in basic_stats %}false{% else %}true{% endif %}">
+                                <label class="custom-control-label" for="counts NaN">Counts NaN</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mr-2">
                                 <input type="checkbox" class="custom-control-input" id="mean" name="mean"
                                 checked="{% if basic_stats and 'mean' not in basic_stats %}false{% else %}true{% endif %}">
                                 <label class="custom-control-label" for="mean">Mean</label>
@@ -105,6 +110,7 @@
                                 <tr>
                                     <th>Entity</th>
                                     {% if 'counts' in basic_stats %}<th>Counts</th>{% endif %}
+                                    {% if 'counts NaN' in basic_stats %}<th>Counts NaN</th>{% endif %}
                                     {% if 'min' in basic_stats %}<th>Min</th>{% endif %}
                                     {% if 'max' in basic_stats %}<th>Max</th>{% endif %}
                                     {% if 'mean' in basic_stats %}<th>Mean</th>{% endif %}
@@ -118,6 +124,7 @@
                                 <tr>
                                     <td>{{ entity }}</td>
                                     {% if 'counts' in basic_stats %}<td>{{ basic_stats['counts'][entity] }}</td>{% endif %}
+                                    {% if 'counts NaN' in basic_stats %}<td>{{ basic_stats['counts NaN'][entity] }}</td>{% endif %}
                                     {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity] }}</td>{% endif %}
                                     {% if 'max' in basic_stats %}<td>{{ basic_stats['max'][entity] }}</td>{% endif %}
                                     {% if 'mean' in basic_stats %}<td>{{ basic_stats['mean'][entity] }}</td>{% endif %}

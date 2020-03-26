@@ -33,14 +33,16 @@ def post_plots():
 
     # handling errors and load data from database
     error = None
-    if numeric_entities:
+    if len(numeric_entities) > 1:
         numeric_df = ps.get_values(numeric_entities, rdb)
-        error = "The selected entities (" + ", ".join(
-            numeric_entities) + ") do not contain any values. " if error else None
+        if len(numeric_df.index) == 0:
+            error = "This two entities don't have common values"
+    elif len (numeric_entities) < 2:
+        error = "Please select more then one category"
     else:
         error = "Please select numeric entities"
     if error:
-        return render_template('basic_stats/basic_stats.html',
+        return render_template('heatmap.html',
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
                                selected_n_entities=numeric_entities,

@@ -6,7 +6,7 @@ import json
 import plotly
 import plotly.graph_objs as go
 
-import data_warehouse.redis_rwh as rwh
+
 
 barchart_page = Blueprint('barchart', __name__,
                            template_folder='templates')
@@ -39,8 +39,9 @@ def post_statistics():
     if not selected_entities:
         error = "Please select entities"
     elif selected_entities:
-        categorical_df = ps.get_values(selected_entities, rdb)
-        error = "No data based on the selected entities ( " + ", ".join(categorical_df) + " ) " if error else None
+        categorical_df = ps.get_values_basic_stats(selected_entities, rdb)
+
+
 
     if error:
         return render_template('barchart.html',

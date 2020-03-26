@@ -60,8 +60,9 @@ def post_coplots():
     elif category1 == category2:
         error = "You can't compare the same category"
     if not error:
-        data = ps.get_values([x_axis, y_axis,category1, category2], rdb)
-        error = "No data based on the selected options" if error else None
+        data = ps.get_values([x_axis, y_axis,category1, category2], rdb) if not error else (None, error)
+        if len(data.index) == 0:
+            error = "No data based on the selected options"
 
     if error:
         return render_template('coplots_pl.html',

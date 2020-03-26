@@ -44,13 +44,24 @@ def post_plots():
         error = "Please select x_axis and y_axis"
     elif x_axis == y_axis:
         error = "You can't compare the same entity"
-    elif add_group_by and category == "Choose entity":
-        error = "Please select a categorical value to group by"
-    elif add_group_by and category:
-        categorical_df = ps.get_values([x_axis, y_axis,category], rdb)
-        error = "No data based on the selected entities ( " + ", ".join([category]) + " ) " if error else None
 
     numeric_df = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
+    if len(numeric_df[x_axis]) == 0:
+        error = "Category {} is empty".format(x_axis)
+    elif len(numeric_df[y_axis]) == 0:
+        error = "Category {} is empty".format(y_axis)
+    elif len(numeric_df.index) == 0:
+        error = "This two entities don't have common values"
+
+
+    if add_group_by and category == "Choose entity":
+        error = "Please select a categorical value to group by"
+    elif add_group_by and category:
+        categorical_df = ps.get_values([x_axis, y_axis,category], rdb) if not error else (None, error)
+        if len(categorical_df[category]) == 0:
+            error = "Category {} is empty".format(category)
+
+
 
     if error:
         return render_template('scatter_plot.html',

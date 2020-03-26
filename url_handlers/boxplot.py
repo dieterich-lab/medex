@@ -40,7 +40,8 @@ def post_boxplots():
         error = "Please select entity and group by"
     if not error:
         numeric_df = ps.get_values([entity,group_by], rdb)
-        error = "No data based on the selected entity '" + entity + "' and group '" + group_by + "'" if error else None
+        if len(numeric_df.index) == 0:
+            error = "This two entities don't have common values"
     if error:
         return render_template('boxplot.html',
                                 error=error,

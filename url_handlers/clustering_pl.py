@@ -12,8 +12,8 @@ clustering_plot_page = Blueprint('clustering_pl', __name__,
 @clustering_plot_page.route('/clustering_pl', methods=['GET'])
 def cluster():
     # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
+    from webserver import get_db2
+    rdb = get_db2()
     all_numeric_entities = ps.get_numeric_entities(rdb)
 
     min_max_values = { }
@@ -62,14 +62,16 @@ def post_clustering():
                 }
 
     if any([entity for entity in numeric_entities]):
-        np.random.seed(8675309)  # what is this number?
-        print(numeric_entities)
+        error = None
+        df = ps.get_values(numeric_entities, rdb) if not error else (None, error)
+        if len(df.index) == 0:
+            error = "This two entities don't have common values"
+
         cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(
                 numeric_entities,
-                rdb,
+                df,
                 standardize=numeric_standardize,
-                missing=numeric_missing,
-                min_max_filter=min_max_filter,
+                missing=numeric_missing
                 )
         if error:
             return render_template('clustering_pl.html',

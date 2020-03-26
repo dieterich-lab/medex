@@ -6,17 +6,11 @@ import sklearn.mixture
 import sklearn.preprocessing
 import modules.load_data_postgre as ps
 
-import data_warehouse.redis_rwh as rwh
-
-ALLOWED_MISSING = {
-    "drop",
-    "mean",
-    "median",
-    "most_frequent"
-}
 
 
-def _retrieve_numeric_fieds_df(entities, r, standardize=True, missing='drop', min_max_filter=None):
+
+
+def _retrieve_numeric_fieds_df(entities, df, standardize=True, missing='drop'):
     """ Retrieve patient records from the db and preprocess as specified.
 
     Paramters
@@ -48,11 +42,7 @@ def _retrieve_numeric_fieds_df(entities, r, standardize=True, missing='drop', mi
         back, and raw values can be transformed, using this.
 
     """
-    if missing not in ALLOWED_MISSING:
-        msg = "Invalid \"missing\" argument: {}".format(missing)
-        raise ValueError(msg)
 
-    df = ps.get_values(entities, r)
 
 
     if missing == "drop":
@@ -73,7 +63,7 @@ def _retrieve_numeric_fieds_df(entities, r, standardize=True, missing='drop', mi
 
 
 # use in clustering
-def cluster_numeric_fields(entities, r, standardize=True, missing='drop', min_max_filter=None):
+def cluster_numeric_fields(entities, df, standardize=True, missing='drop', min_max_filter=None):
     """ Cluster the given numeric entities using a DP-GMM.
 
     Paramters
@@ -108,13 +98,7 @@ def cluster_numeric_fields(entities, r, standardize=True, missing='drop', min_ma
     """
     import misc.math_utils as math_utils
 
-    df, scaler, error = _retrieve_numeric_fieds_df(
-        entities,
-        r,
-        standardize=standardize,
-        missing=missing,
-        min_max_filter=min_max_filter
-    )
+    df, scaler, error = _retrieve_numeric_fieds_df(entities,df)
     if error:
         # cluster_data, cluster_labels, df
         return None, None, None, error

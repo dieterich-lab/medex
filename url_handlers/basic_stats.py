@@ -41,7 +41,7 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if numeric_entities:
-            numeric_df = ps.get_values(numeric_entities, rdb)
+            numeric_df = ps.get_values_basic_stats(numeric_entities, rdb)
             error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. " if error else None
         else:
             error = "Please select numeric entities"
@@ -56,10 +56,14 @@ def get_basic_stats():
         """calculation basic stats (maybe should I do this in SQL)"""
         # to avoid key error
         numeric_df = numeric_df[numeric_df.columns.intersection(numeric_entities)]
+        print()
         basic_stats = { }
         if 'counts' in request.form:
             counts = numeric_df.count()
             basic_stats['counts'] = counts
+        if 'counts NaN' in request.form:
+            counts = numeric_df.count()
+            basic_stats['counts NaN'] = len(numeric_df.index)-counts
         if 'mean' in request.form:
             mean = numeric_df.mean().round(decimals=2)
             basic_stats['mean'] = mean
@@ -112,7 +116,7 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if categorical_entities:
-            categorical_df = ps.get_values(categorical_entities, rdb)
+            categorical_df = ps.get_values_basic_stats(categorical_entities, rdb)
             error = "No data based on the selected entities ( " + ", ".join(categorical_entities) + " ) " if error else None
         else:
             error = "Please select entities"
@@ -132,6 +136,7 @@ def get_basic_stats():
             # if entity in categorical_df.columns:
             count = categorical_df[categorical_df.columns.intersection([entity])].count()[entity]
             basic_stats_c[entity]['count'] = count
+            basic_stats_c[entity]['count NaN'] = len(categorical_df.index) - count
 
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,

@@ -64,6 +64,7 @@
                             <tr>
                                 <th>Entity</th>
                                 <th>Count</th>
+                                <th>Count NaN</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -71,6 +72,7 @@
                             <tr>
                                 <td>{{ entity }}</td>
                                 <td>{{ basic_stats_c[entity]['count'] }}</td>
+                                <td>{{ basic_stats_c[entity]['count NaN'] }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
