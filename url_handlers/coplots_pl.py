@@ -1,8 +1,6 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-import pandas as pd
 
-import data_warehouse.redis_rwh as rwh
 
 coplots_plot_page = Blueprint('coplots_pl', __name__,
                          template_folder='templates')
