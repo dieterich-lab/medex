@@ -98,7 +98,6 @@ def post_statistics():
                     'start': min_val
                     }
                 })
-    print(table_data)
     return render_template('histogram.html',
                            categorical_entities=all_categorical_entities,
                            numeric_entities=all_numeric_entities,

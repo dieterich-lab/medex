@@ -70,18 +70,6 @@ def login():
 
 # Import data to redis
 def check_for_env(key: str, default=None, cast=None):
-    """
-
-    Parameters
-    ----------
-    key
-    default
-    cast
-
-    Returns
-    -------
-
-    """
     if key in os.environ:
         if cast:
             return cast(os.environ.get(key))

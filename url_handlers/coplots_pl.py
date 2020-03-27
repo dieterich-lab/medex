@@ -81,7 +81,7 @@ def post_coplots():
     categorical_df = categorical_df.dropna()
     numeric_df = numeric_df.dropna()
     merged_df = pd.merge(numeric_df, categorical_df, how='inner', on='patient_id')
-    print(categorical_df)
+
 
 
     x_min = merged_df[x_axis].min() if not select_scale else selected_x_min
@@ -93,20 +93,16 @@ def post_coplots():
     category1_values = merged_df[category1].unique()
     category2_values = merged_df[category2].unique()
 
-#    fig = make_subplots(rows=len(category1_values), cols=len(category2_values), subplot_titles=('Plot 1', 'Plot 2','Plot 3', 'Plot 4'))
+
     count=0
     plot_series=[]
     plot_series2 = []
-    data =[]
-    d=0
     layout ={}
     for i,cat1_value in enumerate(category1_values):
         for j,cat2_value in enumerate(category2_values):
             count += 1
             df = merged_df.loc[(merged_df[category1] == cat1_value) & (merged_df[category2] == cat2_value)].dropna()
             df.columns = ['patient_id', 'x', 'y', 'cat1', 'cat2']
-#            fig.add_trace(go.Scatter(x=list(df['x']), y=list(df['y']), mode = 'markers'),row = (i+1), col=(j+1))
-#            data.append(go.Scatter(x=list(df['x']), y=list(df['y']), mode = 'markers'))
             plot_series.append({
                 'x': list(df['x']),
                 'y': list(df['y']),
@@ -138,7 +134,7 @@ def post_coplots():
                     }
                 },})
 
-#    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
     layout.update(title='Compare values of <b>' + x_axis + '</b> and <b>' + y_axis + '</b>')
     layout['grid'] = {'rows': len(category1_values), 'columns': len(category2_values), 'pattern': 'independent'}
 
@@ -156,7 +152,6 @@ def post_coplots():
                            how_to_plot=how_to_plot,
                            plot_series=plot_series,
                            plot_series2=plot_series2,
-                           fig =graphJSON,
                            select_scale=select_scale,
                            x_min=x_min,
                            x_max=x_max,

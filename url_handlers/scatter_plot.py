@@ -67,12 +67,11 @@ def post_plots():
                                 add_group_by=add_group_by,
                                 add_separate_regression=add_separate_regression)
 
-    data =[]
+
     i=0
     if not add_group_by:
         i+=1
         plot_series = []
-        category_values = []
         # change columns order and drop NaN values (this will show only the patients with both values)
         numeric_df = numeric_df.dropna()[[x_axis, y_axis, 'patient_id']]
         # rename columns
@@ -82,22 +81,6 @@ def post_plots():
         m, b = np.polyfit(np.array(numeric_df['x']), np.array(numeric_df['y']), 1)
         bestfit_y = (np.array(numeric_df['x']) * m + b)
 
-        """
-        data.append(go.Scatter(x=numeric_df['x'], y=numeric_df['y'],mode='markers',name = 'Patients',text= list(numeric_df['patient_id'])))
-        data.append(go.Scatter(x=numeric_df['x'], y=bestfit_y,mode='lines',name = 'Linear regression: <br /> (y={0:.2f}x + {1:.2f})'.format(m,b) ))
-        layout =go.Layout(
-            title ='Compare values of <b>' + x_axis + '</b> and <b>' + y_axis + '</b>',
-            hovermode='closest',
-            xaxis=dict(
-                title='{}'.format(y_axis),
-            ),
-            yaxis=dict(
-                title='{}'.format(x_axis),
-
-            ),
-            template = 'plotly_white'
-            )
-        """
         plot_series.append({
             'x': list(numeric_df['x']),
             'y': list(numeric_df['y']),
@@ -137,23 +120,7 @@ def post_plots():
             m, b = np.polyfit(np.array(df['x']), np.array(df['y']), 1)
             bestfit_y = (np.array(df['x']) * m + b)
             i += 1
-            """
-            data.append(go.Scatter(x=list(df['x']), y=list(df['y']), mode= 'markers',name =cat_value, marker=dict(color =colorGen[i])))
-            data.append(go.Scatter(x=list(df['x']), y=bestfit_y, mode='lines',line =dict(color =colorGen[i]),name = 'Linear regression {0}: <br /> (y={1:.2f}x + {2:.2f})'.format(cat_value,m,b)))
-            
-            layout = go.Layout(
-                title = dict(text ='Compare values of <b>' + x_axis + '</b> and <b>' + y_axis + '</b>'),
-                hovermode='closest',
-                xaxis=dict(
-                    title=y_axis,
-                ),
-                yaxis=dict(
-                    title=x_axis,
 
-                ),
-                template='plotly_white'
-            )
-            """
             plot_series.append({
                 'x': list(df['x']),
                 'y': list(df['y']),
@@ -174,8 +141,7 @@ def post_plots():
                 'line' : {'color' : colorGen[i]}
             })
 
-#    data =go.Figure(data=data,layout=layout)
-#    graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+
 
     return render_template('scatter_plot.html',
                            numeric_tab=True,
@@ -183,9 +149,6 @@ def post_plots():
                            all_categorical_entities=all_categorical_only_entities,
                            x_axis=x_axis,
                            y_axis=y_axis,
-                           category=category,
-#                           plot= graphJSON,
-#                           cat_values=list(category_values),
                            add_group_by=add_group_by,
                            add_separate_regression=add_separate_regression,
                            plot_series=plot_series)
