@@ -4,82 +4,12 @@ $(function () {
     $(document).on('click', 'span.close', function() {
         $(this).closest('div.alert').addClass('d-none');
     });
-    
+
     // scatter plot
     if ($('#scatter_plot_n').length != 0) {
         var x_axis = $('#scatter_plot_n').attr('data-plot-x');
         var y_axis = $('#scatter_plot_n').attr('data-plot-y');
         var plot_data = $('#scatter_plot_n').attr('data-plot-series').replace(/'/g, '"'); //");
-
-        if ($('#add_group_by:checkbox:checked').length > 0) {
-            
-            var plot_series = JSON.parse(plot_data);
-            var cat = $('#category').val();
-            
-            var add_separate_regression_is_selected = $('#add_separate_regression:checkbox:checked').length > 0
-            
-            add_separate_regression_is_selected ? applySeparateLinearRegressions(plot_series) : applySingleLinearRegression(plot_series)
-
-            // initializing plot(s)
-            Highcharts.chart('scatter_plot_n', {
-                chart: {
-                    type: 'scatter',
-                    zoomType: 'xy',
-                    height: 400,
-                },
-                title: {
-                    text: 'Compare values of <b>' + x_axis + '</b> and <b>' + y_axis + '</b>',
-                },
-                xAxis: {
-                    title: {
-                        text: x_axis,
-                    },
-                    
-                },
-                yAxis: {
-                    title: {
-                        text: y_axis,
-                    },
-                    
-                },
-                legend: {
-                    labelFormatter: function () {
-                        return this.options.cat ? "<b>" + cat + "</b>: " + this.options.cat : this.options.name;
-                    }
-                },
-                plotOptions: {
-                    scatter: {
-                        marker: {
-                            radius: 5,
-                            states: {
-                                hover: {
-                                    enabled: true,
-                                    lineColor: 'rgb(100,100,100)'
-                                }
-                            }
-                        },
-                        states: {
-                            hover: {
-                                marker: {
-                                    enabled: false
-                                }
-                            }
-                        },
-                        tooltip: {
-                            pointFormat: '<b>' + x_axis + ' :</b> {point.x}<br><b>' +
-                                        '<br><b>' + y_axis + ' : </b> {point.y}' +
-                                        '<br><b>' + cat + '</b> {point.cat}' +
-                                        '<br><b>patient_id:</b> {point.patient_id}' +
-                                        '<br><b>group size:</b> {point.series.options.series_length}',
-                        }
-                    }
-                },
-                series: plot_series,
-            });
-            
-                
-        } else {
-
         Highcharts.chart('scatter_plot_n', {
             chart: {
                 type: 'scatter',
@@ -124,56 +54,6 @@ $(function () {
                 turboThreshold: 0,
             }],
         });
-        }
-        
-    }
-
-    /**
-     * Adds regression properties to each series
-     * @param {Array} plot_series 
-     */
-    function applySeparateLinearRegressions(plot_series) {
-        plot_series.forEach((series, index) => {
-            series.regression = true;
-            series.colorIndex = index;
-            series.regressionSettings = {
-                type: 'linear',
-                color: series.color,
-                name: 'Linear regression: r: %r (%eq)', // show equation and r
-            };
-        });
-    }
-
-    /**
-     * It takes a plot_series with multiple categories
-     * and adds a regression_line series by joining them
-     * @param {Array} plot_series 
-     */
-    function applySingleLinearRegression(plot_series) {
-        regression_line = {
-            regression: true,
-            regressionSettings: {
-                type: 'linear',
-                color: 'black',
-                name: 'Linear regression: r: %r (%eq)', // show equation and r
-            },
-            data: [],
-            visible: false,
-            showInLegend: false,
-            // disable max length of data-series
-            turboThreshold: 0,
-        }
-
-        if (plot_series && plot_series.length > 0) {
-            // Collect data from each series
-            multiple_data = plot_series.map(series => series.data)
-            // Concatenate the multiple data to a single data
-            concatenated = [].concat.apply([], multiple_data)
-            // assign it to the 'data' property of the regression line
-            regression_line.data = concatenated
-            plot_series.push(regression_line)
-        }
-        
     }
 
     // pretify the select input for categorical entities
@@ -264,23 +144,6 @@ $(function () {
         }
     });
 
-    // // apply filters for separate regression
-    // $(document).on('change', '#add_separate_regression', function() {
-    //     if(this.checked) {
-    //       $('#add_separate_regression').removeClass('d-none');
-    //     } else {
-    //         $('#add_separate_regression').addClass('d-none');
-    //     }
-    // });
-
-    // apply filter 
-    $(document).on('change', '#add_group_by', function() {
-        if(this.checked) {
-          $('#add_group').removeClass('d-none');
-        } else {
-            $('#add_group').addClass('d-none');
-        }
-    });
 
     // add entity to the list when selected in select input
     $('#numeric_entities').on('addItem', function(event) {

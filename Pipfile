@@ -15,26 +15,34 @@ pyyaml = "*"
 nltk = "*"
 redis = "*"
 ipython = "*"
-"pybind11" = "*"
+pybind11 = "*"
 python-dotenv = "*"
 click = "*"
 flask = "*"
-misc = {git = "https://bitbucket.org/bmmalone/misc.git"}
-autosklearn = {ref = "development",git = "https://github.com/automl/auto-sklearn.git"}
 flask-redis = "*"
 sklearn = "*"
 seaborn = "*"
 matplotlib = "*"
-"jinja2" = "*"
+jinja2 = "*"
 flask-login = "*"
 passlib = "*"
+plotly = "*"
 pytest = "*"
 apscheduler = "*"
 waitress = "*"
 ipdb = "*"
+sqlalchemy = "*"
+
 
 [dev-packages]
 pylint = "*"
 
 [requires]
 python_version = "3.7"
+
+[packages.misc]
+git = "https://bitbucket.org/bmmalone/misc.git"
+
+[packages.autosklearn]
+ref = "development"
+git = "https://github.com/automl/auto-sklearn.git"

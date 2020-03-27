@@ -7,17 +7,21 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 {# end of imports #}
 
+
 {% if error %}
   <div class="alert alert-danger mt-2" role="alert">
     <div class="row">
       <div class="col col-xs-10">{{ error }}</div>
-      <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
+      <div class="col col-sm-2"><span class="close" aria-label="Close">  </span></div>
     </div>
   </div>
 {% endif %}
 
+
+
+
 <form action="" method="POST">
-    <div class="form-group">
+    <div class="form-group" >
         <label for="entity">Entity:</label>
         <select class="custom-select" name="entity" id="entity">
             <option {% if not selected_entity %} selected {% endif %}>Choose entity</option>
@@ -26,6 +30,7 @@
             {% endfor %}
         </select>
     </div>
+
     <div class="form-group">
         <label for="group_by">Group by:</label>
         <select class="custom-select" name="group_by" id="group_by">
@@ -35,13 +40,25 @@
             {% endfor %}
         </select>
     </div>
+
   <label>Number of bins </label><input type="text" class="form-control"
       name="number_of_bins"  id="number_of_bins"
       value="{% if number_of_bins %}{{ number_of_bins }}{% else %}{% endif %}">
     <button type="submit" name="plot_histogram" class="btn btn-outline-info mt-4">Plot histogram</button>
 </form>
 
+
+
 {% if plot_series %}
-<div id="histogram_chart" data-plot-series="{{ plot_series }}" data-min-val="{{ min_val }}" data-max-val="{{ max_val }}" count="{{ count }}" number-of-bins="{{ number_of_bins }}"></div>
+<div id="histogram_chart"
+     data-plot-series="{{ plot_series }}"
+     data-min-val="{{ min_val }}"
+     data-max-val="{{ max_val }}"
+     count="{{ count }}"
+     number-of-bins="{{ number_of_bins }}">
+</div>
 {% endif %}
+
+
+
 {% endblock %}

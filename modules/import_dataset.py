@@ -24,6 +24,18 @@ python import_dataset.py <input_data_file> <input_entities_file>
 
 
 def import_entity_types(entity_file):
+    """ Divide the key into categories and numerical values
+
+     Parameters
+     ----------
+     entities : value from "entities file"
+
+     Returns
+     -------
+     numeric_enities: set of keys with a numeric values
+     categorical_entities: set of keys with a categorical values
+
+     """
     entities = pd.read_csv(entity_file)
     # Name is first, Type is second column
     numeric_entities = set(entities[(entities["datatype"] == "Double") | (entities["datatype"] == "Integer")]["entity"])
@@ -33,61 +45,48 @@ def import_entity_types(entity_file):
     return numeric_entities, categorical_entities
 
 
-def estimate_entity_types_from_dataset(input_file):
-    numeric_entities = set()
-    categorical_entities = set()
-
-    # Open file connection
-    print("Starting readin of the data types")
-    with open(input_file) as infile:
-        # loop over input file, getting the data type at the same time
-        for n, line in enumerate(infile):
-            # print(line)
-            # we assume that the file is always Patient_ID, Billing_ID, Date, Time, Key, Value
-            linelist = line.replace("\n", "").split(",")
-            # last column 6 might be having commas
-            Patient_ID, Billing_ID, rwh_Date, rwh_Time, rwh_Key, rwh_Value = linelist[0:5] + [
-                ",".join([str(x) for x in linelist[5:]])]
-
-            # Test if Value is numeric or string
-            try:
-                print("adding numeric entity")
-                # Use scored set for float and int
-                value = float(rwh_Value)
-                numeric_entities.add(rwh_Key)
-            except ValueError:
-                print("adding category entity")
-                # Use regular set for string
-                # Add to set of categorical entities (duplicates are only once in a set)
-                categorical_entities.add(rwh_Key)
-
-    return numeric_entities, categorical_entities
-
 
 def clear_database(rdb):
+    """Delete all the keys of all the existing databases,
+    not just the currently selected one."""
     rdb.flushall()
 
 
 def import_dataset(url, input_file, numeric_entities, categorical_entities):
+    """ Connection wit Redis database and input values from file to Redis database
+    divided into numerical and categorical values
+
+    Parameters
+    ----------
+    url : we adress to connect to the Redis database (in our case localhost)
+    input_file : dataset file with values and keys
+    numeric_enities: set of keys with a numeric values
+    categorical_entities: set of keys with a categorical values
+
+    Returns
+    -------
+
+    """
+
     num_imp, cat_imp, num_err, not_imp = [0, 0, 0, 0]
     numeric_value_errors = { }
     categorical_values = { }
+
     rdb = rwh.get_connection(url=url)
     clear_database(rdb)
+
     print("Starting putting data into redis")
     # run again to have the categories and numerics now ready and write the data
     with open(input_file) as infile:
         # loop over input file, getting the data type at the same time
         for n, line in enumerate(infile):
-            # if "demografie.gewicht" in line:
-            #   print(line)
-            if (n % 1000000 == 0):
-                print("Line: ", n)
             # we assume that the file is always Patient_ID, Billing_ID, Date, Time, Key, Value
             linelist = line.replace("\n", "").split(",")
             # last column 6 might be having commas
             Patient_ID, Billing_ID, rwh_Date, rwh_Time, rwh_Key, rwh_Value = linelist[0:5] + [
                 ",".join([str(x) for x in linelist[5:]])]
+
+
 
             # Test if Value is numeric or string
             if rwh_Key in categorical_entities:
@@ -103,8 +102,6 @@ def import_dataset(url, input_file, numeric_entities, categorical_entities):
                     value = float(rwh_Value)
                     rdb.zadd(rwh_Key, { Patient_ID: rwh_Value })
                     num_imp += 1
-                    # if "gewicht" in rwh_Key:
-                    #    print(line)
                 except ValueError:
                     numeric_value_errors.setdefault(rwh_Key, set())
                     numeric_value_errors[rwh_Key].add(rwh_Value)
@@ -113,14 +110,9 @@ def import_dataset(url, input_file, numeric_entities, categorical_entities):
                 not_imp += 1
                 pass
                 # we assume that we can add everything that was not cleaned (not in entity file) as string, but mark it "unclean"
-                # print(rwh_Value, "was not added, no entity type defined. Line: ", line)
-                ##rwh_Key = "uncleaned_" + rwh_Key
-                ##rdb.sadd('{}.{}'.format(rwh_Key, rwh_Value), Patient_ID)
-                # Add value to the dictionary of possible values (setdefault avoids duplicates)
-                ##categorical_values.setdefault(rwh_Key, [])
-                ##categorical_values[rwh_Key].append(rwh_Value)
 
-    # the same as in load_redis.py script
+
+    # Add the specified members to the set stored at key.
     for entity in numeric_entities:
         rdb.sadd("number_keys", entity)
 
@@ -131,25 +123,9 @@ def import_dataset(url, input_file, numeric_entities, categorical_entities):
         entity = "{}_values".format(category)
         for value in values:
             rdb.sadd(entity, value)
+
     print("The following numerics were not valid and therefore not added:\n", numeric_value_errors)
-    print(
-                "\nNumeric values imported: %i\nCategorical values imported: %i\nErrors in numeric values: %i\nOther errors: %i\n" % (
+    print("\nNumeric values imported: %i\nCategorical values imported: %i\nErrors in numeric values: %i\nOther errors: %i\n" % (
         num_imp, cat_imp, num_err, not_imp))
 
 
-@click.command()
-@click.option('--host', default='127.0.0.1')
-@click.option('--port', default='6379')
-@click.argument('input_file')
-@click.argument('entity_file')
-def main(host, port, input_file, entity_file):
-    if entity_file == "None":
-        numeric_entities, categorical_entities = estimate_entity_types_from_dataset(input_file)
-    else:
-        numeric_entities, categorical_entities = import_entity_types(entity_file)
-    url = f"redis://{host}:{port}/0"
-    import_dataset(url, input_file, numeric_entities, categorical_entities)
-
-
-if __name__ == '__main__':
-    main()

@@ -1,14 +1,19 @@
 from flask import Blueprint, render_template, request
-
 import data_warehouse.redis_rwh as rwh
 
 basic_stats_page = Blueprint('basic_stats', __name__,
                              template_folder='basic_stats')
 
 
+
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
-    # this import has to be here!!
+    """
+
+    Returns
+    -------
+
+    """
     from webserver import get_db
     rdb = get_db()
     all_numeric_entities = rwh.get_numeric_entities(rdb)
@@ -23,6 +28,13 @@ def get_statistics():
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
+    """
+
+    Returns
+    -------
+
+    """
+
     from webserver import get_db
     rdb = get_db()
     all_numeric_entities = rwh.get_numeric_entities(rdb)
@@ -31,8 +43,12 @@ def get_basic_stats():
 
     if 'basic_stats' in request.form:
         numeric_entities = request.form.getlist('numeric_entities')
-        numeric_df, error = rwh.get_joined_numeric_values(numeric_entities, rdb) if numeric_entities else (None,"Please select numeric entities")
-
+        error = None
+        if numeric_entities:
+            numeric_df, error = rwh.get_joined_numeric_values(numeric_entities, rdb)
+            error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. " if error else None
+        else:
+            error = "Please select numeric entities"
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
@@ -90,8 +106,12 @@ def get_basic_stats():
     if 'basic_stats_c' in request.form:
         categorical_entities = request.form.getlist('categorical_entities')
         # if not categorical_entities:
-        categorical_df, error = rwh.get_joined_categorical_values(categorical_entities, rdb) if categorical_entities else (None, "Please select entities")
-
+        error = None
+        if categorical_entities:
+            categorical_df, error = rwh.get_joined_categorical_values(categorical_entities, rdb)
+            error = "No data based on the selected entities ( " + ", ".join(categorical_entities) + " ) " if error else None
+        else:
+            error = "Please select entities"
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    categorical_tab=True,
@@ -105,8 +125,6 @@ def get_basic_stats():
             basic_stats_c[entity] = { }
             # if entity in categorical_df.columns:
             count = categorical_df[categorical_df.columns.intersection([entity])].count()[entity]
-            # else:
-            #     count = 0
             basic_stats_c[entity]['count'] = count
 
         return render_template('basic_stats/basic_stats.html',
@@ -115,3 +133,4 @@ def get_basic_stats():
                                all_numeric_entities=all_numeric_entities,
                                selected_c_entities=categorical_entities,
                                basic_stats_c=basic_stats_c)
+

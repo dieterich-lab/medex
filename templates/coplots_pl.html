@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+{% block body %}
+
+{# imports #}
+    {# our own js #}
+    <script src="{{ url_for('static', filename='js/coplots_pl.js') }}"></script>
+	<script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+{# pretty multiselect inputs #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='choices.min.css') }}">
+    <script src="{{ url_for('static', filename='choices.min.js') }}"></script>
+
+
+    {# range slider #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-slider.min.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap-slider.min.js') }}" ></script>
+{# end of imports #}
+
+
+{% if error %}
+  <div class="alert alert-danger mt-2" role="alert">
+    <div class="row">
+      <div class="col col-xs-10">{{ error }}</div>
+      <div class="col col-sm-2"><span class="close" aria-label="Close">  </span></div>
+    </div>
+  </div>
+{% endif %}
+
+
+<form action="" method="POST">
+ <div class="form-group" id="coplot_controls">
+		{% if error %}
+			<div class="alert alert-danger mt-2" role="alert">
+				<div class="row">
+					<div class="col col-xs-10">{{ error }}</div>
+					<div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
+				</div>
+			</div>
+		{% endif %}
+
+		<label for="x_axis">x axis:</label>
+		<select class="custom-select mb-2" name="x_axis" id="x_axis">
+				<option {% if not x_axis %} selected {% endif %}>Choose entity</option>
+		{% for entity in all_numeric_entities %}
+				<option value="{{ entity }}" {% if entity == x_axis %}selected{% endif %}>{{ entity }}</option>
+		{% endfor %}
+
+
+		</select>
+		<label for="y_axis">y axis:</label>
+		<select class="custom-select mb-2" name="y_axis" id="y_axis">
+				<option {% if not y_axis %} selected {% endif %}>Choose entity</option>
+		{% for entity in all_numeric_entities %}
+				<option value="{{ entity }}" {% if entity == y_axis %}selected{% endif %}>{{ entity }}</option>
+		{% endfor %}
+		</select>
+
+		<label for="category1">Category1:</label>
+		<select class="custom-select mb-2" name="category1" id="category1">
+				<option {% if not category1 %} selected {% endif %}>Choose entity</option>
+		{% for entity in categorical_entities %}
+				<option value="{{ entity }}" {% if entity == category1 %}selected{% endif %}>{{ entity }}</option>
+		{% endfor %}
+		</select>
+
+		<label for="category2">Category2:</label>
+		<select class="custom-select mb-4" name="category2" id="category2">
+				<option {% if not category2 %} selected {% endif %}>Choose entity</option>
+		{% for entity in categorical_entities %}
+				<option value="{{ entity }}" {% if entity == category2 %}selected{% endif %}>{{ entity }}</option>
+		{% endfor %}
+		</select>
+
+
+	 <label class="mt-3">Display as one plot/multiple plots?</label>
+		<div class="custom-control custom-radio">
+				<input type="radio" class="custom-control-input" id="single_plot" name="how_to_plot" value="single_plot"
+						{% if how_to_plot=="single_plot" %}checked{% endif %}>
+				<label class="custom-control-label" for="single_plot">One plot</label>
+		</div>
+		<div class="custom-control custom-radio">
+				<input type="radio" class="custom-control-input" id="multiple_plots" name="how_to_plot" value="multiple_plots"
+					{% if how_to_plot=="multiple_plots" or not how_to_plot %}checked{% endif %}>
+				<label class="custom-control-label" for="multiple_plots">Multiple plots</label>
+		</div>
+		<button type="submit" name="coplot" class="btn btn-outline-info">Plot</button>
+	</div>
+</form>
+
+{% if plot_series %}
+<div id="coplot" data-plot-series="{{ plot_series }}" data-plot-series2="{{ plot_series2 }}" data-layout="{{ layout }}" data-plot-x="{{ x_axis }}" data-plot-y="{{ y_axis }}" data-how-to-plot="{{ how_to_plot }}"></div>
+{% endif %}
+
+
+
+{% endblock %}

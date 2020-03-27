@@ -17,78 +17,29 @@ $(function() {
 //        maxItemCount: 1,
     });
 
-    // pretify the select input for categorical entities
-    new Choices('#categorical_entities', {
-        allowSearch: true,
-        removeItemButton: true,
-    });
 
-    // scatter plot
-    if ($('#cluster_chart_n').length != 0) {
-        var x_axis = $('#cluster_chart_n').attr('data-plot-x');
-        var y_axis = $('#cluster_chart_n').attr('data-plot-y');
-        var plot_series = $('#cluster_chart_n').attr('data-plot-series').replace(/'/g, '"'); //")
+    if ($('#cluster').length != 0) {
+        var x_axis = $('#cluster').attr('data-plot-x');
+        var y_axis = $('#cluster').attr('data-plot-y');
+        var plot_series = $('#cluster').attr('data-plot-series').replace(/'/g, '"'); //")
         // clean up
-        $('#cluster_chart_n').removeAttr('data-plot-series');
         plot_series = JSON.parse(plot_series);
-        Highcharts.chart('cluster_chart_n', {
-            chart: {
-                type: 'scatter',
-                zoomType: 'xy'
-            },
+        Plotly.newPlot("cluster",
+            plot_series,
+            {
+        title: 'Compare values of <b>' + x_axis + '</b> and <b>' + y_axis + '</b>',
+        xaxis: {
             title: {
-                text: 'Comparison between <b>' + x_axis + '</b> and <b>' + y_axis + '</b>'
-            },
-            xAxis: {
-                title: {
-                    enabled: true,
                     text: x_axis,
+                    }
                 },
-                startOnTick: true,
-                endOnTick: true,
-                showLastLabel: true
-            },
-            yAxis: {
-                title: {
-                    text: y_axis,
-                }
-            },
-            legend: {
-                layout: 'vertical',
-                align: 'left',
-                verticalAlign: 'top',
-                x: 100,
-                y: 70,
-                floating: true,
-                backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
-                borderWidth: 1
-            },
-            plotOptions: {
-                scatter: {
-                    marker: {
-                        radius: 5,
-                        states: {
-                            hover: {
-                                enabled: true,
-                                lineColor: 'rgb(100,100,100)'
-                            }
-                        }
-                    },
-                    states: {
-                        hover: {
-                            marker: {
-                                enabled: false
-                            }
-                        }
-                    },
-                    tooltip: {
-                        headerFormat: '<b>{series.name}</b> ({series.data.length} patients)<br>',
-                        pointFormat:  x_axis + ': {point.x}<br>' + y_axis +': {point.y}'
+        yaxis: {
+            title: {
+                text: y_axis,
                     }
                 }
-            },
-            series: plot_series,
-        });
+        },);
+
     }
 
     // slider for dynamically added elements

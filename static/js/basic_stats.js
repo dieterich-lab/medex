@@ -21,7 +21,7 @@ $(function () {
         //maxItemCount: 2,
     });
 
-    // pretify the select input for categorical entities
+    // prettify the select input for categorical entities
     new Choices('#categorical_entities', {
         allowSearch: true,
         removeItemButton: true,

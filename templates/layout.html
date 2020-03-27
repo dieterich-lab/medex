@@ -20,11 +20,6 @@
         </script>
     {# end of requirements for bootstrap #}
 
-    {# show login form (toggle dropdown) if error message -- not working?? #}
-    {% if login_error %}
-        <script src="{{ url_for('static', filename='js/login.js') }}"></script>
-    {% endif %}
-
     <div id="page" class="mx-4">
       <nav class="navbar navbar-light bg-light justify-content-center">
         <ul class="nav">
@@ -32,10 +27,10 @@
             <a class="nav-link" href="/basic_stats">Basic Stats</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/plots">Plots</a>
+            <a class="nav-link" href="/scatter_plot">Scatter plot</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/clustering">Clustering</a>
+            <a class="nav-link" href="/barchart">Barchart</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/histogram">Histogram</a>
@@ -44,54 +39,18 @@
             <a class="nav-link" href="/boxplot">Boxplot</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/coplots">Coplots</a>
+            <a class="nav-link" href="/heatmap">Heatmap</a>
           </li>
-{#          <li class="nav-item">#}
-{#            <a class="nav-link" href="/logout">Logout</a>#}
-{#          </li>#}
-            {#
-            {% if current_user.is_authenticated %}
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button"
-                   aria-haspopup="true" aria-expanded="false" id="user_dropdown">
-                    {{ current_user.name }}
-                </a>
-                <div class="dropdown-menu" aria-labelledby="user_dropdown">
-                    <a class="dropdown-item" href="/user_profile">User Profile</a>
-                    <a class="dropdown-item" href="/user_settings">User Settings</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="/logout">Logout</a>
-                </div>
-            </li>
-            {% else %}
-            <li class="nav-item dropdown">
-                <a id="login_dropdown" class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Login</a>
-                <div class="dropdown-menu login-form">
-                    <form class="px-4 py-3" method="POST" enctype="multipart/form-data" action="{{ url_for('login_page.login') }}">
-                        <div class="form-group">
-                            <label for="email">Email address</label>
-                          <input type="email" class="form-control" id="email" name="email" placeholder="email@example.com">
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                          <input type="password" class="form-control" id="password" name="password" placeholder="Password">
-                        </div>
-                        <div class="form-check">
-                          <input type="checkbox" class="form-check-input" id="remember_me">
-                          <label class="form-check-label" for="remember_me">
-                            Remember me
-                          </label>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3">Log in</button>
-                    </form>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="#">Not registered?</a>
-                    <a class="dropdown-item" href="#">Forgot password?</a>
-                </div>
-            </li>
-            {% endif %}
-            #}
-          </ul>
+          <li class="nav-item">
+            <a class="nav-link" href="/clustering_pl">Clustering</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/coplots_pl">Coplots</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout">Logout</a>
+          </li>
+        </ul>
         </nav>
         {% block body %}{% endblock %}
     </div>

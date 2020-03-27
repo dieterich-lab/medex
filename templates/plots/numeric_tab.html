@@ -1,146 +1,124 @@
 {# Numeric tab. Using bootstrap classes. The tab container (div.#statistics) and navigation links (ul#statistics_tab)
-    are defined in statistics.html. #}
+            are defined in statistics.html. #}
 <div class="tab-pane fade {% if numeric_tab %}show active{% endif %}"
-id="numeric_tab" role="tabpanel" aria-labelledby="n_settings_header">
-<div id="numeric_accordion">
-<div class="card">
-    <div class="card-header" id="n_settings_header">
-        <h5 class="mb-0">
-            <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_settings"
-                {% if not plot_type %} aria-expanded="true" {% endif %} aria-controls="numeric_settings">
-                Settings
-            </button>
-        </h5>
-    </div>
-    <div id="numeric_settings" class="collapse {% if not plot_type or error %} show {% endif %}"
-         aria-labelledby="n_settings_header" data-parent="#numeric_accordion">
-        <div class="card-body">
-            {% if error %}
-              <div class="alert alert-danger mt-2" role="alert">
-                <div class="row">
-                  <div class="col col-xs-10">{{ error }}</div>
-                  <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
-                </div>
-              </div>
-            {% endif %}
-            <form action="" method="POST">
-                {# plot type #}
-                <div class="form-group">
-                    <label for="plot_type">Plot type:</label>
-                    <select name="plot_type" id="plot_type" class="custom-select">
-                        <option value="select_plot" {% if not plot_type %}selected{% endif %}>
-                            Select plot type..</option>
-                        <option value="scatter_plot_n"{% if plot_type=='scatter_plot_n' %}selected{% endif %}>
-                            Scatter Plot</option>
-                        <option value="heat_map_n"{% if plot_type=='heat_map_n' %}selected{% endif%}>
-                            Heat Map</option>
-                    </select>
-                </div>
-                {# scatter plot controls #}
-                <div class="form-group {% if plot_type != 'scatter_plot_n' %} d-none {% endif %}"
-                     id="scatter_plot_controls">
-                    <label for="x_axis">x axis:</label>
-                    <select class="custom-select" name="x_axis" id="x_axis">
-                        <option {% if not x_axis %} selected {% endif %}>Choose entity</option>
-                    {% for entity in all_numeric_entities %}
-                        <option value="{{ entity }}" {% if entity == x_axis %}selected{% endif %}>{{ entity }}</option>
-                    {% endfor %}
-                    </select>
-                    <label for="y_axis">y axis:</label>
-                    <select class="custom-select" name="y_axis" id="y_axis" placeholder="Search entity">
-                        <option {% if not y_axis %} selected {% endif %}>Choose entity</option>
-                    {% for entity in all_numeric_entities %}
-                        <option value="{{ entity }}" {% if entity == y_axis %}selected{% endif %}>{{ entity }}</option>
-                    {% endfor %}
-                    </select>
-                    <div class="form-check mt-4">
-                        <input class="form-check-input" type="checkbox" value="true" id="add_group_by" name="add_group_by"
-                            {% if add_group_by %} checked {% endif %}>
-                        <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
-                    </div>
-                    <br>
-                    <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group">
-                        <br>
-                        <label for="category">Group by</label>
-                        <select class="custom-select" name="category" id="category">
-                            <option {% if not category %} selected {% endif %}>Choose entity</option>
-                        {% for entity in all_categorical_entities %}
-                            <option value="{{ entity }}" {% if entity == category %}selected{% endif %}>{{ entity }}</option>
-                        {% endfor %}
-                        </select>
-                        <div class="form-check mt-4">
-                            <input class="form-check-input" type="checkbox" value="true" id="add_separate_regression" name="add_separate_regression"
-                                {% if add_separate_regression %} checked {% endif %}>
-                            <label class="form-check-label" for="add_separate_regression">Add separate regression line for each group</label>
+     id="numeric_tab" role="tabpanel" aria-labelledby="n_settings_header">
+    <div id="numeric_accordion">
+        <div class="card">
+            <div class="card-header" id="n_settings_header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_settings"
+                        {% if not plot_type %} aria-expanded="true" {% endif %} aria-controls="numeric_settings">
+                        Settings
+                    </button>
+                </h5>
+            </div>
+            <div id="numeric_settings" class="collapse {% if not plot_type or error %} show {% endif %}"
+                 aria-labelledby="n_settings_header" data-parent="#numeric_accordion">
+                <div class="card-body">
+                    {% if error %}
+                      <div class="alert alert-danger mt-2" role="alert">
+                        <div class="row">
+                          <div class="col col-xs-10">{{ error }}</div>
+                          <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
                         </div>
-                    </div>
-                </div>
-                {# heat map controls #}
-                <div class="form-group {% if plot_type != 'heat_map_n' %}d-none{% endif %}"
-                     id="heat_map_controls">
-                    <select multiple name="numeric_entities" id="numeric_entities" placeholder="Search entity">
-                        {% for entity in all_numeric_entities %}
-                        <option value="{{ entity.replace('.', '__') }}" name="{{ entity }}"
-                                {% if entity in selected_n_entities %}selected{% endif %}>{{ entity }}</option>
-                        {% endfor %}
-                    </select>
-                    <ul class="list-group mb-3" id="selected_entities">
-                    {% if selected_n_entities %}
-                        {% for entity in selected_n_entities %}
-                        {% set min_value, max_value = selected_min_max[entity] %}
-                        <li class="list-group-item">
-                            <div class="row">
-                                <div class="col col-sm-4">
-                                    <label>{{ entity }}</label>
-                                </div>
-                                <div class="col col-sm-6" data-toggle="tooltip" data-placement="top"
-                                    title="[{{ min_max_values[entity]['min'] }},{{ min_max_values[entity]['max'] }}]">
-                                    <label class="mr-3 min">{{ min_value }} >=</label>
-                                    <input type="text" class="slider" value="" data-slider-min="{{ min_max_values[entity]['min'] }}"
-                                           data-slider-max="{{ min_max_values[entity]['max'] }}"
-                                           data-slider-step="{{ min_max_values[entity]['step'] }}"
-                                           data-slider-value="[{{ min_value }},{{ max_value }}]"
-                                           name="min_max_{{ entity.replace('.', '__') }}"/>
-                                    <label class="ml-3 max"><= {{ max_value }}</label>
-                                </div>
-                                <div class="col col-sm-2">
-                                    <span class="close" aria-label="Close"> &times;</span>
-                                </div>
-                            </div>
-                        </li>
-                        {% endfor %}
+                      </div>
                     {% endif %}
-                    </ul>
+                    <form action="" method="POST">
+                        {# plot type #}
+                        <div class="form-group">
+                            <label for="plot_type">Plot type:</label>
+                            <select name="plot_type" id="plot_type" class="custom-select">
+                                <option value="select_plot" {% if not plot_type %}selected{% endif %}>
+                                    Select plot type..</option>
+                                <option value="scatter_plot_n"{% if plot_type=='scatter_plot_n' %}selected{% endif %}>
+                                    Scatter Plot</option>
+                                <option value="heat_map_n"{% if plot_type=='heat_map_n' %}selected{% endif%}>
+                                    Heat Map</option>
+                            </select>
+                        </div>
+                        {# scatter plot controls #}
+                        <div class="form-group {% if plot_type != 'scatter_plot_n' %} d-none {% endif %}"
+                             id="scatter_plot_controls">
+                            <label for="x_axis">x axis:</label>
+                            <select class="custom-select" name="x_axis" id="x_axis">
+                                <option {% if not x_axis %} selected {% endif %}>Choose entity</option>
+                            {% for entity in all_numeric_entities %}
+                                <option value="{{ entity }}" {% if entity == x_axis %}selected{% endif %}>{{ entity }}</option>
+                            {% endfor %}
+                            </select>
+                            <label for="y_axis">y axis:</label>
+                            <select class="custom-select" name="y_axis" id="y_axis" placeholder="Search entity">
+                                <option {% if not y_axis %} selected {% endif %}>Choose entity</option>
+                            {% for entity in all_numeric_entities %}
+                                <option value="{{ entity }}" {% if entity == y_axis %}selected{% endif %}>{{ entity }}</option>
+                            {% endfor %}
+                            </select>
+                        </div>
+                        {# heat map controls #}
+                        <div class="form-group {% if plot_type != 'heat_map_n' %}d-none{% endif %}"
+                             id="heat_map_controls">
+                            <select multiple name="numeric_entities" id="numeric_entities" placeholder="Search entity">
+                                {% for entity in all_numeric_entities %}
+                                <option value="{{ entity.replace('.', '__') }}" name="{{ entity }}"
+                                        {% if entity in selected_n_entities %}selected{% endif %}>{{ entity }}</option>
+                                {% endfor %}
+                            </select>
+                            <ul class="list-group mb-3" id="selected_entities">
+                            {% if selected_n_entities %}
+                                {% for entity in selected_n_entities %}
+                                {% set min_value, max_value = selected_min_max[entity] %}
+                                <li class="list-group-item">
+                                    <div class="row">
+                                        <div class="col col-sm-4">
+                                            <label>{{ entity }}</label>
+                                        </div>
+                                        <div class="col col-sm-6" data-toggle="tooltip" data-placement="top"
+                                            title="[{{ min_max_values[entity]['min'] }},{{ min_max_values[entity]['max'] }}]">
+                                            <label class="mr-3 min">{{ min_value }} >=</label>
+                                            <input type="text" class="slider" value="" data-slider-min="{{ min_max_values[entity]['min'] }}"
+                                                   data-slider-max="{{ min_max_values[entity]['max'] }}"
+                                                   data-slider-step="{{ min_max_values[entity]['step'] }}"
+                                                   data-slider-value="[{{ min_value }},{{ max_value }}]"
+                                                   name="min_max_{{ entity.replace('.', '__') }}"/>
+                                            <label class="ml-3 max"><= {{ max_value }}</label>
+                                        </div>
+                                        <div class="col col-sm-2">
+                                            <span class="close" aria-label="Close"> &times;</span>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            {% endif %}
+                            </ul>
+                        </div>
+                        <div class="row mt-4 ml-0">
+                            <button type="submit" name="plot_numeric" class="btn btn-outline-info">Plot data</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="row mt-4 ml-0">
-                    <button type="submit" name="plot_numeric" class="btn btn-outline-info">Plot data</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" id="results_header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                        {% if plot_type %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                        Results
+                    </button>
+                </h5>
+            </div>
+            <div id="numeric_results" class="collapse {% if plot_type %} show {% endif %}"
+                 aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+                <div class="card-body">
+                    {% if plot_type == 'heat_map_n' %}
+                        <div id="heat_map_n" data-categories="{{ selected_n_entities }}"
+                             data-plot-series="{{ plot_data }}"></div>
+                    {% elif plot_type == 'scatter_plot_n' %}
+                        <div id="scatter_plot_n" data-plot-x="{{ x_axis }}" data-plot-y="{{ y_axis }}"
+                             data-plot-series="{{ plot_data }}"></div>
+                    {% endif %}
                 </div>
-            </form>
+            </div>
         </div>
     </div>
-</div>
-<div class="card">
-    <div class="card-header" id="results_header">
-        <h5 class="mb-0">
-            <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                {% if plot_type %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
-                Results
-            </button>
-        </h5>
-    </div>
-    <div id="numeric_results" class="collapse {% if plot_type %} show {% endif %}"
-         aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-        <div class="card-body">
-            {% if plot_type == 'heat_map_n' %}
-                <div id="heat_map_n" data-categories="{{ selected_n_entities }}"
-                     data-plot-series="{{ plot_data }}"></div>
-            {% elif plot_type == 'scatter_plot_n' %}
-                <div id="scatter_plot_n" data-plot-x="{{ x_axis }}" data-plot-y="{{ y_axis }}" 
-                data-plot-category="{{ cat_values }}"
-                     data-plot-series="{{ plot_series }}"></div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-</div>
 </div>

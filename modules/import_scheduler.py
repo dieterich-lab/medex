@@ -6,12 +6,20 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
+
 class ImportSettings():
+    """
+    Class which create file dev_import necessary to import data.
+    Inside the file we have two unique cods for files dataset and entities.
+    The codes change every time we change anything in the files dataset and entites.
+    If the codes has been changed the program loads new data.
+    More about th code : https://www.computerhope.com/unix/sha512sum.htm
+    """
     def __init__(self):
         if os.environ['FLASK_ENV'] == 'production':
             self.path = "./import/import.ini"
         else:
-            self.path = './dev_import.ini'
+            self.path = './import/dev_import.ini'
         self.config = ConfigParser()
         self.config.read(self.path)
         if 'hashes' not in self.config.sections():
@@ -36,6 +44,7 @@ class ImportSettings():
         return os.popen(f"sha512sum {path}").read() \
             .split(' ')[0]
 
+    # Check that data in enities and dataset was changed
     def is_entity_changed(self, path):
         hash = self.get_hash(path)
         return self.config['hashes']['entity'] != hash
@@ -51,16 +60,19 @@ class ImportSettings():
 
 
 def start_import():
+    """ Import data from entities and dataset files"""
+
     settings = ImportSettings()
     print('starting import', datetime.now().strftime('%H:%M:%S'))
     dataset = './import/dataset.csv'
     entities = './import/entities.csv'
+
     if not os.path.isfile(dataset) or not os.path.isfile(entities):
         return print("Could not import to database either or both entities and dataset is missing", file=sys.stderr)
 
     if not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
-        return
-    print(settings.config['hashes']['entity'])
+        return print("Data set not changed", file=sys.stderr)
+
     numeric_entities, categorical_entities = id.import_entity_types(entities)
 
     id.import_dataset(os.environ['REDIS_URL'], dataset, numeric_entities, categorical_entities)
@@ -69,6 +81,10 @@ def start_import():
 
 
 class Scheduler():
+    """
+    BackgroundScheduler runs in a thread inside existing application.
+    Importing data check the data. Import data every day at 05.05 if the program see any changes.
+    """
     def __init__(self, day_of_week, hour, minute):
         self.bgs = BackgroundScheduler()
         start_import()
