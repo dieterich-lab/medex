@@ -17,7 +17,7 @@
 
 {# end of imports #}
 
-
+<!--The same in every html file-->
 {% if error %}
   <div class="alert alert-danger mt-2" role="alert">
     <div class="row">
@@ -29,7 +29,6 @@
 
 
 <form action="" method="POST">
-   {# plot type #}
     <div class="form-group">
     <label for="categorical_entities">Categorical entities:</label>
     <select multiple  name="categorical_entities" id="categorical_entities" placeholder="Search entity">
@@ -52,6 +51,7 @@
         <script>
             var graphs = {{plot | safe}};
             Plotly.plot('bargraph',graphs,{});
+            var graphs2 = {{ooo | safe}};
         </script>
     </div>
     {% endif %}

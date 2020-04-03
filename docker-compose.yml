@@ -4,9 +4,27 @@ services:
     build: .
     ports:
       - "80:80"
+    depends_on: # other containers it needs in order to run
+      - database
     environment:
-     - REDIS_URL=redis://redis:6379/0
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DATABASE=example
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=database
     volumes:
       - ./import:/app/import
-  redis:
-    image: redis:5-alpine
+    restart: always
+  database:
+    image: postgres #if using an existing image
+    ports:
+      - "5428:5432"
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DATABASE=example
+    restart: always
+
+
+
+

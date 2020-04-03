@@ -10,8 +10,8 @@ clustering_plot_page = Blueprint('clustering_pl', __name__,
 @clustering_plot_page.route('/clustering_pl', methods=['GET'])
 def cluster():
     # this import has to be here!!
-    from webserver import get_db2
-    rdb = get_db2()
+    from webserver import connect_db
+    rdb = connect_db()
     all_numeric_entities = ps.get_numeric_entities(rdb)
 
 
@@ -24,8 +24,8 @@ def cluster():
 @clustering_plot_page.route('/clustering_pl', methods=['POST'])
 def post_clustering():
     # this import has to be here!!
-    from webserver import get_db2
-    rdb = get_db2()
+    from webserver import connect_db
+    rdb = connect_db()
     all_numeric_entities = ps.get_numeric_entities(rdb)
 
 

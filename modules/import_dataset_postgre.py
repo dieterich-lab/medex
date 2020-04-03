@@ -1,17 +1,18 @@
 from sqlalchemy import create_engine
-import psycopg2.extras
-from modules import config as con
 import pandas as pd
+import os
 
+
+#user = os.environ['POSTGRES_USER']
+#password = os.environ['POSTGRES_PASSWORD']
+#database = os.environ['POSTGRES_DATABASE']
 
 # get your data into pandas
-data = pd.read_csv('../import/cardio_testdata_long_format.txt', sep=',', names=["Patient_ID", "Billing_ID", "Date", "Time", "Key", "Value"])
+data = pd.read_csv('./import/dataset.csv', sep=',', names=["Patient_ID", "Billing_ID", "Date", "Time", "Key", "Value"])
 df = pd.DataFrame(data)
 df_value = df.pivot(index='Patient_ID', columns='Key', values='Value')
 df_value.reset_index(inplace=True)
 
-#print(df_value['event_all_cause_death'])
-#print(df_value.dtypes)
 
 def isDigit(x):
     try:
@@ -42,37 +43,8 @@ for i in df_value.columns.tolist():
 
 
 
-engine = create_engine('postgresql+psycopg2://postgres:12345@localhost:5432/test_patient')
-df_value.to_sql('patients_test2', con=engine)
+#    engine = create_engine('postgresql+psycopg2://postgres:12345@localhost:5432/test_patient') # tu bede musiala zmienic jak zrobie container
+#    df_value.to_sql('patients_test2', con=engine, if_exists='replace')
 
 
-
-"""
-cols = ",".join([str(i) for i in df_value.columns.tolist()])
-cols = 'Patient_id,' + cols
-
-for i,row in df_value.iterrows():
-    
-    sql = "INSERT INTO patients_test2 ("+cols+") VALUES ({})".format(",".join(["%s" for _ in row]))
-
-    conn = None
-    try:
-        # read database configuration
-        params = con.config()
-        # connect to the PostgreSQL database
-        conn = psycopg2.connect(**params)
-        # create a new cursor
-        cur = conn.cursor()
-        # execute the INSERT statement
-        cur.execute(sql,tuple(row))
-        # commit the changes to the database
-        conn.commit()
-        # close communication with the database
-        cur.close()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    finally:
-        if conn is not None:
-            conn.close()
-"""
 

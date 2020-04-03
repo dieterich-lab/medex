@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request
 import json
 import plotly
 import plotly.graph_objs as go
+import plotly.express as px
 import modules.load_data_postgre as ps
 
 boxplot_page = Blueprint('boxplot', __name__,
@@ -12,8 +13,8 @@ boxplot_page = Blueprint('boxplot', __name__,
 def get_boxplots():
 
     # connection and load data from database
-    from webserver import get_db2
-    rdb = get_db2()
+    from webserver import connect_db
+    rdb = connect_db()
     all_numeric_entities = ps.get_numeric_entities(rdb)
     all_categorical_entities = ps.get_categorical_entities(rdb)
 
@@ -25,13 +26,13 @@ def get_boxplots():
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
     # connection with database and load name of entities
-    from webserver import get_db2
-    rdb = get_db2()
+    from webserver import connect_db
+    rdb = connect_db()
     all_numeric_entities = ps.get_numeric_entities(rdb)
     all_categorical_entities = ps.get_categorical_entities(rdb)
 
     # get selected entities
-    entity = request.form.get('entity')
+    entity = request.form.get('numeric_entities')
     group_by = request.form.get('group_by')
 
     # handling errors and load data from database
@@ -56,27 +57,28 @@ def post_boxplots():
     min_val = numeric_df[entity].min()
     max_val = numeric_df[entity].max()
     data =[]
+    fig =[]
     groups = set(numeric_df[group_by].values.tolist())
     plot_series = []
     for group in sorted(groups):
         df = numeric_df.loc[numeric_df[group_by] == group]
         values = df[entity].values.tolist()
         if (values):
-            data.append(go.Box(y=values, name =group))
+#           data.append(go.Box(y=values, name =group))
             plot_series.append({
                 'y': values,
                 'type': "box",
-                # 'opacity': 0.5,data
                 'name': group,
                 })
-    graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+#    graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+
     return render_template('boxplot.html',
                            categorical_entities=all_categorical_entities,
                            numeric_entities=all_numeric_entities,
                            selected_entity=entity,
                            group_by=group_by,
                            plot_series=plot_series,
-                           plot = graphJSON,
+#                           plot = graphJSON,
                            min_val=min_val,
                            max_val=max_val,
                            )

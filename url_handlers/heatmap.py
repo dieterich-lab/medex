@@ -11,8 +11,8 @@ heatmap_plot_page = Blueprint('heatmap', __name__,
 def get_plots():
     
     # connection and load data from database
-    from webserver import get_db2
-    rdb = get_db2()
+    from webserver import connect_db
+    rdb = connect_db()
     all_numeric_entities = ps.get_numeric_entities(rdb)
 
     return render_template('heatmap.html',
@@ -24,8 +24,8 @@ def get_plots():
 def post_plots():
     
     # connection with database and load name of entities
-    from webserver import get_db2
-    rdb = get_db2()
+    from webserver import connect_db
+    rdb = connect_db()
     all_numeric_entities = ps.get_numeric_entities(rdb)
 
     # get selected entities

@@ -1,0 +1,21 @@
+{% macro show_error(error) %}
+  <div class="alert alert-danger mt-2" role="alert">
+    <div class="row">
+      <div class="col col-xs-10">{{ error }}</div>
+      <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{%- macro entity_form(id,name,value,select,d) %}
+    <div class="form-group">
+        <label for="{{ id }}">{{ d }}</label>
+        <select class="custom-select" name="{{ id }}" id="{{ id }}">
+            <option {% if not select %} selected {% endif %}>Choose entity</option>
+            {% for entity in name %}
+            <option value="{{ entity }}" {% if entity == select %}selected{% endif %}>{{ entity }}</option>
+            {% endfor %}
+        </select>
+    </div>
+{%- endmacro %}
+

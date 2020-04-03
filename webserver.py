@@ -16,6 +16,10 @@ from url_handlers.coplots_pl import coplots_plot_page
 from url_handlers.logout import logout_page
 
 import os
+
+
+
+
 from modules.import_scheduler import Scheduler
 # create the application object
 app = Flask(__name__)
@@ -33,39 +37,35 @@ app.register_blueprint(clustering_plot_page)
 app.register_blueprint(coplots_plot_page)
 
 
+#user = os.environ['POSTGRES_USER']
+#password = os.environ['POSTGRES_PASSWORD']
+#host = os.environ['POSTGRES_HOST']
+#database = os.environ['POSTGRES_DATABASE']
+#port = os.environ['POSTGRES_PORT']
+#DATABASE_URL=f'pos'
 # Connection with database
 def connect_db():
     """ connects to our redis database """
     # Set this connection URL in an environment variable, and then load it into your application configuration using
     # os.environ, like this
-    app.config["DATABASE_URL"] = os.environ["DATABASE_URL"]
-    # To add a Redis client to your application
-    redis_store = FlaskRedis(app)
-    return redis_store
-
-
-def get_db2():
-    """ opens a new database connection if there is none yet for the
-        current application context
-    """
     app = os.environ["DATABASE_URL"]
+#    params=config()
+
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = psycopg2.connect(app)
+        db = psycopg2.connect(app)
+#        db = psycopg2.connect("postgresql://{user}:{password}@{host}:{port}")
     return db
 
-def get_db():
-    if not hasattr(g, 'redis_db'):
-        g.redis_db = connect_db()
-    return g.redis_db
 
 
+""""
 @app.teardown_appcontext
 def close_db(error):
-    """Closes the database again at the end of the request."""
+   Closes the database again at the end of the request.
     if hasattr(g, 'redis_db'):
         g.redis_db.close()
-
+"""
 
 
 """ Direct to Basic Stats website during opening the program."""
@@ -77,18 +77,7 @@ def login():
 
 # Import data to redis
 def check_for_env(key: str, default=None, cast=None):
-    """
 
-    Parameters
-    ----------
-    key
-    default
-    cast
-
-    Returns
-    -------
-
-    """
     if key in os.environ:
         if cast:
             return cast(os.environ.get(key))

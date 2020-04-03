@@ -5,7 +5,7 @@ import pandas as pd
 import json
 import plotly
 import plotly.graph_objs as go
-
+import plotly.express as px
 
 
 barchart_page = Blueprint('barchart', __name__,
@@ -15,8 +15,8 @@ barchart_page = Blueprint('barchart', __name__,
 @barchart_page.route('/barchart', methods=['GET'])
 def get_statistics():
     # connection with database and load name of entities
-    from webserver import get_db2
-    rdb = get_db2()
+    from webserver import connect_db
+    rdb = connect_db()
     all_categorical_entities = ps.get_categorical_entities(rdb)
 
     return render_template('barchart.html',
@@ -27,19 +27,19 @@ def get_statistics():
 @barchart_page.route('/barchart', methods=['POST'])
 def post_statistics():
     # connection with database and load name of entities
-    from webserver import get_db2
-    rdb = get_db2()
+    from webserver import connect_db
+    rdb = connect_db()
     all_categorical_entities = ps.get_categorical_entities(rdb)
 
     # list selected entities
-    selected_entities = request.form.getlist('categorical_entities')
+    selected_c_entities = request.form.getlist('categorical_entities')
 
     # handling errors and load data from database
     error = None
-    if not selected_entities:
+    if not selected_c_entities:
         error = "Please select entities"
-    elif selected_entities:
-        categorical_df = ps.get_values_basic_stats(selected_entities, rdb)
+    elif selected_c_entities:
+        categorical_df = ps.get_values_basic_stats(selected_c_entities, rdb)
 
 
 
@@ -47,7 +47,7 @@ def post_statistics():
         return render_template('barchart.html',
                                categorical_tab=True,
                                all_categorical_entities=all_categorical_entities,
-                               selected_c_entities=selected_entities,
+                               selected_c_entities=selected_c_entities,
                                error=error
                                )
 
@@ -55,7 +55,7 @@ def post_statistics():
     key =[]
     plot_series = []
     data = []
-    for entity in selected_entities:
+    for entity in selected_c_entities:
         counter = collections.Counter(categorical_df[entity])
         values_c = list(counter.values())
         key_c = list(counter.keys())
@@ -79,6 +79,9 @@ def post_statistics():
         barmode='stack',
         template = 'plotly_white'
     )
+    fig = px.scatter(x=[0, 1, 2, 3, 4], y=[0, 1, 4, 9, 16])
+
+    div = fig.to_html(full_html=False)
 
     data = go.Figure(data=data, layout=layout)
     graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
@@ -87,7 +90,8 @@ def post_statistics():
                            categorical_tab=True,
                            all_categorical_entities=all_categorical_entities,
                            plot = graphJSON,
+                           ooo = div,
                            entity_values=entity_values,
-                           selected_c_entities=selected_entities,
+                           selected_c_entities=selected_c_entities,
                            plot_series=plot_series
                            )
