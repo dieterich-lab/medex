@@ -32,12 +32,14 @@ def post_clustering():
 
     # transforming back underscores to dots
     numeric_entities= request.form.getlist('numeric_entities')
+
     error = None
-    if not numeric_entities:
+    if len(numeric_entities) <2:
         error = "Please select entities"
-    df = ps.get_values(numeric_entities, rdb) if not error else (None, error)
-    if len(df.index) == 0:
-        error = "This two entities don't have common values"
+    elif numeric_entities:
+        df = ps.get_values(numeric_entities, rdb) if not error else (None, error)
+        if len(df.index) == 0:
+            error = "This two entities don't have common values"
 
     if error:
         return render_template('clustering_pl.html',
