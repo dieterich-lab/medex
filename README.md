@@ -27,7 +27,7 @@ Not recommended for pure deployment.
 #### Usage ####
 * `pipenv install` installs the latest dependencies
 * `pipenv shell` enters the virtual environment
-* `docker compose up --build -d database or docker compose up -d` Database exist in docker container
+* `docker-compose up --build -d database or docker-compose up -d` Database exist in docker container
 * `./scripts/start.sh`
 * Develop
 
