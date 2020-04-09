@@ -27,10 +27,12 @@ class ImportSettings():
 
     def create(self):
         self.config.add_section('hashes')
+        self.config.set('hashes', 'entity', "")
         self.config.set('hashes', 'dataset', "")
         self.config.set('hashes', 'date', "")
 
-    def update(self, dataset_path):
+    def update(self, entities_path, dataset_path):
+        self.config['hashes']['entity'] = self.get_hash(entities_path)
         self.config['hashes']['dataset'] = self.get_hash(dataset_path)
         self.config['hashes']['date'] = str(datetime.now())
 
@@ -42,7 +44,10 @@ class ImportSettings():
         return os.popen(f"sha512sum {path}").read() \
             .split(' ')[0]
 
-    # Check that data in dataset was changed
+    def is_entity_changed(self, path):
+        hash = self.get_hash(path)
+        return self.config['hashes']['entity'] != hash
+
     def is_dataset_changed(self, path):
         hash = self.get_hash(path)
         return self.config['hashes']['dataset'] != hash
@@ -52,23 +57,23 @@ class ImportSettings():
             return False
         return True
 
-
 def start_import():
     """ Import data from entities and dataset files"""
 
     settings = ImportSettings()
     print('starting import', datetime.now().strftime('%H:%M:%S'))
     dataset = './import/dataset.csv'
+    entities = './import/entities.csv'
 
 
-    if not os.path.isfile(dataset):
+    if not os.path.isfile(dataset) or not os.path.isfile(entities):
         return print("Could not import to database either or both entities and dataset is missing", file=sys.stderr)
 
-    if not settings.is_dataset_changed(dataset):
-        return print("Data set not changed", file=sys.stderr)
+    if not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
+        return
 
     id.load_data_to_table(dataset)
-    settings.update(dataset_path=dataset)
+    settings.update(dataset_path=dataset, entities_path=entities)
     settings.save()
 
 

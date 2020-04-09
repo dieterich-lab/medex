@@ -17,41 +17,28 @@
 
 {# end of imports #}
 
-<!--The same in every html file-->
+{% import 'macro_template.html' as m %}
+
 {% if error %}
-  <div class="alert alert-danger mt-2" role="alert">
-    <div class="row">
-      <div class="col col-xs-10">{{ error }}</div>
-      <div class="col col-sm-2"><span class="close" aria-label="Close">  </span></div>
-    </div>
-  </div>
+{{ m.show_error(error) }}
 {% endif %}
 
 
 <form action="" method="POST">
-    <div class="form-group">
-    <label for="categorical_entities">Categorical entities:</label>
-    <select multiple  name="categorical_entities" id="categorical_entities" placeholder="Search entity">
-    {% for entity in all_categorical_entities %}
-         <option value="{{ entity }}" {% if entity in selected_c_entities %}selected{% endif %}>{{ entity }}</option>
-     {% endfor %}
-     </select>
-     </div>
-    <div class="row ml-1">
-        <button type="submit" name="barchart" class="btn btn-outline-info">Plot</button>
-    </div>
+    {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,d="Categorical entities:") }}
+    <button type="submit" name="barchart" class="btn btn-outline-info">Plot</button>
 </form>
 
 
 
 
+<!--var graphs2 = {{ooo | safe}}; -->
 <div class="card-body">
     {% if plot_series %}
     <div class="chart" id="bargraph">
         <script>
             var graphs = {{plot | safe}};
             Plotly.plot('bargraph',graphs,{});
-            var graphs2 = {{ooo | safe}};
         </script>
     </div>
     {% endif %}

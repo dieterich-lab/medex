@@ -9,7 +9,7 @@ services:
     environment:
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DATABASE=example
+      - POSTGRES_DB=example
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=database
     volumes:
@@ -22,9 +22,12 @@ services:
     environment:
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DATABASE=example
+      - POSTGRES_DB=example
+    volumes:
+      - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
     restart: always
-
+volumes:
+  database-data: # named volumes can be managed easier using docker-compose
 
 
 

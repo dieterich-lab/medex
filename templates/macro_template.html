@@ -19,3 +19,13 @@
     </div>
 {%- endmacro %}
 
+{%- macro entity_form2(id2,name,value,select,d) %}
+    <div class="form-group">
+        <label for="{{ id2 }}">{{ d }}</label>
+        <select multiple name="{{ id2 }}" id="{{ id2 }}" placeholder="Search entity">
+        {% for entity in name %}
+            <option value="{{ entity }}" {% if entity == select %}selected{% endif %}>{{ entity }}</option>
+         {% endfor %}
+        </select>
+    </div>
+{%- endmacro %}

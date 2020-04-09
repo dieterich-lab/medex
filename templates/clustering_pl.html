@@ -17,13 +17,10 @@
 {# end of imports #}
 
 
+{% import 'macro_template.html' as m %}
+
 {% if error %}
-  <div class="alert alert-danger mt-2" role="alert">
-    <div class="row">
-      <div class="col col-xs-10">{{ error }}</div>
-      <div class="col col-sm-2"><span class="close" aria-label="Close">  </span></div>
-    </div>
-  </div>
+{{ m.show_error(error) }}
 {% endif %}
 
 
@@ -31,15 +28,8 @@
 
 
 <form method="POST">
-    <label for="numeric_entities">Numeric entities:</label>
-    <select multiple name="numeric_entities" id="numeric_entities" placeholder="Search entity">
-        {% for entity in all_numeric_entities %}
-            <option value="{{ entity }}" name="{{ entity }}" {% if entity in selected_n_entities %}selected{% endif %}>{{ entity }}</option>
-        {% endfor %}
-    </select>
-    <div class="row m-4 ml-1">
-        <button type="submit" name="cluster" class="btn btn-outline-info">Plot</button>
-    </div>
+    {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities  ,value=entity,d="Numeric entities:") }}
+    <button type="submit" name="cluster" class="btn btn-outline-info">Plot</button>
 </form>
 
 

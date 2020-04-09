@@ -24,4 +24,4 @@ EXPOSE 5428
 EXPOSE 80
 
 
-CMD [  "python", "manage.py", "run", "--port", "80", "--call" ]
+CMD [ "waitress-serve", "--port", "80", "--call", "webserver:main"  ]

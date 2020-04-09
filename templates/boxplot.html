@@ -21,6 +21,10 @@
 </form>
 
 {% if plot_series %}
-<div id="boxplot_chart" data-plot-series="{{ plot_series }}" data-min-val="{{ min_val }}" data-max-val="{{ max_val }}"></div>
+<div
+    id="boxplot_chart"
+    data-plot-series="{{ plot_series }}"
+    data-min-val="{{ min_val }}"
+    data-max-val="{{ max_val }}"></div>
 {% endif %}
 {% endblock %}

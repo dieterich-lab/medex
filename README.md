@@ -22,12 +22,12 @@ Not recommended for pure deployment.
 #### Requirements ####
 * [Python](https://www.python.org/) >= 3.7
 * [pipenv](https://docs.pipenv.org/en/latest/) >= 2018.10.13
-* [redis](https://redis.io/) >= 5.x
 * Linux/MacOS
 
 #### Usage ####
-* `pipenv install` installs the latest depencies
+* `pipenv install` installs the latest dependencies
 * `pipenv shell` enters the virtual environment
+* `docker compose up --build -d database or docker compose up -d` Database exist in docker container
 * `./scripts/start.sh`
 * Develop
 

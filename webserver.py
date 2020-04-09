@@ -1,10 +1,10 @@
 # import the Flask class from the flask module
-from flask import Flask, session, g, redirect, flash
-from flask_redis import FlaskRedis
+from flask import Flask, g, redirect
 import psycopg2.extras
+
+
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
-
 from url_handlers.basic_stats import basic_stats_page
 from url_handlers.histogram import histogram_page
 from url_handlers.boxplot import boxplot_page
@@ -17,15 +17,11 @@ from url_handlers.logout import logout_page
 
 import os
 
-
-
-
 from modules.import_scheduler import Scheduler
 # create the application object
 app = Flask(__name__)
 
 # register blueprints here:
-
 app.register_blueprint(logout_page)
 app.register_blueprint(basic_stats_page)
 app.register_blueprint(histogram_page)
@@ -36,36 +32,27 @@ app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(clustering_plot_page)
 app.register_blueprint(coplots_plot_page)
 
+# Set this connection URL in an environment variable, and then load it into your application configuration using
+# os.environ, like this
+user = os.environ['POSTGRES_USER']
+password = os.environ['POSTGRES_PASSWORD']
+host = os.environ['POSTGRES_HOST']
+database = os.environ['POSTGRES_DB']
+port = os.environ['POSTGRES_PORT']
+DATABASE_URL=f'postgresql://{user}:{password}@{host}:{port}/{database}'
 
-#user = os.environ['POSTGRES_USER']
-#password = os.environ['POSTGRES_PASSWORD']
-#host = os.environ['POSTGRES_HOST']
-#database = os.environ['POSTGRES_DATABASE']
-#port = os.environ['POSTGRES_PORT']
-#DATABASE_URL=f'pos'
 # Connection with database
 def connect_db():
     """ connects to our redis database """
-    # Set this connection URL in an environment variable, and then load it into your application configuration using
-    # os.environ, like this
-    app = os.environ["DATABASE_URL"]
-#    params=config()
+
+#    app = os.environ["DATABASE_URL"] #this you need if you use Database_URL not everything separately
 
     db = getattr(g, '_database', None)
     if db is None:
-        db = psycopg2.connect(app)
-#        db = psycopg2.connect("postgresql://{user}:{password}@{host}:{port}")
+#        db = psycopg2.connect(app)
+        db = psycopg2.connect(DATABASE_URL)
     return db
 
-
-
-""""
-@app.teardown_appcontext
-def close_db(error):
-   Closes the database again at the end of the request.
-    if hasattr(g, 'redis_db'):
-        g.redis_db.close()
-"""
 
 
 """ Direct to Basic Stats website during opening the program."""

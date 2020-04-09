@@ -20,31 +20,15 @@
     <script type="text/javascript" src="{{ url_for('static', filename='bootstrap-slider.min.js') }}" ></script>
 {# end of imports #}
 
+{% import 'macro_template.html' as m %}
+
 {% if error %}
-  <div class="alert alert-danger mt-2" role="alert">
-    <div class="row">
-      <div class="col col-xs-10">{{ error }}</div>
-      <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
-    </div>
-  </div>
+{{ m.show_error(error) }}
 {% endif %}
 
 <form action="" method="POST">
-    <div class="form-group">
-       <label for="x_axis">x axis:</label>
-        <select class="custom-select" name="x_axis" id="x_axis" placeholder="Search entity">
-            <option {% if not x_axis %} selected {% endif %}>Choose entity</option>
-        {% for entity in all_numeric_entities %}
-            <option value="{{ entity }}" {% if entity == x_axis %}selected{% endif %}>{{ entity }}</option>
-        {% endfor %}
-        </select>
-        <label for="y_axis">y axis:</label>
-        <select class="custom-select" name="y_axis" id="y_axis" placeholder="Search entity">
-            <option {% if not y_axis %} selected {% endif %}>Choose entity</option>
-         {% for entity in all_numeric_entities %}
-            <option value="{{ entity }}" {% if entity == y_axis %}selected{% endif %}>{{ entity }}</option>
-         {% endfor %}
-        </select>
+    {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
+	{{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
         <div class="form-check mt-4">
             <input class="form-check-input" type="checkbox" value="true" id="add_group_by" name="add_group_by"
                    {% if add_group_by %} checked {% endif %}>
@@ -53,6 +37,8 @@
         <br>
         <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox" value="true">
             <br>
+
+
             <label for="category">Group by</label>
             <select class="custom-select" name="category" id="category">
                 <option {% if not category %} selected {% endif %}>Choose entity</option>
