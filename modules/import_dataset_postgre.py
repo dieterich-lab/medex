@@ -1,42 +1,94 @@
-from sqlalchemy import create_engine
+import psycopg2.extras
 import pandas as pd
+from sqlalchemy import create_engine
 
-def load_data_to_table(dataset):
-    # get your data into pandas
-    data = pd.read_csv(dataset, sep=',', names=["Patient_ID", "Billing_ID", "Date", "Time", "Key", "Value"])
-    df = pd.DataFrame(data)
-    df_value = df.pivot(index='Patient_ID', columns='Key', values='Value')
-    df_value.reset_index(inplace=True)
+r = psycopg2.connect(user="test",
+                        password="test",
+                        host="localhost",
+                        port="5428",
+                        database="example")
 
+def create_table(header):
+    """create table in the PostgreSQL database"""
+    sql1 = "DROP TABLE IF EXISTS name_type,examination"
 
-    def isDigit(x):
-        try:
-            float(x)
-            return True
-        except ValueError:
-            return False
-
-
-    for i in df_value.columns.tolist():
-        if pd.isna(df_value[i][0]):
-            ii=0
-            while ii < len(df_value.index)-1:
-                ii+=1
-                if pd.isna(df_value[i][ii]):
-                    continue
-                elif isDigit(df_value[i][0]) == True and (df_value[i][0] == '0' or df_value[i][0] == '1'):
-                    break
-                elif isDigit(df_value[i][ii]) == True:
-                    df_value[i] = df_value[i].astype(float)
-                    break
-                else:
-                    break
-        elif isDigit(df_value[i][0]) == True and (df_value[i][0] == '0' or df_value[i][0] == '1'):
-            continue
-        elif isDigit(df_value[i][0]) == True:
-            df_value[i] = df_value[i].astype(float)
+    statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text)"""
+    with open(header, 'r') as in_file:
+        statment_examination = "CREATE TABLE examination ("
+        for line in in_file:
+            statment_examination = statment_examination + '{}'.format(line)
+        statment_examination = statment_examination + ")"
+    in_file.close()
+    print('start')
+    cur = r.cursor()
+#    cur.execute(sql1)
+#    r.commit()
+    cur.execute(statment_entities)
+    r.commit()
+#    cur.execute(statment_examination)
+#    r.commit()
 
 
+def load_data(entities,dataset,header):
+    cur = r.cursor()
+    with open(entities, 'r') as in_file:
+        print('open')
+        for row in in_file:
+            row = row.replace("\n", "").split(",")
+            cur.execute("INSERT INTO name_type VALUES (%s, %s) ON CONFLICT DO NOTHING",row)
+    r.commit()
+    in_file.close()
+    print('stop')
+    a=[]
+    with open(header) as in_file:
+        row_count = sum(1 for row in in_file)
+    in_file.close()
+    for i in range(row_count):
+        a.append('%s')
+    col = ','.join(a)
+    print(col)
+    with open(dataset, 'r') as in_file:
+        print('start2')
+        for row in in_file:
+            row = row.replace("\n", "").split(",")
+            cur.execute("INSERT INTO examination VALUES ("+col+")", row)
+    r.commit()
+    in_file.close()
+    print('stop')
 
-        engine = create_engine('postgresql+psycopg2://test:test@localhost:5428/example') # tu bede musiala zmienic jak zrobie container
-        df_value.to_sql('patients_test2', con=engine, if_exists='replace')
+
+def alter_table():
+    cur = r.cursor()
+    sql1 = """CREATE TABLE examination_categorical AS SELECT e.* from examination as e join name_type as n
+            on e."Key" = n."Key" where n."type" = 'String'"""
+    sql2 = """CREATE TABLE examination_numerical AS SELECT e.* from examination as e join name_type as n
+                on e."Key" = n."Key" where not n."type" = 'String'"""
+    sql3 = """ALTER TABLE examination_numerical ALTER COLUMN "Value" Type double precision Using ("Value"::double precision)"""
+    sql4 = """DROP TABLE examination"""
+    cur.execute(sql1)
+    r.commit()
+    cur.execute(sql2)
+    r.commit()
+    cur.execute(sql3)
+    r.commit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

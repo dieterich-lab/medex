@@ -35,7 +35,7 @@ def post_clustering():
     error = None
     if not numeric_entities:
         error = "Please select entities"
-    df = ps.get_values(numeric_entities, rdb) if not error else (None, error)
+    df = ps.get_values(numeric_entities, rdb).dropna() if not error else (None, error)
     if len(df.index) == 0:
         error = "This two entities don't have common values"
 

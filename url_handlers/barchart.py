@@ -39,7 +39,7 @@ def post_statistics():
     if not selected_c_entities:
         error = "Please select entities"
     elif selected_c_entities:
-        categorical_df = ps.get_values_basic_stats(selected_c_entities, rdb)
+        categorical_df = ps.get_cat_values(selected_c_entities, rdb)
 
 
 

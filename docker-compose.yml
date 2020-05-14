@@ -16,6 +16,8 @@ services:
       - ./import:/app/import
     restart: always
   database:
+#    timescaledb:
+#      image: timescale/timescaledb:latest-pg12
     image: postgres #if using an existing image
     ports:
       - "5428:5432"

@@ -62,8 +62,9 @@ def start_import():
 
     settings = ImportSettings()
     print('starting import', datetime.now().strftime('%H:%M:%S'))
+    header = './import/header.csv'
     dataset = './import/dataset.csv'
-    entities = './import/entities.csv'
+    entities ='./import/entities.csv'
 
 
     if not os.path.isfile(dataset) or not os.path.isfile(entities):
@@ -72,9 +73,13 @@ def start_import():
     if not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
         return
 
-    id.load_data_to_table(dataset)
+    id.create_table(header)
+    id.load_data(entities,dataset,header)
+    id.alter_table()
+
     settings.update(dataset_path=dataset, entities_path=entities)
     settings.save()
+
 
 
 class Scheduler():
@@ -82,10 +87,11 @@ class Scheduler():
     BackgroundScheduler runs in a thread inside existing application.
     Importing data check the data. Import data every day at 05.05 if the program see any changes.
     """
+
     def __init__(self, day_of_week, hour, minute):
         self.bgs = BackgroundScheduler()
         start_import()
-        self.bgs.add_job(start_import, 'cron', day_of_week=day_of_week, hour=hour, minute=minute)
+        self.bgs.add_job(start_import,'cron', day_of_week=day_of_week, hour=hour, minute=minute)
 
     def start(self):
         self.bgs.start()

@@ -41,10 +41,9 @@ def post_statistics():
 
     # get joined numerical and categorical values
     if not error:
-        data = ps.get_values([entity,group_by],rdb)
+        data = ps.get_num_cat_values([entity],[group_by],rdb)
         if len(data.index) == 0:
             error = "This two entities don't have common values"
-
 
     if error:
         return render_template('histogram.html',

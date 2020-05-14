@@ -1,8 +1,4 @@
 from flask import Blueprint, render_template, request
-import json
-import plotly
-import plotly.graph_objs as go
-import plotly.express as px
 import modules.load_data_postgre as ps
 
 boxplot_page = Blueprint('boxplot', __name__,
@@ -40,7 +36,7 @@ def post_boxplots():
     if not entity or not group_by or entity == "Choose entity" or group_by == "Choose entity":
         error = "Please select entity and group by"
     if not error:
-        numeric_df = ps.get_values([entity,group_by], rdb)
+        numeric_df = ps.get_num_cat_values([entity],[group_by], rdb)
         if len(numeric_df.index) == 0:
             error = "This two entities don't have common values"
     if error:

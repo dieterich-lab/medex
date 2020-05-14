@@ -13,6 +13,7 @@ def get_statistics():
     # connection and load data from database
     from webserver import connect_db
     rdb = connect_db()
+    # connection and load data from database
     all_numeric_entities = ps.get_numeric_entities(rdb)
     all_categorical_entities = ps.get_categorical_entities(rdb)
 
@@ -27,6 +28,7 @@ def get_basic_stats():
     # connection with database and load name of entities
     from webserver import connect_db
     rdb = connect_db()
+    # connection and load data from database
     all_numeric_entities = ps.get_numeric_entities(rdb)
     all_categorical_entities = ps.get_categorical_entities(rdb)
 
@@ -41,7 +43,7 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if numeric_entities:
-            numeric_df = ps.get_values_basic_stats(numeric_entities, rdb)
+            numeric_df = ps.get_values(numeric_entities, rdb)
             error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. " if error else None
         else:
             error = "Please select numeric entities"
@@ -56,7 +58,7 @@ def get_basic_stats():
         """calculation basic stats (maybe should I do this in SQL)"""
         # to avoid key error
         numeric_df = numeric_df[numeric_df.columns.intersection(numeric_entities)]
-        print()
+
         basic_stats = { }
         if 'counts' in request.form:
             counts = numeric_df.count()
@@ -116,7 +118,7 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if categorical_entities:
-            categorical_df = ps.get_values_basic_stats(categorical_entities, rdb)
+            categorical_df = ps.get_cat_values(categorical_entities, rdb)
             error = "No data based on the selected entities ( " + ", ".join(categorical_entities) + " ) " if error else None
         else:
             error = "Please select entities"

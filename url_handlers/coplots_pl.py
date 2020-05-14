@@ -58,7 +58,9 @@ def post_coplots():
     elif category1 == category2:
         error = "You can't compare the same category"
     if not error:
-        data = ps.get_values([x_axis, y_axis,category1, category2], rdb) if not error else (None, error)
+        num_data = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
+        cat_data = ps.get_cat_values([category1, category2], rdb) if not error else (None, error)
+        data = num_data.merge(cat_data, on ="Patient_ID").dropna()
         if len(data.index) == 0:
             error = "No data based on the selected options"
 

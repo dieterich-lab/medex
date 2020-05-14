@@ -1,4 +1,4 @@
-entity,datatype
+Patient_ID,String
 NYHA,String
 Diabetes,String
 Gender,String

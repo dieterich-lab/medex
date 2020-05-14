@@ -1,79 +1,51 @@
 import pandas as pd
-
-
-
+import numpy as np
 
 
 def get_categorical_entities(rdb):
-    sql ="""select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = 'patients_test2' and data_type = 'text' and  not column_name = 'Patient_ID' """
+    sql = """Select "Key" from name_type where "type" = 'String' """
+    df= pd.read_sql(sql, rdb)
 
-    cur = rdb.cursor()
-    # execute the INSERT statement
-    cur.execute(sql)
-    rows = cur.fetchall()
-
-    # commit the changes to the database
-    rdb.commit()
-    # close communication with the database
-    cur.close()
-    res = [''.join(i) for i in rows]
-
-    return res
-
-def get_values_basic_stats(entity, r):
-
-    entity_fin = '"' + '","'.join(entity) + '"'
-
-
-    sql = """select "Patient_ID",{} from patients_test2 """.format(entity_fin)
-
-    # create a new cursor
-    cur = r.cursor()
-    # execute the INSERT statement
-    cur.execute(sql)
-    rows = cur.fetchall()
-    df = pd.read_sql(sql,r)
-    # commit the changes to the database
-    r.commit()
-    # close communication with the database
-    cur.close()
-
-    return df
-
+    return df['Key']
 
 
 def get_values(entity, r):
 
-    entity_fin = '"' + '","'.join(entity) + '"'
-    strin ='"' + '" IS NOT NULL AND "'.join(entity) + '" IS NOT NULL'
-
-    sql = """select "Patient_ID",{} from patients_test2 where {} """.format(entity_fin,strin)
-
-    cur = r.cursor()
-    # execute the INSERT statement
-    cur.execute(sql)
-    rows = cur.fetchall()
-    df = pd.read_sql(sql,r)
-    # commit the changes to the database
-    r.commit()
-    # close communication with the database
-    cur.close()
-
+    entity_fin = "'" + "','".join(entity) + "'"
+    sql = """SELECT  "Patient_ID","Key","Value" FROM examination_numerical WHERE "Key" IN ({}) """.format(entity_fin)
+    df = pd.read_sql(sql, r)
+    df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=np.mean).reset_index()
     return df
 
 
+def get_cat_values(entity,r):
+    entity_fin = "'" + "','".join(entity) + "'"
+    sql = """SELECT  "Patient_ID","Key","Value" FROM examination_categorical WHERE "Key" IN ({}) """.format(entity_fin)
+    df = pd.read_sql(sql, r)
+    df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=min).reset_index()
+    return df
+
+
+def get_num_cat_values(entity_num,entity_cat,r):
+    entity = ",".join(entity_num)
+    entity2 = ",".join(entity_cat)
+    entity_finn = "'" + "','".join(entity_num) + "'"
+    entity_finc = "'" + "','".join(entity_cat) + "'"
+    sql = """SELECT  en."Patient_ID",en."Value" as "{0}",ec."Value" as "{3}" FROM examination_numerical as en 
+            left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" 
+            where en."Key" in ({1}) and ec."Key" in ({2})""".format(entity,entity_finn,entity_finc,entity2)
+
+    df = pd.read_sql(sql, r)
+    return df
+
+
+
+
+
 def get_numeric_entities(rdb):
-    sql = "select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = 'patients_test2' and data_type = 'double precision'"
 
-    cur = rdb.cursor()
-    # execute the INSERT statement
-    cur.execute(sql)
-    rows = cur.fetchall()
-    # commit the changes to the database
-    rdb.commit()
-    # close communication with the database
-    cur.close()
-    res = [''.join(i) for i in rows]
+    sql = """Select "Key" from name_type where type = 'Double'"""
+    df= pd.read_sql(sql, rdb)
 
-    return res
+    return df['Key']
 

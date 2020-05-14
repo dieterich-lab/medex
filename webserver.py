@@ -1,6 +1,10 @@
 # import the Flask class from the flask module
 from flask import Flask, g, redirect
 import psycopg2.extras
+import os
+from modules.import_scheduler import Scheduler
+
+
 
 
 # Urls in the 'url_handlers' directory (one file for each new url)
@@ -15,9 +19,7 @@ from url_handlers.clustering_pl import clustering_plot_page
 from url_handlers.coplots_pl import coplots_plot_page
 from url_handlers.logout import logout_page
 
-import os
 
-from modules.import_scheduler import Scheduler
 # create the application object
 app = Flask(__name__)
 
@@ -42,16 +44,18 @@ port = os.environ['POSTGRES_PORT']
 DATABASE_URL=f'postgresql://{user}:{password}@{host}:{port}/{database}'
 
 # Connection with database
+
 def connect_db():
     """ connects to our redis database """
-
-#    app = os.environ["DATABASE_URL"] #this you need if you use Database_URL not everything separately
-
     db = getattr(g, '_database', None)
     if db is None:
-#        db = psycopg2.connect(app)
         db = psycopg2.connect(DATABASE_URL)
     return db
+
+
+
+#rdb = psycopg2.connect(DATABASE_URL)
+
 
 
 
@@ -79,9 +83,8 @@ minute = check_for_env('IMPORT_MINUTE', default=5)
 
 # Import data using function scheduler from package modules
 if os.environ.get('IMPORT_DISABLED') is None:
-    scheduler = Scheduler(day_of_week=day_of_week, hour=hour, minute=minute)
-    scheduler.start()
-    scheduler.stop()
+    Scheduler(day_of_week=day_of_week, hour=hour, minute=minute)
+
 
 def main():
     return app

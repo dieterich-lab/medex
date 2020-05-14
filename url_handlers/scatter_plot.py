@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, session
 import numpy as np
+import pandas as pd
 import modules.load_data_postgre as ps
+
 
 
 scatter_plot_page = Blueprint('scatter_plot', __name__,
@@ -9,17 +11,16 @@ scatter_plot_page = Blueprint('scatter_plot', __name__,
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-
-    # connection and load data from database
     from webserver import connect_db
     rdb = connect_db()
+    # connection and load data from database
     all_numeric_entities = ps.get_numeric_entities(rdb)
     all_categorical_entities = ps.get_categorical_entities(rdb)
 
     return render_template('scatter_plot.html',
-                           numeric_tab=True,
-                           all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_entities)
+                               numeric_tab=True,
+                               all_numeric_entities=all_numeric_entities,
+                               all_categorical_entities=all_categorical_entities)
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
@@ -29,7 +30,6 @@ def post_plots():
     rdb = connect_db()
     all_numeric_entities = ps.get_numeric_entities(rdb)
     all_categorical_entities = ps.get_categorical_entities(rdb)
-
 
     # list selected data
     y_axis = request.form.get('y_axis')
@@ -45,7 +45,7 @@ def post_plots():
     elif x_axis == y_axis:
         error = "You can't compare the same entity"
 
-    numeric_df = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
+    numeric_df = ps.get_values([x_axis, y_axis], rdb).dropna() if not error else (None, error)
     if len(numeric_df[x_axis]) == 0:
         error = "Category {} is empty".format(x_axis)
     elif len(numeric_df[y_axis]) == 0:
@@ -57,7 +57,9 @@ def post_plots():
     if add_group_by and category == "Choose entity":
         error = "Please select a categorical value to group by"
     elif add_group_by and category:
-        categorical_df = ps.get_values([x_axis, y_axis,category], rdb) if not error else (None, error)
+        numerical_df = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
+        df = ps.get_cat_values([category], rdb) if not error else (None, error)
+        categorical_df = numerical_df.merge(df, on ="Patient_ID").dropna()
         if len(categorical_df[category]) == 0:
             error = "Category {} is empty".format(category)
 
