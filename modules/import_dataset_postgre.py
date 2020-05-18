@@ -21,12 +21,12 @@ def create_table(header):
     in_file.close()
     print('start')
     cur = r.cursor()
-#    cur.execute(sql1)
-#    r.commit()
+    cur.execute(sql1)
+    r.commit()
     cur.execute(statment_entities)
     r.commit()
-#    cur.execute(statment_examination)
-#    r.commit()
+    cur.execute(statment_examination)
+    r.commit()
 
 
 def load_data(entities,dataset,header):
