@@ -55,11 +55,6 @@ def connect_db():
 
 
 
-rdb = psycopg2.connect(DATABASE_URL)
-all_numeric_entities = ps.get_numeric_entities(rdb)
-all_categorical_entities = ps.get_categorical_entities(rdb)
-
-
 
 """ Direct to Basic Stats website during opening the program."""
 @app.route('/', methods=['GET'])
@@ -87,6 +82,11 @@ minute = check_for_env('IMPORT_MINUTE', default=5)
 if os.environ.get('IMPORT_DISABLED') is None:
     Scheduler(day_of_week=day_of_week, hour=hour, minute=minute)
 
+ 
+rdb = psycopg2.connect(DATABASE_URL)
+all_numeric_entities = ps.get_numeric_entities(rdb)
+all_categorical_entities = ps.get_categorical_entities(rdb)   
+    
 
 def main():
     return app
