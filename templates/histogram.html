@@ -17,9 +17,25 @@
 
 
 <form action="" method="POST">
-   {{ m.entity_form(id= "numeric_entities",name =numeric_entities,value=entity,select=selected_entity,d="Numeric entities:") }}
-   {{ m.entity_form(id= "group_by",name =categorical_entities,value=entity,select=group_by,d="Group by:") }}
+    <div class="form-group" >
+        <label for="entity">Entity:</label>
+        <select class="custom-select" name="entity" id="entity">
+            <option {% if not selected_entity %} selected {% endif %}>Choose entity</option>
+            {% for entity in numeric_entities %}
+            <option value="{{ entity }}" {% if entity == selected_entity %}selected{% endif %}>{{ entity }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
+    <div class="form-group">
+        <label for="group_by">Group by:</label>
+        <select class="custom-select" name="group_by" id="group_by">
+            <option {% if not group_by %} selected {% endif %}>Choose entity</option>
+            {% for entity in categorical_entities %}
+            <option value="{{ entity }}" {% if entity == group_by %}selected{% endif %}>{{ entity }}</option>
+            {% endfor %}
+        </select>
+    </div>
   <label>Number of bins </label><input type="text" class="form-control"
       name="number_of_bins"  id="number_of_bins"
       value="{% if number_of_bins %}{{ number_of_bins }}{% else %}{% endif %}">
