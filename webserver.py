@@ -3,6 +3,7 @@ from flask import Flask, g, redirect
 import psycopg2.extras
 import os
 from modules.import_scheduler import Scheduler
+import modules.load_data_postgre as ps
 
 
 
@@ -54,8 +55,9 @@ def connect_db():
 
 
 
-#rdb = psycopg2.connect(DATABASE_URL)
-
+rdb = psycopg2.connect(DATABASE_URL)
+all_numeric_entities = ps.get_numeric_entities(rdb)
+all_categorical_entities = ps.get_categorical_entities(rdb)
 
 
 
