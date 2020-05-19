@@ -10,7 +10,7 @@ r = psycopg2.connect(user="test",
 
 def create_table(header):
     """create table in the PostgreSQL database"""
-    sql1 = "DROP TABLE IF EXISTS name_type,examination"
+    sql1 = "DROP TABLE IF EXISTS name_type,examination,examination_categorical,examination_numerical"
 
     statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text)"""
     with open(header, 'r') as in_file:
@@ -21,12 +21,12 @@ def create_table(header):
     in_file.close()
     print('start')
     cur = r.cursor()
-#    cur.execute(sql1)
-#    r.commit()
+    cur.execute(sql1)
+    r.commit()
     cur.execute(statment_entities)
     r.commit()
-#    cur.execute(statment_examination)
-#    r.commit()
+    cur.execute(statment_examination)
+    r.commit()
 
 
 def load_data(entities,dataset,header):
@@ -46,7 +46,6 @@ def load_data(entities,dataset,header):
     for i in range(row_count):
         a.append('%s')
     col = ','.join(a)
-    print(col)
     with open(dataset, 'r') as in_file:
         print('start2')
         for row in in_file:
@@ -64,12 +63,16 @@ def alter_table():
     sql2 = """CREATE TABLE examination_numerical AS SELECT e.* from examination as e join name_type as n
                 on e."Key" = n."Key" where not n."type" = 'String'"""
     sql3 = """ALTER TABLE examination_numerical ALTER COLUMN "Value" Type double precision Using ("Value"::double precision)"""
-    sql4 = """DROP TABLE examination"""
+    sql4 = """CREATE INDEX "Key_index" ON examination_numerical("Key")"""
+
+    sql5 = """DROP TABLE examination"""
     cur.execute(sql1)
     r.commit()
     cur.execute(sql2)
     r.commit()
     cur.execute(sql3)
+    r.commit()
+    cur.execute(sql4)
     r.commit()
 
 
