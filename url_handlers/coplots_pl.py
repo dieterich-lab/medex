@@ -10,10 +10,7 @@ coplots_plot_page = Blueprint('coplots_pl', __name__,
 def get_coplots():
     
     # connection and load data from database
-    from webserver import connect_db
-    rdb = connect_db()
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import all_numeric_entities,all_categorical_entities
 
     return render_template('coplots_pl.html',
                            all_numeric_entities=all_numeric_entities,
@@ -24,10 +21,7 @@ def get_coplots():
 def post_coplots():
     
     # connection with database and load name of entities
-    from webserver import connect_db
-    rdb = connect_db()
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import rdb,all_numeric_entities,all_categorical_entities
 
     # get selected entities
     category1 = request.form.get('category1')

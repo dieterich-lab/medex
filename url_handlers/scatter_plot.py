@@ -11,11 +11,7 @@ scatter_plot_page = Blueprint('scatter_plot', __name__,
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-    from webserver import connect_db
-    rdb = connect_db()
-    # connection and load data from database
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import all_numeric_entities,all_categorical_entities
 
     return render_template('scatter_plot.html',
                                numeric_tab=True,
@@ -26,10 +22,8 @@ def get_plots():
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
     # connection with database and load name of entities
-    from webserver import connect_db
-    rdb = connect_db()
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import rdb,all_numeric_entities,all_categorical_entities
+
 
     # list selected data
     y_axis = request.form.get('y_axis')

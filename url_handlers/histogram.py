@@ -10,10 +10,7 @@ histogram_page = Blueprint('histogram', __name__,
 def get_statistics():
     
     # connection and load data from database
-    from webserver import connect_db
-    rdb = connect_db()
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import all_numeric_entities,all_categorical_entities
 
     return render_template('histogram.html',
                            categorical_entities=all_categorical_entities,
@@ -23,11 +20,7 @@ def get_statistics():
 @histogram_page.route('/histogram', methods=['POST'])
 def post_statistics():
     # connection with database and load name of entities
-    from webserver import connect_db
-    rdb = connect_db()
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
-
+    from webserver import rdb,all_numeric_entities,all_categorical_entities
 
     # get selected entities
     entity = request.form.get('entity')

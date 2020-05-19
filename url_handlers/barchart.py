@@ -15,9 +15,8 @@ barchart_page = Blueprint('barchart', __name__,
 @barchart_page.route('/barchart', methods=['GET'])
 def get_statistics():
     # connection with database and load name of entities
-    from webserver import connect_db
-    rdb = connect_db()
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import all_numeric_entities,all_categorical_entities
+
 
     return render_template('barchart.html',
                            numeric_tab=True,
@@ -27,9 +26,7 @@ def get_statistics():
 @barchart_page.route('/barchart', methods=['POST'])
 def post_statistics():
     # connection with database and load name of entities
-    from webserver import connect_db
-    rdb = connect_db()
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import rdb,all_numeric_entities,all_categorical_entities
 
     # list selected entities
     selected_c_entities = request.form.getlist('categorical_entities')

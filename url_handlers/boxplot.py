@@ -9,10 +9,8 @@ boxplot_page = Blueprint('boxplot', __name__,
 def get_boxplots():
 
     # connection and load data from database
-    from webserver import connect_db
-    rdb = connect_db()
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import all_numeric_entities,all_categorical_entities
+
 
     return render_template('boxplot.html',
                            categorical_entities=all_categorical_entities,
@@ -22,10 +20,8 @@ def get_boxplots():
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
     # connection with database and load name of entities
-    from webserver import connect_db
-    rdb = connect_db()
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import rdb,all_numeric_entities,all_categorical_entities
+
 
     # get selected entities
     entity = request.form.get('numeric_entities')

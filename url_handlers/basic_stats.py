@@ -11,11 +11,11 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 def get_statistics():
 
     # connection and load data from database
-    from webserver import connect_db
-    rdb = connect_db()
+    from webserver import connect_db,rdb,all_numeric_entities,all_categorical_entities
+#    rdb = connect_db()
     # connection and load data from database
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+#    all_numeric_entities = ps.get_numeric_entities(rdb)
+#    all_categorical_entities = ps.get_categorical_entities(rdb)
 
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
@@ -26,11 +26,8 @@ def get_statistics():
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
     # connection with database and load name of entities
-    from webserver import connect_db
-    rdb = connect_db()
-    # connection and load data from database
-    all_numeric_entities = ps.get_numeric_entities(rdb)
-    all_categorical_entities = ps.get_categorical_entities(rdb)
+    from webserver import rdb,all_numeric_entities,all_categorical_entities
+
 
 
 
