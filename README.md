@@ -27,9 +27,19 @@ Not recommended for pure deployment.
 #### Usage ####
 * `pipenv install` installs the latest dependencies
 * `pipenv shell` enters the virtual environment
-* `docker-compose up` Database exist in docker container
+* `docker-compose up` 
 * `./scripts/start.sh`
 * Develop
+
+#### Log in to database ####
+To use PostgreSQL database queries directly. First you need to create an image for PostgreSQL:
+* `docker-compose up database` create image only for PostgreSQL (using `docker-compose up` create image for Medex and PostgreSQL simultaneously)
+
+If we created the image and the image is running, we can log into database using the command: 
+* `psql --host=localhost --port=5428 --username=test --dbname=example` log in to PostgreSQL
+* database password - `test`
+
+Password, username and database name can be changed in the file `./docker-compose.yml`.
 
 ## Data Import ##
 * Database imports run every night at 5:05 and at startup.
@@ -44,12 +54,12 @@ The file `header.csv` is used to create a table for data from the file` dataset.
 
 `"ID" numeric PRIMARY KEY,"Patient_ID" text,"Billing_ID" text, "Date" timestamp,"Time" text,"Key" text,"Value" text`
 
-`header.csv` can also looks like this:
+`header.csv` can also look like this:
 
 `"ID" numeric PRIMARY KEY,"Patient_ID" text,"Key" text,"Value" text`
 
 Important at this moment is that we always need column with name "ID","Patient_ID","Key" and "Value" columns,"Billing_ID","Date" and "Time"  are not necessary. 
-Name of column in file `header.csv` have to be in quotation marks.
+Names of columns in file `header.csv` have to be in quotation marks.
 
 The currently used format of the `dataset.csv` file comes from the research warehouse export format(with added ID to create Primary Key in database) of the data we are analysing with this tool :
  
