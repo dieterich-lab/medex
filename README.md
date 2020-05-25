@@ -27,7 +27,7 @@ Not recommended for pure deployment.
 #### Usage ####
 * `pipenv install` installs the latest dependencies
 * `pipenv shell` enters the virtual environment
-* `docker-compose up --build -d database or docker-compose up -d` Database exist in docker container
+* `docker-compose up` Database exist in docker container
 * `./scripts/start.sh`
 * Develop
 
@@ -36,11 +36,22 @@ Not recommended for pure deployment.
 * The database is only updated if there is new data to import.
 
 ### Importing new data ###
-In order to add new data add a new `entities.csv` and `dataset.csv` to the `./import` folder
+In order to add new data add a new `header.csv`,`entities.csv` and `dataset.csv` to the `./import` folder
 
 To work the files should have the same format as the current example files that are already in that directory. 
 
-The currently used format of the dataset.csv file comes from the research warehouse export format of the data we are analysing with this tool:
+The file `header.csv` is used to create a table for data from the file` dataset.csv`, so it should contain the name of the column and type:
+
+`"ID" numeric PRIMARY KEY,"Patient_ID" text,"Billing_ID" text, "Date" timestamp,"Time" text,"Key" text,"Value" text`
+
+`header.csv` can also looks like this:
+
+`"ID" numeric PRIMARY KEY,"Patient_ID" text,"Key" text,"Value" text`
+
+Important at this moment is that we always need column with name "ID","Patient_ID","Key" and "Value" columns,"Billing_ID","Date" and "Time"  are not necessary. 
+Name of column in file `header.csv` have to be in quotation marks.
+
+The currently used format of the `dataset.csv` file comes from the research warehouse export format(with added ID to create Primary Key in database) of the data we are analysing with this tool :
  
 `Patient_ID,Billing_ID,Date,Time,Key,Value`
 
@@ -76,7 +87,7 @@ The scheduler can be controlled by 4 envrionment variables:
 
 
 ## Deploy Debian Based ##
-Please keep in mind that the application uses port 80 by default, that can be changed in the `./docker-compose.yml`!
+Please keep in mind that the application uses port 800 by default, that can be changed in the `./docker-compose.yml`!
 This is important because it manages the application startup automatically. i.e. Autostart and Restart on Crash
 
 1. Open service `./scripts/data-warehouse.service`
