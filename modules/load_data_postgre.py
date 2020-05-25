@@ -39,7 +39,7 @@ def get_cat_values(entity,r):
 
     entity_fin2 = "''" + "'',''".join(entity) + "''"
     entity_fin3 = '"' + '" double precision,"'.join(entity) + '" double precision'
-    sql2 = """SELECT  * FROM crosstab ( 'SELECT  "Patient_ID","Key","Value" FROM examination_numerical WHERE "Key" IN ({0})')
+    sql2 = """SELECT  * FROM crosstab ( 'SELECT  "Patient_ID","Key","Value" FROM examination_categorical WHERE "Key" IN ({0})')
                 AS final_result("Patient_ID" TEXT, {1})""".format(entity_fin2, entity_fin3)
     df = pd.read_sql(sql2, r)
 
