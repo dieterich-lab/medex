@@ -12,4 +12,4 @@ export POSTGRES_PORT=5428
 export POSTGRES_HOST=localhost
 
 export DATABASE_URL=postgresql://test:test@localhost:5428/example
-flask run --host=0.0.0.0
+flask run --host=0.0.0.0 --no-reload

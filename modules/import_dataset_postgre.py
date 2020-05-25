@@ -1,12 +1,13 @@
 import psycopg2.extras
-import pandas as pd
-from sqlalchemy import create_engine
+import os
+user = os.environ['POSTGRES_USER']
+password = os.environ['POSTGRES_PASSWORD']
+host = os.environ['POSTGRES_HOST']
+database = os.environ['POSTGRES_DB']
+port = os.environ['POSTGRES_PORT']
+DATABASE_URL=f'postgresql://{user}:{password}@{host}:{port}/{database}'
 
-r = psycopg2.connect(user="test",
-                        password="test",
-                        host="localhost",
-                        port="5428",
-                        database="example")
+r = psycopg2.connect(DATABASE_URL)
 
 def create_table(header):
     """create table in the PostgreSQL database"""
@@ -64,8 +65,8 @@ def alter_table():
                 on e."Key" = n."Key" where not n."type" = 'String'"""
     sql3 = """ALTER TABLE examination_numerical ALTER COLUMN "Value" Type double precision Using ("Value"::double precision)"""
     sql4 = """CREATE INDEX "Key_index" ON examination_numerical("Key")"""
-
-    sql5 = """DROP TABLE examination"""
+    sql5 = """CREATE EXTENSION IF NOT  EXISTS tablefunc"""
+    sql6 = """DROP TABLE examination"""
     cur.execute(sql1)
     r.commit()
     cur.execute(sql2)
@@ -73,6 +74,8 @@ def alter_table():
     cur.execute(sql3)
     r.commit()
     cur.execute(sql4)
+    r.commit()
+    cur.execute(sql5)
     r.commit()
 
 
