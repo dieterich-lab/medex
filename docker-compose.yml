@@ -1,6 +1,6 @@
 version: '3'
 services:
-  frontend-PSQL:
+  frontend-psql:
     build: .
     ports:
       - "800:800"
