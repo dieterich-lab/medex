@@ -40,15 +40,17 @@
 
 
             <label for="category">Group by</label>
-            <select class="custom-select" name="category" id="category">
-                <option {% if not category %} selected {% endif %}>Choose entity</option>
+            <select  name="category" id="category" style="width: 100%" class="js-example-basic-single" >
+                <option {% if not category %} selected {% endif %}>Search entity</option>
                 {% for entity in all_categorical_entities %}
                 <option value="{{ entity }}" {% if entity == category %}selected{% endif %}>{{ entity }}</option>
                 {% endfor %}
             </select>
         </div>
     </div>
+    <div class="form-check mt-4">
     <button type="submit" name="scatter_plot" class="btn btn-outline-info">Plot data</button>
+    </div>
 </form>
 
 {% if plot_series %}

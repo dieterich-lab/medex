@@ -21,7 +21,11 @@ $(function () {
     });
 
 
-    $("#numeric_entities").select2();
-    $("#categorical_entities").select2();
+    $("#numeric_entities").select2({
+    placeholder:"Search entity"
+    });
+    $("#categorical_entities").select2({
+    placeholder:"Search entity"
+    });
 
 });

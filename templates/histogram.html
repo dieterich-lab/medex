@@ -25,7 +25,7 @@
     <div class="form-group" >
         <label for="entity">Entity:</label>
         <select class="custom-select" name="entity" id="entity">
-            <option {% if not selected_entity %} selected {% endif %}>Choose entity</option>
+            <option {% if not selected_entity %} selected {% endif %}>Search entity</option>
             {% for entity in numeric_entities %}
             <option value="{{ entity }}" {% if entity == selected_entity %}selected{% endif %}>{{ entity }}</option>
             {% endfor %}
@@ -35,7 +35,7 @@
     <div class="form-group">
         <label for="group_by">Group by:</label>
         <select class="custom-select" name="group_by" id="group_by">
-            <option {% if not group_by %} selected {% endif %}>Choose entity</option>
+            <option {% if not group_by %} selected {% endif %}>Search entity</option>
             {% for entity in categorical_entities %}
             <option value="{{ entity }}" {% if entity == group_by %}selected{% endif %}>{{ entity }}</option>
             {% endfor %}

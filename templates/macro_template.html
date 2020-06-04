@@ -11,7 +11,7 @@
     <div class="form-group">
         <label for="{{ id }}">{{ d }}</label>
         <select  name="{{ id }}" id="{{ id }}" style="width: 100%" class="js-example-basic-single" >
-            <option {% if not select %} selected {% endif %}>Choose entity</option>
+            <option {% if not select %} selected {% endif %}>Search entity</option>
             {% for entity in name %}
             <option value="{{ entity }}" {% if entity == select %}selected{% endif %}>{{ entity }}</option>
             {% endfor %}
@@ -22,7 +22,7 @@
 {%- macro entity_form2(id2,name,value,select,d) %}
     <div class="form-group">
         <label for="{{ id2 }}">{{ d }}</label>
-        <select multiple name="{{ id2 }}" id="{{ id2 }}" style="width: 100%" class="js-example-basic-multiple" >
+        <select multiple name="{{ id2 }}" id="{{ id2 }}" class="form-control" >
         {% for entity in name %}
             <option value="{{ entity }}" {% if entity == select %}selected{% endif %}>{{ entity }}</option>
          {% endfor %}

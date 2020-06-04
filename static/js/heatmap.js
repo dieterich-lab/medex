@@ -6,7 +6,9 @@ $(function () {
 
 
 // pretify the select input for categorical entities
-    $("#numeric_entities").select2();
+    $("#numeric_entities").select2({
+    placeholder:"Search entity"
+    });
 
     var heatmap_data = JSON.parse($('#heatmap').attr('data-plot-series').replace(/'/g, '"')); //"));
     if (heatmap_data.length != 0) {

@@ -24,12 +24,14 @@
                       </div>
                     {% endif %}
                     <form action="" method="POST">
+                        <div class="form-group">
                             <label for="categorical_entities">Categorical entities:</label>
                                 <select multiple name="categorical_entities" id="categorical_entities" style="width: 100%" class="js-example-basic-multiple" placeholder="Search entity">
                                 {% for entity in all_categorical_entities %}
                                     <option value="{{ entity }}" {% if entity == categorical_entities %}selected{% endif %}>{{ entity }}</option>
                                 {% endfor %}
                                 </select>
+                        </div>
                             <div class="row ml-1">
                                 <button type="submit" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
                         </div>

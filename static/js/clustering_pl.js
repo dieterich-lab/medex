@@ -9,8 +9,12 @@ $(function() {
 
 // pretify the select input for categorical entities
 
-    $("#numeric_entities").select2();
-    $("#categorical_entities").select2();
+    $("#numeric_entities").select2({
+    placeholder:"Search entity"
+    });
+    $("#categorical_entities").select2({
+    placeholder:"Search entity"
+    });
 
     if ($('#cluster').length != 0) {
         var x_axis = $('#cluster').attr('data-plot-x');

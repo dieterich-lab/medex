@@ -5,7 +5,9 @@ $(function () {
     });
 
 // pretify the select input for categorical entities
-    $('#categorical_entities').select2();
+    $('#categorical_entities').select2({
+    placeholder:"Search entity"
+    });
 
 
     var barchart_data = $('#barchart').attr('data-plot-series').replace(/'/g, '"'); //");
