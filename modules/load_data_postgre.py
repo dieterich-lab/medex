@@ -11,17 +11,19 @@ def get_categorical_entities(rdb):
 
 
 def get_values(entity, r):
-#    t0 = time.time()
-#    entity_fin = "'" + "','".join(entity) + "'"
+    t0 = time.time()
+    entity_fin = "'" + "','".join(entity) + "'"
     entity_fin2 = "''" + "'',''".join(entity) + "''"
+
     entity_fin3 = '"' + '" double precision,"'.join(entity) + '" double precision'
-#    sql = """SELECT  "Patient_ID","Key","Value" FROM examination_numerical WHERE "Key" IN ({}) """.format(entity_fin)
-    sql2 = """SELECT  * FROM crosstab ( 'SELECT  "Patient_ID","Key","Value" FROM examination_numerical WHERE "Key" IN ({0})')
-            AS final_result("Patient_ID" TEXT, {1})""".format(entity_fin2,entity_fin3)
-    df = pd.read_sql(sql2, r)
+
+    sql = """SELECT  "Patient_ID","Key","Value" FROM examination_numerical WHERE "Key" IN ({})""".format(entity_fin)
+#    sql2 = """SELECT  * FROM crosstab ( 'SELECT  "Patient_ID","Key","Value" FROM examination_numerical WHERE "Key" IN ({0})')
+#            AS ("Patient_ID" TEXT, {1});""".format(entity_fin2,entity_fin3)
+    df = pd.read_sql(sql, r)
+    df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=np.mean).reset_index()
 #    t1 = time.time()
-#    df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=np.mean).reset_index()
-#    df.to_csv('/home/magda/Documents/gen/2.csv', index=False)
+#    df = pd.read_sql(sql2, r)
 #    t2 = time.time()
 #    total = t1-t0
 #    total2 = t2 - t0
@@ -32,16 +34,16 @@ def get_values(entity, r):
 
 
 def get_cat_values(entity,r):
-#    entity_fin = "'" + "','".join(entity) + "'"
-#    sql = """SELECT  "Patient_ID","Key","Value" FROM examination_categorical WHERE "Key" IN ({}) """.format(entity_fin)
-#    df = pd.read_sql(sql, r)
-#    df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=min).reset_index()
+    entity_fin = "'" + "','".join(entity) + "'"
+    sql = """SELECT  "Patient_ID","Key","Value" FROM examination_categorical WHERE "Key" IN ({}) """.format(entity_fin)
+    df = pd.read_sql(sql, r)
+    df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=min).reset_index()
 
-    entity_fin2 = "''" + "'',''".join(entity) + "''"
-    entity_fin3 = '"' + '" text,"'.join(entity) + '" text'
-    sql2 = """SELECT  * FROM crosstab ( 'SELECT  "Patient_ID","Key","Value" FROM examination_categorical WHERE "Key" IN ({0})')
-                AS final_result("Patient_ID" TEXT, {1})""".format(entity_fin2, entity_fin3)
-    df = pd.read_sql(sql2, r)
+#    entity_fin2 = "''" + "'',''".join(entity) + "''"
+#    entity_fin3 = '"' + '" text,"'.join(entity) + '" text'
+#    sql2 = """SELECT  * FROM crosstab ( 'SELECT  "Patient_ID","Key","Value" FROM examination_categorical WHERE "Key" IN ({0})')
+#                AS final_result("Patient_ID" TEXT, {1})""".format(entity_fin2, entity_fin3)
+#    df = pd.read_sql(sql2, r)
 
     return df
 
