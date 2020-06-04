@@ -34,28 +34,26 @@ def post_plots():
 
     # handling errors and load data from database
     error = None
-    if not x_axis or not y_axis or x_axis == "Choose entity" or y_axis == "Choose entity":
+    if not x_axis or not y_axis or x_axis == "Search entity" or y_axis == "Search entity":
         error = "Please select x_axis and y_axis"
     elif x_axis == y_axis:
         error = "You can't compare the same entity"
-
-    numeric_df = ps.get_values([x_axis, y_axis], rdb).dropna() if not error else (None, error)
-    if len(numeric_df[x_axis]) == 0:
-        error = "Category {} is empty".format(x_axis)
-    elif len(numeric_df[y_axis]) == 0:
-        error = "Category {} is empty".format(y_axis)
-    elif len(numeric_df.index) == 0:
-        error = "This two entities don't have common values"
-
-
-    if add_group_by and category == "Choose entity":
-        error = "Please select a categorical value to group by"
-    elif add_group_by and category:
-        numerical_df = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
-        df = ps.get_cat_values([category], rdb) if not error else (None, error)
-        categorical_df = numerical_df.merge(df, on ="Patient_ID").dropna()
-        if len(categorical_df[category]) == 0:
-            error = "Category {} is empty".format(category)
+    else :
+        numeric_df = ps.get_values([x_axis, y_axis], rdb).dropna() if not error else (None, error)
+        if len(numeric_df[x_axis]) == 0:
+            error = "Category {} is empty".format(x_axis)
+        elif len(numeric_df[y_axis]) == 0:
+            error = "Category {} is empty".format(y_axis)
+        elif len(numeric_df.index) == 0:
+            error = "This two entities don't have common values"
+        elif add_group_by and category == "Search entity":
+            error = "Please select a categorical value to group by"
+        elif add_group_by and category:
+            numerical_df = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
+            df = ps.get_cat_values([category], rdb) if not error else (None, error)
+            categorical_df = numerical_df.merge(df, on ="Patient_ID").dropna()
+            if len(categorical_df[category]) == 0:
+                error = "Category {} is empty".format(category)
 
 
 

@@ -23,21 +23,25 @@ def post_clustering():
     # this import has to be here!!
     from webserver import rdb,all_numeric_entities, all_categorical_entities
 
-    # transforming back underscores to dots
-    numeric_entities= request.form.getlist('numeric_entities')
-    error = None
-    if not numeric_entities:
-        error = "Please select entities"
-    df = ps.get_values(numeric_entities, rdb) .dropna() if not error else (None, error)
-    if len(df.index) == 0:
-        error = "This two entities don't have common values"
+    # get selected entities
+    numeric_entities = request.form.getlist('numeric_entities')
 
+    # handling errors and load data from database
+    error = None
+    if len(numeric_entities) > 1:
+        df = ps.get_values(numeric_entities, rdb).dropna()
+        if len(df.index) == 0:
+            error = "This two entities don't have common values"
+    elif len (numeric_entities) < 2:
+        error = "Please select more then one category"
+    else:
+        error = "Please select numeric entities"
     if error:
-        return render_template('clustering_pl.html',
-                                numeric_tab=True,
-                                all_numeric_entities=all_numeric_entities,
-                                error=error,
-                                )
+        return render_template('heatmap.html',
+                               numeric_tab=True,
+                               all_numeric_entities=all_numeric_entities,
+                               selected_n_entities=numeric_entities,
+                               error=error)
 
 
 

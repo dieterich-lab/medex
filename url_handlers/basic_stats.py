@@ -12,10 +12,7 @@ def get_statistics():
 
     # connection and load data from database
     from webserver import connect_db,rdb,all_numeric_entities,all_categorical_entities
-#    rdb = connect_db()
-    # connection and load data from database
-#    all_numeric_entities = ps.get_numeric_entities(rdb)
-#    all_categorical_entities = ps.get_categorical_entities(rdb)
+
 
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
@@ -54,8 +51,8 @@ def get_basic_stats():
 
         """calculation basic stats (maybe should I do this in SQL)"""
         # to avoid key error
-        numeric_df = numeric_df[numeric_df.columns.intersection(numeric_entities)]
-
+#        numeric_df = numeric_df[numeric_df.columns.intersection(numeric_entities)]
+        print(numeric_df)
         basic_stats = { }
         if 'counts' in request.form:
             counts = numeric_df.count()
