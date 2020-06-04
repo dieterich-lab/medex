@@ -15,6 +15,12 @@ $(document).ready(function() {
     });
 
 
+    $("#x_axis").select2();
+    $("#y_axis").select2();
+    $("#category1").select2();
+    $("#category2").select2();
+
+
     var how_to_plot = $('#coplot').attr('data-how-to-plot');
     $('#coplot').removeAttr('data-how-to-plot');
     // for single_plot

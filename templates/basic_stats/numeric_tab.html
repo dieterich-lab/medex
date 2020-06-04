@@ -27,7 +27,7 @@
                         {% endif %}
                         <div class="form-group">
                             <label for="numeric_entities">Numeric entities:</label>
-                            <select multiple name="numeric_entities" id="numeric_entities" placeholder="Search entity">
+                            <select multiple name="numeric_entities" id="numeric_entities" style="width: 100%" class="js-example-basic-multiple" placeholder="Search entity">
                             {% for entity in all_numeric_entities %}
                                 <option value="{{ entity }}" {% if entity in selected_n_entities %}selected{% endif %}>{{ entity }}</option>
                             {% endfor %}

@@ -4,6 +4,9 @@ $(function () {
         $(this).closest('div.alert').addClass('d-none');
     });
 
+    $("#entity").select2();
+    $("#group_by").select2();
+
     var histogram_data = $('#histogram_chart').attr('data-plot-series').replace(/'/g, '"'); //");
     var min_val = $('#histogram_chart').attr('data-min-val');
     var max_val = $('#histogram_chart').attr('data-max-val');

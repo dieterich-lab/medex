@@ -6,17 +6,7 @@ $(function () {
 
 
 // pretify the select input for categorical entities
-    var c_choices = new Choices('#categorical_entities', {
-        allowSearch: true,
-        removeItemButton: true,
-    });
-
-    // pretify the select input for numeric entities
-    var n_choices = new Choices('#numeric_entities', {
-        allowSearch: true,
-        removeItemButton: true,
-        shouldSort: false,
-    });
+    $("#numeric_entities").select2();
 
     var heatmap_data = JSON.parse($('#heatmap').attr('data-plot-series').replace(/'/g, '"')); //"));
     if (heatmap_data.length != 0) {

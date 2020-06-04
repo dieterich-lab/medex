@@ -25,7 +25,7 @@
                     {% endif %}
                     <form action="" method="POST">
                             <label for="categorical_entities">Categorical entities:</label>
-                                <select multiple name="categorical_entities" id="categorical_entities" placeholder="Search entity">
+                                <select multiple name="categorical_entities" id="categorical_entities" style="width: 100%" class="js-example-basic-multiple" placeholder="Search entity">
                                 {% for entity in all_categorical_entities %}
                                     <option value="{{ entity }}" {% if entity == categorical_entities %}selected{% endif %}>{{ entity }}</option>
                                 {% endfor %}

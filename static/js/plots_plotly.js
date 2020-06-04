@@ -14,6 +14,11 @@ $(function () {
         }
     });
 
+    $("#x_axis").select2();
+    $("#y_axis").select2();
+    $("#add_group_by").select2();
+
+
 
     // scatter plot
 

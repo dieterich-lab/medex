@@ -4,6 +4,10 @@ $(function () {
         $(this).closest('div.alert').addClass('d-none');
     });
 
+
+    $("#numeric_entities").select2();
+    $("#group_by").select2();
+
     var boxplot_data = $('#boxplot_chart').attr('data-plot-series').replace(/'/g, '"'); //");
     var min_val = $('#boxplot_chart').attr('data-min-val');
     var max_val = $('#boxplot_chart').attr('data-max-val');

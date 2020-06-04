@@ -5,17 +5,8 @@ $(function () {
     });
 
 // pretify the select input for categorical entities
-    var c_choices = new Choices('#categorical_entities', {
-        allowSearch: true,
-        removeItemButton: true,
-    });
+    $('#categorical_entities').select2();
 
-    // pretify the select input for numeric entities
-    var n_choices = new Choices('#numeric_entities', {
-        allowSearch: true,
-        removeItemButton: true,
-        shouldSort: false,
-    });
 
     var barchart_data = $('#barchart').attr('data-plot-series').replace(/'/g, '"'); //");
     if (barchart_data.length != 0) {

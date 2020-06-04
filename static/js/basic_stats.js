@@ -14,22 +14,14 @@ $(function () {
         ($(this).closest('.card').find('.table')).tableToCSV();
     });
 
-    // prettify the select input for numerical entities
-    new Choices('#numeric_entities', {
-        allowSearch: true,
-        removeItemButton: true,
-        //maxItemCount: 2,
-    });
-
-    // prettify the select input for categorical entities
-    new Choices('#categorical_entities', {
-        allowSearch: true,
-        removeItemButton: true,
-    });
 
     // close error message
     $(document).on('click', 'span.close', function() {
         $(this).closest('div.alert').addClass('d-none');
     });
+
+
+    $("#numeric_entities").select2();
+    $("#categorical_entities").select2();
 
 });
