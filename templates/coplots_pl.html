@@ -33,26 +33,52 @@
 	 {{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
 	 {{ m.entity_form(id= "category1",name =categorical_entities ,value=entity,select=category1,d="Category1:") }}
 	 {{ m.entity_form(id= "category2",name =categorical_entities ,value=entity,select=category2,d="Category2:") }}
+	     <label >Scale</label>
+        <table >
+        <tr>
+            <td>
+		<div class="custom-control custom-radio" >
+				<input type="radio" class="custom-control-input" id="linear" name="how_to_plot2" value="linear"
+						{% if how_to_plot=="linear" or not how_to_plot2 %}checked{% endif %}>
+				<label class="custom-control-label" for="linear">linear</label>
+		</div>
+            </td>
+            <td>
+		<div class="custom-control custom-radio">
+				<input type="radio" class="custom-control-input" id="log" name="how_to_plot2" value="log"
+					{% if how_to_plot=="log"  %}checked{% endif %}>
+				<label class="custom-control-label" for="log">log</label>
+		</div>
+            </td>
+        </tr>
+    </table>
+
 	 <label class="mt-3">Display as one plot/multiple plots?</label>
+	        <table >
+        <tr>
+            <td>
 		<div class="custom-control custom-radio">
 				<input type="radio" class="custom-control-input" id="single_plot" name="how_to_plot" value="single_plot"
 						{% if how_to_plot=="single_plot" %}checked{% endif %}>
 				<label class="custom-control-label" for="single_plot">One plot</label>
 		</div>
+			</td>
+            <td>
 		<div class="custom-control custom-radio">
 				<input type="radio" class="custom-control-input" id="multiple_plots" name="how_to_plot" value="multiple_plots"
 					{% if how_to_plot=="multiple_plots" or not how_to_plot %}checked{% endif %}>
 				<label class="custom-control-label" for="multiple_plots">Multiple plots</label>
 		</div>
-
+            </td>
+        </tr>
+    </table>
 		<button type="submit" name="coplot" class="btn btn-outline-info">Plot</button>
 	</div>
 </form>
 
-{% if plot_series %}
-<div id="coplot" data-plot-series="{{ plot_series }}" data-plot-series2="{{ plot_series2 }}" data-layout="{{ layout }}" data-plot-x="{{ x_axis }}" data-plot-y="{{ y_axis }}" data-how-to-plot="{{ how_to_plot }}"></div>
+{% if plot %}
+<div id="coplot" >
+        {{plot | safe}}
+</div>
 {% endif %}
-
-
-
 {% endblock %}

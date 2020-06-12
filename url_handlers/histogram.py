@@ -29,7 +29,7 @@ def post_statistics():
 
     # handling errors and load data from database
     error = None
-    if not entity or not group_by or entity == "Choose entity" or group_by == "Choose entity":
+    if not entity or not group_by or entity == "Search entity" or group_by == "Search entity":
         error = "Please select entity and group_by"
 
     # get joined numerical and categorical values
@@ -61,7 +61,7 @@ def post_statistics():
     elif number_of_bins == "":
         bin_numbers = (adjusted_bins / 20)
     else:
-        error = "You have entered non-integer or negetive value. Please use positive integer"
+        error = "You have entered non-integer or negative value. Please use positive integer"
         return render_template('histogram.html',
                                 categorical_entities=all_categorical_entities,
                                 numeric_entities=all_numeric_entities,

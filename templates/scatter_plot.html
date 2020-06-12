@@ -29,15 +29,33 @@
 <form action="" method="POST">
     {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
 	{{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
-        <div class="form-check mt-4">
+
+    <label >Scale</label>
+        <table >
+        <tr>
+            <td>
+		<div class="custom-control custom-radio" >
+				<input type="radio" class="custom-control-input" id="linear" name="how_to_plot" value="linear"
+						{% if how_to_plot=="linear" or not how_to_plot %}checked{% endif %}>
+				<label class="custom-control-label" for="linear">linear</label>
+		</div>
+            </td>
+            <td>
+		<div class="custom-control custom-radio">
+				<input type="radio" class="custom-control-input" id="log" name="how_to_plot" value="log"
+					{% if how_to_plot=="log"  %}checked{% endif %}>
+				<label class="custom-control-label" for="log">log</label>
+		</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="form-check mt-4">
             <input class="form-check-input" type="checkbox" value="true" id="add_group_by" name="add_group_by"
                    {% if add_group_by %} checked {% endif %}>
             <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
         </div>
-        <br>
         <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox" value="true">
-            <br>
-
 
             <label for="category">Group by</label>
             <select  name="category" id="category" style="width: 100%" class="js-example-basic-single" >
@@ -47,15 +65,16 @@
                 {% endfor %}
             </select>
         </div>
-    </div>
+
+
     <div class="form-check mt-4">
     <button type="submit" name="scatter_plot" class="btn btn-outline-info">Plot data</button>
     </div>
 </form>
 
-{% if plot_series %}
-<div id="scatter_plot" data-plot-x="{{ x_axis }}" data-plot-y="{{ y_axis }}"
-                data-plot-category="{{ cat_values }}"
-                     data-plot-series="{{ plot_series }}"></div>
+{% if plot %}
+<div id="scatter_plot" >
+        {{plot | safe}}
+</div>
 {% endif %}
 {% endblock %}

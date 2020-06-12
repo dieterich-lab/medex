@@ -71,7 +71,8 @@ def post_plots():
     plot_series.append({'z': corr_values,
                         'x' : numeric_entities,
                         'y' : numeric_entities,
-                        'type': "heatmap"
+                        'type': "heatmap",
+                        'color': 'corr'
                         })
 
 

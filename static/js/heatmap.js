@@ -15,6 +15,18 @@ $(function () {
         // delete attribute
         Plotly.newPlot('heatmap',
             heatmap_data,
-            {title: 'Heatmap'},);
-    }
+            {title: 'Heatmap shows Pearson correlation ',annotations: [
+            {
+              text: 'Rows with missing values have been removed ',
+                xref: 'paper',
+                yref: 'paper',
+                x: 0.15,
+                xanchor: 'right',
+                y: 1,
+                yanchor: 'bottom',
+                showarrow: false
+            },
+
+          ]},);
+            }
 });

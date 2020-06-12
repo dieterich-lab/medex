@@ -21,6 +21,8 @@ $(function () {
     });
 
 
+
+
     $("#numeric_entities").select2({
     placeholder:"Search entity"
     });

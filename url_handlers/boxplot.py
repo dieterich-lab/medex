@@ -29,7 +29,7 @@ def post_boxplots():
 
     # handling errors and load data from database
     error = None
-    if not entity or not group_by or entity == "Choose entity" or group_by == "Choose entity":
+    if not entity or not group_by or entity == "Search entity" or group_by == "Search entity":
         error = "Please select entity and group by"
     if not error:
         numeric_df = ps.get_num_cat_values([entity],[group_by], rdb)
