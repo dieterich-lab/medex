@@ -1,11 +1,10 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import collections
-import pandas as pd
 import json
 import plotly
 import plotly.graph_objs as go
-import plotly.express as px
+
 
 
 barchart_page = Blueprint('barchart', __name__,
@@ -65,20 +64,15 @@ def post_statistics():
             'type': "bar",
             'width': 0.3
         })
-        entity_df = pd.DataFrame(columns=[entity], data=categorical_df[entity].dropna())
-        list_of_values = set(entity_df[entity].unique())
-        entity_values[entity] = {}
-        for value in list_of_values:
-            entity_values[entity][value] = len(entity_df.loc[entity_df[entity] == value])
 
 
     layout = go.Layout(
         barmode='stack',
         template = 'plotly_white'
     )
-    fig = px.scatter(x=[0, 1, 2, 3, 4], y=[0, 1, 4, 9, 16])
 
-    div = fig.to_html(full_html=False)
+
+
 
     data = go.Figure(data=data, layout=layout)
     graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
@@ -87,8 +81,6 @@ def post_statistics():
                            categorical_tab=True,
                            all_categorical_entities=all_categorical_entities,
                            plot = graphJSON,
-                           ooo = div,
                            entity_values=entity_values,
-                           selected_c_entities=selected_c_entities,
-                           plot_series=plot_series
+                           selected_c_entities=selected_c_entities
                            )
