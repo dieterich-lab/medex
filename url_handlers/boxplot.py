@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
+import plotly.express as px
 
 boxplot_page = Blueprint('boxplot', __name__,
                          template_folder='templates')
@@ -26,13 +27,14 @@ def post_boxplots():
     # get selected entities
     entity = request.form.get('numeric_entities')
     group_by = request.form.get('group_by')
+    how_to_plot = request.form.get('how_to_plot')
 
     # handling errors and load data from database
     error = None
     if not entity or not group_by or entity == "Search entity" or group_by == "Search entity":
         error = "Please select entity and group by"
     if not error:
-        numeric_df = ps.get_num_cat_values([entity],[group_by], rdb)
+        numeric_df = ps.get_num_cat_values([entity],[group_by], rdb).dropna()
         if len(numeric_df.index) == 0:
             error = "This two entities don't have common values"
     if error:
@@ -45,32 +47,20 @@ def post_boxplots():
                                 )
 
 
-    
-    min_val = numeric_df[entity].min()
-    max_val = numeric_df[entity].max()
-    data =[]
-    fig =[]
-    groups = set(numeric_df[group_by].values.tolist())
-    plot_series = []
-    for group in sorted(groups):
-        df = numeric_df.loc[numeric_df[group_by] == group]
-        values = df[entity].values.tolist()
-        if (values):
-#           data.append(go.Box(y=values, name =group))
-            plot_series.append({
-                'y': values,
-                'type': "box",
-                'name': group,
-                })
-#    graphJSON = json.dumps(data, cls=plotly.utils.PlotlyJSONEncoder)
+
+
+    if how_to_plot == 'linear':
+        fig = px.box(numeric_df, x=group_by, y=entity,color=group_by,template="plotly_white")
+    else :
+        fig = px.box(numeric_df, x=group_by, y=entity, color=group_by, template="plotly_white", log_y=True)
+
+    fig = fig.to_html()
+
 
     return render_template('boxplot.html',
                            categorical_entities=all_categorical_entities,
                            numeric_entities=all_numeric_entities,
                            selected_entity=entity,
                            group_by=group_by,
-                           plot_series=plot_series,
-#                           plot = graphJSON,
-                           min_val=min_val,
-                           max_val=max_val,
+                           plot =fig
                            )

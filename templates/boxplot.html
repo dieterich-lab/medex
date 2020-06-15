@@ -22,14 +22,32 @@
 <form action="" method="POST">
 {{ m.entity_form(id= "numeric_entities",name =numeric_entities,value=entity,select=selected_entity,d="Numeric entities:") }}
 {{ m.entity_form(id= "group_by",name =categorical_entities,value=entity,select=group_by,d="Group by:") }}
+        <label >Scale</label>
+        <table >
+        <tr>
+            <td>
+		<div class="custom-control custom-radio" >
+				<input type="radio" class="custom-control-input" id="linear" name="how_to_plot" value="linear"
+						{% if how_to_plot=="linear" or not how_to_plot %}checked{% endif %}>
+				<label class="custom-control-label" for="linear">linear</label>
+		</div>
+            </td>
+            <td>
+		<div class="custom-control custom-radio">
+				<input type="radio" class="custom-control-input" id="log" name="how_to_plot" value="log"
+					{% if how_to_plot=="log"  %}checked{% endif %}>
+				<label class="custom-control-label" for="log">log</label>
+		</div>
+            </td>
+        </tr>
+    </table>
+
     <button type="submit" name="plot_boxplot" class="btn btn-outline-info">Plot</button>
 </form>
 
-{% if plot_series %}
-<div
-    id="boxplot_chart"
-    data-plot-series="{{ plot_series }}"
-    data-min-val="{{ min_val }}"
-    data-max-val="{{ max_val }}"></div>
+{% if plot %}
+<div id="scatter_plot" >
+        {{plot | safe}}
+</div>
 {% endif %}
 {% endblock %}
