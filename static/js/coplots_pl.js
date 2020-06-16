@@ -14,6 +14,23 @@ $(document).ready(function() {
         }
     });
 
+    $("#log2").hide();
+
+    $(document).on('change', '#log', function() {
+        if(this.checked == false) {
+          $("#log2").hide();
+        } else {
+            $("#log2").show();
+        }
+    });
+
+    $(document).on('change', '#linear', function() {
+        if(this.checked == false) {
+          $("#log2").show();
+        } else {
+            $("#log2").hide();
+        }
+    });
 
     $("#x_axis").select2();
     $("#y_axis").select2();
