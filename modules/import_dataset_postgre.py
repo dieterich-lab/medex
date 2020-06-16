@@ -51,7 +51,9 @@ def load_data(entities,dataset,header):
         print('start2')
         for row in in_file:
             row = row.replace("\n", "").split(",")
-            cur.execute("INSERT INTO examination VALUES ("+col+")", row)
+            line = row[0:6] + [
+                ";".join([str(x) for x in row[6:]])]
+            cur.execute("INSERT INTO examination VALUES ("+col+")",line)
     r.commit()
     in_file.close()
     print('stop')
@@ -62,11 +64,12 @@ def alter_table():
     sql1 = """CREATE TABLE examination_categorical AS SELECT e.* from examination as e join name_type as n
             on e."Key" = n."Key" where n."type" = 'String'"""
     sql2 = """CREATE TABLE examination_numerical AS SELECT e.* from examination as e join name_type as n
-                on e."Key" = n."Key" where not n."type" = 'String'"""
+                on e."Key" = n."Key" where n."type" = 'Double'"""
     sql3 = """ALTER TABLE examination_numerical ALTER COLUMN "Value" Type double precision Using ("Value"::double precision)"""
-    sql4 = """CREATE INDEX "Key_index" ON examination_numerical("Key")"""
+    sql4 = """CREATE INDEX IF NOT EXISTS "Key_index" ON examination_numerical ("Key")"""
     sql5 = """CREATE EXTENSION IF NOT  EXISTS tablefunc"""
-    sql6 = """DROP TABLE examination"""
+    sql6 = """CREATE TABLE Patient AS select distinct "Patient_ID" from examination_numerical"""
+    sql7 = """DROP TABLE examination"""
     cur.execute(sql1)
     r.commit()
     cur.execute(sql2)
@@ -76,6 +79,10 @@ def alter_table():
     cur.execute(sql4)
     r.commit()
     cur.execute(sql5)
+    r.commit()
+    cur.execute(sql6)
+    r.commit()
+    cur.execute(sql7)
     r.commit()
 
 
