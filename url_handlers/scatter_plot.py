@@ -75,10 +75,8 @@ def post_plots():
         if add_group_by :
             fig = px.scatter(categorical_df, x=x_axis, y=y_axis,color = category, hover_name='Patient_ID', template="plotly_white",
                                  trendline="ols")
-
-
         else:
-            numeric_df = numeric_df[['Patient_ID',x_axis, y_axis]]
+
             fig = px.scatter(numeric_df,x=x_axis, y=y_axis,hover_name = 'Patient_ID', template = "plotly_white",trendline="ols")
 
     else:
@@ -86,9 +84,7 @@ def post_plots():
             fig = px.scatter(categorical_df, x=x_axis, y=y_axis, color=category, hover_name='Patient_ID',
                              template="plotly_white",trendline="ols",log_x=True, log_y=True)
 
-
         else:
-            numeric_df = numeric_df[['Patient_ID', x_axis, y_axis]]
             fig = px.scatter(numeric_df, x=x_axis, y=y_axis, hover_name='Patient_ID', template="plotly_white",
                              trendline="ols",log_x=True, log_y=True)
 
