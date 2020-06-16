@@ -67,10 +67,11 @@ def alter_table():
     sql2 = """CREATE TABLE examination_numerical AS SELECT e.* from examination as e join name_type as n
                 on e."Key" = n."Key" where n."type" = 'Double'"""
     sql3 = """ALTER TABLE examination_numerical ALTER COLUMN "Value" Type double precision Using ("Value"::double precision)"""
-    sql4 = """CREATE INDEX IF NOT EXISTS "Key_index" ON examination_numerical ("Key")"""
-    sql5 = """CREATE EXTENSION IF NOT  EXISTS tablefunc"""
-    sql6 = """CREATE TABLE Patient AS select distinct "Patient_ID" from examination_numerical"""
-    sql7 = """DROP TABLE examination"""
+    sql4 = """CREATE INDEX IF NOT EXISTS "Key_index_numerical" ON examination_numerical ("Key")"""
+    sql5 = """CREATE INDEX IF NOT EXISTS "Key_index_categorical" ON examination_numerical ("Key")"""
+    sql6 = """CREATE EXTENSION IF NOT  EXISTS tablefunc"""
+    sql7 = """CREATE TABLE Patient AS select distinct "Patient_ID" from examination_numerical"""
+    sql8 = """DROP TABLE examination"""
     cur.execute(sql1)
     r.commit()
     cur.execute(sql2)
@@ -84,6 +85,8 @@ def alter_table():
     cur.execute(sql6)
     r.commit()
     cur.execute(sql7)
+    r.commit()
+    cur.execute(sql8)
     r.commit()
 
 
