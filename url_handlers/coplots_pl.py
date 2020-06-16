@@ -32,10 +32,8 @@ def post_coplots():
     y_axis = request.form.get('y_axis')
     how_to_plot = request.form.get('how_to_plot')
     how_to_plot2 = request.form.get('how_to_plot2')
-    selected_x_min = request.form.get('x_axis_min')
-    selected_x_max = request.form.get('x_axis_max')
-    selected_y_min = request.form.get('y_axis_min')
-    selected_y_max = request.form.get('y_axis_max')
+    log_x = request.form.get('log_x')
+    log_y = request.form.get('log_y')
     select_scale = request.form.get('select_scale') is not None
 
     # handling errors and load data from database
@@ -54,6 +52,8 @@ def post_coplots():
         error = "You can't compare the same entities for x and y axis"
     elif category1 == category2:
         error = "You can't compare the same category"
+    elif how_to_plot == 'log' and not log_x and not log_y:
+        error = "Please select type of log"
     if not error:
         num_data = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
         cat_data = ps.get_cat_values([category1, category2], rdb) if not error else (None, error)
@@ -71,17 +71,8 @@ def post_coplots():
                                x_axis=x_axis,
                                y_axis=y_axis,
                                how_to_plot=how_to_plot,
-                               x_min=selected_x_min,
-                               x_max=selected_x_max,
-                               y_min=selected_y_min,
-                               y_max=selected_y_max,
                                select_scale=select_scale)
 
-
-    x_min = data[x_axis].min() if not select_scale else selected_x_min
-    x_max = data[x_axis].max() if not select_scale else selected_x_max
-    y_min = data[y_axis].min() if not select_scale else selected_y_min
-    y_max = data[y_axis].max() if not select_scale else selected_y_max
 
 
 
@@ -94,15 +85,26 @@ def post_coplots():
         else:
             fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols")
     else:
-        if how_to_plot == "single_plot":
-            fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
-        else:
-            fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+        if log_x == 'log_x' and log_y == 'log_y':
+            if how_to_plot == "single_plot":
+                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+            else:
+                fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+        elif log_x == 'log_x':
+            if how_to_plot == "single_plot":
+                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
+            else:
+                fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
+        elif log_y == 'log_y':
+            if how_to_plot == "single_plot":
+                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols", log_y=True)
+            else:
+                fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_y=True)
 
     fig.update_layout(
         title={
             'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "</b>",
-            'y': 0.9,
+            'y': 1,
             'x': 0.5,
             'xanchor': 'center',
             'yanchor': 'top'})
@@ -119,8 +121,4 @@ def post_coplots():
                            y_axis=y_axis,
                            how_to_plot=how_to_plot,
                            select_scale=select_scale,
-                           plot = fig,
-                           x_min=x_min,
-                           x_max=x_max,
-                           y_min=y_min,
-                           y_max=y_max)
+                           plot = fig)

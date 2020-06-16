@@ -48,11 +48,12 @@ def load_data(entities,dataset,header):
         a.append('%s')
     col = ','.join(a)
     with open(dataset, 'r') as in_file:
+        i=0
         print('start2')
         for row in in_file:
+            i+=1
             row = row.replace("\n", "").split(",")
-            line = row[0:6] + [
-                ";".join([str(x) for x in row[6:]])]
+            line = [i] + row[0:5] + [";".join([str(x) for x in row[5:]])]
             cur.execute("INSERT INTO examination VALUES ("+col+")",line)
     r.commit()
     in_file.close()

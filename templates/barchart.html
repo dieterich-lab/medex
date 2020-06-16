@@ -32,19 +32,6 @@
 </form>
 
 
-
-
-<!--var graphs2 = {{ooo | safe}}; -->
-<div class="card-body">
-    {% if plot_series %}
-    <div class="chart" id="bargraph">
-        <script>
-            var graphs = {{plot | safe}};
-            Plotly.plot('bargraph',graphs,{});
-        </script>
-    </div>
-    {% endif %}
-
     {% if table_data %}
     <table class="table table-striped">
         <thead>
@@ -78,6 +65,18 @@
         {% endfor %}
         </tbody>
     </table>
+    {% endif %}
+
+
+<!--var graphs2 = {{ooo | safe}}; -->
+<div class="card-body">
+    {% if plot %}
+    <div class="chart" id="bargraph">
+        <script>
+            var graphs = {{plot | safe}};
+            Plotly.plot('bargraph',graphs,{});
+        </script>
+    </div>
     {% endif %}
 </div>
 
