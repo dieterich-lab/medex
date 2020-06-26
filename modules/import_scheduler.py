@@ -1,4 +1,4 @@
-from modules import import_dataset_postgre as id
+from modules import import_dataset_postgre as idp
 from configparser import ConfigParser
 import os
 import sys
@@ -67,19 +67,21 @@ def start_import():
     entities ='./import/entities.csv'
 
 
-    if not os.path.isfile(dataset) or not os.path.isfile(entities):
-        return print("Could not import to database either or both entities and dataset is missing", file=sys.stderr)
+    if not os.path.isfile(dataset) or not os.path.isfile(entities) or not os.path.isfile(header):
+        return print("Could not import to database either or header.csv,entities.csv and dataset.csv is missing", file=sys.stderr)
 
     if not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
-        return
+        return print("Data set not changed", file=sys.stderr)
+    print("Start load data")
 
-    id.create_table(header)
-    id.load_data(entities,dataset,header)
-    id.alter_table()
+    # use function from import_dataset_postgre.py to create tables in database
+    idp.create_table(header)
+    idp.load_data(entities,dataset,header)
+    idp.alter_table()
 
     settings.update(dataset_path=dataset, entities_path=entities)
     settings.save()
-
+    print("End load data")
 
 
 class Scheduler():
