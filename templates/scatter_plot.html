@@ -4,11 +4,12 @@
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/plots_plotly.js') }}"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="{{ url_for('static', filename='js/jquery-1.11.1.min.js') }}"></script>
+
+    {# plotly and jquery #}
+    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
 
     {# pretty multiselect inputs #}
-    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
@@ -30,7 +31,7 @@
     {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
 	{{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
 
-	     <label >Scale</label>
+    <label >Scale</label>
         <table >
         <tr>
             <td>
@@ -68,14 +69,17 @@
             <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
         </div>
         <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox" value="true">
+            {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities ,value=entity,d="Group by:") }}
 
-            <label for="category">Group by</label>
-            <select  name="category" id="category" style="width: 100%" class="js-example-basic-single" >
-                <option {% if not category %} selected {% endif %}>Search entity</option>
-                {% for entity in all_categorical_entities %}
-                <option value="{{ entity }}" {% if entity == category %}selected{% endif %}>{{ entity }}</option>
-                {% endfor %}
-            </select>
+                <!-- Send dictionary with subcategory data to javascript -->
+            <script type="text/javascript">
+                var cat = {{all_subcategory_entities|safe}};
+            </script>
+
+            <div class="tooltips" title="Please select category and next subcategory">
+                <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control" ></select>
+            </div>
+
         </div>
 
 

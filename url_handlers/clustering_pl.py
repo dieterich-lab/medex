@@ -10,7 +10,7 @@ clustering_plot_page = Blueprint('clustering_pl', __name__,
 @clustering_plot_page.route('/clustering_pl', methods=['GET'])
 def cluster():
     # this import has to be here!!
-    from webserver import all_numeric_entities,all_categorical_entities
+    from webserver import all_numeric_entities
 
     return render_template('clustering_pl.html',
                            numeric_tab=True,
@@ -21,7 +21,7 @@ def cluster():
 @clustering_plot_page.route('/clustering_pl', methods=['POST'])
 def post_clustering():
     # this import has to be here!!
-    from webserver import rdb,all_numeric_entities, all_categorical_entities
+    from webserver import rdb,all_numeric_entities
 
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
@@ -45,10 +45,7 @@ def post_clustering():
 
 
 
-    cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(
-            numeric_entities,
-            df
-            )
+    cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(numeric_entities,df)
 
     table_data = { }
     plot_data = []

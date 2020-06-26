@@ -22,7 +22,7 @@ $(function () {
 
 
 
-
+    // use plugin select2 for selector
     $("#numeric_entities").select2({
     placeholder:"Search entity"
     });

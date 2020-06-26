@@ -5,15 +5,12 @@
     {# our own js #}
     <script src="{{ url_for('static', filename='js/coplots_pl.js') }}"></script>
 	<script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-{# pretty multiselect inputs #}
-    <link rel="stylesheet" href="{{ url_for('static', filename='choices.min.css') }}">
-    <script src="{{ url_for('static', filename='choices.min.js') }}"></script>
+    {# plotly and jquery #}
+    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
 
-
-    {# range slider #}
-	<script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+    {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
@@ -32,7 +29,21 @@
 	 {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
 	 {{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
 	 {{ m.entity_form(id= "category1",name =categorical_entities ,value=entity,select=category1,d="Category1:") }}
-	 {{ m.entity_form(id= "category2",name =categorical_entities ,value=entity,select=category2,d="Category2:") }}
+
+     <script type="text/javascript">
+                var cat = {{all_subcategory_entities|safe}};
+     </script>
+     <div class="tooltips" title="Please select category and next subcategory" >
+         <label>Subcategory: </label>
+            <select style="width: 100%" multiple id="category11" name="category11" class="form-control"></select>
+
+     </div>
+
+    {{ m.entity_form(id= "category2",name =categorical_entities ,value=entity,select=category2,d="Category2:") }}
+     <div class="tooltips" title="Please select category and next subcategory" >
+        <label>Subcategory: </label>
+            <select style="width: 100%" multiple id="category22" name="category22" class="form-control" ></select>
+      </div>
 	     <label >Scale</label>
         <table >
         <tr>

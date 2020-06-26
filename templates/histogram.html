@@ -4,9 +4,12 @@
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/histogram.js') }}"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
+    {# plotly and jquery #}
+    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+
+    {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
@@ -22,29 +25,27 @@
 
 
 <form action="" method="POST">
-    <div class="form-group" >
-        <label for="entity">Entity:</label>
-        <select class="custom-select" name="entity" id="entity">
-            <option {% if not selected_entity %} selected {% endif %}>Search entity</option>
-            {% for entity in numeric_entities %}
-            <option value="{{ entity }}" {% if entity == selected_entity %}selected{% endif %}>{{ entity }}</option>
-            {% endfor %}
-        </select>
+
+    {{ m.entity_form(id= "numeric_entities",name =all_numeric_entities,value=entity,d="Numeric entities:") }}
+    {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities,value=entity,d="Group by:") }}
+
+    <!-- Send dictionary with subcategory data to javascript -->
+    <script type="text/javascript">
+         var cat = {{all_subcategory_entities|safe}};
+    </script>
+    <div class="tooltips" title="Please select category and next subcategory" >
+        <label>Subcategory: </label>
+        <select multiple id="subcategory_entities" name="subcategory_entities" class="form-control" ></select>
     </div>
 
-    <div class="form-group">
-        <label for="group_by">Group by:</label>
-        <select class="custom-select" name="group_by" id="group_by">
-            <option {% if not group_by %} selected {% endif %}>Search entity</option>
-            {% for entity in categorical_entities %}
-            <option value="{{ entity }}" {% if entity == group_by %}selected{% endif %}>{{ entity }}</option>
-            {% endfor %}
-        </select>
-    </div>
+
   <label>Number of bins </label><input type="text" class="form-control"
       name="number_of_bins"  id="number_of_bins"
       value="{% if number_of_bins %}{{ number_of_bins }}{% else %}{% endif %}">
-    <button type="submit" name="plot_histogram" class="btn btn-outline-info mt-4">Plot histogram</button>
+
+
+   <button type="submit" name="plot_histogram" class="btn btn-outline-info mt-4">Plot histogram</button>
+
 </form>
 
 

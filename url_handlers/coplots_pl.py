@@ -12,28 +12,36 @@ coplots_plot_page = Blueprint('coplots_pl', __name__,
 def get_coplots():
     
     # connection and load data from database
-    from webserver import all_numeric_entities,all_categorical_entities
+    from webserver import all_numeric_entities,all_categorical_entities,all_subcategory_entities
 
     return render_template('coplots_pl.html',
                            all_numeric_entities=all_numeric_entities,
-                           categorical_entities=all_categorical_entities)
+                           categorical_entities=all_categorical_entities,
+                           all_subcategory_entities=all_subcategory_entities)
 
 
 @coplots_plot_page.route('/coplots_pl', methods=['POST'])
 def post_coplots():
     
     # connection with database and load name of entities
-    from webserver import rdb,all_numeric_entities,all_categorical_entities
+    from webserver import rdb,all_numeric_entities,all_categorical_entities,all_subcategory_entities
 
     # get selected entities
     category1 = request.form.get('category1')
     category2 = request.form.get('category2')
+
+    category11 = request.form.get('category11')
+    category22 = request.form.get('category22')
+
     x_axis = request.form.get('x_axis')
     y_axis = request.form.get('y_axis')
+
     how_to_plot = request.form.get('how_to_plot')
     how_to_plot2 = request.form.get('how_to_plot2')
+
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
+
     select_scale = request.form.get('select_scale') is not None
 
     # handling errors and load data from database
@@ -50,14 +58,18 @@ def post_coplots():
         error = "You can't compare the same entities and categories"
     elif x_axis == y_axis:
         error = "You can't compare the same entities for x and y axis"
-    elif category1 == category2:
-        error = "You can't compare the same category"
+    elif not category22 or not category11:
+        error = "Please select subcategory"
+    elif category11 == category22:
+        error = "You can't compare the same subcategory"
     elif how_to_plot == 'log' and not log_x and not log_y:
         error = "Please select type of log"
     if not error:
         num_data = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
-        cat_data = ps.get_cat_values([category1, category2], rdb) if not error else (None, error)
-        data = num_data.merge(cat_data, on ="Patient_ID").dropna()
+        cat_data1 = ps.get_cat_values(category1,category11, rdb) if not error else (None, error)
+        cat_data2 = ps.get_cat_values(category2,category22, rdb) if not error else (None, error)
+        data = num_data.merge(cat_data1, on ="Patient_ID").dropna()
+        data = data.merge(cat_data2, on="Patient_ID").dropna()
         if len(data.index) == 0:
             error = "No data based on the selected options"
 
@@ -71,13 +83,10 @@ def post_coplots():
                                x_axis=x_axis,
                                y_axis=y_axis,
                                how_to_plot=how_to_plot,
-                               select_scale=select_scale)
+                               select_scale=select_scale,
+                               all_subcategory_entities=all_subcategory_entities)
 
-
-
-
-
-
+    # Plot figure and convert to an HTML string representation
     data[category1+' '+category2] = data[category1]+ ' '+ data[category2]
     if how_to_plot2 == "linear":
         if how_to_plot == "single_plot":
@@ -110,7 +119,6 @@ def post_coplots():
             'yanchor': 'top'})
 
 
-
     fig = fig.to_html()
     return render_template('coplots_pl.html',
                            all_numeric_entities=all_numeric_entities,
@@ -121,4 +129,5 @@ def post_coplots():
                            y_axis=y_axis,
                            how_to_plot=how_to_plot,
                            select_scale=select_scale,
-                           plot = fig)
+                           plot=fig,
+                           all_subcategory_entities=all_subcategory_entities)

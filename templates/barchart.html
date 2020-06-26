@@ -4,10 +4,12 @@
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/barchart.js') }}"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-{# pretty multiselect inputs #}
+    {# plotly and jquery #}
+    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+
+    {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
@@ -15,7 +17,6 @@
     {# export tables #}
     <script type="text/javascript" src="{{ url_for('static', filename='table2excel.js') }}" ></script>
     <script type="text/javascript" src="{{ url_for('static', filename='tabletoCSV.js') }}" ></script>
-
 
 {# end of imports #}
 
@@ -27,60 +28,32 @@
 
 
 <form action="" method="POST">
-    {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,d="Categorical entities:") }}
-    <button type="submit" name="barchart" class="btn btn-outline-info">Plot</button>
+
+    {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities ,value=entity,d="Categorical entities:") }}
+
+    <!-- Send dictionary with subcategory data to javascript -->
+    <script type="text/javascript">
+         var cat = {{all_subcategory_entities|safe}};
+    </script>
+
+    <div class="tooltips" title="Please select category and next subcategory" >
+        <label>Subcategory: </label>
+        <select multiple id="subcategory_entities" name="subcategory_entities" class="form-control" ></select>
+    </div>
+
+    <div class="form-check mt-4">
+        <button type="submit" name="barchart" class="btn btn-outline-info">Plot barchart</button>
+    </div>
 </form>
 
 
-    {% if table_data %}
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <div class="dropdown mt-4 float-right">
-                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Export table
-                </button>
-                <div class="dropdown-menu" aria-labelledby="export_button">
-                    <a id='export_excel' class="dropdown-item">.xl</a>
-                    <a id="export_csv" class="dropdown-item">.csv</a>
-                </div>
-            </div>
-        </tr>
-        <tr>
-            <th>Entity</th>
-            <th>Value</th>
-            <th>Number of patients</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for entity in entity_values %}
-        {% for value in entity_values[entity] %}
-        <tr>
-            <td>{{ entity }}</td>
-            <td>{{ value }}</td>
-            <td>{{ entity_values[entity][value] }}</td>
-        </tr>
-        {% endfor %}
-        {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
-
-
-<!--var graphs2 = {{ooo | safe}}; -->
 <div class="card-body">
     {% if plot %}
-    <div class="chart" id="bargraph">
-        <script>
-            var graphs = {{plot | safe}};
-            Plotly.plot('bargraph',graphs,{});
-        </script>
+    <div class="chart" id="barchart">
+            {{plot | safe}}
     </div>
     {% endif %}
 </div>
-
-
 
 
 {% endblock %}

@@ -7,6 +7,7 @@
   </div>
 {%- endmacro %}
 
+<!-- single selector -->
 {%- macro entity_form(id,name,value,select,d) %}
     <div class="form-group">
         <label for="{{ id }}">{{ d }}</label>
@@ -19,12 +20,14 @@
     </div>
 {%- endmacro %}
 
+
+<!-- multiple selector -->
 {%- macro entity_form2(id2,name,value,select,d) %}
     <div class="form-group">
         <label for="{{ id2 }}">{{ d }}</label>
-        <select multiple name="{{ id2 }}" id="{{ id2 }}" class="form-control" >
+        <select multiple name="{{ id2 }}" id="{{ id2 }}" class="form-control" style="width: 100%">
         {% for entity in name %}
-            <option value="{{ entity }}" {% if entity == select %}selected{% endif %}>{{ entity }}</option>
+            <option value="{{ entity }}" {% if entity in select %}selected{% endif %}>{{ entity }}</option>
          {% endfor %}
         </select>
     </div>

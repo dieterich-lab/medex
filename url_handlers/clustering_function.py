@@ -6,7 +6,7 @@ import sklearn.mixture
 import sklearn.preprocessing
 
 
-def cluster_numeric_fields(entities, df, standardize=True, missing='drop', min_max_filter=None):
+def cluster_numeric_fields(entities, df):
     """ Cluster the given numeric entities using a DP-GMM.
 
     Paramters
@@ -14,29 +14,20 @@ def cluster_numeric_fields(entities, df, standardize=True, missing='drop', min_m
     entities: list of strings
         The names of the numeric entities
 
-    r : redis.StrictRedis
-        The redis database connection
-
     standardize : bool
         Whether to standardize the values before clustering
 
-    missing : string
-        How to handle missing data. The available values are:
-            * "drop" : do not consider rows with missing data
-            * "mean", "median", "most_frequent": these values are passed to an
-                sklearn.preprocessing.Imputer. Please see its documentation for
-                more details.
 
     Returns
     -------
-    m : sklearn.mixture.BayesianGaussianMixture
+    df : sklearn.mixture.BayesianGaussianMixture
         The fit mixture model
 
-    label_uses : dict
+    cluster_data : dict
         A dictionary mapping from each label to the number of items with that
         label.
 
-    patient_df: pd.DataFrame
+    cluster_labels: pd.DataFrame
         The data frame containing entity values for each patient
     """
     import misc.math_utils as math_utils

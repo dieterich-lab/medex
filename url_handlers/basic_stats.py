@@ -1,18 +1,16 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-
+from db import rdb,all_numeric_entities, all_categorical_entities
 
 basic_stats_page = Blueprint('basic_stats', __name__,
                              template_folder='basic_stats')
-
 
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
 
     # connection and load data from database
-    from webserver import connect_db,rdb,all_numeric_entities,all_categorical_entities
-
+    from webserver import all_numeric_entities, all_categorical_entities
 
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
@@ -23,10 +21,7 @@ def get_statistics():
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
     # connection with database and load name of entities
-    from webserver import rdb,all_numeric_entities,all_categorical_entities
-
-
-
+    from webserver import rdb, all_numeric_entities, all_categorical_entities
 
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
@@ -39,9 +34,11 @@ def get_basic_stats():
         if numeric_entities:
             numeric_df = ps.get_values(numeric_entities, rdb)
             n = ps.number(rdb)
-            error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. " if error else None
+            if len(numeric_df.index) == 0:
+                error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. "
         else:
             error = "Please select numeric entities"
+
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
@@ -50,9 +47,7 @@ def get_basic_stats():
                                    selected_n_entities=numeric_entities,
                                    error=error)
 
-        """calculation basic stats (maybe should I do this in SQL)"""
-        # to avoid key error
-
+        # calculation basic stats
         numeric_df = numeric_df[numeric_entities]
         basic_stats = { }
         if 'counts' in request.form:
@@ -82,26 +77,24 @@ def get_basic_stats():
         if not any(basic_stats.keys()):
             error_message = "You must select at least some statistics"
             return render_template('basic_stats/basic_stats.html',
-                                numeric_tab=True,
-                                all_categorical_entities=all_categorical_entities,
-                                all_numeric_entities=all_numeric_entities,
-                                selected_n_entities=numeric_entities,
-                                basic_stats=basic_stats,
-                                error=error_message)
+                                    numeric_tab=True,
+                                    all_categorical_entities=all_categorical_entities,
+                                    all_numeric_entities=all_numeric_entities,
+                                    selected_n_entities=numeric_entities,
+                                    basic_stats=basic_stats,
+                                    error=error_message)
 
         if any(basic_stats.keys()):
             any_present = numeric_df.shape[0]
             all_present = numeric_df.dropna().shape[0]
             return render_template('basic_stats/basic_stats.html',
-                                numeric_tab=True,
-                                all_categorical_entities=all_categorical_entities,
-                                all_numeric_entities=all_numeric_entities,
-                                selected_n_entities=numeric_entities,
-                                basic_stats=basic_stats,
-                                any_present=any_present,
-                                all_present=all_present)
-
-
+                                    numeric_tab=True,
+                                    all_categorical_entities=all_categorical_entities,
+                                    all_numeric_entities=all_numeric_entities,
+                                    selected_n_entities=numeric_entities,
+                                    basic_stats=basic_stats,
+                                    any_present=any_present,
+                                    all_present=all_present)
 
     if 'basic_stats_c' in request.form:
         """ calculation for categorical values"""
@@ -109,13 +102,13 @@ def get_basic_stats():
         # list selected data by client
         categorical_entities = request.form.getlist('categorical_entities')
 
-
         # handling errors and load data from database
         error = None
         if categorical_entities:
-            categorical_df = ps.get_cat_values(categorical_entities, rdb)
+            categorical_df = ps.get_cat_values_basic_stas(categorical_entities, rdb)
             n = ps.number(rdb)
-            error = "No data based on the selected entities ( " + ", ".join(categorical_entities) + " ) " if error else None
+            if len(categorical_df.index) == 0:
+                error = "The selected entities (" + ", ".join(categorical_df) + ") do not contain any values. "
         else:
             error = "Please select entities"
         if error:
@@ -126,15 +119,11 @@ def get_basic_stats():
                                    selected_c_entities=categorical_entities,
                                    error=error)
 
-
-        """calculation basic stats (maybe should I do this in SQL)"""
         basic_stats_c = { }
         for entity in categorical_entities:
             basic_stats_c[entity] = { }
-            # if entity in categorical_df.columns:
-            count = categorical_df[categorical_df.columns.intersection([entity])].count()[entity]
-            basic_stats_c[entity]['count'] = count
-            basic_stats_c[entity]['count NaN'] = int(n) - count
+            basic_stats_c[entity]['count'] = categorical_df[entity]['count']
+            basic_stats_c[entity]['count NaN'] = int(n) - categorical_df[entity]['count']
 
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,

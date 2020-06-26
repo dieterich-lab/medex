@@ -45,7 +45,7 @@ def post_plots():
                                selected_n_entities=numeric_entities,
                                error=error)
     
-
+    # calculate person correlation
     numeric_df = numeric_df[numeric_entities]
     dfcols = pd.DataFrame(columns=numeric_df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
@@ -58,6 +58,7 @@ def post_plots():
                 df_corr = numeric_df[[r, c]].dropna()
             corr_values[r][c], pvalues[r][c] = pearsonr(df_corr[r], df_corr[c])
 
+    # currently don't use
     pvalues = pvalues.astype(float)
     pvalues = pvalues.round(decimals=3)
     pvalues = pvalues.T.values.tolist()
@@ -66,7 +67,7 @@ def post_plots():
     corr_values = corr_values.round(decimals=2)
     corr_values = corr_values.T.values.tolist()
 
-
+    # structure data for ploting
     plot_series = []
     plot_series.append({'z': corr_values,
                         'x' : numeric_entities,

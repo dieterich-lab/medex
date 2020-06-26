@@ -15,25 +15,13 @@
             <div id="numeric_settings" class="collapse {% if not selected_n_entities or error %} show {% endif %}"
                  aria-labelledby="n_settings_header" data-parent="#numeric_accordion">
                 <div class="card-body">
+                    {% import 'macro_template.html' as m %}
+
+                    {% if error %}
+                    {{ m.show_error(error) }}
+                    {% endif %}
                     <form action="" method="POST">
-
-                        {% if error %}
-                          <div class="alert alert-danger mt-2" role="alert">
-                            <div class="row">
-                              <div class="col col-xs-10">{{ error }}</div>
-                              <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
-                            </div>
-                          </div>
-                        {% endif %}
-                        <div class="form-group">
-                            <label for="numeric_entities">Numeric entities:</label>
-                            <select multiple name="numeric_entities" id="numeric_entities" style="width: 100%" class="js-example-basic-multiple" placeholder="Search entity">
-                            {% for entity in all_numeric_entities %}
-                                <option value="{{ entity }}" {% if entity in selected_n_entities %}selected{% endif %}>{{ entity }}</option>
-                            {% endfor %}
-                            </select>
-                        </div>
-
+                        {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities ,value=entity,select=selected_n_entities,d="Numeric entities:") }}
                         <label>Include following statistics:</label>
                         <div class="row ml-2">
                             <div class="custom-control custom-checkbox mr-2">

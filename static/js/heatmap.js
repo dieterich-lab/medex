@@ -5,11 +5,12 @@ $(function () {
     });
 
 
-// pretify the select input for categorical entities
+    // use plugin select2 for selector
     $("#numeric_entities").select2({
     placeholder:"Search entity"
     });
 
+    //Plot
     var heatmap_data = JSON.parse($('#heatmap').attr('data-plot-series').replace(/'/g, '"')); //"));
     if (heatmap_data.length != 0) {
         // delete attribute

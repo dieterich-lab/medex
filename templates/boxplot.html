@@ -4,9 +4,12 @@
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/boxplot.js') }}"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
+    {# plotly and jquery #}
+    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+
+    {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
@@ -20,9 +23,19 @@
 
 
 <form action="" method="POST">
-{{ m.entity_form(id= "numeric_entities",name =numeric_entities,value=entity,select=selected_entity,d="Numeric entities:") }}
-{{ m.entity_form(id= "group_by",name =categorical_entities,value=entity,select=group_by,d="Group by:") }}
-        <label >Scale</label>
+    {{ m.entity_form(id= "numeric_entities",name =all_numeric_entities,value=entity,d="Numeric entities:") }}
+    {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities,value=entity,d="Group by:") }}
+
+    <!-- Send dictionary with subcategory data to javascript -->
+    <script type="text/javascript">
+         var cat = {{all_subcategory_entities|safe}};
+    </script>
+    <div class="tooltips" title="Please select category and next subcategory" >
+        <label>Subcategory: </label>
+        <select multiple id="subcategory_entities" name="subcategory_entities" class="form-control" ></select>
+    </div>
+
+    <label >Scale</label>
         <table >
         <tr>
             <td>
