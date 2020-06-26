@@ -20,7 +20,7 @@ template_folder='new_page_templates')
 ```
 .
 
-2.3. Register blueprint in the main app file (`hello.py`)
+2.3. Register blueprint in the main app file (`webserver.py`)
 `app.register_blueprint(new_page)`
 
 3. Create a template. 
