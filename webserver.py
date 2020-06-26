@@ -42,19 +42,18 @@ password = os.environ['POSTGRES_PASSWORD']
 host = os.environ['POSTGRES_HOST']
 database = os.environ['POSTGRES_DB']
 port = os.environ['POSTGRES_PORT']
-DATABASE_URL=f'postgresql://{user}:{password}@{host}:{port}/{database}'
+DATABASE_URL = f'postgresql://{user}:{password}@{host}:{port}/{database}'
 
 # Connection with database
-
 def connect_db():
-    """ connects to our redis database """
+    """ connects to database """
     db = getattr(g, '_database', None)
     if db is None:
         db = psycopg2.connect(DATABASE_URL)
     return db
 
 
-
+rdb = psycopg2.connect(DATABASE_URL)
 
 """ Direct to Basic Stats website during opening the program."""
 @app.route('/', methods=['GET'])
@@ -62,10 +61,7 @@ def login():
     return redirect('/basic_stats')
 
 
-
-# Import data to redis
 def check_for_env(key: str, default=None, cast=None):
-
     if key in os.environ:
         if cast:
             return cast(os.environ.get(key))
@@ -80,13 +76,14 @@ minute = check_for_env('IMPORT_MINUTE', default=5)
 
 # Import data using function scheduler from package modules
 if os.environ.get('IMPORT_DISABLED') is None:
-    Scheduler(day_of_week=day_of_week, hour=hour, minute=minute)
+    scheduler = Scheduler(day_of_week=day_of_week, hour=hour, minute=minute)
+    scheduler.start()
+    scheduler.stop()
 
- 
-rdb = psycopg2.connect(DATABASE_URL)
+# get all numeric and categorical entities from database
 all_numeric_entities = ps.get_numeric_entities(rdb)
-all_categorical_entities = ps.get_categorical_entities(rdb)   
-    
+all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
 
-def main():
-    return app
+
+if __name__ == '__main__':
+    app.run()
