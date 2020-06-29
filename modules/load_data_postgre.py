@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from collections import ChainMap
-
+import time
 
 def get_categorical_entities(r):
     """ Retrieve  categorical entities and their subcategories from PostrgreSQL
@@ -19,23 +19,28 @@ def get_categorical_entities(r):
 
     # Retrieve all categorical values
     sql1 = """Select "Key" from name_type where "type" = 'String' """
-    df1 = pd.read_sql(sql1, r)
 
     # Retrieve categorical values with subcategories
     sql2 = """Select distinct "Key","Value" from examination_categorical order by "Key" """
-    df = pd.read_sql(sql2, r)
-    array = []
+    try:
+        df1 = pd.read_sql(sql1, r)
+        df = pd.read_sql(sql2, r)
 
-    # create dictionary with categories and subcategories
-    for value in df1['Key']:
-        dfr2 = {}
-        df2 = df[df["Key"] == value]
-        del df2['Key']
-        dfr2[value] = list(df2['Value'])
-        array.append(dfr2)
-    df = dict(ChainMap(*array))
+        array = []
 
-    return df1["Key"], df
+        # create dictionary with categories and subcategories
+        for value in df1['Key']:
+            dfr2 = {}
+            df2 = df[df["Key"] == value]
+            del df2['Key']
+            dfr2[value] = list(df2['Value'])
+            array.append(dfr2)
+        df = dict(ChainMap(*array))
+        return df1["Key"], df
+    except Exception:
+        return ["No data"], ["No data"]
+
+
 
 
 def get_numeric_entities(r):
@@ -49,11 +54,12 @@ def get_numeric_entities(r):
     -------
     df["Key"]: list of all numerical entities
     """
-
-    sql = """Select "Key" from name_type where type = 'Double'"""
-    df = pd.read_sql(sql, r)
-
-    return df['Key']
+    try:
+        sql = """Select "Key" from name_type where type = 'Double'"""
+        df = pd.read_sql(sql, r)
+        return df['Key']
+    except Exception:
+        return ["No data"]
 
 
 def number(r):
@@ -61,11 +67,12 @@ def number(r):
 
      number use only for basic_stats
      """
-
-    sql = """SELECT COUNT (*) FROM Patient"""
-    n = pd.read_sql(sql, r)
-
-    return n['count']
+    try:
+        sql = """SELECT COUNT (*) FROM Patient"""
+        n = pd.read_sql(sql, r)
+        return n['count'],None
+    except Exception:
+        return None, "Problem with load data from database"
 
 
 def get_values(entity, r):
@@ -77,17 +84,20 @@ def get_values(entity, r):
 
     Returns
     -------
-    df: datafram with columns Patient_ID,entity1,entity2,...
+    df: DataFrame with columns Patient_ID,entity1,entity2,...
 
     """
 
     entity_fin = "'" + "','".join(entity) + "'"
 
     sql = """SELECT "Patient_ID","Key","Value" FROM examination_numerical WHERE "Key" IN ({})""".format(entity_fin)
-    df = pd.read_sql(sql, r)
-    df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=np.mean).reset_index()
+    try:
+        df = pd.read_sql(sql, r)
+        df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=np.mean).reset_index()
+        return df, None
+    except Exception:
+        return None, "Problem with load data from database"
 
-    return df
 
 
 def get_cat_values(entity, subcategory, r):
@@ -99,7 +109,7 @@ def get_cat_values(entity, subcategory, r):
 
     Returns
     -------
-    df: datafram with columns Patient_ID,entity
+    df: DataFrame with columns Patient_ID,entity
 
     """
 
@@ -107,9 +117,12 @@ def get_cat_values(entity, subcategory, r):
 
     sql = """SELECT "Patient_ID","Value" FROM examination_categorical WHERE "Key"= '{0}' 
             and "Value" IN ({1})""".format(entity, subcategory_fin)
-    df = pd.read_sql(sql, r)
-    df.columns = ["Patient_ID", entity]
-    return df
+    try:
+        df = pd.read_sql(sql, r)
+        df.columns = ["Patient_ID", entity]
+        return df, None
+    except Exception:
+        return None, "Problem with load data from database"
 
 
 def get_cat_values_barchart(entity, subcategory, r):
@@ -121,16 +134,17 @@ def get_cat_values_barchart(entity, subcategory, r):
 
     Returns
     -------
-    df: datafram with columns Patient_ID,Key,Value
+    df: DataFrame with columns Patient_ID,Key,Value
 
     """
-
-    subcategory = "'" + "','".join(subcategory) + "'"
-    sql = """SELECT min("Key") as "Key","Value",count("Value") FROM examination_categorical WHERE "Key"='{0}'
-            and "Value" IN ({1}) group by "Value" """.format(entity, subcategory)
-    df = pd.read_sql(sql, r)
-
-    return df
+    try:
+        subcategory = "'" + "','".join(subcategory) + "'"
+        sql = """SELECT min("Key") as "Key","Value",count("Value") FROM examination_categorical WHERE "Key"='{0}'
+                and "Value" IN ({1}) group by "Value" """.format(entity, subcategory)
+        df = pd.read_sql(sql, r)
+        return df,None
+    except Exception:
+        return None, "Problem with load data from database"
 
 
 def get_cat_values_basic_stas(entity, r):
@@ -142,16 +156,18 @@ def get_cat_values_basic_stas(entity, r):
 
     Returns
     -------
-    df: datafram with columns Key,count
+    df: DataFrame with columns Key,count
 
     """
-    entity_fin = "'" + "','".join(entity) + "'"
-
-    sql = """SELECT "Key",count("Key") FROM examination_categorical WHERE "Key" IN ({})
-            group by "Key" """.format(entity_fin)
-    df = pd.read_sql(sql, r)
-    df = df.pivot_table(columns="Key", values="count")
-    return df
+    try:
+        entity_fin = "'" + "','".join(entity) + "'"
+        sql = """SELECT "Key",count("Key") FROM examination_categorical WHERE "Key" IN ({})
+                group by "Key" """.format(entity_fin)
+        df = pd.read_sql(sql, r)
+        df = df.pivot_table(columns="Key", values="count")
+        return df, None
+    except Exception:
+        return None, "Problem with load data from database"
 
 
 def get_num_cat_values(entity_num, entity_cat, subcategory, r):
@@ -163,18 +179,20 @@ def get_num_cat_values(entity_num, entity_cat, subcategory, r):
 
     Returns
     -------
-    df: datafram with columns Patient_ID,entity_num,entity_cat
+    df: DataFrame with columns Patient_ID,entity_num,entity_cat
      """
+    try:
+        subcategory = "'" + "','".join(subcategory) + "'"
 
-    subcategory = "'" + "','".join(subcategory) + "'"
+        sql = """SELECT en."Patient_ID",en."Value" as "{0}",ec."Value" as "{1}" FROM examination_numerical as en 
+                left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" 
+                where en."Key" = '{0}' and ec."Key" = '{1}' 
+                and ec."Value" IN ({2})""".format(entity_num, entity_cat, subcategory)
 
-    sql = """SELECT en."Patient_ID",en."Value" as "{0}",ec."Value" as "{1}" FROM examination_numerical as en 
-            left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" 
-            where en."Key" = '{0}' and ec."Key" = '{1}' 
-            and ec."Value" IN ({2})""".format(entity_num, entity_cat, subcategory)
-
-    df = pd.read_sql(sql, r)
-    return df
+        df = pd.read_sql(sql, r)
+        return df,None
+    except Exception:
+        return None, "Problem with load data from database"
 
 
 

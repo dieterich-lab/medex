@@ -4,7 +4,7 @@ import psycopg2.extras
 import os
 from modules.import_scheduler import Scheduler
 import modules.load_data_postgre as ps
-
+from db import connect_db
 
 
 
@@ -24,6 +24,9 @@ from url_handlers.logout import logout_page
 # create the application object
 app = Flask(__name__)
 
+with app.app_context():
+    rdb = connect_db()
+
 # register blueprints here:
 app.register_blueprint(logout_page)
 app.register_blueprint(basic_stats_page)
@@ -35,25 +38,6 @@ app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(clustering_plot_page)
 app.register_blueprint(coplots_plot_page)
 
-# Set this connection URL in an environment variable, and then load it into your application configuration using
-# os.environ, like this
-user = os.environ['POSTGRES_USER']
-password = os.environ['POSTGRES_PASSWORD']
-host = os.environ['POSTGRES_HOST']
-database = os.environ['POSTGRES_DB']
-port = os.environ['POSTGRES_PORT']
-DATABASE_URL = f'postgresql://{user}:{password}@{host}:{port}/{database}'
-
-# Connection with database
-def connect_db():
-    """ connects to database """
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = psycopg2.connect(DATABASE_URL)
-    return db
-
-
-rdb = psycopg2.connect(DATABASE_URL)
 
 """ Direct to Basic Stats website during opening the program."""
 @app.route('/', methods=['GET'])
@@ -80,10 +64,6 @@ if os.environ.get('IMPORT_DISABLED') is None:
     scheduler.start()
     scheduler.stop()
 
-# get all numeric and categorical entities from database
-all_numeric_entities = ps.get_numeric_entities(rdb)
-all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
 
-
-if __name__ == '__main__':
-    app.run()
+def main():
+    return app

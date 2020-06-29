@@ -72,11 +72,13 @@ def start_import():
 
     if not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
         return print("Data set not changed", file=sys.stderr)
-    print("Start load data")
 
     # use function from import_dataset_postgre.py to create tables in database
+    print("Start create tables")
     idp.create_table(header)
+    print("Start load data ")
     idp.load_data(entities,dataset,header)
+    print("Start alter table ")
     idp.alter_table()
 
     settings.update(dataset_path=dataset, entities_path=entities)

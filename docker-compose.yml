@@ -7,6 +7,7 @@ services:
     depends_on: # other containers it needs in order to run
       - database
     environment:
+      - PYTHONUNBUFFERED=0
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
       - POSTGRES_DB=example

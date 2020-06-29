@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
+from db import connect_db, all_categorical_entities, all_subcategory_entities
 
 
 barchart_page = Blueprint('barchart', __name__,
@@ -9,8 +10,6 @@ barchart_page = Blueprint('barchart', __name__,
 
 @barchart_page.route('/barchart', methods=['GET'])
 def get_statistics():
-    # connection with database and load name of entities
-    from webserver import all_categorical_entities, all_subcategory_entities
 
     return render_template('barchart.html',
                            numeric_tab=True,
@@ -20,9 +19,7 @@ def get_statistics():
 
 @barchart_page.route('/barchart', methods=['POST'])
 def post_statistics():
-    # connection with database and load name of entities
-    from webserver import rdb, all_categorical_entities, all_subcategory_entities
-
+    rdb = connect_db()
     # list selected entities
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
@@ -34,8 +31,10 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     else:
-        categorical_df = ps.get_cat_values_barchart(categorical_entities,subcategory_entities, rdb)
-
+        categorical_df,error = ps.get_cat_values_barchart(categorical_entities,subcategory_entities, rdb)
+        if not error :
+            categorical_df.dropna()
+        else: (None, error)
     if error:
         return render_template('barchart.html',
                                all_categorical_entities=all_categorical_entities,

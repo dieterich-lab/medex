@@ -9,9 +9,6 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
 
-    # connection and load data from database
-    from webserver import all_numeric_entities, all_categorical_entities
-
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
@@ -20,8 +17,6 @@ def get_statistics():
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
-    # connection with database and load name of entities
-    from webserver import rdb, all_numeric_entities, all_categorical_entities
 
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
@@ -32,10 +27,12 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if numeric_entities:
-            numeric_df = ps.get_values(numeric_entities, rdb)
-            n = ps.number(rdb)
-            if len(numeric_df.index) == 0:
-                error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. "
+            n, error = ps.number(rdb) if not error else (None, error)
+            numeric_df,error = ps.get_values(numeric_entities, rdb)
+            if not error:
+                if len(numeric_df.index) == 0:
+                    error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. "
+            else: (None, error)
         else:
             error = "Please select numeric entities"
 
@@ -105,10 +102,12 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if categorical_entities:
-            categorical_df = ps.get_cat_values_basic_stas(categorical_entities, rdb)
-            n = ps.number(rdb)
-            if len(categorical_df.index) == 0:
-                error = "The selected entities (" + ", ".join(categorical_df) + ") do not contain any values. "
+            n, error = ps.number(rdb) if not error else (None, error)
+            categorical_df,error = ps.get_cat_values_basic_stas(categorical_entities, rdb)
+            if not error:
+                if len(categorical_df.index) == 0:
+                    error = "The selected entities (" + ", ".join(categorical_df) + ") do not contain any values. "
+            else: (None, error)
         else:
             error = "Please select entities"
         if error:

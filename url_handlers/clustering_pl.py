@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request
-
+from db import rdb,all_numeric_entities, all_categorical_entities
 import modules.load_data_postgre as ps
 import url_handlers.clustering_function as dwu
 
@@ -9,8 +9,6 @@ clustering_plot_page = Blueprint('clustering_pl', __name__,
 
 @clustering_plot_page.route('/clustering_pl', methods=['GET'])
 def cluster():
-    # this import has to be here!!
-    from webserver import all_numeric_entities
 
     return render_template('clustering_pl.html',
                            numeric_tab=True,
@@ -20,8 +18,6 @@ def cluster():
 
 @clustering_plot_page.route('/clustering_pl', methods=['POST'])
 def post_clustering():
-    # this import has to be here!!
-    from webserver import rdb,all_numeric_entities
 
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
@@ -29,9 +25,12 @@ def post_clustering():
     # handling errors and load data from database
     error = None
     if len(numeric_entities) > 1:
-        df = ps.get_values(numeric_entities, rdb).dropna()
-        if len(df.index) == 0:
-            error = "This two entities don't have common values"
+        df, error = ps.get_values(numeric_entities, rdb)
+        if not error:
+            df = df.dropna()
+            if len(df.index) == 0:
+                error = "This two entities don't have common values"
+        else: (None, error)
     elif len (numeric_entities) < 2:
         error = "Please select more then one category"
     else:

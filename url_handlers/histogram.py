@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request
-import numpy as np
+from db import rdb,all_numeric_entities, all_categorical_entities,all_subcategory_entities
 import modules.load_data_postgre as ps
 
 histogram_page = Blueprint('histogram', __name__,
@@ -8,9 +8,6 @@ histogram_page = Blueprint('histogram', __name__,
 
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
-    
-    # connection and load data from database
-    from webserver import all_numeric_entities,all_categorical_entities,all_subcategory_entities
 
     return render_template('histogram.html',
                            all_categorical_entities=all_categorical_entities,
@@ -20,8 +17,6 @@ def get_statistics():
 
 @histogram_page.route('/histogram', methods=['POST'])
 def post_statistics():
-    # connection with database and load name of entities
-    from webserver import rdb,all_numeric_entities,all_categorical_entities,all_subcategory_entities
 
     # get selected entities
     numeric_entities = request.form.get('numeric_entities')
@@ -32,14 +27,16 @@ def post_statistics():
     # handling errors and load data from database
     error = None
     if numeric_entities == "Search entity" or categorical_entities == "Search entity":
-        error = "Please select entity and group_by"
+        error = "Please select entity"
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
-        data = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,rdb).dropna()
-        if len(data.index) == 0:
-            error = "This two entities don't have common values"
-
+        data, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,rdb)
+        if not error:
+            data = data.dropna()
+            if len(data.index) == 0:
+                error = "This two entities don't have common values"
+        else: (None, error)
 
     if error:
         return render_template('histogram.html',

@@ -28,7 +28,7 @@
  <div class="form-group" id="coplot_controls">
 	 {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
 	 {{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
-	 {{ m.entity_form(id= "category1",name =categorical_entities ,value=entity,select=category1,d="Category1:") }}
+	 {{ m.entity_form(id= "category1",name =categorical_entities ,value=entity,d="Category1:") }}
 
      <script type="text/javascript">
                 var cat = {{all_subcategory_entities|safe}};
@@ -39,7 +39,7 @@
 
      </div>
 
-    {{ m.entity_form(id= "category2",name =categorical_entities ,value=entity,select=category2,d="Category2:") }}
+    {{ m.entity_form(id= "category2",name =categorical_entities ,value=entity,d="Category2:") }}
      <div class="tooltips" title="Please select category and next subcategory" >
         <label>Subcategory: </label>
             <select style="width: 100%" multiple id="category22" name="category22" class="form-control" ></select>

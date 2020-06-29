@@ -1,18 +1,13 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-import plotly.graph_objs as go
+from db import rdb,all_numeric_entities, all_categorical_entities,all_subcategory_entities
 import plotly.express as px
-from plotly.subplots import make_subplots
-
 coplots_plot_page = Blueprint('coplots_pl', __name__,
                          template_folder='templates')
 
 
 @coplots_plot_page.route('/coplots_pl', methods=['GET'])
 def get_coplots():
-    
-    # connection and load data from database
-    from webserver import all_numeric_entities,all_categorical_entities,all_subcategory_entities
 
     return render_template('coplots_pl.html',
                            all_numeric_entities=all_numeric_entities,
@@ -22,9 +17,6 @@ def get_coplots():
 
 @coplots_plot_page.route('/coplots_pl', methods=['POST'])
 def post_coplots():
-    
-    # connection with database and load name of entities
-    from webserver import rdb,all_numeric_entities,all_categorical_entities,all_subcategory_entities
 
     # get selected entities
     category1 = request.form.get('category1')
@@ -58,21 +50,22 @@ def post_coplots():
         error = "You can't compare the same entities and categories"
     elif x_axis == y_axis:
         error = "You can't compare the same entities for x and y axis"
+    elif category1 == category2:
+        error = "You can't compare the same category"
     elif not category22 or not category11:
         error = "Please select subcategory"
-    elif category11 == category22:
-        error = "You can't compare the same subcategory"
     elif how_to_plot == 'log' and not log_x and not log_y:
         error = "Please select type of log"
     if not error:
-        num_data = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
-        cat_data1 = ps.get_cat_values(category1,category11, rdb) if not error else (None, error)
-        cat_data2 = ps.get_cat_values(category2,category22, rdb) if not error else (None, error)
-        data = num_data.merge(cat_data1, on ="Patient_ID").dropna()
-        data = data.merge(cat_data2, on="Patient_ID").dropna()
-        if len(data.index) == 0:
-            error = "No data based on the selected options"
-
+        num_data, error = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
+        cat_data1, error = ps.get_cat_values(category1,category11, rdb) if not error else (None, error)
+        cat_data2, error = ps.get_cat_values(category2,category22, rdb)
+        if not error:
+            data = num_data.merge(cat_data1, on ="Patient_ID").dropna()
+            data = data.merge(cat_data2, on="Patient_ID").dropna()
+            if len(data.index) == 0:
+                error = "No data based on the selected options"
+        else: (None, error)
     if error:
         return render_template('coplots_pl.html',
                                all_numeric_entities=all_numeric_entities,

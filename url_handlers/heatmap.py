@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request
 import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
+import plotly.express as px
+from db import rdb,all_numeric_entities
 
 heatmap_plot_page = Blueprint('heatmap', __name__,
                        template_folder='tepmlates')
@@ -9,9 +11,6 @@ heatmap_plot_page = Blueprint('heatmap', __name__,
 
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
-    
-    # connection and load data from database
-    from webserver import all_numeric_entities,all_categorical_entities
 
     return render_template('heatmap.html',
                            numeric_tab=True,
@@ -20,10 +19,6 @@ def get_plots():
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
 def post_plots():
-    
-    # connection with database and load name of entities
-    from webserver import rdb,all_numeric_entities,all_categorical_entities
-
 
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
@@ -31,9 +26,13 @@ def post_plots():
     # handling errors and load data from database
     error = None
     if len(numeric_entities) > 1:
-        numeric_df = ps.get_values(numeric_entities, rdb)
-        if len(numeric_df.index) == 0:
-            error = "This two entities don't have common values"
+        numeric_df, error = ps.get_values(numeric_entities, rdb)
+        if not error:
+            numeric_df = numeric_df.dropna()
+            if len(numeric_df.index) == 0:
+                error = "This two entities don't have common values"
+        else:
+            (None, error)
     elif len (numeric_entities) < 2:
         error = "Please select more then one category"
     else:

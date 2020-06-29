@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import plotly.express as px
 import modules.load_data_postgre as ps
-
+from db import rdb,all_numeric_entities, all_categorical_entities,all_subcategory_entities
 
 
 scatter_plot_page = Blueprint('scatter_plot', __name__,
@@ -10,7 +10,6 @@ scatter_plot_page = Blueprint('scatter_plot', __name__,
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-    from webserver import all_numeric_entities, all_categorical_entities,all_subcategory_entities
 
     return render_template('scatter_plot.html',
                                numeric_tab=True,
@@ -21,8 +20,6 @@ def get_plots():
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
-    # connection with database and load name of entities
-    from webserver import rdb,all_numeric_entities,all_categorical_entities,all_subcategory_entities
 
 
     # list selected data
@@ -49,19 +46,24 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     elif add_group_by and categorical_entities:
-        numerical_df = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
-        df = ps.get_cat_values(categorical_entities, subcategory_entities, rdb) if not error else (None, error)
-        categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
-        if len(categorical_df[categorical_entities]) == 0:
-            error = "Category {} is empty".format(categorical_entities)
-    else :
-        numeric_df = ps.get_values([x_axis, y_axis], rdb).dropna() if not error else (None, error)
-        if len(numeric_df[x_axis]) == 0:
-            error = "Category {} is empty".format(x_axis)
-        elif len(numeric_df[y_axis]) == 0:
-            error = "Category {} is empty".format(y_axis)
-        elif len(numeric_df.index) == 0:
-            error = "This two entities don't have common values"
+        numerical_df, error = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
+        df, error = ps.get_cat_values(categorical_entities, subcategory_entities, rdb)
+        if not error:
+            categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
+            if len(categorical_df[categorical_entities]) == 0:
+                error = "Category {} is empty".format(categorical_entities)
+        else: (None, error)
+    else:
+        numeric_df, error = ps.get_values([x_axis, y_axis], rdb)
+        if not error:
+            numeric_df = numeric_df.dropna()
+            if len(numeric_df[x_axis]) == 0:
+                error = "Category {} is empty".format(x_axis)
+            elif len(numeric_df[y_axis]) == 0:
+                error = "Category {} is empty".format(y_axis)
+            elif len(numeric_df.index) == 0:
+                error = "This two entities don't have common values"
+        else: (None, error)
 
 
     if error:
@@ -76,6 +78,7 @@ def post_plots():
                                 all_subcategory_entities=all_subcategory_entities)
 
     # Plot figure and convert to an HTML string representation
+
     if how_to_plot == 'linear':
         if add_group_by :
             fig = px.scatter(categorical_df, x=x_axis, y=y_axis, color=categorical_entities, hover_name='Patient_ID', template="plotly_white",

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
+from db import rdb,all_numeric_entities, all_categorical_entities, all_subcategory_entities
 
 boxplot_page = Blueprint('boxplot', __name__,
                          template_folder='templates')
@@ -8,9 +9,6 @@ boxplot_page = Blueprint('boxplot', __name__,
 
 @boxplot_page.route('/boxplot', methods=['GET'])
 def get_boxplots():
-
-    # connection and load data from database
-    from webserver import all_numeric_entities, all_categorical_entities, all_subcategory_entities
 
     return render_template('boxplot.html',
                            all_categorical_entities=all_categorical_entities,
@@ -20,8 +18,6 @@ def get_boxplots():
 
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
-    # connection with database and load name of entities
-    from webserver import rdb,all_numeric_entities, all_categorical_entities, all_subcategory_entities
 
     # get selected entities
     numeric_entities = request.form.get('numeric_entities')
@@ -32,19 +28,24 @@ def post_boxplots():
     # handling errors and load data from database
     error = None
     if numeric_entities == "Search entity" or categorical_entities == "Search entity":
-        error = "Please select entity and group by"
+        error = "Please select entity"
     elif not subcategory_entities:
         error = "Please select subcategory"
     if not error:
-        numeric_df = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, rdb).dropna()
-        if len(numeric_df.index) == 0:
-            error = "This two entities don't have common values"
+        numeric_df,error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, rdb)
+        if not error:
+            numeric_df = numeric_df.dropna()
+            if len(numeric_df.index) == 0:
+                error = "This two entities don't have common values"
+        else: (None, error)
+
     if error:
         return render_template('boxplot.html',
                                error=error,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities)
+
 
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
