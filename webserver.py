@@ -8,6 +8,7 @@ from db import connect_db
 
 
 
+
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
 from url_handlers.basic_stats import basic_stats_page
@@ -27,6 +28,7 @@ app = Flask(__name__)
 with app.app_context():
     rdb = connect_db()
 
+
 # register blueprints here:
 app.register_blueprint(logout_page)
 app.register_blueprint(basic_stats_page)
@@ -37,6 +39,8 @@ app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(clustering_plot_page)
 app.register_blueprint(coplots_plot_page)
+
+
 
 
 """ Direct to Basic Stats website during opening the program."""
@@ -64,6 +68,9 @@ if os.environ.get('IMPORT_DISABLED') is None:
     scheduler.start()
     scheduler.stop()
 
+# get all numeric and categorical entities from database
+all_numeric_entities = ps.get_numeric_entities(rdb)
+all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
 
 def main():
     return app

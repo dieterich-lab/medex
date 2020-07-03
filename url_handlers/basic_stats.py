@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-from db import rdb,all_numeric_entities, all_categorical_entities
+
 
 basic_stats_page = Blueprint('basic_stats', __name__,
                              template_folder='basic_stats')
@@ -8,7 +8,7 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
-
+    from webserver import rdb, all_numeric_entities, all_categorical_entities
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
@@ -17,7 +17,7 @@ def get_statistics():
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
-
+    from webserver import rdb, all_numeric_entities, all_categorical_entities
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
 

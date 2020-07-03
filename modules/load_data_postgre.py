@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from collections import ChainMap
-import time
 
 def get_categorical_entities(r):
     """ Retrieve  categorical entities and their subcategories from PostrgreSQL
@@ -139,9 +138,10 @@ def get_cat_values_barchart(entity, subcategory, r):
     """
     try:
         subcategory = "'" + "','".join(subcategory) + "'"
-        sql = """SELECT min("Key") as "Key","Value",count("Value") FROM examination_categorical WHERE "Key"='{0}'
+        sql = """SELECT "Value",count("Value") FROM examination_categorical WHERE "Key"='{0}'
                 and "Value" IN ({1}) group by "Value" """.format(entity, subcategory)
         df = pd.read_sql(sql, r)
+        df.columns = [entity, 'count']
         return df,None
     except Exception:
         return None, "Problem with load data from database"

@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request
-from db import rdb,all_numeric_entities, all_categorical_entities
 import modules.load_data_postgre as ps
 import url_handlers.clustering_function as dwu
 
@@ -9,7 +8,7 @@ clustering_plot_page = Blueprint('clustering_pl', __name__,
 
 @clustering_plot_page.route('/clustering_pl', methods=['GET'])
 def cluster():
-
+    from webserver import rdb, all_numeric_entities, all_categorical_entities
     return render_template('clustering_pl.html',
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities
@@ -18,7 +17,7 @@ def cluster():
 
 @clustering_plot_page.route('/clustering_pl', methods=['POST'])
 def post_clustering():
-
+    from webserver import rdb, all_numeric_entities, all_categorical_entities
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
 

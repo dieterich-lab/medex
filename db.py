@@ -24,6 +24,3 @@ def close_db(e=None):
 
 rdb = psycopg2.connect(DATABASE_URL)
 
-# get all numeric and categorical entities from database
-all_numeric_entities = ps.get_numeric_entities(rdb)
-all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
