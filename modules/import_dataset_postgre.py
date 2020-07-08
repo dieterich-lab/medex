@@ -4,9 +4,9 @@
 ###
 
 
-def create_table():
+def create_table(rdb):
     """Remove tables from database if exists and create new name_type and examination tables in the PostgreSQL database"""
-    from webserver import rdb
+#    from webserver import rdb
     sql1 = "DROP TABLE IF EXISTS name_type,examination,examination_categorical,examination_numerical,patient"
 
     statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text)"""
@@ -28,9 +28,9 @@ def create_table():
         return print("Problem with connection with database")
 
 
-def load_data(entities, dataset):
+def load_data(entities, dataset,rdb):
     """ Load data from entities.csv, data.csv files into examination table in PostgreSQL  """
-    from webserver import rdb
+
     cur = rdb.cursor()
     # load data from entites file to name_type table
     with open(entities, 'r') as in_file:
@@ -62,9 +62,9 @@ def load_data(entities, dataset):
 
 
 
-def alter_table():
+def alter_table(rdb):
     """ Divide table examination on categorical and numerical, create index for "Key" column in categorical and numerical tables """
-    from webserver import rdb
+
     sql0 = """Delete from examination where "Value" is null """
     sql1 = """Delete from examination as e using name_type as n where e."Key" = n."Key" and n."type" = 'Double' 
                 and e."Value" = 'None'"""

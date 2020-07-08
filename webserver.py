@@ -28,7 +28,7 @@ minute = check_for_env('IMPORT_MINUTE', default=5)
 
 # Import data using function scheduler from package modules
 if os.environ.get('IMPORT_DISABLED') is None:
-    scheduler = Scheduler(day_of_week=day_of_week, hour=hour, minute=minute)
+    scheduler = Scheduler(rdb,day_of_week=day_of_week, hour=hour, minute=minute)
     scheduler.start()
     scheduler.stop()
 

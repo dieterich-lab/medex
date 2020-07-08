@@ -57,7 +57,7 @@ class ImportSettings():
             return False
         return True
 
-def start_import():
+def start_import(rdb):
     """ Import data from entities and dataset files"""
 
     settings = ImportSettings()
@@ -73,11 +73,11 @@ def start_import():
     else:
         # use function from import_dataset_postgre.py to create tables in database
         print("Start create tables")
-        idp.create_table()
+        idp.create_table(rdb)
         print("Start load data ")
-        idp.load_data(entities,dataset)
+        idp.load_data(entities,dataset,rdb)
         print("Start alter table ")
-        idp.alter_table()
+        idp.alter_table(rdb)
 
         settings.update(dataset_path=dataset, entities_path=entities)
         settings.save()
@@ -90,10 +90,10 @@ class Scheduler():
     Importing data check the data. Import data every day at 05.05 if the program see any changes.
     """
 
-    def __init__(self, day_of_week, hour, minute):
+    def __init__(self,rdb, day_of_week, hour, minute):
         self.bgs = BackgroundScheduler()
-        start_import()
-        self.bgs.add_job(start_import,'cron', day_of_week=day_of_week, hour=hour, minute=minute)
+        start_import(rdb)
+        self.bgs.add_job(start_import,'cron',[rdb], day_of_week=day_of_week, hour=hour, minute=minute)
 
     def start(self):
         self.bgs.start()
