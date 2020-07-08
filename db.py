@@ -1,7 +1,6 @@
 from flask import g
 import psycopg2.extras
 import os
-import modules.load_data_postgre as ps
 
 
 user = os.environ['POSTGRES_USER']
@@ -14,13 +13,15 @@ DATABASE_URL= f'postgresql://{user}:{password}@{host}:{port}/{database}'
 # Connection with database
 def connect_db():
     """ connects to database """
-    if 'db' not in g:
-        g.db = psycopg2.connect(DATABASE_URL)
-    return g.db
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = psycopg2.connect(DATABASE_URL)
+    return db
+
 
 def close_db(e=None):
     db = g.pop('db', None)
 
 
-rdb = psycopg2.connect(DATABASE_URL)
+
 
