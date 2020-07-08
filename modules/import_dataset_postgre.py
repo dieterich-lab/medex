@@ -2,33 +2,23 @@
 #   This module contains functions for creating tables in PostgreSQL database
 
 ###
-from db import rdb
 
-def create_table(header):
+
+def create_table():
     """Remove tables from database if exists and create new name_type and examination tables in the PostgreSQL database"""
-
+    from webserver import rdb
     sql1 = "DROP TABLE IF EXISTS name_type,examination,examination_categorical,examination_numerical,patient"
 
     statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text)"""
-    """
-    statment_examination = "CREATE tABLE examination ("ID" numeric PRIMARY KEY,
+    statment_examination = """CREATE tABLE examination ("ID" numeric PRIMARY KEY,
                                 "Patient_ID" text,
                                 "Billing_ID" text,
                                 "Date" text,
                                 "Time" text,
                                 "Key" text,
-                                "Value" text)"
-    """
+                                "Value" text)"""
+
     try:
-
-        # create table examination using header file
-        with open(header, 'r') as in_file:
-            statment_examination = "CREATE TABLE examination ("
-            for line in in_file:
-                statment_examination = statment_examination + '{}'.format(line)
-            statment_examination = statment_examination + ")"
-        in_file.close()
-
         cur = rdb.cursor()
         cur.execute(sql1)
         cur.execute(statment_entities)
@@ -38,40 +28,35 @@ def create_table(header):
         return print("Problem with connection with database")
 
 
-def load_data(entities, dataset, header):
+def load_data(entities, dataset):
     """ Load data from entities.csv, data.csv files into examination table in PostgreSQL  """
-
-
+    from webserver import rdb
     cur = rdb.cursor()
     # load data from entites file to name_type table
     with open(entities, 'r') as in_file:
+        next(in_file)
         for row in in_file:
             row = row.replace("\n", "").split(",")
-            cur.execute("INSERT INTO name_type VALUES (%s, %s) ON CONFLICT DO NOTHING",row)
+            if len(row) != 2:
+                print("This line doesn't have appropriate format:",row)
+            else:
+                cur.execute("INSERT INTO name_type VALUES (%s, %s) ON CONFLICT DO NOTHING",row)
     rdb.commit()
     in_file.close()
-
-    # check how many column has table examination and create col
-    a=[]
-    with open(header) as in_file:
-        row_count = sum(1 for row in in_file)
-    in_file.close()
-    for i in range(row_count):
-        a.append('%s')
-    col = ','.join(a)
-
 
     with open(dataset, 'r') as in_file:
         i = 0
         for row in in_file:
             i += 1
             # join values by ';' if column value has more the one value
-            n = row_count - 2
+            row = row.rstrip()
             row = row.replace("\n", "").split(",")
-            line = [i] + row[0:n] + [";".join([str(x) for x in row[n:]])]
-
+            line = [i] + row[0:5] + [";".join([str(x) for x in row[5:]])]
             # insert data from dataset.csv to table examnination
-            cur.execute("INSERT INTO examination VALUES ("+col+")",line)
+            if len(row) < 6:
+                print("This line doesn't have appropriate format:",row)
+            else :
+                cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)",line)
     rdb.commit()
     in_file.close()
 
@@ -79,7 +64,7 @@ def load_data(entities, dataset, header):
 
 def alter_table():
     """ Divide table examination on categorical and numerical, create index for "Key" column in categorical and numerical tables """
-
+    from webserver import rdb
     sql0 = """Delete from examination where "Value" is null """
     sql1 = """Delete from examination as e using name_type as n where e."Key" = n."Key" and n."type" = 'Double' 
                 and e."Value" = 'None'"""

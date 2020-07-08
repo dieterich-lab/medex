@@ -1,13 +1,13 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-
+from webserver import rdb,all_numeric_entities, all_categorical_entities,all_subcategory_entities
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
 
 
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
-    from webserver import rdb,all_numeric_entities, all_categorical_entities,all_subcategory_entities
+
     return render_template('histogram.html',
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
@@ -16,7 +16,7 @@ def get_statistics():
 
 @histogram_page.route('/histogram', methods=['POST'])
 def post_statistics():
-    from webserver import rdb,all_numeric_entities, all_categorical_entities,all_subcategory_entities
+
     # get selected entities
     numeric_entities = request.form.get('numeric_entities')
     categorical_entities = request.form.get('categorical_entities')

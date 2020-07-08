@@ -62,28 +62,26 @@ def start_import():
 
     settings = ImportSettings()
     print('starting import', datetime.now().strftime('%H:%M:%S'))
-    header = './import/header.csv'
     dataset = './import/dataset.csv'
     entities ='./import/entities.csv'
 
 
-    if not os.path.isfile(dataset) or not os.path.isfile(entities) or not os.path.isfile(header):
-        return print("Could not import to database either or header.csv,entities.csv and dataset.csv is missing", file=sys.stderr)
-
-    if not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
+    if not os.path.isfile(dataset) or not os.path.isfile(entities):
+        return print("Could not import to database either or entities.csv and dataset.csv is missing", file=sys.stderr)
+    elif not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
         return print("Data set not changed", file=sys.stderr)
+    else:
+        # use function from import_dataset_postgre.py to create tables in database
+        print("Start create tables")
+        idp.create_table()
+        print("Start load data ")
+        idp.load_data(entities,dataset)
+        print("Start alter table ")
+        idp.alter_table()
 
-    # use function from import_dataset_postgre.py to create tables in database
-    print("Start create tables")
-    idp.create_table(header)
-    print("Start load data ")
-    idp.load_data(entities,dataset,header)
-    print("Start alter table ")
-    idp.alter_table()
-
-    settings.update(dataset_path=dataset, entities_path=entities)
-    settings.save()
-    print("End load data")
+        settings.update(dataset_path=dataset, entities_path=entities)
+        settings.save()
+        print("End load data")
 
 
 class Scheduler():

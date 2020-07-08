@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities
 
 boxplot_page = Blueprint('boxplot', __name__,
                          template_folder='templates')
@@ -9,7 +9,7 @@ boxplot_page = Blueprint('boxplot', __name__,
 
 @boxplot_page.route('/boxplot', methods=['GET'])
 def get_boxplots():
-    from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities
+
     return render_template('boxplot.html',
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
@@ -18,7 +18,6 @@ def get_boxplots():
 
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
-    from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities
     # get selected entities
     numeric_entities = request.form.get('numeric_entities')
     categorical_entities = request.form.get('categorical_entities')

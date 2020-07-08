@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import plotly.express as px
 import modules.load_data_postgre as ps
-
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities
 
 
 scatter_plot_page = Blueprint('scatter_plot', __name__,
@@ -10,7 +10,7 @@ scatter_plot_page = Blueprint('scatter_plot', __name__,
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-    from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities
+
     return render_template('scatter_plot.html',
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
@@ -20,7 +20,6 @@ def get_plots():
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
-    from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities
 
     # list selected data
     y_axis = request.form.get('y_axis')

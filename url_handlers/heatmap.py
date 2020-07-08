@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request
 import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
-
+from webserver import rdb, all_numeric_entities
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,
@@ -11,7 +11,7 @@ heatmap_plot_page = Blueprint('heatmap', __name__,
 
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
-    from webserver import rdb, all_numeric_entities
+
     return render_template('heatmap.html',
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities)
@@ -19,7 +19,6 @@ def get_plots():
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
 def post_plots():
-    from webserver import rdb, all_numeric_entities
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
 
@@ -28,7 +27,6 @@ def post_plots():
     if len(numeric_entities) > 1:
         numeric_df, error = ps.get_values(numeric_entities, rdb)
         if not error:
-            numeric_df = numeric_df.dropna()
             if len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
         else:
