@@ -1,7 +1,7 @@
 from flask import g
 import psycopg2.extras
 import os
-
+import time
 
 user = os.environ['POSTGRES_USER']
 password = os.environ['POSTGRES_PASSWORD']
@@ -15,8 +15,12 @@ def connect_db():
     """ connects to database """
     db = getattr(g, '_database', None)
     if db is None:
-        db = psycopg2.connect(DATABASE_URL)
+        try:
+            db = psycopg2.connect(DATABASE_URL)
+        except Exception:
+            time.sleep(0.1)
     return db
+
 
 
 def close_db(e=None):

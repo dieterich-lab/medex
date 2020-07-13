@@ -17,10 +17,10 @@ def get_categorical_entities(r):
     """
 
     # Retrieve all categorical values
-    sql1 = """Select "Key" from name_type where "type" = 'String' """
+    sql1 = """Select "Key" from name_type where "type" = 'String' order by "Key" """
 
     # Retrieve categorical values with subcategories
-    sql2 = """Select distinct "Key","Value" from examination_categorical order by "Key" """
+    sql2 = """Select distinct "Key","Value" from examination_categorical order by "Key","Value" """
     try:
         df1 = pd.read_sql(sql1, r)
         df = pd.read_sql(sql2, r)
@@ -54,7 +54,7 @@ def get_numeric_entities(r):
     df["Key"]: list of all numerical entities
     """
     try:
-        sql = """Select "Key" from name_type where type = 'Double'"""
+        sql = """Select "Key" from name_type where type = 'Double' order by "Key" """
         df = pd.read_sql(sql, r)
         return df['Key']
     except Exception:

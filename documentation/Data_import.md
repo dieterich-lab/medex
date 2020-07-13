@@ -3,22 +3,11 @@
 * The database is only updated if there is new data to import.
 
 ### Importing new data ###
-In order to add new data add a new `header.csv`,`entities.csv` and `dataset.csv` to the `./import` folder
+In order to add new data add a new `entities.csv` and `dataset.csv` to the `./import` folder
 
-To work the files should have the same format as the current example files that are already in `dataset_examples` directory. 
+To work the files should have the same format as the current example files that are already in that directory. 
 
-The file `header.csv` is used to create a `examination` table in PostgreSQL database for data from the file` dataset.csv`, so it should contain the name of the column and type:
-
-`"ID" numeric PRIMARY KEY,"Patient_ID" text,"Billing_ID" text, "Date" timestamp,"Time" text,"Key" text,"Value" text`
-
-`header.csv` can also look like this:
-
-`"ID" numeric PRIMARY KEY,"Patient_ID" text,"Key" text,"Value" text`
-
-Important at this moment is that we always need column with name "ID","Patient_ID","Key" and "Value" columns,"Billing_ID","Date" and "Time"  are not necessary. 
-Names of columns in file `header.csv` have to be in quotation marks.
-
-The currently used format of the `dataset.csv` file comes from the research warehouse export format of the data we are analysing with this tool :
+The currently used format of the dataset.csv file comes from the research warehouse export format of the data we are analysing with this tool:
  
 `Patient_ID,Billing_ID,Date,Time,Key,Value`
 
@@ -35,7 +24,7 @@ Patient1,,,,A_numeric_parameter,5.8
 Also necessary is the entities.csv file, specifying the data type, which can be String or Double. 
 In our Example that would be a file starting like this:
 ```
-
+entity,datatype
 Gender,String
 Jitter_rel,Double
 ```

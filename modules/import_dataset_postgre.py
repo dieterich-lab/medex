@@ -66,15 +66,13 @@ def alter_table(rdb):
     """ Divide table examination on categorical and numerical, create index for "Key" column in categorical and numerical tables """
 
     sql0 = """Delete from examination where "Value" is null """
-    sql1 = """Delete from examination as e using name_type as n where e."Key" = n."Key" and n."type" = 'Double' 
-                and e."Value" = 'None'"""
 
     sql2 = """  CREATE TABLE examination_categorical AS SELECT min("ID") as "ID","Patient_ID","Key",min("Value") as "Value" 
                 from (SELECT e.* from examination as e join name_type as n on e."Key" = n."Key" 
                 where n."type" = 'String') as f  group by "Patient_ID","Key"   """
     sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Patient_ID","Key",AVG("Value"::double precision)
                 as "Value" from (SELECT e.* from examination as e join name_type as n on e."Key" = n."Key" 
-                where n."type" = 'Double') as f  group by "Patient_ID","Key" """
+                where n."type" = 'Double' and e."Value" ~ '^\d+(\.\d+)?$') as f  group by "Patient_ID","Key" """
     sql4 = """CREATE TABLE Patient AS select distinct "Patient_ID" from examination"""
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Patient_ID")"""
@@ -91,7 +89,6 @@ def alter_table(rdb):
     try:
         cur = rdb.cursor()
         cur.execute(sql0)
-        cur.execute(sql1)
         cur.execute(sql2)
         cur.execute(sql3)
         cur.execute(sql4)
