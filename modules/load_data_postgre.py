@@ -187,7 +187,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory, r):
         sql = """SELECT en."Patient_ID",en."Value" as "{0}",ec."Value" as "{1}" FROM examination_numerical as en 
                 left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" 
                 where en."Key" = '{0}' and ec."Key" = '{1}' 
-                and ec."Value" IN ({2})""".format(entity_num, entity_cat, subcategory)
+                and ec."Value" IN ({2}) order by ec."Value" """.format(entity_num, entity_cat, subcategory)
 
         df = pd.read_sql(sql, r)
         return df,None

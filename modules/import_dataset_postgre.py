@@ -92,6 +92,9 @@ def alter_table(rdb):
         cur.execute(sql2)
         cur.execute(sql3)
         cur.execute(sql4)
+    except Exception:
+        return print("Problem with connection with database")
+    try:
         cur.execute(sql5)
         cur.execute(sql6)
         cur.execute(sql7)
@@ -99,6 +102,9 @@ def alter_table(rdb):
         cur.execute(sql9)
         cur.execute(sql10)
         cur.execute(sql11)
+    except Exception:
+        return print("Problem with connection with database")
+    try:
         cur.execute(sql12)
         cur.execute(sql13)
         rdb.commit()

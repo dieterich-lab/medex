@@ -1,7 +1,0 @@
-"ID" numeric PRIMARY KEY,
-"Patient_ID" text,
-"Billing_ID" text,
-"Date" text,
-"Time" text,
-"Key" text,
-"Value" text

@@ -14,12 +14,13 @@ DATABASE_URL= f'postgresql://{user}:{password}@{host}:{port}/{database}'
 def connect_db():
     """ connects to database """
     db = getattr(g, '_database', None)
-    if db is None:
+    while db is None:
         try:
             db = psycopg2.connect(DATABASE_URL)
+            return db
         except Exception:
             time.sleep(0.1)
-    return db
+
 
 
 
