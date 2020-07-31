@@ -21,10 +21,29 @@
 {{ m.show_error(error) }}
 {% endif %}
 
+<div class="card">
+    <div class="card-header" id="settings_header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+                Settings
+            </button>
+        </h5>
+    </div>
+    <div id="settings" class="collapse {% if not visit or error %} show {% endif %}"
+         aria-labelledby="c_settings_header" data-parent="#accordion">
+        <div class="card-body">
+            {% import 'macro_template.html' as m %}
+
+            {% if error %}
+            {{ m.show_error(error) }}
+            {% endif %}
 
 <form action="" method="POST">
-    {{ m.entity_form(id= "numeric_entities",name =all_numeric_entities,value=entity,d="Numeric entities:") }}
-    {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities,value=entity,d="Group by:") }}
+    {{ m.entity_form2(id2= "visit",name =all_visit,value=entity,select=visit,d="Visit number:") }}
+    {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities,value=entity,select=categorical_entities,d="Group by:") }}
+    {{ m.entity_form(id= "numeric_entities",name =all_numeric_entities,value=entity,select=numerical_entities,d="Numeric entities:") }}
+
+
 
     <!-- Send dictionary with subcategory data to javascript -->
     <script type="text/javascript">
@@ -32,7 +51,7 @@
     </script>
     <div class="tooltips" title="Please select category and next subcategory" >
         <label>Subcategory: </label>
-        <select multiple id="subcategory_entities" name="subcategory_entities" class="form-control" ></select>
+        <select style="width: 100%"  multiple id="subcategory_entities" name="subcategory_entities" class="form-control" ></select>
     </div>
 
     <label >Scale</label>
@@ -57,10 +76,26 @@
 
     <button type="submit" name="plot_boxplot" class="btn btn-outline-info">Plot</button>
 </form>
+        </div>
+    </div>
+</div>
 
+            <div class="card-header" id="results_header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                        {% if visit2 %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                        Results
+                    </button>
+                </h5>
+            </div>
+            <div id="numeric_results" class="collapse {% if visit %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+                <div class="card-body">
 {% if plot %}
 <div id="scatter_plot" >
         {{plot | safe}}
 </div>
 {% endif %}
+                  </div>
+            </div>
+
 {% endblock %}

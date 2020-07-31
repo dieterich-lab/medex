@@ -21,7 +21,9 @@
                     {{ m.show_error(error) }}
                     {% endif %}
                     <form action="" method="POST">
+                        {{ m.entity_form2(id2= "visit",name =all_visit,value=entity,select=visit3,d="Number of visit:") }}
                         {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,select=selected_c_entities,d="Categorical entities:") }}
+
                         <div class="row ml-1">
                                 <button type="submit" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
                         </div>
@@ -55,17 +57,21 @@
                         <thead>
                             <tr>
                                 <th>Entity</th>
+                                <th>Visit</th>
                                 <th>Count</th>
                                 <th>Count NaN</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for entity in selected_c_entities %}
+                            {% for v in visit3 %}
                             <tr>
                                 <td>{{ entity }}</td>
-                                <td>{{ basic_stats_c[entity]['count'] }}</td>
-                                <td>{{ basic_stats_c[entity]['count NaN'] }}</td>
+                                <td>{{ v }}</td>
+                                <td>{{ basic_stats_c['count'][entity][v] }}</td>
+                                <td>{{ basic_stats_c['count NaN'][entity][v] }}</td>
                             </tr>
+                            {% endfor %}
                             {% endfor %}
                         </tbody>
                     </table>

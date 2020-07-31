@@ -6,6 +6,7 @@ $(function () {
 
 
     // use plugin select2 for selector
+    $("#visit").select2();
     $("#numeric_entities").select2({
     placeholder:"Search entity"
     });

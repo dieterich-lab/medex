@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities,all_visit
 
 coplots_plot_page = Blueprint('coplots_pl', __name__,
                          template_folder='templates')
@@ -14,7 +14,8 @@ def get_coplots():
     return render_template('coplots_pl.html',
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
-                           all_subcategory_entities=all_subcategory_entities)
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_visit=all_visit)
 
 
 @coplots_plot_page.route('/coplots_pl', methods=['POST'])
@@ -29,6 +30,8 @@ def post_coplots():
     x_axis = request.form.get('x_axis')
     y_axis = request.form.get('y_axis')
 
+    visit = request.form.get('visit')
+
     how_to_plot = request.form.get('how_to_plot')
     how_to_plot2 = request.form.get('how_to_plot2')
 
@@ -39,7 +42,9 @@ def post_coplots():
 
     # handling errors and load data from database
     error = None
-    if category1 is None or category1 == 'Search entity':
+    if visit == "Search entity":
+        error = "Please select number of visit"
+    elif category1 is None or category1 == 'Search entity':
         error = 'Please select category1'
     elif category2 is None or category2 == 'Search entity':
         error = 'Please select category2'
@@ -58,9 +63,9 @@ def post_coplots():
     elif how_to_plot == 'log' and not log_x and not log_y:
         error = "Please select type of log"
     if not error:
-        num_data, error = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
-        cat_data1, error = ps.get_cat_values(category1,category11, rdb) if not error else (None, error)
-        cat_data2, error = ps.get_cat_values(category2,category22, rdb)
+        num_data, error = ps.get_values([x_axis, y_axis],visit, rdb) if not error else (None, error)
+        cat_data1, error = ps.get_cat_values(category1,category11,visit, rdb) if not error else (None, error)
+        cat_data2, error = ps.get_cat_values(category2,category22,visit, rdb)
         if not error:
             data = num_data.merge(cat_data1, on ="Patient_ID")
             data = data.merge(cat_data2, on="Patient_ID")
@@ -77,11 +82,14 @@ def post_coplots():
                                category2=category2,
                                x_axis=x_axis,
                                y_axis=y_axis,
+                               visit =visit,
                                how_to_plot=how_to_plot,
                                select_scale=select_scale,
-                               all_subcategory_entities=all_subcategory_entities)
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_visit=all_visit)
 
     # Plot figure and convert to an HTML string representation
+
     data[category1+' '+category2] = data[category1]+ ' '+ data[category2]
     if how_to_plot2 == "linear":
         if how_to_plot == "single_plot":
@@ -106,6 +114,7 @@ def post_coplots():
                 fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_y=True)
 
     fig.update_layout(
+        height=1000,
         title={
             'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "</b>",
             'y': 1,
@@ -125,4 +134,6 @@ def post_coplots():
                            how_to_plot=how_to_plot,
                            select_scale=select_scale,
                            plot=fig,
-                           all_subcategory_entities=all_subcategory_entities)
+                           visit = visit,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_visit=all_visit)

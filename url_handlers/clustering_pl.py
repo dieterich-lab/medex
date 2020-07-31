@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import url_handlers.clustering_function as dwu
-from webserver import rdb, all_numeric_entities, all_categorical_entities
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit
 clustering_plot_page = Blueprint('clustering_pl', __name__,
                             template_folder='clustering_pl')
 
@@ -11,7 +11,8 @@ def cluster():
 
     return render_template('clustering_pl.html',
                            numeric_tab=True,
-                           all_numeric_entities=all_numeric_entities
+                           all_numeric_entities=all_numeric_entities,
+                           all_visit=all_visit
                            )
 
 
@@ -19,11 +20,14 @@ def cluster():
 def post_clustering():
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
+    visit = request.form.get('visit')
 
     # handling errors and load data from database
     error = None
-    if len(numeric_entities) > 1:
-        df, error = ps.get_values(numeric_entities, rdb)
+    if visit == "Search entity":
+        error = "Please select number of visit"
+    elif len(numeric_entities) > 1:
+        df, error = ps.get_values(numeric_entities,visit, rdb)
         if not error:
             df = df.dropna()
             if len(df.index) == 0:
@@ -38,6 +42,8 @@ def post_clustering():
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
                                selected_n_entities=numeric_entities,
+                               all_visit=all_visit,
+                               visit =visit,
                                error=error)
 
 
@@ -78,6 +84,7 @@ def post_clustering():
                             any_present=any_present,
                             all_present=all_present,
                             table_data=table_data,
+                            all_visit=all_visit,
                             plot_data=plot_data
                            )
 

@@ -21,7 +21,9 @@
                     {{ m.show_error(error) }}
                     {% endif %}
                     <form action="" method="POST">
+                        {{ m.entity_form2(id2= "visit1",name =all_visit,value=entity,select=visit2,d="Number of visit:") }}
                         {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities ,value=entity,select=selected_n_entities,d="Numeric entities:") }}
+
                         <label>Include following statistics:</label>
                         <div class="row ml-2">
                             <div class="custom-control custom-checkbox mr-2">
@@ -97,6 +99,7 @@
                             <thead>
                                 <tr>
                                     <th>Entity</th>
+                                    <th>Visit</th>
                                     {% if 'counts' in basic_stats %}<th>Counts</th>{% endif %}
                                     {% if 'counts NaN' in basic_stats %}<th title="Number of patients with missing entity value" >Counts NaN </th>{% endif %}
                                     {% if 'min' in basic_stats %}<th>Min</th>{% endif %}
@@ -109,18 +112,23 @@
                             </thead>
                             <tbody>
                                 {% for entity in selected_n_entities %}
+                                {% for v in visit2 %}
                                 <tr>
+
                                     <td>{{ entity }}</td>
-                                    {% if 'counts' in basic_stats %}<td>{{ basic_stats['counts'][entity] }}</td>{% endif %}
-                                    {% if 'counts NaN' in basic_stats %}<td>{{ basic_stats['counts NaN'][entity] }}</td>{% endif %}
-                                    {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity] }}</td>{% endif %}
-                                    {% if 'max' in basic_stats %}<td>{{ basic_stats['max'][entity] }}</td>{% endif %}
-                                    {% if 'mean' in basic_stats %}<td>{{ basic_stats['mean'][entity] }}</td>{% endif %}
-                                    {% if 'median' in basic_stats %}<td>{{ basic_stats['median'][entity] }}</td>{% endif %}
-                                    {% if 'std_dev' in basic_stats %}<td>{{ basic_stats['std_dev'][entity] }}</td>{% endif %}
-                                    {% if 'std_err' in basic_stats %}<td>{{ basic_stats['std_err'][entity] }}</td>{% endif %}
-                                </tr>
-                                {% endfor %}
+                                    <td>{{ v }}</td>
+                                    {% if 'counts' in basic_stats %}<td>{{ basic_stats['counts'][entity][v] }}</td>{% endif %}
+                                    {% if 'counts NaN' in basic_stats %}<td>{{ basic_stats['counts NaN'][entity][v] }}</td>{% endif %}
+                                    {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity][v] }}</td>{% endif %}
+                                    {% if 'max' in basic_stats %}<td>{{ basic_stats['max'][entity][v] }}</td>{% endif %}
+                                    {% if 'mean' in basic_stats %}<td>{{ basic_stats['mean'][entity][v] }}</td>{% endif %}
+                                    {% if 'median' in basic_stats %}<td>{{ basic_stats['median'][entity][v] }}</td>{% endif %}
+                                    {% if 'std_dev' in basic_stats %}<td>{{ basic_stats['std_dev'][entity][v] }}</td>{% endif %}
+                                    {% if 'std_err' in basic_stats %}<td>{{ basic_stats['std_err'][entity][v] }}</td>{% endif %}
+                                    <tr>
+
+                            {% endfor %}
+                            {% endfor %}
                             </tbody>
                         </table>
                     {% endif %}

@@ -17,18 +17,31 @@
 {# end of imports #}
 
 
-{% import 'macro_template.html' as m %}
-
-{% if error %}
-{{ m.show_error(error) }}
-{% endif %}
 
 
+<div class="card">
+    <div class="card-header" id="settings_header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+                Settings
+            </button>
+        </h5>
+    </div>
+    <div id="settings" class="collapse {% if not visit or error %} show {% endif %}"
+         aria-labelledby="c_settings_header" data-parent="#accordion">
+        <div class="card-body">
+            {% import 'macro_template.html' as m %}
+
+            {% if error %}
+            {{ m.show_error(error) }}
+            {% endif %}
 <form action="" method="POST">
  <div class="form-group" id="coplot_controls">
+     {{ m.entity_form(id= "visit",name =all_visit,value=entity,select=y_axis,d="Visit number:") }}
 	 {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
 	 {{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
 	 {{ m.entity_form(id= "category1",name =categorical_entities ,value=entity,d="Category1:") }}
+
 
      <script type="text/javascript">
                 var cat = {{all_subcategory_entities|safe}};
@@ -44,6 +57,7 @@
         <label>Subcategory: </label>
             <select style="width: 100%" multiple id="category22" name="category22" class="form-control" ></select>
       </div>
+
 	     <label >Scale</label>
         <table >
         <tr>
@@ -96,10 +110,24 @@
 		<button type="submit" name="coplot" class="btn btn-outline-info">Plot</button>
 	</div>
 </form>
-
+        </div>
+    </div>
+</div>
+            <div class="card-header" id="results_header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                        {% if visit %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                        Results
+                    </button>
+                </h5>
+            </div>
+            <div id="numeric_results" class="collapse {% if visit %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+                <div class="card-body">
 {% if plot %}
 <div id="coplot" >
         {{plot | safe}}
 </div>
 {% endif %}
+                     </div>
+            </div>
 {% endblock %}

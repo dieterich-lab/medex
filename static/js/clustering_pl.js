@@ -8,6 +8,7 @@ $(function() {
 
 
     // pretify the select input for numerical and categorical entities
+    $("#visit").select2();
     $("#numeric_entities").select2({
     placeholder:"Search entity"
     });

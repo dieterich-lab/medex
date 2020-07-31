@@ -7,11 +7,24 @@ $(function () {
 
 
     // use plugin select2 for selector
+    $("#visit").select2({
+    placeholder:"Search entity"
+    });
+    $("#entities").select2({
+    placeholder:"Search entity"
+    });
     $('#categorical_entities').select2({
     placeholder:"Search entity"
     });
 
-
+    // apply filters for add group by
+    $(document).on('change', '#add_group_by', function() {
+        if(this.checked == false) {
+          $('#add_group').addClass('d-none');
+        } else {
+            $('#add_group').removeClass('d-none');
+        }
+    });
     // initiate value for subcategory selector
     var $cat = $('#subcategory_entities').select2({
     placeholder:"Search entity"

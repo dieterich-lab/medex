@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-from webserver import rdb,all_numeric_entities, all_categorical_entities,all_subcategory_entities
+import plotly.express as px
+from webserver import rdb,all_numeric_entities, all_categorical_entities,all_subcategory_entities,all_visit
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
 
@@ -11,7 +12,8 @@ def get_statistics():
     return render_template('histogram.html',
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
-                           all_subcategory_entities=all_subcategory_entities)
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_visit=all_visit)
 
 
 @histogram_page.route('/histogram', methods=['POST'])
@@ -22,15 +24,18 @@ def post_statistics():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     number_of_bins = request.form.get('number_of_bins')
+    visit = request.form.get('visit')
 
     # handling errors and load data from database
     error = None
-    if numeric_entities == "Search entity" or categorical_entities == "Search entity":
+    if visit == "Search entity":
+        error = "Please select number of visit"
+    elif numeric_entities == "Search entity" or categorical_entities == "Search entity":
         error = "Please select entity"
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
-        data, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,rdb)
+        data, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,visit,rdb)
         if not error:
             data = data.dropna()
             if len(data.index) == 0:
@@ -42,63 +47,47 @@ def post_statistics():
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               selected_entity=numeric_entities,
-                               group_by=categorical_entities,
+                               numeric_entities=numeric_entities,
+                               categorical_entities=categorical_entities,
+                               visit=visit,
+                               all_visit=all_visit,
                                error=error)
 
 
 
-    # get min and max value in data for adjusting bins in histogram
-    min_val = data[numeric_entities].min()
-    max_val = data[numeric_entities].max()
-    count = data[categorical_entities].count()
-    adjusted_bins = (max_val - min_val)
 
     # handling errors if number of bins is less then 2
     if number_of_bins.isdigit() and int(number_of_bins) > 2:
-        int_number_of_bins = int(number_of_bins)
-        bin_numbers = (adjusted_bins / int_number_of_bins)
+        bin_numbers = int(number_of_bins)
     elif number_of_bins == "":
-        bin_numbers = (adjusted_bins / 20)
+        bin_numbers = 20
     else:
         error = "You have entered non-integer or negative value. Please use positive integer"
         return render_template('histogram.html',
                                 all_categorical_entities=all_categorical_entities,
                                 all_numeric_entities=all_numeric_entities,
                                 all_subcategory_entities=all_subcategory_entities,
+                                all_visit=all_visit,
+                                numeric_entities=numeric_entities,
+                                categorical_entities=categorical_entities,
+                                visit=visit,
                                 error=error)
 
 
 
-    # create histogram
-    groups = set(data[categorical_entities].values.tolist())
-    plot_series = []
-    for group in groups:
-        df = data.loc[data[categorical_entities] == group]
-        values = df[numeric_entities].values.tolist()
-        if (values):
-            plot_series.append({
-                'x'       : values,
-                'type'    : "histogram",
-                'opacity' : 0.5,
-                'name'    : group,
-                'xbins'   : {
-                    'end': max_val,
-                    'size': bin_numbers,
-                    'start': min_val
-                    }
-                })
+    fig =px.histogram(data, x=numeric_entities, color=categorical_entities,nbins=bin_numbers,opacity=0.5,template="plotly_white")
+    fig = fig.to_html()
 
     return render_template('histogram.html',
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            selected_entity=numeric_entities,
                            group_by=categorical_entities,
-                           group =groups,
-                           plot_series=plot_series,
-                           min_val=min_val,
-                           max_val=max_val,
+                           plot=fig,
                            number_of_bins=number_of_bins,
-                           count=count,
-                           all_subcategory_entities=all_subcategory_entities
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_visit=all_visit,
+                           numeric_entities=numeric_entities,
+                           categorical_entities=categorical_entities,
+                           visit=visit,
                            )

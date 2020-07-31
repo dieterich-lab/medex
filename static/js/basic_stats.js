@@ -23,7 +23,13 @@ $(function () {
 
 
     // use plugin select2 for selector
+    $("#visit").select2({
+    placeholder:"Search entity"
+    });
     $("#numeric_entities").select2({
+    placeholder:"Search entity"
+    });
+    $("#visit1").select2({
     placeholder:"Search entity"
     });
     $("#categorical_entities").select2({

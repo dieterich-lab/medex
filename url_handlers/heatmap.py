@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, request
 import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities
+import plotly.express as px
+from webserver import rdb, all_numeric_entities,all_visit
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,
@@ -14,18 +15,22 @@ def get_plots():
 
     return render_template('heatmap.html',
                            numeric_tab=True,
-                           all_numeric_entities=all_numeric_entities)
+                           all_numeric_entities=all_numeric_entities,
+                           all_visit=all_visit)
 
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
 def post_plots():
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
+    visit = request.form.get('visit')
 
     # handling errors and load data from database
     error = None
-    if len(numeric_entities) > 1:
-        numeric_df, error = ps.get_values(numeric_entities, rdb)
+    if visit == "Search entity":
+        error = "Please select number of visit"
+    elif len(numeric_entities) > 1:
+        numeric_df, error = ps.get_values(numeric_entities,visit, rdb)
         if not error:
             if len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
@@ -39,9 +44,11 @@ def post_plots():
         return render_template('heatmap.html',
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
-                               selected_n_entities=numeric_entities,
+                               numeric_entities=numeric_entities,
+                               visit=visit,
+                               all_visit=all_visit,
                                error=error)
-    
+
     # calculate person correlation
     numeric_df = numeric_df[numeric_entities]
     dfcols = pd.DataFrame(columns=numeric_df.columns)
@@ -64,6 +71,10 @@ def post_plots():
     corr_values = corr_values.round(decimals=2)
     corr_values = corr_values.T.values.tolist()
 
+
+
+#    fig = px.imshow(corr_values,x=numeric_entities,y=numeric_entities)
+#    fig.show()
     # structure data for ploting
     plot_series = []
     plot_series.append({'z': corr_values,
@@ -78,7 +89,9 @@ def post_plots():
     return render_template('heatmap.html',
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
-                           selected_n_entities=numeric_entities,
+                           numeric_entities=numeric_entities,
+                           visit=visit,
+                           all_visit=all_visit,
                            plot_series=plot_series
                            )
 

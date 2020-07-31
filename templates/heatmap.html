@@ -16,20 +16,50 @@
 {# end of imports #}
 
 
-{% import 'macro_template.html' as m %}
+<div class="card">
+    <div class="card-header" id="settings_header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+                Settings
+            </button>
+        </h5>
+    </div>
+    <div id="settings" class="collapse {% if not visit or error %} show {% endif %}"
+         aria-labelledby="c_settings_header" data-parent="#accordion">
+        <div class="card-body">
+            {% import 'macro_template.html' as m %}
 
-{% if error %}
-{{ m.show_error(error) }}
-{% endif %}
+            {% if error %}
+            {{ m.show_error(error) }}
+            {% endif %}
 
 
 <form action="" method="POST">
-    {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities ,value=entity,d="Numeric entities:") }}
+    {{ m.entity_form(id= "visit",name =all_visit,value=entity,select=visit,d="Visit number:") }}
+    {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities ,value=entity,select=numeric_entities,d="Numeric entities:") }}
+
     <button type="submit" name="heatmap" class="btn btn-outline-info">Plot</button>
 </form>
+        </div>
+    </div>
+</div>
 
+            <div class="card-header" id="results_header">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                        {% if visit %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                        Results
+                    </button>
+                </h5>
+            </div>
+            <div id="numeric_results" class="collapse {% if visit %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+                <div class="card-body">
 {% if plot_series %}
 <div id="heatmap"  data-plot-series="{{ plot_series }}"></div>
 {% endif %}
+                     </div>
+            </div>
+
+
 {% endblock %}
 

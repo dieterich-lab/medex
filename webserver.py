@@ -33,12 +33,15 @@ if os.environ.get('IMPORT_DISABLED') is None:
     scheduler.stop()
 
 # get all numeric and categorical entities from database
+all_entities = ps.get_entities(rdb)
 all_numeric_entities = ps.get_numeric_entities(rdb)
 all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
+all_visit = ps.get_visit(rdb)
 
 
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
+
 from url_handlers.basic_stats import basic_stats_page
 from url_handlers.histogram import histogram_page
 from url_handlers.boxplot import boxplot_page

@@ -10,6 +10,7 @@ $(document).ready(function() {
     $("#y_axis").select2();
     $("#category1").select2();
     $("#category2").select2();
+    $("#visit").select2();
 
 
     // apply filters for Single and multiple plot

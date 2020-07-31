@@ -76,7 +76,7 @@ def alter_table(rdb):
     sql4 = """CREATE TABLE Patient AS select distinct "Patient_ID" from examination"""
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Patient_ID")"""
-    sql6 = """ALTER TABLE ONLY public.examination_numerical ADD CONSTRAINT examination_numerical_pkey PRIMARY KEY ("ID")"""
+    sql6 = """ALTER TABLE examination_numerical ADD CONSTRAINT examination_numerical_pkey PRIMARY KEY ("ID")"""
     sql7 = """ALTER TABLE examination_categorical ADD CONSTRAINT examination_categorical_pkey PRIMARY KEY ("ID")"""
     sql8 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Patient_ID") REFERENCES patient ("Patient_ID")"""
     sql9 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n2 FOREIGN KEY ("Patient_ID") REFERENCES patient ("Patient_ID")"""
