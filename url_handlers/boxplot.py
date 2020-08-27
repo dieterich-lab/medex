@@ -28,7 +28,9 @@ def post_boxplots():
 
     # handling errors and load data from database
     error = None
-    if numeric_entities == "Search entity" or categorical_entities == "Search entity":
+    if not visit:
+        error = "Please select number of visit"
+    elif numeric_entities == "Search entity" or categorical_entities == "Search entity":
         error = "Please select entity"
     elif not subcategory_entities:
         error = "Please select subcategory"

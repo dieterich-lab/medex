@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit
-import numpy as np
+
 
 basic_stats_page = Blueprint('basic_stats', __name__,
                              template_folder='basic_stats')
@@ -11,8 +11,8 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 def get_statistics():
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
-                           all_numeric_entities=all_numeric_entities,
                            all_categorical_entities=all_categorical_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_visit=all_visit)
 
 
@@ -28,7 +28,7 @@ def get_basic_stats():
 
         # handling errors and load data from database
         error = None
-        if len(visit1) == 0:
+        if not visit1:
             error = "Please select number of visit"
         elif len(numeric_entities) == 0:
             error = "Please select numeric entities"
@@ -45,13 +45,19 @@ def get_basic_stats():
                                    numeric_tab=True,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
-                                   selected_n_entities=numeric_entities,
-                                   visit2=visit1,
                                    all_visit=all_visit,
+                                   numeric_entities=numeric_entities,
+                                   visit1=visit1,
                                    error=error)
 
         # calculation basic stats
+        error_message = None
+        for i in numeric_entities:
+            if not i in numeric_df.columns:
+                numeric_entities.remove(i)
+                error_message = "{} not measured".format(i)
         entities = numeric_entities + ['Billing_ID']
+
         numeric_df = numeric_df[entities]
 
         basic_stats = {}
@@ -90,30 +96,30 @@ def get_basic_stats():
         if not any(basic_stats.keys()):
             error_message = "You must select at least some statistics"
             return render_template('basic_stats/basic_stats.html',
-                                    numeric_tab=True,
-                                    all_categorical_entities=all_categorical_entities,
-                                    all_numeric_entities=all_numeric_entities,
-                                    selected_n_entities=numeric_entities,
-                                    visit2=visit1,
-                                    basic_stats=basic_stats,
-                                    all_visit=all_visit,
-                                    error=error_message)
+                                   numeric_tab=True,
+                                   all_categorical_entities=all_categorical_entities,
+                                   all_numeric_entities=all_numeric_entities,
+                                   all_visit=all_visit,
+                                   numeric_entities=numeric_entities,
+                                   visit1=visit1,
+                                   basic_stats=basic_stats,
+                                   error=error_message)
 
 
         if any(basic_stats.keys()):
             any_present = numeric_df.shape[0]
             all_present = numeric_df.dropna().shape[0]
             return render_template('basic_stats/basic_stats.html',
-                                    numeric_tab=True,
-                                    all_categorical_entities=all_categorical_entities,
-                                    all_numeric_entities=all_numeric_entities,
-                                    selected_n_entities=numeric_entities,
-                                    basic_stats=basic_stats,
-                                    visit2=visit1,
-                                    any_present=any_present,
-                                    all_present=all_present,
-                                    all_visit=all_visit)
-
+                                   numeric_tab=True,
+                                   all_categorical_entities=all_categorical_entities,
+                                   all_numeric_entities=all_numeric_entities,
+                                   all_visit=all_visit,
+                                   numeric_entities=numeric_entities,
+                                   basic_stats=basic_stats,
+                                   visit1=visit1,
+                                   any_present=any_present,
+                                   all_present=all_present,
+                                   error=error_message)
 
     if 'basic_stats_c' in request.form:
         """ calculation for categorical values"""
@@ -128,7 +134,7 @@ def get_basic_stats():
             error = "Please select number of visit"
         elif len(categorical_entities) == 0:
             error = "Please select entities"
-        if categorical_entities:
+        else:
             n, error = ps.number(rdb) if not error else (None, error)
             categorical_df,error = ps.get_cat_values_basic_stas2(categorical_entities,visit, rdb)
             if not error:
@@ -141,11 +147,15 @@ def get_basic_stats():
                                    categorical_tab=True,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
-                                   selected_c_entities=categorical_entities,
-                                   visit3=visit,
                                    all_visit=all_visit,
+                                   categorical_entities=categorical_entities,
+                                   visit2=visit,
                                    error=error)
-
+        error_message = None
+        for i in categorical_entities:
+            if not i in categorical_df.columns:
+                categorical_entities.remove(i)
+                error_message = "{} not measured".format(i)
         basic_stats_c = {}
         basic_stats_c['count'] = categorical_df
         basic_stats_c['count NaN'] = int(n) - categorical_df
@@ -153,9 +163,10 @@ def get_basic_stats():
                                categorical_tab=True,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
-                               selected_c_entities=categorical_entities,
                                all_visit=all_visit,
-                               visit3=visit,
-                               basic_stats_c=basic_stats_c)
+                               categorical_entities=categorical_entities,
+                               visit2=visit,
+                               basic_stats_c=basic_stats_c,
+                               error=error_message)
 
 

@@ -3,16 +3,18 @@
 <div class="tab-pane fade {% if numeric_tab %}show active{% endif %}"
      id="numeric_tab" role="tabpanel" aria-labelledby="n_settings_header">
     <div id="numeric_accordion">
+
+        <!-- maybe macro for that -->
         <div class="card">
             <div class="card-header" id="n_settings_header">
                 <h5 class="mb-0">
                     <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_settings"
-                        {% if not selected_n_entities %} aria-expanded="true" {% endif %} aria-controls="numeric_settings">
+                        {% if not numeric_entities %} aria-expanded="true" {% endif %} aria-controls="numeric_settings">
                         Settings
                     </button>
                 </h5>
             </div>
-            <div id="numeric_settings" class="collapse {% if not selected_n_entities or error %} show {% endif %}"
+            <div id="numeric_settings" class="collapse {% if not numeric_entities or error %} show {% endif %}"
                  aria-labelledby="n_settings_header" data-parent="#numeric_accordion">
                 <div class="card-body">
                     {% import 'macro_template.html' as m %}
@@ -21,8 +23,8 @@
                     {{ m.show_error(error) }}
                     {% endif %}
                     <form action="" method="POST">
-                        {{ m.entity_form2(id2= "visit1",name =all_visit,value=entity,select=visit2,d="Number of visit:") }}
-                        {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities ,value=entity,select=selected_n_entities,d="Numeric entities:") }}
+                        {{ m.entity_form2(id2= "visit1",name =all_visit,value=entity,select=visit1,d="Number of visit:") }}
+                        {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities ,value=entity,select=numeric_entities,d="Numeric entities:") }}
 
                         <label>Include following statistics:</label>
                         <div class="row ml-2">
@@ -74,16 +76,19 @@
                 </div>
             </div>
         </div>
+
+
+        <!-- maybe macro for that -->
         <div class="card">
             <div class="card-header" id="results_header">
                 <h5 class="mb-0">
                     <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                        {% if selected_n_entities %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                        {% if numeric_entities %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
                         Results
                     </button>
                 </h5>
             </div>
-            <div id="numeric_results" class="collapse {% if selected_n_entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+            <div id="numeric_results" class="collapse {% if numeric_entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
                 <div class="card-body">
                     {% if basic_stats and any_present %}
                         <div class="dropdown mt-4 float-right">
@@ -95,7 +100,7 @@
                                 <a id="export_csv" class="dropdown-item">.csv</a>
                             </div>
                         </div>
-                        <table class="table table-striped">
+                        <table class="table table-stripped">
                             <thead>
                                 <tr>
                                     <th>Entity</th>
@@ -111,8 +116,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for entity in selected_n_entities %}
-                                {% for v in visit2 %}
+                                {% for entity in numeric_entities %}
+                                {% for v in visit1 %}
                                 <tr>
 
                                     <td>{{ entity }}</td>
@@ -126,7 +131,6 @@
                                     {% if 'std_dev' in basic_stats %}<td>{{ basic_stats['std_dev'][entity][v] }}</td>{% endif %}
                                     {% if 'std_err' in basic_stats %}<td>{{ basic_stats['std_err'][entity][v] }}</td>{% endif %}
                                     <tr>
-
                             {% endfor %}
                             {% endfor %}
                             </tbody>
@@ -135,5 +139,7 @@
                 </div>
             </div>
         </div>
+
+
     </div>
 </div>

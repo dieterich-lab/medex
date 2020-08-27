@@ -17,7 +17,13 @@ $(function () {
         // delete attribute
         Plotly.newPlot('heatmap',
             heatmap_data,
-            {title: 'Heatmap shows Pearson correlation ',annotations: [
+            {height: 1000,
+            margin: {
+                    l: 270,
+                    r: 100,
+                    b: 200,
+                  },
+            title: 'Heatmap shows Pearson correlation ',annotations: [
             {
               text: 'Rows with missing values have been removed ',
                 xref: 'paper',

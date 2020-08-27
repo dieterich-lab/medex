@@ -42,72 +42,70 @@
             {{ m.show_error(error) }}
             {% endif %}
 
-<form method="POST">
-    {{ m.entity_form(id= "visit",name =all_visit,value=entity,select=y_axis,d="Visit number:") }}
-    {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities  ,value=entity,d="Numeric entities:") }}
+            <form method="POST">
+                {{ m.entity_form(id= "visit",name =all_visit,value=entity,select=visit,d="Visit number:") }}
+                {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities,select=numeric_entities,value=entity,d="Numeric entities:") }}
 
-    <button type="submit" name="cluster" class="btn btn-outline-info">Plot</button>
-</form>
+                <button type="submit" name="cluster" class="btn btn-outline-info">Plot</button>
+            </form>
         </div>
     </div>
 </div>
-            <div class="card-header" id="results_header">
-                <h5 class="mb-0">
-                    <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                        {% if visit %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
-                        Results
-                    </button>
-                </h5>
-            </div>
-            <div id="numeric_results" class="collapse {% if visit %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-                <div class="card-body">
-<div class="card-body">
-    {% if plot_data %}
-    <div id="cluster" data-plot-series='{{ plot_data }}' data-plot-x="{{ selected_n_entities }}"
-         data-plot-y="{{ selected_n_entities }}"></div>
-    {% endif %}
-
-    {% if table_data %}
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <div class="dropdown mt-4 float-right">
-                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Export table
-                </button>
-                <div class="dropdown-menu" aria-labelledby="export_button">
-                    <a id='export_excel' class="dropdown-item">.xl</a>
-                    <a id="export_csv" class="dropdown-item">.csv</a>
-                </div>
-            </div>
-        </tr>
-        <tr>
-            <th>Cluster</th>
-            <th>Patient count</th>
-            <th>Patient percent</th>
-            {% for entity in selected_n_entities %}
-            <th>{{ entity }} (mean value)</th>
-            {% endfor %}
-        </tr>
-        </thead>
-        <tbody>
-
-        {% for cluster in table_data.keys() | sort %}
-        <tr>
-            <td>{{ cluster }}</td>
-            <td>{{ table_data[cluster]['patient_count'] }}</td>
-            <td>{{ table_data[cluster]['patient_percent'] }}</td>
-            {% for entity in selected_n_entities %}
-            <td>{{ table_data[cluster][entity] }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
+<div class="card-header" id="results_header">
+    <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+            {% if visit %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            Results
+        </button>
+    </h5>
 </div>
-                     </div>
-            </div>
+<div id="numeric_results" class="collapse {% if visit %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+    <div class="card-body">
+        {% if plot_data %}
+        <div id="cluster" data-plot-series='{{ plot_data }}' data-plot-x="{{ selected_n_entities }}"
+             data-plot-y="{{ selected_n_entities }}"></div>
+        {% endif %}
+
+        {% if table_data %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <div class="dropdown mt-4 float-right">
+                    <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Export table
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="export_button">
+                        <a id='export_excel' class="dropdown-item">.xl</a>
+                        <a id="export_csv" class="dropdown-item">.csv</a>
+                    </div>
+                </div>
+            </tr>
+            <tr>
+                <th>Cluster</th>
+                <th>Patient count</th>
+                <th>Patient percent</th>
+                {% for entity in selected_n_entities %}
+                <th>{{ entity }} (mean value)</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for cluster in table_data.keys() | sort %}
+            <tr>
+                <td>{{ cluster }}</td>
+                <td>{{ table_data[cluster]['patient_count'] }}</td>
+                <td>{{ table_data[cluster]['patient_percent'] }}</td>
+                {% for entity in selected_n_entities %}
+                <td>{{ table_data[cluster][entity] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
 
 {% endblock %}

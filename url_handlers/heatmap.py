@@ -48,6 +48,11 @@ def post_plots():
                                visit=visit,
                                all_visit=all_visit,
                                error=error)
+    error=None
+    for i in numeric_entities:
+        if not i in numeric_df.columns:
+            numeric_entities.remove(i)
+            error = "{} not exist".format(i)
 
     # calculate person correlation
     numeric_df = numeric_df[numeric_entities]
@@ -92,6 +97,7 @@ def post_plots():
                            numeric_entities=numeric_entities,
                            visit=visit,
                            all_visit=all_visit,
-                           plot_series=plot_series
+                           plot_series=plot_series,
+                           error=error
                            )
 

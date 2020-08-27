@@ -64,57 +64,77 @@ def post_coplots():
         error = "Please select type of log"
     if not error:
         num_data, error = ps.get_values([x_axis, y_axis],visit, rdb) if not error else (None, error)
-        cat_data1, error = ps.get_cat_values(category1,category11,visit, rdb) if not error else (None, error)
-        cat_data2, error = ps.get_cat_values(category2,category22,visit, rdb)
-        if not error:
-            data = num_data.merge(cat_data1, on ="Patient_ID")
-            data = data.merge(cat_data2, on="Patient_ID")
-            data = data.dropna()
-            if len(data.index) == 0:
-                error = "No data based on the selected options"
-        else: (None, error)
+        if not x_axis in num_data.columns:
+            error = "The entity {} wasn't measured".format(x_axis)
+        elif not y_axis in num_data.columns:
+            error = "The entity {} wasn't measured".format(y_axis)
+        elif not error:
+            cat_data1, error = ps.get_cat_values(category1,category11,visit, rdb) if not error else (None, error)
+            if not error:
+                cat_data2, error = ps.get_cat_values(category2,category22,visit, rdb)
+                if not error:
+                    data = num_data.merge(cat_data1, on ="Patient_ID")
+                    data = data.merge(cat_data2, on="Patient_ID")
+                    data = data.dropna()
+                    if len(data.index) == 0:
+                        error = "No data based on the selected options"
+                else: (None, error)
     if error:
         return render_template('coplots_pl.html',
+                               all_subcategory_entities=all_subcategory_entities,
                                all_numeric_entities=all_numeric_entities,
                                categorical_entities=all_categorical_entities,
+                               all_visit=all_visit,
                                error=error,
                                category1=category1,
                                category2=category2,
                                x_axis=x_axis,
                                y_axis=y_axis,
-                               visit =visit,
+                               visit=visit,
                                how_to_plot=how_to_plot,
                                select_scale=select_scale,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_visit=all_visit)
+                               category11=category11,
+                               category22=category22)
 
     # Plot figure and convert to an HTML string representation
-
+    len1 = len(category11)
+    len2 = len(category22)
     data[category1+' '+category2] = data[category1]+ ' '+ data[category2]
     if how_to_plot2 == "linear":
         if how_to_plot == "single_plot":
             fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols")
         else:
             fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols")
+            fig.update_layout(
+                height=200 * len1,
+                width=300 * len2)
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if how_to_plot == "single_plot":
                 fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
             else:
                 fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+                fig.update_layout(
+                    height=200 * len1,
+                    width=300 * len2)
         elif log_x == 'log_x':
             if how_to_plot == "single_plot":
                 fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
             else:
                 fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
+                fig.update_layout(
+                    height=200 * len1,
+                    width=300 * len2)
         elif log_y == 'log_y':
             if how_to_plot == "single_plot":
                 fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols", log_y=True)
             else:
                 fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_y=True)
+                fig.update_layout(
+                    height=200 * len1,
+                    width=300 * len2)
 
     fig.update_layout(
-        height=1000,
         title={
             'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "</b>",
             'y': 1,
@@ -127,13 +147,16 @@ def post_coplots():
     return render_template('coplots_pl.html',
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_visit=all_visit,
+                           how_to_plot=how_to_plot,
+                           select_scale=select_scale,
+                           category11=category11,
+                           category22=category22,
                            category1=category1,
                            category2=category2,
                            x_axis=x_axis,
                            y_axis=y_axis,
-                           how_to_plot=how_to_plot,
-                           select_scale=select_scale,
-                           plot=fig,
-                           visit = visit,
-                           all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit)
+                           visit=visit,
+                           plot=fig
+                           )

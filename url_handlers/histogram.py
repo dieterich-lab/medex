@@ -49,6 +49,7 @@ def post_statistics():
                                all_subcategory_entities=all_subcategory_entities,
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
                                visit=visit,
                                all_visit=all_visit,
                                error=error)
@@ -70,12 +71,19 @@ def post_statistics():
                                 all_visit=all_visit,
                                 numeric_entities=numeric_entities,
                                 categorical_entities=categorical_entities,
+                                subcategory_entities=subcategory_entities,
                                 visit=visit,
                                 error=error)
 
-
-
     fig =px.histogram(data, x=numeric_entities, color=categorical_entities,nbins=bin_numbers,opacity=0.5,template="plotly_white")
+
+    fig.update_layout(
+        title={
+            'text': " Visit <b>" + visit + "</b>",
+            'y': 0.9,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'})
     fig = fig.to_html()
 
     return render_template('histogram.html',
@@ -89,5 +97,6 @@ def post_statistics():
                            all_visit=all_visit,
                            numeric_entities=numeric_entities,
                            categorical_entities=categorical_entities,
+                           subcategory_entities=subcategory_entities,
                            visit=visit,
                            )

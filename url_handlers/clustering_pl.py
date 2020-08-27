@@ -28,6 +28,10 @@ def post_clustering():
         error = "Please select number of visit"
     elif len(numeric_entities) > 1:
         df, error = ps.get_values(numeric_entities,visit, rdb)
+        for i in numeric_entities:
+            if not i in df.columns:
+                numeric_entities.remove(i)
+                error = "Entity: {} doesn't exist".format(i)
         if not error:
             df = df.dropna()
             if len(df.index) == 0:
@@ -41,9 +45,9 @@ def post_clustering():
         return render_template('heatmap.html',
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
-                               selected_n_entities=numeric_entities,
+                               numeric_entities=numeric_entities,
                                all_visit=all_visit,
-                               visit =visit,
+                               visit=visit,
                                error=error)
 
 
@@ -79,13 +83,15 @@ def post_clustering():
 
     return render_template('clustering_pl.html',
                             numeric_tab=True,
-                            selected_n_entities=numeric_entities,
+                            numeric_entities=numeric_entities,
                             all_numeric_entities=all_numeric_entities,
                             any_present=any_present,
                             all_present=all_present,
                             table_data=table_data,
                             all_visit=all_visit,
-                            plot_data=plot_data
+                            visit=visit,
+                            plot_data=plot_data,
+                            error=error
                            )
 
 

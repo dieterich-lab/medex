@@ -3,17 +3,20 @@
 <div class="tab-pane fade {% if categorical_tab %}show active{% endif %}" id="categorical_tab"
      role="tabpanel" aria-labelledby="c_settings_header">
     <div id="categorical_accordion">
+
+        <!-- maybe macro for that -->
         <div class="card">
             <div class="card-header" id="c_settings_header">
                 <h5 class="mb-0">
                     <button class="btn btn-link" data-toggle="collapse" data-target="#categorical_settings"
-                        {% if selected_c_entities %} aria-expanded="true" {% endif %} aria-controls="categorical_settings">
+                        {% if categorical_entities %} aria-expanded="true" {% endif %} aria-controls="categorical_settings">
                         Settings
                     </button>
                 </h5>
             </div>
-            <div id="categorical_settings" class="collapse {% if not selected_c_entities or error %} show {% endif %}"
+            <div id="categorical_settings" class="collapse {% if not categorical_entities or error %} show {% endif %}"
                  aria-labelledby="c_settings_header" data-parent="#categorical_accordion">
+
                 <div class="card-body">
                     {% import 'macro_template.html' as m %}
 
@@ -21,8 +24,8 @@
                     {{ m.show_error(error) }}
                     {% endif %}
                     <form action="" method="POST">
-                        {{ m.entity_form2(id2= "visit",name =all_visit,value=entity,select=visit3,d="Number of visit:") }}
-                        {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,select=selected_c_entities,d="Categorical entities:") }}
+                        {{ m.entity_form2(id2= "visit",name =all_visit,value=entity,select=visit2,d="Number of visit:") }}
+                        {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
 
                         <div class="row ml-1">
                                 <button type="submit" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
@@ -31,16 +34,19 @@
                 </div>
             </div>
         </div>
+
+
+        <!-- maybe macro for that -->
         <div class="card">
             <div class="card-header" id="results_header">
                   <h5 class="mb-0">
                       <button class="btn btn-link" data-toggle="collapse" data-target="#categorical_results"
-                              {% if selected_c_entities %} aria-expanded="true" {% endif %} aria-controls="#categorical_results">
+                              {% if categorical_entities %} aria-expanded="true" {% endif %} aria-controls="#categorical_results">
                           Results
                       </button>
                 </h5>
             </div>
-            <div id="categorical_results" class="collapse {% if selected_c_entities %} show {% endif %}"
+            <div id="categorical_results" class="collapse {% if categorical_entities %} show {% endif %}"
                  aria-labelledby="c_results_header" data-parent="#categorical_accordion">
                 <div class="card-body">
                     {% if basic_stats_c %}
@@ -63,8 +69,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for entity in selected_c_entities %}
-                            {% for v in visit3 %}
+                            {% for entity in categorical_entities %}
+                            {% for v in visit2 %}
                             <tr>
                                 <td>{{ entity }}</td>
                                 <td>{{ v }}</td>
@@ -79,5 +85,7 @@
                 </div>
             </div>
         </div>
+
+
     </div>
 </div>
