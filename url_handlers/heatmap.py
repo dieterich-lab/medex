@@ -39,10 +39,17 @@ def post_plots():
         return render_template('heatmap.html',
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
-                               selected_n_entities=numeric_entities,
+                               numeric_entities=numeric_entities,
                                error=error)
     
     # calculate person correlation
+    error = None
+    for i in numeric_entities:
+        if not i in numeric_df.columns:
+            numeric_entities.remove(i)
+            error = "Entity: {} doesn't exist".format(i)
+
+
     numeric_df = numeric_df[numeric_entities]
     dfcols = pd.DataFrame(columns=numeric_df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
@@ -64,6 +71,7 @@ def post_plots():
     corr_values = corr_values.round(decimals=2)
     corr_values = corr_values.T.values.tolist()
 
+
     # structure data for ploting
     plot_series = []
     plot_series.append({'z': corr_values,
@@ -78,7 +86,8 @@ def post_plots():
     return render_template('heatmap.html',
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
-                           selected_n_entities=numeric_entities,
-                           plot_series=plot_series
+                           numeric_entities=numeric_entities,
+                           plot_series=plot_series,
+                           error=error
                            )
 

@@ -42,8 +42,9 @@ def post_statistics():
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               selected_entity=numeric_entities,
-                               group_by=categorical_entities,
+                               numeric_entities=numeric_entities,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
                                error=error)
 
 
@@ -66,6 +67,9 @@ def post_statistics():
                                 all_categorical_entities=all_categorical_entities,
                                 all_numeric_entities=all_numeric_entities,
                                 all_subcategory_entities=all_subcategory_entities,
+                                numeric_entities=numeric_entities,
+                                categorical_entities=categorical_entities,
+                                subcategory_entities=subcategory_entities,
                                 error=error)
 
 
@@ -92,13 +96,14 @@ def post_statistics():
     return render_template('histogram.html',
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
-                           selected_entity=numeric_entities,
-                           group_by=categorical_entities,
-                           group =groups,
+                           all_subcategory_entities=all_subcategory_entities,
+                           numeric_entities=numeric_entities,
+                           categorical_entities=categorical_entities,
+                           subcategory_entities=subcategory_entities,
+                           group=groups,
                            plot_series=plot_series,
                            min_val=min_val,
                            max_val=max_val,
                            number_of_bins=number_of_bins,
-                           count=count,
-                           all_subcategory_entities=all_subcategory_entities
+                           count=count
                            )

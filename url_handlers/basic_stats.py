@@ -40,10 +40,16 @@ def get_basic_stats():
                                    numeric_tab=True,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
-                                   selected_n_entities=numeric_entities,
+                                   numeric_entities=numeric_entities,
                                    error=error)
 
         # calculation basic stats
+        for i in numeric_entities:
+            if not i in numeric_df.columns:
+                numeric_entities.remove(i)
+                error_message = "{} not measured".format(i)
+            else:
+                error_message=None
         numeric_df = numeric_df[numeric_entities]
         basic_stats = { }
         if 'counts' in request.form:
@@ -76,7 +82,7 @@ def get_basic_stats():
                                     numeric_tab=True,
                                     all_categorical_entities=all_categorical_entities,
                                     all_numeric_entities=all_numeric_entities,
-                                    selected_n_entities=numeric_entities,
+                                    numeric_entities=numeric_entities,
                                     basic_stats=basic_stats,
                                     error=error_message)
 
@@ -87,10 +93,11 @@ def get_basic_stats():
                                     numeric_tab=True,
                                     all_categorical_entities=all_categorical_entities,
                                     all_numeric_entities=all_numeric_entities,
-                                    selected_n_entities=numeric_entities,
+                                    numeric_entities=numeric_entities,
                                     basic_stats=basic_stats,
                                     any_present=any_present,
-                                    all_present=all_present)
+                                    all_present=all_present,
+                                    error=error_message)
 
     if 'basic_stats_c' in request.form:
         """ calculation for categorical values"""
@@ -114,9 +121,14 @@ def get_basic_stats():
                                    categorical_tab=True,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
-                                   selected_c_entities=categorical_entities,
+                                   categorical_entities=categorical_entities,
                                    error=error)
-
+        for i in categorical_entities:
+            if not i in categorical_df.columns:
+                categorical_entities.remove(i)
+                error_message = "{} not measured".format(i)
+            else:
+                error_message=None
         basic_stats_c = { }
         for entity in categorical_entities:
             basic_stats_c[entity] = { }
@@ -127,7 +139,8 @@ def get_basic_stats():
                                categorical_tab=True,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
-                               selected_c_entities=categorical_entities,
-                               basic_stats_c=basic_stats_c)
+                               categorical_entities=categorical_entities,
+                               basic_stats_c=basic_stats_c,
+                               error=error_message)
 
 

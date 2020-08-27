@@ -42,6 +42,8 @@ def post_statistics():
         return render_template('barchart.html',
                                all_categorical_entities=all_categorical_entities,
                                all_subcategory_entities=all_subcategory_entities,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
                                error=error
                                )
 
@@ -52,5 +54,7 @@ def post_statistics():
     return render_template('barchart.html',
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
+                           categorical_entities=categorical_entities,
+                           subcategory_entities=subcategory_entities,
                            plot=fig
                            )

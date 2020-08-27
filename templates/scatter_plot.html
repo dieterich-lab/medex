@@ -20,77 +20,101 @@
 
 
 {# end of imports #}
-
-{% import 'macro_template.html' as m %}
-
-{% if error %}
-{{ m.show_error(error) }}
-{% endif %}
-
-<form action="" method="POST">
-    {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
-	{{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
-
-    <label >Scale</label>
-        <table >
-        <tr>
-            <td>
-		<div class="custom-control custom-radio" >
-				<input type="radio" class="custom-control-input" id="linear" name="how_to_plot" value="linear"
-						{% if how_to_plot =="linear" or not how_to_plot %}checked{% endif %}>
-				<label class="custom-control-label" for="linear">linear</label>
-		</div>
-            </td>
-            <td>
-		<div class="custom-control custom-radio">
-				<input type="radio" class="custom-control-input" id="log" name="how_to_plot" value="log"
-					{% if log  %} checked {% endif %}>
-				<label class="custom-control-label" for="log">log</label>
-		</div>
-            </td>
-            <td>
-            <div class="form-check mt-4" id="log2">
-                <input class="form-check-input" type="checkbox" name="log_x" value="log_x" id="log_x"
-                    {% if og_x %} checked {% endif %} >
-                <label class="form-check-label" for="log_x">log x</label><br />
-                <input class="form-check-input" type="checkbox"  name="log_y" value="log_y" id="log_y"
-                    {% if log_y %} checked {% endif %}>
-                <label class="form-check-label" for="log_y">log y</label>
-                </div>
-            </td>
-        </tr>
-    </table>
-
-
-
-    <div class="form-check mt-4">
-            <input class="form-check-input" type="checkbox" value="true" id="add_group_by" name="add_group_by"
-                   {% if add_group_by %} checked {% endif %}>
-            <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
-        </div>
-        <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox" value="true">
-            {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities ,value=entity,d="Group by:") }}
-
-                <!-- Send dictionary with subcategory data to javascript -->
-            <script type="text/javascript">
-                var cat = {{all_subcategory_entities|safe}};
-            </script>
-
-            <div class="tooltips" title="Please select category and next subcategory">
-                <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control" ></select>
-            </div>
-
-        </div>
-
-
-    <div class="form-check mt-4">
-    <button type="submit" name="scatter_plot" class="btn btn-outline-info">Plot data</button>
+<div class="card">
+    <div class="card-header" id="settings_header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+                Settings
+            </button>
+        </h5>
     </div>
-</form>
+    <div id="settings" class="collapse {% if not categorical_entities or error %} show {% endif %}"
+         aria-labelledby="c_settings_header" data-parent="#accordion">
+        <div class="card-body">
+            {% import 'macro_template.html' as m %}
 
-{% if plot %}
-<div id="scatter_plot" >
-        {{plot | safe}}
+            {% if error %}
+            {{ m.show_error(error) }}
+            {% endif %}
+
+            <form action="" method="POST">
+                {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
+                {{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
+
+                <label >Scale</label>
+                <table >
+                    <tr>
+                        <td>
+                            <div class="custom-control custom-radio" >
+                                <input type="radio" class="custom-control-input" id="linear" name="how_to_plot" value="linear"
+                                    {% if how_to_plot =="linear" or not how_to_plot %}checked{% endif %}>
+                                <label class="custom-control-label" for="linear">linear</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="custom-control custom-radio">
+                                <input type="radio" class="custom-control-input" id="log" name="how_to_plot" value="log"
+                                    {% if log  %} checked {% endif %}>
+                                <label class="custom-control-label" for="log">log</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-check mt-4" id="log2">
+                                <input class="form-check-input" type="checkbox" name="log_x" value="log_x" id="log_x"
+                                    {% if og_x %} checked {% endif %} >
+                                <label class="form-check-label" for="log_x">log x</label><br />
+                                <input class="form-check-input" type="checkbox"  name="log_y" value="log_y" id="log_y"
+                                    {% if log_y %} checked {% endif %}>
+                                <label class="form-check-label" for="log_y">log y</label>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" value="true" id="add_group_by" name="add_group_by"
+                               {% if add_group_by %} checked {% endif %}>
+                        <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
+                </div>
+                <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox" value="true">
+                    {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities,select=categorical_entities,value=entity,d="Group by:") }}
+
+                    <!-- Send dictionary with subcategory data to javascript -->
+                    <script type="text/javascript">
+                        var cat = {{all_subcategory_entities|safe}};
+                    </script>
+
+                    <div class="tooltips" title="Please select category and next subcategory">
+                        <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control" >
+                            {% for entity in subcategory_entities %}
+                            <option value="{{ entity }}" {% if entity == subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-check mt-4">
+                    <button type="submit" name="scatter_plot" class="btn btn-outline-info">Plot data</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
-{% endif %}
+<div class="card-header" id="results_header">
+    <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+            {% if categorical_entities %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            Results
+        </button>
+    </h5>
+</div>
+<div id="results" class="collapse {% if x_axis %} show {% endif %}" aria-labelledby="results_header" >
+    <div class="card-body">
+        {% if plot %}
+        <div id="scatter_plot" >
+                {{plot | safe}}
+        </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

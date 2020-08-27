@@ -46,15 +46,23 @@ def post_plots():
         error = "Please select subcategory"
     elif add_group_by and categorical_entities:
         numerical_df, error = ps.get_values([x_axis, y_axis], rdb) if not error else (None, error)
-        df, error = ps.get_cat_values(categorical_entities, subcategory_entities, rdb)
-        if not error:
-            categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
-            if len(categorical_df[categorical_entities]) == 0:
-                error = "Category {} is empty".format(categorical_entities)
-        else: (None, error)
+        if not x_axis in numerical_df.columns:
+            error = "The entity {} wasn't measured".format(x_axis)
+        elif not y_axis in numerical_df.columns:
+            error = "The entity {} wasn't measured".format(y_axis)
+        else:
+            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, rdb)
+            if not error:
+                categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
+                if len(categorical_df[categorical_entities]) == 0:
+                    error = "Category {} is empty".format(categorical_entities)
     else:
         numeric_df, error = ps.get_values([x_axis, y_axis], rdb)
-        if not error:
+        if not x_axis in numeric_df.columns:
+            error = "The entity {} wasn't measured".format(x_axis)
+        elif not y_axis in numeric_df.columns:
+            error = "The entity {} wasn't measured".format(y_axis)
+        elif not error:
             numeric_df = numeric_df.dropna()
             if len(numeric_df[x_axis]) == 0:
                 error = "Category {} is empty".format(x_axis)
@@ -62,19 +70,20 @@ def post_plots():
                 error = "Category {} is empty".format(y_axis)
             elif len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
-        else: (None, error)
 
 
     if error:
         return render_template('scatter_plot.html',
-                                error=error,
-                                numeric_tab=True,
-                                x_axis=x_axis,
-                                y_axis=y_axis,
-                                all_numeric_entities=all_numeric_entities,
-                                all_categorical_entities=all_categorical_entities,
-                                add_group_by=add_group_by,
-                                all_subcategory_entities=all_subcategory_entities)
+                               numeric_tab=True,
+                               all_numeric_entities=all_numeric_entities,
+                               all_categorical_entities=all_categorical_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
+                               add_group_by=add_group_by,
+                               x_axis=x_axis,
+                               y_axis=y_axis,
+                               error=error)
 
     # Plot figure and convert to an HTML string representation
 
@@ -112,7 +121,6 @@ def post_plots():
                 fig = px.scatter(numeric_df, x=x_axis, y=y_axis, hover_name='Patient_ID', template="plotly_white",
                                  trendline="ols", log_y=True)
 
-
     fig.update_layout(
         title={
             'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "</b>",
@@ -127,11 +135,13 @@ def post_plots():
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
                            all_categorical_entities=all_categorical_entities,
-                           plot= fig,
+                           all_subcategory_entities=all_subcategory_entities,
+                           subcategory_entities=subcategory_entities,
+                           categorical_entities=categorical_entities,
+                           add_group_by=add_group_by,
                            x_axis=x_axis,
                            y_axis=y_axis,
-                           add_group_by=add_group_by,
-                           all_subcategory_entities=all_subcategory_entities)
+                           plot=fig)
 
 
 

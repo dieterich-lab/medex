@@ -43,7 +43,11 @@ def post_boxplots():
                                error=error,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities)
+                               all_subcategory_entities=all_subcategory_entities,
+                               numeric_entities=numeric_entities,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities
+                               )
 
 
     # Plot figure and convert to an HTML string representation
@@ -59,4 +63,7 @@ def post_boxplots():
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
+                           numeric_entities=numeric_entities,
+                           categorical_entities=categorical_entities,
+                           subcategory_entities=subcategory_entities,
                            plot=fig)

@@ -93,7 +93,7 @@ $(document).ready(function() {
         var html = $.map(values, function(value){
             return '<option value="' + value + '">' + value + '</option>'
         }).join('');
-        $cat.html('<option value="all">Select all</option>'+html)
+        $cat.html('<option value="Select all">Select all</option>'+html)
     });
 
 

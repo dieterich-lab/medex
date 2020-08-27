@@ -37,10 +37,14 @@ def post_clustering():
         return render_template('heatmap.html',
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
-                               selected_n_entities=numeric_entities,
+                               numeric_entities=numeric_entities,
                                error=error)
 
-
+    error = None
+    for i in numeric_entities:
+        if not i in df.columns:
+            numeric_entities.remove(i)
+            error = "{} not measured".format(i)
 
     cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(numeric_entities,df)
 
@@ -72,13 +76,14 @@ def post_clustering():
     all_present = df.dropna().shape[0]
 
     return render_template('clustering_pl.html',
-                            numeric_tab=True,
-                            selected_n_entities=numeric_entities,
-                            all_numeric_entities=all_numeric_entities,
-                            any_present=any_present,
-                            all_present=all_present,
-                            table_data=table_data,
-                            plot_data=plot_data
+                           numeric_tab=True,
+                           all_numeric_entities=all_numeric_entities,
+                           numeric_entities=numeric_entities,
+                           any_present=any_present,
+                           all_present=all_present,
+                           table_data=table_data,
+                           plot_data=plot_data,
+                           error=error
                            )
 
 

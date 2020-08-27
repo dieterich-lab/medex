@@ -20,40 +20,65 @@
 
 {# end of imports #}
 
-{% import 'macro_template.html' as m %}
 
-{% if error %}
-{{ m.show_error(error) }}
-{% endif %}
-
-
-<form action="" method="POST">
-
-    {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities ,value=entity,d="Categorical entities:") }}
-
-    <!-- Send dictionary with subcategory data to javascript -->
-    <script type="text/javascript">
-         var cat = {{all_subcategory_entities|safe}};
-    </script>
-
-    <div class="tooltips" title="Please select category and next subcategory" >
-        <label>Subcategory: </label>
-        <select multiple id="subcategory_entities" name="subcategory_entities" class="form-control" ></select>
+<div class="card">
+    <div class="card-header" id="settings_header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+                Settings
+            </button>
+        </h5>
     </div>
+    <div id="settings" class="collapse {% if not categorical_entities or error %} show {% endif %}"
+         aria-labelledby="c_settings_header" data-parent="#accordion">
+        <div class="card-body">
+            {% import 'macro_template.html' as m %}
 
-    <div class="form-check mt-4">
-        <button type="submit" name="barchart" class="btn btn-outline-info">Plot barchart</button>
+            {% if error %}
+            {{ m.show_error(error) }}
+            {% endif %}
+
+            <form action="" method="POST">
+
+                {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
+
+                <!-- Send dictionary with subcategory data to javascript -->
+                <script type="text/javascript">
+                     var cat = {{all_subcategory_entities|safe}};
+                </script>
+
+                <div class="tooltips" title="Please select category and next subcategory" >
+                    <label>Subcategory: </label>
+                    <select style="width: 100%"  multiple id="subcategory_entities" name="subcategory_entities" class="form-control" >
+                        {% for entity in subcategory_entities %}
+                        <option value="{{ entity }}" {% if entity == subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-check mt-4">
+                    <button type="submit" name="barchart" class="btn btn-outline-info">Plot barchart</button>
+                </div>
+            </form>
+        </div>
     </div>
-</form>
-
-
-<div class="card-body">
-    {% if plot %}
-    <div class="chart" id="barchart">
-            {{plot | safe}}
-    </div>
-    {% endif %}
 </div>
-
+<div class="card-header" id="results_header">
+    <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+            {% if categorical_entities %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            Results
+        </button>
+    </h5>
+</div>
+<div id="results" class="collapse {% if categorical_entities %} show {% endif %}" aria-labelledby="results_header" >
+    <div class="card-body">
+        {% if plot %}
+        <div class="chart" id="barchart">
+            {{plot | safe}}
+        </div>
+        {% endif %}
+    </div>
+</div>
 
 {% endblock %}
