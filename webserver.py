@@ -33,7 +33,6 @@ if os.environ.get('IMPORT_DISABLED') is None:
     scheduler.stop()
 
 # get all numeric and categorical entities from database
-all_entities = ps.get_entities(rdb)
 all_numeric_entities = ps.get_numeric_entities(rdb)
 all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
 all_visit = ps.get_visit(rdb)
@@ -50,9 +49,11 @@ from url_handlers.barchart import barchart_page
 from url_handlers.heatmap import heatmap_plot_page
 from url_handlers.clustering_pl import clustering_plot_page
 from url_handlers.coplots_pl import coplots_plot_page
+from url_handlers.line_plot import line_plot_page
 from url_handlers.logout import logout_page
 
 # register blueprints here:
+app.register_blueprint(line_plot_page)
 app.register_blueprint(logout_page)
 app.register_blueprint(basic_stats_page)
 app.register_blueprint(histogram_page)

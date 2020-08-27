@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+{% block body %}
+
+{# imports #}
+    {# our own js #}
+    <script src="{{ url_for('static', filename='js/line_plot.js') }}"></script>
+
+    {# plotly and jquery #}
+    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+
+    {# pretty multiselect inputs #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
+    <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+
+{# end of imports #}
+
+<div class="card">
+    <div class="card-header" id="settings_header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+                Settings
+            </button>
+        </h5>
+    </div>
+    <div id="settings" class="collapse {% if not numeric_entities or error %} show {% endif %}"
+         aria-labelledby="c_settings_header" data-parent="#accordion">
+        <div class="card-body">
+            {% import 'macro_template.html' as m %}
+
+            {% if error %}
+            {{ m.show_error(error) }}
+            {% endif %}
+            <form action="" method="POST">
+                {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities,value=entity,select=numeric_entities,d="Numeric entities:") }}
+                <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" value="true" id="add_group_by" name="add_group_by"
+                           {% if add_group_by %} checked {% endif %}>
+                        <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
+                </div>
+                <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox" value="true">
+                    {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities ,value=entity,select=categorical_entities,d="Group by:") }}
+
+                    <!-- Send dictionary with subcategory data to javascript -->
+                    <script type="text/javascript">
+                        var cat = {{all_subcategory_entities|safe}};
+                    </script>
+
+                    <div class="tooltips" title="Please select category and next subcategory">
+                        <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control" >
+                            {% for entity in subcategory_entities %}
+                            <option value="{{ entity }}" {% if entity == subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <label >Calculate: </label>
+                <table >
+                    <tr>
+                        <td>
+                            <div class="custom-control custom-radio" >
+                                <input type="radio" class="custom-control-input" id="mean" name="how_to_plot" value="mean"
+                                       {% if how_to_plot=="mean" or not how_to_plot %}checked{% endif %}>
+                                <label class="custom-control-label" for="mean">mean</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="custom-control custom-radio">
+                                <input type="radio" class="custom-control-input" id="min" name="how_to_plot" value="min"
+                                       {% if how_to_plot=="min"  %}checked{% endif %}>
+                                <label class="custom-control-label" for="min">min</label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="custom-control custom-radio">
+                                <input type="radio" class="custom-control-input" id="max" name="how_to_plot" value="max"
+                                       {% if how_to_plot=="max"  %}checked{% endif %}>
+                                <label class="custom-control-label" for="max">max</label>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <button type="submit" name="plot_boxplot" class="btn btn-outline-info">Plot</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card-header" id="results_header">
+    <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                {% if numeric_entities %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            Results
+        </button>
+    </h5>
+</div>
+<div id="numeric_results" class="collapse {% if numeric_entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+    <div class="card-body">
+        {% if plot %}
+        <div id="scatter_plot" >
+            {{plot | safe}}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
