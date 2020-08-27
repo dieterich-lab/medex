@@ -92,10 +92,14 @@ def get_values(entity, r):
     sql = """SELECT "Patient_ID","Key","Value" FROM examination_numerical WHERE "Key" IN ({})""".format(entity_fin)
     try:
         df = pd.read_sql(sql, r)
-        df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=np.mean).reset_index()
-        return df, None
     except Exception:
         return None, "Problem with load data from database"
+    if df.empty:
+        return df, "{} not measured".format(entity_fin)
+    else:
+        df = df.pivot_table(index="Patient_ID", columns="Key", values="Value", aggfunc=np.mean).reset_index()
+        return df, None
+
 
 
 
@@ -118,10 +122,13 @@ def get_cat_values(entity, subcategory, r):
             and "Value" IN ({1})""".format(entity, subcategory_fin)
     try:
         df = pd.read_sql(sql, r)
-        df.columns = ["Patient_ID", entity]
-        return df, None
     except Exception:
         return None, "Problem with load data from database"
+    if df.empty:
+        return None, "The entity {} wasn't measured".format(entity)
+    else:
+        df.columns = ["Patient_ID", entity]
+        return df, None
 
 
 def get_cat_values_barchart(entity, subcategory, r):
@@ -136,15 +143,18 @@ def get_cat_values_barchart(entity, subcategory, r):
     df: DataFrame with columns Patient_ID,Key,Value
 
     """
+    subcategory = "'" + "','".join(subcategory) + "'"
+    sql = """SELECT "Value",count("Value") FROM examination_categorical WHERE "Key"='{0}'
+            and "Value" IN ({1}) group by "Value" """.format(entity, subcategory)
     try:
-        subcategory = "'" + "','".join(subcategory) + "'"
-        sql = """SELECT "Value",count("Value") FROM examination_categorical WHERE "Key"='{0}'
-                and "Value" IN ({1}) group by "Value" """.format(entity, subcategory)
         df = pd.read_sql(sql, r)
-        df.columns = [entity, 'count']
-        return df,None
     except Exception:
         return None, "Problem with load data from database"
+    if df.empty:
+        return df, "The entity wasn't measured"
+    else:
+        df.columns = [entity, 'count']
+        return df,None
 
 
 def get_cat_values_basic_stas(entity, r):
@@ -159,15 +169,18 @@ def get_cat_values_basic_stas(entity, r):
     df: DataFrame with columns Key,count
 
     """
+    entity_fin = "'" + "','".join(entity) + "'"
+    sql = """SELECT "Key",count("Key") FROM examination_categorical WHERE "Key" IN ({})
+            group by "Key" """.format(entity_fin)
     try:
-        entity_fin = "'" + "','".join(entity) + "'"
-        sql = """SELECT "Key",count("Key") FROM examination_categorical WHERE "Key" IN ({})
-                group by "Key" """.format(entity_fin)
         df = pd.read_sql(sql, r)
-        df = df.pivot_table(columns="Key", values="count")
-        return df, None
     except Exception:
         return None, "Problem with load data from database"
+    if df.empty:
+        return df, "{} not measured".format(entity_fin)
+    else:
+        df = df.pivot_table(columns="Key", values="count")
+        return df, None
 
 
 def get_num_cat_values(entity_num, entity_cat, subcategory, r):
@@ -181,18 +194,21 @@ def get_num_cat_values(entity_num, entity_cat, subcategory, r):
     -------
     df: DataFrame with columns Patient_ID,entity_num,entity_cat
      """
+    subcategory = "'" + "','".join(subcategory) + "'"
+
+    sql = """SELECT en."Patient_ID",en."Value" as "{0}",ec."Value" as "{1}" FROM examination_numerical as en 
+            left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" 
+            where en."Key" = '{0}' and ec."Key" = '{1}' 
+            and ec."Value" IN ({2}) order by ec."Value" """.format(entity_num, entity_cat, subcategory)
+
     try:
-        subcategory = "'" + "','".join(subcategory) + "'"
-
-        sql = """SELECT en."Patient_ID",en."Value" as "{0}",ec."Value" as "{1}" FROM examination_numerical as en 
-                left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" 
-                where en."Key" = '{0}' and ec."Key" = '{1}' 
-                and ec."Value" IN ({2}) order by ec."Value" """.format(entity_num, entity_cat, subcategory)
-
         df = pd.read_sql(sql, r)
-        return df,None
     except Exception:
         return None, "Problem with load data from database"
+    if df.empty:
+        return df, "The entity {0} or {1} wasn't measured".format(entity_num,entity_cat)
+    else:
+        return df, None
 
 
 
