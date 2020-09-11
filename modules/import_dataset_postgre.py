@@ -12,7 +12,7 @@ def create_table(rdb):
     statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text)"""
     statment_examination = """CREATE tABLE examination ("ID" numeric PRIMARY KEY,
                                 "Patient_ID" text,
-                                "Billing_ID" text,
+                                "Visit" text,
                                 "Date" text,
                                 "Time" text,
                                 "Key" text,
@@ -67,12 +67,11 @@ def alter_table(rdb):
 
     sql0 = """Delete from examination where "Value" is null """
 
-    sql2 = """  CREATE TABLE examination_categorical AS SELECT min("ID") as "ID","Patient_ID","Key",min("Value") as "Value" 
-                from (SELECT e.* from examination as e join name_type as n on e."Key" = n."Key" 
-                where n."type" = 'String') as f  group by "Patient_ID","Key"   """
-    sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Patient_ID","Key",AVG("Value"::double precision)
-                as "Value" from (SELECT e.* from examination as e join name_type as n on e."Key" = n."Key" 
-                where n."type" = 'Double' and e."Value" ~ '^\d+(\.\d+)?$') as f  group by "Patient_ID","Key" """
+    sql2 = """  CREATE TABLE examination_categorical AS SELECT "ID","Patient_ID","Visit","Date","Key","Value" from (SELECT e.* from examination as e join name_type 
+                as n on e."Key" = n."Key" where n."type" = 'String') as f    """
+    sql3 = """CREATE TABLE examination_numerical AS SELECT "ID","Patient_ID","Visit","Date","Key",
+                ("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type 
+                as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^\d+(\.\d+)?$') as f """
     sql4 = """CREATE TABLE Patient AS select distinct "Patient_ID" from examination"""
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Patient_ID")"""
