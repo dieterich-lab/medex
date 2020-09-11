@@ -24,7 +24,7 @@ def post_statistics():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     number_of_bins = request.form.get('number_of_bins')
-    visit = request.form.get('visit')
+    visit = request.form.getlist('visit')
 
     # handling errors and load data from database
     error = None
@@ -75,11 +75,11 @@ def post_statistics():
                                 visit=visit,
                                 error=error)
 
-    fig =px.histogram(data, x=numeric_entities, color=categorical_entities,nbins=bin_numbers,opacity=0.5,template="plotly_white")
+    fig =px.histogram(data, x=numeric_entities,facet_row='Visit', color=categorical_entities,nbins=bin_numbers,opacity=0.5,template="plotly_white")
 
     fig.update_layout(
+        height=800,
         title={
-            'text': " Visit <b>" + visit + "</b>",
             'y': 0.9,
             'x': 0.5,
             'xanchor': 'center',

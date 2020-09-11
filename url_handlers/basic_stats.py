@@ -52,45 +52,48 @@ def get_basic_stats():
 
         # calculation basic stats
         error_message = None
-        for i in numeric_entities:
-            if not i in numeric_df.columns:
-                numeric_entities.remove(i)
-                error_message = "{} not measured".format(i)
-        entities = numeric_entities + ['Billing_ID']
+        numeric_df = numeric_df.drop(columns=['Patient_ID'])
+        new_numeric_entities=numeric_df.columns.tolist()
+        new_numeric_entities.remove('Visit')
+        numeric_entities_not_measured =set(numeric_entities).difference(set(new_numeric_entities))
+        if len(numeric_entities_not_measured) > 0:
+            error_message = "{} not measure during visit".format(numeric_entities_not_measured)
+        numeric_entities = new_numeric_entities
+        entities = numeric_entities + ['Visit']
 
         numeric_df = numeric_df[entities]
 
         basic_stats = {}
         if 'counts' in request.form:
-            counts = numeric_df.groupby('Billing_ID').count()
+            counts = numeric_df.groupby('Visit').count()
 
             basic_stats['counts'] = counts
         if 'counts NaN' in request.form:
-            counts = numeric_df.groupby('Billing_ID').count()
+            counts = numeric_df.groupby('Visit').count()
 
             basic_stats['counts NaN'] = int(n)-counts
         if 'mean' in request.form:
-            mean = numeric_df.groupby('Billing_ID').mean().round(decimals=2)
+            mean = numeric_df.groupby('Visit').mean().round(decimals=2)
 
             basic_stats['mean'] = mean
         if 'min' in request.form:
-            min = numeric_df.groupby('Billing_ID').min()
+            min = numeric_df.groupby('Visit').min()
 
             basic_stats['min'] = min
         if 'max' in request.form:
-            max = numeric_df.groupby('Billing_ID').max()
+            max = numeric_df.groupby('Visit').max()
 
             basic_stats['max'] = max
         if 'std_dev' in request.form:
-            std_dev = numeric_df.groupby('Billing_ID').std().round(decimals=2)
+            std_dev = numeric_df.groupby('Visit').std().round(decimals=2)
 
             basic_stats['std_dev'] = std_dev
         if 'std_err' in request.form:
-            std_err = numeric_df.groupby('Billing_ID').sem().round(decimals=2)
+            std_err = numeric_df.groupby('Visit').sem().round(decimals=2)
 
             basic_stats['std_err'] = std_err
         if 'median' in request.form:
-            median = numeric_df.groupby('Billing_ID').median().round(decimals=2)
+            median = numeric_df.groupby('Visit').median().round(decimals=2)
             basic_stats['median'] = median
 
         if not any(basic_stats.keys()):
@@ -152,10 +155,13 @@ def get_basic_stats():
                                    visit2=visit,
                                    error=error)
         error_message = None
-        for i in categorical_entities:
-            if not i in categorical_df.columns:
-                categorical_entities.remove(i)
-                error_message = "{} not measured".format(i)
+        new_categorical_entities = categorical_df.columns.tolist()
+
+        categorical_entities_not_measured =set(categorical_entities).difference(set(new_categorical_entities))
+        if len(categorical_entities_not_measured ) > 0:
+            error_message = "{} not measure during visit".format(categorical_entities_not_measured)
+        categorical_entities=new_categorical_entities
+
         basic_stats_c = {}
         basic_stats_c['count'] = categorical_df
         basic_stats_c['count NaN'] = int(n) - categorical_df

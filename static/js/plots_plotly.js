@@ -9,7 +9,8 @@ $(function () {
     // use plugin select2 for selector
     $("#x_axis").select2();
     $("#y_axis").select2();
-    $("#visit").select2();
+    $("#x_visit").select2();
+    $("#y_visit").select2();
     $("#categorical_entities").select2();
 
 

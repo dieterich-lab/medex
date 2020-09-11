@@ -23,6 +23,7 @@ def get_plots():
 def post_plots():
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
+
     visit = request.form.get('visit')
 
     # handling errors and load data from database
@@ -30,7 +31,8 @@ def post_plots():
     if visit == "Search entity":
         error = "Please select number of visit"
     elif len(numeric_entities) > 1:
-        numeric_df, error = ps.get_values(numeric_entities,visit, rdb)
+        numeric_df, error = ps.get_values_heatmap(numeric_entities,visit, rdb)
+
         if not error:
             if len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
@@ -49,13 +51,16 @@ def post_plots():
                                all_visit=all_visit,
                                error=error)
     error=None
-    for i in numeric_entities:
-        if not i in numeric_df.columns:
-            numeric_entities.remove(i)
-            error = "{} not exist".format(i)
-
     # calculate person correlation
-    numeric_df = numeric_df[numeric_entities]
+
+    numeric_df = numeric_df.drop(columns=['Patient_ID'])
+    new_numeric_entities = numeric_df.columns.tolist()
+    numeric_entities_not_measured = set(numeric_entities).difference(set(new_numeric_entities))
+    if len(numeric_entities_not_measured) > 0:
+        error = "{} not measure during visit".format(numeric_entities_not_measured)
+    numeric_entities = new_numeric_entities
+
+
     dfcols = pd.DataFrame(columns=numeric_df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
     corr_values = dfcols.transpose().join(dfcols, how='outer')
@@ -81,6 +86,7 @@ def post_plots():
 #    fig = px.imshow(corr_values,x=numeric_entities,y=numeric_entities)
 #    fig.show()
     # structure data for ploting
+
     plot_series = []
     plot_series.append({'z': corr_values,
                         'x' : numeric_entities,

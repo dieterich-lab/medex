@@ -56,15 +56,15 @@ def post_statistics():
                                )
 
 
-    categorical_df['%'] = 100 * categorical_df['count'] / categorical_df.groupby('Billing_ID')['count'].transform('sum')
+    categorical_df['%'] = 100 * categorical_df['count'] / categorical_df.groupby('Visit')['count'].transform('sum')
 
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'count':
-        fig = px.bar(categorical_df,x='Billing_ID', y="count", color=categorical_entities, barmode='group', template="plotly_white")
+        fig = px.bar(categorical_df,x='Visit', y="count", color=categorical_entities, barmode='group', template="plotly_white")
         fig = fig.to_html()
 
     else:
-        fig = px.bar(categorical_df,x='Billing_ID', y="%", color=categorical_entities, barmode='group', template="plotly_white")
+        fig = px.bar(categorical_df,x='Visit', y="%", color=categorical_entities, barmode='group', template="plotly_white")
         fig = fig.to_html()
 
 

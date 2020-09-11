@@ -30,7 +30,8 @@ def post_coplots():
     x_axis = request.form.get('x_axis')
     y_axis = request.form.get('y_axis')
 
-    visit = request.form.get('visit')
+    x_visit = request.form.get('x_visit')
+    y_visit = request.form.get('y_visit')
 
     how_to_plot = request.form.get('how_to_plot')
     how_to_plot2 = request.form.get('how_to_plot2')
@@ -42,7 +43,7 @@ def post_coplots():
 
     # handling errors and load data from database
     error = None
-    if visit == "Search entity":
+    if x_visit == "Search entity" or y_visit == "Search entity":
         error = "Please select number of visit"
     elif category1 is None or category1 == 'Search entity':
         error = 'Please select category1'
@@ -63,15 +64,15 @@ def post_coplots():
     elif how_to_plot == 'log' and not log_x and not log_y:
         error = "Please select type of log"
     if not error:
-        num_data, error = ps.get_values([x_axis, y_axis],visit, rdb) if not error else (None, error)
+        num_data, error = ps.get_values(x_axis, y_axis,x_visit,y_visit, rdb) if not error else (None, error)
         if not x_axis in num_data.columns:
             error = "The entity {} wasn't measured".format(x_axis)
         elif not y_axis in num_data.columns:
             error = "The entity {} wasn't measured".format(y_axis)
         elif not error:
-            cat_data1, error = ps.get_cat_values(category1,category11,visit, rdb) if not error else (None, error)
+            cat_data1, error = ps.get_cat_values(category1,category11,[x_visit,y_visit], rdb) if not error else (None, error)
             if not error:
-                cat_data2, error = ps.get_cat_values(category2,category22,visit, rdb)
+                cat_data2, error = ps.get_cat_values(category2,category22,[x_visit,y_visit], rdb)
                 if not error:
                     data = num_data.merge(cat_data1, on ="Patient_ID")
                     data = data.merge(cat_data2, on="Patient_ID")
@@ -90,7 +91,8 @@ def post_coplots():
                                category2=category2,
                                x_axis=x_axis,
                                y_axis=y_axis,
-                               visit=visit,
+                               x_visit=x_visit,
+                               y_visit=y_visit,
                                how_to_plot=how_to_plot,
                                select_scale=select_scale,
                                category11=category11,
@@ -157,6 +159,7 @@ def post_coplots():
                            category2=category2,
                            x_axis=x_axis,
                            y_axis=y_axis,
-                           visit=visit,
+                           x_visit=x_visit,
+                           y_visit=y_visit,
                            plot=fig
                            )

@@ -24,7 +24,8 @@ def post_plots():
     # list selected data
     y_axis = request.form.get('y_axis')
     x_axis = request.form.get('x_axis')
-    visit = request.form.get('visit')
+    x_visit = request.form.get('x_visit')
+    y_visit = request.form.get('y_visit')
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
@@ -34,7 +35,7 @@ def post_plots():
 
     # handling errors and load data from database
     error = None
-    if visit == "Search entity":
+    if x_visit == "Search entity" or y_axis == "Search entity":
         error = "Please select number of visit"
     elif x_axis == "Search entity" or y_axis == "Search entity":
         error = "Please select x_axis and y_axis"
@@ -47,24 +48,15 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     elif add_group_by and categorical_entities:
-        numerical_df, error = ps.get_values([x_axis, y_axis], visit, rdb) if not error else (None, error)
-        if not x_axis in numerical_df.columns:
-            error = "The entity {} wasn't measured".format(x_axis)
-        elif not y_axis in numerical_df.columns:
-            error = "The entity {} wasn't measured".format(y_axis)
-        else:
-            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, visit, rdb)
-            if not error:
-                categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
-                if len(categorical_df[categorical_entities]) == 0:
-                    error = "Category {} is empty".format(categorical_entities)
+        numerical_df, error = ps.get_values(x_axis, y_axis,x_visit,y_visit, rdb)
+        if not error:
+            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_visit, y_visit], rdb)
+            categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
+            if len(categorical_df[categorical_entities]) == 0:
+                error = "Category {} is empty".format(categorical_entities)
     else:
-        numeric_df, error = ps.get_values([x_axis, y_axis],visit, rdb)
-        if not x_axis in numeric_df.columns:
-            error = "The entity {} wasn't measured".format(x_axis)
-        elif not y_axis in numeric_df.columns:
-            error = "The entity {} wasn't measured".format(y_axis)
-        elif not error:
+        numeric_df, error = ps.get_values(x_axis, y_axis,x_visit,y_visit, rdb)
+        if not error:
             numeric_df = numeric_df.dropna()
             if len(numeric_df[x_axis]) == 0:
                 error = "Category {} is empty".format(x_axis)
@@ -85,7 +77,8 @@ def post_plots():
                                add_group_by=add_group_by,
                                x_axis=x_axis,
                                y_axis=y_axis,
-                               visit=visit,
+                               x_visit=x_visit,
+                               y_visit=y_visit,
                                error=error,
                                )
 
@@ -99,7 +92,7 @@ def post_plots():
             fig = px.scatter(numeric_df,x=x_axis, y=y_axis,hover_name = "Patient_ID", template = "plotly_white",trendline="ols")
 
     else:
-        if log_x == 'log_x' and  log_y == 'log_y':
+        if log_x == 'log_x' and log_y == 'log_y':
             if add_group_by:
                 fig = px.scatter(categorical_df, x=x_axis, y=y_axis, color=categorical_entities, hover_name='Patient_ID',
                                  template="plotly_white",trendline="ols",log_x=True, log_y=True)
@@ -128,7 +121,7 @@ def post_plots():
 
     fig.update_layout(
         title={
-            'text': " Visit <b>" + visit + "</b>: Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "</b>",
+            'text': "Compare values of <b>" + x_axis + "</b> : Visit <b>" + x_visit + "</b> and <b>" + y_axis + "</b> :Visit <b>" + y_visit + "</b> ",
             'y': 0.9,
             'x': 0.5,
             'xanchor': 'center',
@@ -147,7 +140,8 @@ def post_plots():
                            add_group_by=add_group_by,
                            x_axis=x_axis,
                            y_axis=y_axis,
-                           visit=visit,
+                           x_visit=x_visit,
+                           y_visit=y_visit,
                            plot=fig
                            )
 

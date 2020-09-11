@@ -27,7 +27,7 @@
             </button>
         </h5>
     </div>
-    <div id="settings" class="collapse {% if not visit or error %} show {% endif %}"
+    <div id="settings" class="collapse {% if not x_visit or error %} show {% endif %}"
          aria-labelledby="c_settings_header" data-parent="#accordion">
         <div class="card-body">
             {% import 'macro_template.html' as m %}
@@ -37,8 +37,9 @@
             {% endif %}
             <form action="" method="POST">
                 <div class="form-group" id="coplot_controls">
-                     {{ m.entity_form(id= "visit",name =all_visit,value=entity,select=visit,d="Visit number:") }}
+                     {{ m.entity_form(id= "x_visit",name =all_visit,value=entity,select=x_visit,d="Visit number:") }}
                      {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
+                     {{ m.entity_form(id= "y_visit",name =all_visit,value=entity,select=y_visit,d="Visit number:") }}
                      {{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
                      {{ m.entity_form(id= "category1",name =categorical_entities ,value=entity,select=category1,d="Category1:") }}
 
@@ -127,7 +128,7 @@
         </button>
     </h5>
 </div>
-<div id="numeric_results" class="collapse {% if visit %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+<div id="numeric_results" class="collapse {% if x_visit %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
         {% if plot %}
         <div id="coplot" >

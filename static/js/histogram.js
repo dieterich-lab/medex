@@ -8,7 +8,9 @@ $(function () {
     // use plugin select2 for selector
     $("#numeric_entities").select2();
     $("#categorical_entities").select2();
-    $("#visit").select2();
+    $("#visit").select2({
+    placeholder:"Search entity"
+    });
 
     // initiate value for subcategory selector
     var $cat = $('#subcategory_entities').select2({

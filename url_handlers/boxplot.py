@@ -56,9 +56,9 @@ def post_boxplots():
 
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
-        fig = px.box(numeric_df, x=categorical_entities, y=numeric_entities, color='Billing_ID', template="plotly_white")
+        fig = px.box(numeric_df, x=categorical_entities, y=numeric_entities, color='Visit', template="plotly_white")
     else:
-        fig = px.box(numeric_df, x=categorical_entities, y=numeric_entities, color='Billing_ID', template="plotly_white", log_y=True)
+        fig = px.box(numeric_df, x=categorical_entities, y=numeric_entities, color='Visit', template="plotly_white", log_y=True)
 
     fig = fig.to_html()
 

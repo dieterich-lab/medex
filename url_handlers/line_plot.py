@@ -67,19 +67,18 @@ def post_boxplots():
 
     # Plot figure and convert to an HTML string representation
     error = None
-    for i in numeric_entities:
-        if not i in numeric_df.columns:
-            numeric_entities.remove(i)
-            error = "{} not measured".format(i)
+    numeric_df = numeric_df.drop(columns=['Patient_ID'])
+    numeric_entities = numeric_df.columns.tolist()
+
     if add_group_by:
-        fig = px.scatter(numeric_df, x='Billing_ID', y='Value',color=categorical_entities,facet_row='Key', template="plotly_white").update_traces(mode="lines+markers")
+        fig = px.scatter(numeric_df, x='Visit', y='Value',color=categorical_entities,facet_row='Key', template="plotly_white").update_traces(mode="lines+markers")
         fig.update_yaxes(matches=None)
         fig.update_layout(
             height=1000)
         fig = fig.to_html()
 
     else:
-        fig = px.scatter(numeric_df2, x='Billing_ID', y='Value', facet_row='Key',
+        fig = px.scatter(numeric_df2, x='Visit', y='Value', facet_row='Key',
                           template="plotly_white").update_traces(mode="lines+markers")
         fig.update_yaxes(matches=None)
         fig.update_layout(
