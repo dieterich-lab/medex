@@ -20,7 +20,21 @@ $(function () {
         $(this).closest('div.alert').addClass('d-none');
     });
 
+    $('#visit').on("select2:select", function (e) {
+           var data = e.params.data.text;
+           if(data=='Select all'){
+            $("#visit> option").prop("selected","selected");
+            $("#visit").trigger("change");
+           }
+      });
 
+    $('#visit1').on("select2:select", function (e) {
+           var data = e.params.data.text;
+           if(data=='Select all'){
+            $("#visit1> option").prop("selected","selected");
+            $("#visit1").trigger("change");
+           }
+      });
 
     // use plugin select2 for selector
     $("#visit").select2({
@@ -37,3 +51,4 @@ $(function () {
     });
 
 });
+

@@ -26,6 +26,13 @@ $(function () {
            }
       });
 
+    $('#visit').on("select2:select", function (e) {
+           var data = e.params.data.text;
+           if(data=='Select all'){
+            $("#visit> option").prop("selected","selected");
+            $("#visit").trigger("change");
+           }
+      });
 
     //change subcategories if category change
     $('#categorical_entities').change(function () {
