@@ -55,7 +55,7 @@ def post_coplots():
         error = 'Please select y_axis'
     elif x_axis == y_axis and category1 == category2:
         error = "You can't compare the same entities and categories"
-    elif x_axis == y_axis:
+    elif x_axis == y_axis and x_visit == y_visit:
         error = "You can't compare the same entities for x and y axis"
     elif category1 == category2:
         error = "You can't compare the same category"
@@ -101,37 +101,72 @@ def post_coplots():
     # Plot figure and convert to an HTML string representation
     len1 = len(category11)
     len2 = len(category22)
-    data[category1+' '+category2] = data[category1]+ ' '+ data[category2]
+    data[category1+' '+category2] = data[category1]+ '             '+ data[category2]
+    print(data.info())
     if how_to_plot2 == "linear":
         if how_to_plot == "single_plot":
-            fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols")
+            try:
+                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols")
+            except:
+                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white", color=category1 + ' ' + category2)
         else:
-            fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols")
+            try:
+                fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category2, facet_col=category1,template="plotly_white",color=category1+' '+category2,trendline="ols")
+            except:
+                fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category2, facet_col=category1,
+                                 template="plotly_white", color=category1 + ' ' + category2)
             fig.update_layout(
                 height=200 * len1,
                 width=300 * len2)
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if how_to_plot == "single_plot":
-                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+                try:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",
+                                     color=category1 + ' ' + category2,log_x=True, log_y=True)
             else:
-                fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+                try:
+                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
+                                     template="plotly_white", color=category1 + ' ' + category2,
+                                     log_x=True, log_y=True)
                 fig.update_layout(
                     height=200 * len1,
                     width=300 * len2)
         elif log_x == 'log_x':
             if how_to_plot == "single_plot":
-                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
+                try:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",
+                                     color=category1 + ' ' + category2, log_x=True)
             else:
-                fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
+                try:
+                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
+                                     template="plotly_white", color=category1 + ' ' + category2,
+                                     log_x=True)
                 fig.update_layout(
                     height=200 * len1,
                     width=300 * len2)
         elif log_y == 'log_y':
             if how_to_plot == "single_plot":
-                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols", log_y=True)
+                try:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols", log_y=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",
+                                     color=category1 + ' ' + category2, log_y=True)
             else:
-                fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_y=True)
+                try:
+                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_y=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
+                                     template="plotly_white", color=category1 + ' ' + category2,
+                                     log_y=True)
                 fig.update_layout(
                     height=200 * len1,
                     width=300 * len2)

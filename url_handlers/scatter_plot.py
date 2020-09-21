@@ -39,7 +39,7 @@ def post_plots():
         error = "Please select number of visit"
     elif x_axis == "Search entity" or y_axis == "Search entity":
         error = "Please select x_axis and y_axis"
-    elif x_axis == y_axis:
+    elif x_axis == y_axis and x_visit == y_visit:
         error = "You can't compare the same entity"
     elif how_to_plot == 'log' and not log_x and not log_y:
         error = "Please select type of log"
@@ -49,6 +49,12 @@ def post_plots():
         error = "Please select subcategory"
     elif add_group_by and categorical_entities:
         numerical_df, error = ps.get_values(x_axis, y_axis,x_visit,y_visit, rdb)
+        if x_axis == y_axis:
+            x_axis_v=x_axis+'_x'
+            y_axis_v =y_axis + '_y'
+        else:
+            x_axis_v = x_axis
+            y_axis_v = y_axis
         if not error:
             df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_visit, y_visit], rdb)
             categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
@@ -56,11 +62,17 @@ def post_plots():
                 error = "Category {} is empty".format(categorical_entities)
     else:
         numeric_df, error = ps.get_values(x_axis, y_axis,x_visit,y_visit, rdb)
+        if x_axis == y_axis:
+            x_axis_v=x_axis+'_x'
+            y_axis_v =y_axis + '_y'
+        else:
+            x_axis_v = x_axis
+            y_axis_v = y_axis
         if not error:
             numeric_df = numeric_df.dropna()
-            if len(numeric_df[x_axis]) == 0:
+            if len(numeric_df[x_axis_v]) == 0:
                 error = "Category {} is empty".format(x_axis)
-            elif len(numeric_df[y_axis]) == 0:
+            elif len(numeric_df[y_axis_v]) == 0:
                 error = "Category {} is empty".format(y_axis)
             elif len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
@@ -85,36 +97,36 @@ def post_plots():
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
         if add_group_by :
-            fig = px.scatter(categorical_df, x=x_axis, y=y_axis, color=categorical_entities, hover_name='Patient_ID', template="plotly_white",
+            fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Patient_ID', template="plotly_white",
                                  trendline="ols")
         else:
 
-            fig = px.scatter(numeric_df,x=x_axis, y=y_axis,hover_name = "Patient_ID", template = "plotly_white",trendline="ols")
+            fig = px.scatter(numeric_df,x=x_axis_v, y=y_axis_v,hover_name = "Patient_ID", template = "plotly_white",trendline="ols")
 
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if add_group_by:
-                fig = px.scatter(categorical_df, x=x_axis, y=y_axis, color=categorical_entities, hover_name='Patient_ID',
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Patient_ID',
                                  template="plotly_white",trendline="ols",log_x=True, log_y=True)
 
             else:
-                fig = px.scatter(numeric_df, x=x_axis, y=y_axis, hover_name='Patient_ID', template="plotly_white",
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='Patient_ID', template="plotly_white",
                                  trendline="ols",log_x=True, log_y=True)
         elif log_x == 'log_x':
             if add_group_by:
-                fig = px.scatter(categorical_df, x=x_axis, y=y_axis, color=categorical_entities, hover_name='Patient_ID',
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Patient_ID',
                                  template="plotly_white", trendline="ols", log_x=True)
 
             else:
-                fig = px.scatter(numeric_df, x=x_axis, y=y_axis, hover_name='Patient_ID', template="plotly_white",
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='Patient_ID', template="plotly_white",
                                  trendline="ols", log_x=True)
         elif log_y == 'log_y':
             if add_group_by:
-                fig = px.scatter(categorical_df, x=x_axis, y=y_axis, color=categorical_entities, hover_name='Patient_ID',
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Patient_ID',
                                  template="plotly_white", trendline="ols",  log_y=True)
 
             else:
-                fig = px.scatter(numeric_df, x=x_axis, y=y_axis, hover_name='Patient_ID', template="plotly_white",
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='Patient_ID', template="plotly_white",
                                  trendline="ols", log_y=True)
 
 #    results = px.get_trendline_results(fig)
