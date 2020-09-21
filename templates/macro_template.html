@@ -37,8 +37,8 @@
 <!-- multiple selector -->
 {%- macro entity_form3(id3,name,value,select,d) %}
     <div class="form-group">
-        <label for="{{ id2 }}">{{ d }}</label>
-        <select multiple name="{{ id2 }}" id="{{ id3 }}" class="form-control" style="width: 100%">
+        <label for="{{ id3 }}">{{ d }}</label>
+        <select multiple name="{{ id3 }}" id="{{ id3 }}" class="form-control" style="width: 100%">
         <option value="Select all">Select all</option>
         {% for entity in name %}
             <option value="{{ entity }}" {% if entity in select %}selected{% endif %}>{{ entity }}</option>

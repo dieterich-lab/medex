@@ -25,7 +25,7 @@ def get_basic_stats():
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities')
         visit1 = request.form.getlist('visit1')
-
+        visit1.remove('Select all')
         # handling errors and load data from database
         error = None
         if not visit1:
@@ -130,7 +130,7 @@ def get_basic_stats():
         # list selected data by client
         categorical_entities = request.form.getlist('categorical_entities')
         visit = request.form.getlist('visit')
-
+        visit.remove('Select all')
         # handling errors and load data from database
         error = None
         if len(visit) == 0:
