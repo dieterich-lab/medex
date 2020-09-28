@@ -16,7 +16,7 @@ def create_table(rdb):
                                 "Date" text,
                                 "Time" text,
                                 "Key" text,
-                                "Value" text)"""
+                                "Value" text [])"""
 
     try:
         cur = rdb.cursor()
@@ -51,7 +51,9 @@ def load_data(entities, dataset,rdb):
             # join values by ';' if column value has more the one value
             row = row.rstrip()
             row = row.replace("\n", "").split(",")
-            line = [i] + row[0:5] + [";".join([str(x) for x in row[5:]])]
+            line1 = row[5:]
+            line = [i] + row[0:5]
+            line.append(line1)
             # insert data from dataset.csv to table examnination
             if len(row) < 6:
                 print("This line doesn't have appropriate format:",row)
@@ -65,13 +67,13 @@ def load_data(entities, dataset,rdb):
 def alter_table(rdb):
     """ Divide table examination on categorical and numerical, create index for "Key" column in categorical and numerical tables """
 
-    sql0 = """Delete from examination where "Value" is null """
+    sql0 = """Delete from examination where "Value"[1] is null """
 
     sql2 = """  CREATE TABLE examination_categorical AS SELECT "ID","Patient_ID","Visit","Date","Key","Value" from (SELECT e.* from examination as e join name_type 
                 as n on e."Key" = n."Key" where n."type" = 'String') as f    """
     sql3 = """CREATE TABLE examination_numerical AS SELECT "ID","Patient_ID","Visit","Date","Key",
-                ("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type 
-                as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^\d+(\.\d+)?$') as f """
+                ("Value"::double precision []) as "Value" from (SELECT e.* from examination as e join name_type 
+                as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value"[1] ~ '^\d+(\.\d+)?$') as f """
     sql4 = """CREATE TABLE Patient AS select distinct "Patient_ID" from examination"""
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Patient_ID")"""

@@ -21,7 +21,7 @@ def get_categorical_entities(r):
     sql1 = """Select "Key" from name_type where "type" = 'String' order by "Key" """
 
     # Retrieve categorical values with subcategories
-    sql2 = """Select distinct "Key","Value" from examination_categorical order by "Key","Value" """
+    sql2 = """Select distinct "Key","Value"[1] from examination_categorical order by "Key","Value"[1] """
     try:
         df1 = pd.read_sql(sql1, r)
         df = pd.read_sql(sql2, r)
@@ -108,7 +108,7 @@ def get_values2(entity,visit, r):
     entity_fin = "'" + "','".join(entity) + "'"
     visit = "'" + "','".join(visit) + "'"
 
-    sql = """SELECT "Patient_ID","Visit","Key","Value" FROM examination_numerical WHERE "Key" IN ({0}) and "Visit" IN ({1}) order by "Visit" """.format(entity_fin,visit)
+    sql = """SELECT "Patient_ID","Visit","Key","Value"[1] FROM examination_numerical WHERE "Key" IN ({0}) and "Visit" IN ({1}) order by "Visit" """.format(entity_fin,visit)
     try:
         df = pd.read_sql(sql, r)
     except Exception:
@@ -162,8 +162,8 @@ def get_cat_values_barchart(entity, subcategory,visit, r):
     """
     subcategory = "'" + "','".join(subcategory) + "'"
     visit = "'" + "','".join(visit) + "'"
-    sql = """SELECT "Value","Visit",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "Visit" IN ({2})
-            and "Value" IN ({1}) group by "Value","Visit" """.format(entity, subcategory, visit)
+    sql = """SELECT "Value"[1],"Visit",count("Value"[1]) FROM examination_categorical WHERE "Key"='{0}' and "Visit" IN ({2})
+            and "Value"[1] IN ({1}) group by "Value"[1],"Visit" """.format(entity, subcategory, visit)
     try:
         df = pd.read_sql(sql, r)
     except Exception:
@@ -225,8 +225,8 @@ def get_values(x_entity,y_entity,x_visit,y_visit, r):
 
 #    entity_fin = "'" + "','".join(entity) + "'"
 
-    sql = """SELECT "Patient_ID","Value" as {0} FROM examination_numerical WHERE "Key" IN ('{0}') and "Visit"='{1}'""".format(x_entity,x_visit)
-    sql2 = """SELECT "Patient_ID","Value" as {0} FROM examination_numerical WHERE "Key" IN ('{0}') and "Visit"='{1}'""".format(
+    sql = """SELECT "Patient_ID","Value"[1] as {0} FROM examination_numerical WHERE "Key" IN ('{0}') and "Visit"='{1}'""".format(x_entity,x_visit)
+    sql2 = """SELECT "Patient_ID","Value"[1] as {0} FROM examination_numerical WHERE "Key" IN ('{0}') and "Visit"='{1}'""".format(
         y_entity, y_visit)
     try:
         df1 = pd.read_sql(sql, r)
@@ -260,7 +260,7 @@ def get_values_heatmap(entity,visit, r):
 
     entity_fin = "'" + "','".join(entity) + "'"
 
-    sql = """SELECT "Patient_ID","Visit","Key","Value" FROM examination_numerical WHERE "Key" IN ({0}) and "Visit" in ('{1}') """.format(entity_fin,visit)
+    sql = """SELECT "Patient_ID","Visit","Key","Value"[1] FROM examination_numerical WHERE "Key" IN ({0}) and "Visit" in ('{1}') """.format(entity_fin,visit)
 
     try:
         df = pd.read_sql(sql, r)
@@ -274,7 +274,7 @@ def scatter_plot2(entities,visit,r):
     visit = "'" + "','".join(visit) + "'"
     entities = "'" + "','".join(entities) + "'"
 
-    sql = """SELECT "Patient_ID","Visit","Key","Value" from examination_numerical where "Visit" in ({0}) and "Key" in ({1})""".format(visit,entities)
+    sql = """SELECT "Patient_ID","Visit","Key","Value"[1] from examination_numerical where "Visit" in ({0}) and "Key" in ({1})""".format(visit,entities)
 
 
     df = pd.read_sql(sql, r)
@@ -300,8 +300,8 @@ def get_cat_values(entity, subcategory,visit, r):
     subcategory_fin = "'" + "','".join(subcategory) + "'"
     visit = "'" + "','".join(visit) + "'"
 
-    sql = """SELECT "Patient_ID","Value" FROM examination_categorical WHERE "Key"= '{0}' 
-            and "Value" IN ({1}) and "Visit" IN ({2})""".format(entity, subcategory_fin,visit)
+    sql = """SELECT "Patient_ID","Value"[1] FROM examination_categorical WHERE "Key"= '{0}' 
+            and "Value"[1] IN ({1}) and "Visit" IN ({2})""".format(entity, subcategory_fin,visit)
     try:
         df = pd.read_sql(sql, r)
     except Exception:
@@ -352,10 +352,10 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,visit, r):
     subcategory = "'" + "','".join(subcategory) + "'"
     visit = "'" + "','".join(visit) + "'"
 
-    sql = """SELECT en."Patient_ID",en."Visit",en."Value" as "{0}",ec."Value" as "{1}" FROM examination_numerical as en 
+    sql = """SELECT en."Patient_ID",en."Visit",en."Value"[1] as "{0}",ec."Value"[1] as "{1}" FROM examination_numerical as en 
             left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" 
             where en."Key" = '{0}' and ec."Key" = '{1}' and en."Visit" IN ({3}) and ec."Visit" IN ({3})
-            and ec."Value" IN ({2}) order by ec."Value" """.format(entity_num, entity_cat, subcategory, visit)
+            and ec."Value"[1] IN ({2}) order by ec."Value"[1] """.format(entity_num, entity_cat, subcategory, visit)
 
     try:
         df = pd.read_sql(sql, r)
@@ -381,9 +381,9 @@ def get_num_cat_values_mean(entity_num, entity_cat, subcategory,how_plot, r):
     entity_num = "'" + "','".join(entity_num) + "'"
     subcategory = "'" + "','".join(subcategory) + "'"
 
-    sql = """SELECT en."Visit",en."Key",{3}(en."Value") as "Value",ec."Value" as "{1}" FROM examination_numerical as en 
+    sql = """SELECT en."Visit",en."Key",{3}(en."Value"[1]) as "Value"[1],ec."Value"[1] as "{1}" FROM examination_numerical as en 
             left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" and en."Visit" = ec."Visit"
-            where en."Key" IN ({0}) and ec."Key" = '{1}' and ec."Value" IN ({2}) group by en."Key",en."Visit",ec."Value" order by en."Visit" """.format(entity_num, entity_cat, subcategory,how_plot)
+            where en."Key" IN ({0}) and ec."Key" = '{1}' and ec."Value"[1] IN ({2}) group by en."Key",en."Visit",ec."Value"[1] order by en."Visit" """.format(entity_num, entity_cat, subcategory,how_plot)
 
     try:
         df = pd.read_sql(sql, r)
@@ -409,7 +409,7 @@ def get_num_cat_values_mean_more_numeric(entity,how_plot, r):
 
     entity_fin = "'" + "','".join(entity) + "'"
 
-    sql = """SELECT "Visit","Key",{1}("Value") as "Value" FROM examination_numerical WHERE "Key" IN ({0}) 
+    sql = """SELECT "Visit","Key",{1}("Value"[1]) as "Value"[1] FROM examination_numerical WHERE "Key" IN ({0}) 
                 group by "Visit","Key" order by "Visit","Key" """.format(entity_fin,how_plot)
     try:
         df = pd.read_sql(sql, r)
@@ -426,7 +426,7 @@ def scatter_plot2(entities,visit,r):
     visit = "'" + "','".join(visit) + "'"
     entities = "'" + "','".join(entities) + "'"
 
-    sql = """SELECT "Patient_ID","Visit","Key","Value","count_visit" from examination_numerical where "Visit" in ({0}) and "Key" in ({1}) """.format(visit,entities)
+    sql = """SELECT "Patient_ID","Visit","Key","Value"[1],"count_visit" from examination_numerical where "Visit" in ({0}) and "Key" in ({1}) """.format(visit,entities)
 
 
     df = pd.read_sql(sql, r)
