@@ -120,7 +120,7 @@
                                 {% for v in visit1 %}
                                 <tr>
 
-                                    <td>{{ entity }}</td>
+                                    <td><a href="https://dzhk.de/en/research/data-and-sample-collections/data-catalogue/anamnesis-and-clinical-diagnoses-incl-basic-data-set/">{{ entity }}</a></td>
                                     <td>{{ v }}</td>
                                     {% if 'counts' in basic_stats %}<td>{{ basic_stats['counts'][entity][v] }}</td>{% endif %}
                                     {% if 'counts NaN' in basic_stats %}<td>{{ basic_stats['counts NaN'][entity][v] }}</td>{% endif %}
