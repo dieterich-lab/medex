@@ -2,7 +2,7 @@
 #   This module contains functions for creating tables in PostgreSQL database
 
 ###
-import csv
+
 
 def create_table(rdb):
     """Remove tables from database if exists and create new name_type and examination tables in the PostgreSQL database"""
@@ -50,20 +50,21 @@ def load_data(entities, dataset,rdb):
 
     with open(dataset, 'r') as in_file:
         i = 0
-        reader = csv.reader(in_file)
-        header = next(reader)
+        header = next(in_file)
         for row in in_file:
             i += 1
             row = row.rstrip()
             row = row.replace("\n", "").split(",")
-            line1 = row[5:]
             line = [i] + row[0:5]
-            line.append(line1)
             # insert data from dataset.csv to table examnination
-            if 'instance' in header and row[6] != '0':
-                cur.execute("""UPDATE examination SET "Value"[{0}]={4} WHERE "Patient_ID"='{1}' and "Visit"='{2}'and "Key"='{3}' """.format((int(row[6])+1),row[0],row[1],row[2],row[5]))
             if len(row) < 6:
                 print("This line doesn't have appropriate format:",row)
+            elif 'instance' not in header:
+                line1 = row[5:]
+                line.append(line1)
+                cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)", line)
+            elif 'instance' in header and row[6] != '0':
+                cur.execute("""UPDATE examination SET "Value"[{0}]='{4}' WHERE "Patient_ID"='{1}' and "Visit"='{2}'and "Key"='{3}' """.format((int(row[6])+1),row[0],row[1],row[2],row[5]))
             else :
                 cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)",line)
 
