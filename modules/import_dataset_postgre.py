@@ -2,14 +2,14 @@
 #   This module contains functions for creating tables in PostgreSQL database
 
 ###
-
+import csv
 
 def create_table(rdb):
     """Remove tables from database if exists and create new name_type and examination tables in the PostgreSQL database"""
 #    from webserver import rdb
     sql1 = "DROP TABLE IF EXISTS name_type,examination,examination_categorical,examination_numerical,patient"
 
-    statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text)"""
+    statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text,description text,link text)"""
     statment_examination = """CREATE tABLE examination ("ID" numeric PRIMARY KEY,
                                 "Patient_ID" text,
                                 "Visit" text,
@@ -37,28 +37,36 @@ def load_data(entities, dataset,rdb):
         next(in_file)
         for row in in_file:
             row = row.replace("\n", "").split(",")
-            if len(row) != 2:
-                print("This line doesn't have appropriate format:",row)
+            if len(row) == 2:
+                cur.execute("INSERT INTO name_type VALUES (%s, %s) ON CONFLICT DO NOTHING", row)
+            elif len(row) == 3:
+                cur.execute("INSERT INTO name_type VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", row)
+            elif len(row) == 4:
+                cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING",row)
             else:
-                cur.execute("INSERT INTO name_type VALUES (%s, %s) ON CONFLICT DO NOTHING",row)
+                print("This line doesn't have appropriate format:", row)
     rdb.commit()
     in_file.close()
 
     with open(dataset, 'r') as in_file:
         i = 0
+        reader = csv.reader(in_file)
+        header = next(reader)
         for row in in_file:
             i += 1
-            # join values by ';' if column value has more the one value
             row = row.rstrip()
             row = row.replace("\n", "").split(",")
             line1 = row[5:]
             line = [i] + row[0:5]
             line.append(line1)
             # insert data from dataset.csv to table examnination
+            if 'instance' in header and row[6] != '0':
+                cur.execute("""UPDATE examination SET "Value"[{0}]={4} WHERE "Patient_ID"='{1}' and "Visit"='{2}'and "Key"='{3}' """.format((int(row[6])+1),row[0],row[1],row[2],row[5]))
             if len(row) < 6:
                 print("This line doesn't have appropriate format:",row)
             else :
                 cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)",line)
+
     rdb.commit()
     in_file.close()
 

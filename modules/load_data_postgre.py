@@ -18,7 +18,7 @@ def get_categorical_entities(r):
     """
 
     # Retrieve all categorical values
-    sql1 = """Select "Key" from name_type where "type" = 'String' order by "Key" """
+    sql1 = """Select "Key","description" from name_type where "type" = 'String' order by "Key" """
 
     # Retrieve categorical values with subcategories
     sql2 = """Select distinct "Key","Value"[1] from examination_categorical order by "Key","Value"[1] """
@@ -36,9 +36,9 @@ def get_categorical_entities(r):
             dfr2[value] = list(df2['Value'])
             array.append(dfr2)
         df = dict(ChainMap(*array))
-        return df1["Key"], df
+        return df1,df
     except Exception:
-        return ["No data"], ["No data"]
+        return ["No data"],["No data"]
 
 
 
@@ -55,9 +55,9 @@ def get_numeric_entities(r):
     df["Key"]: list of all numerical entities
     """
     try:
-        sql = """Select "Key" from name_type where type = 'Double' order by "Key" """
+        sql = """Select "Key","description" from name_type where type = 'Double' order by "Key" """
         df = pd.read_sql(sql, r)
-        return df['Key']
+        return df
     except Exception:
         return ["No data"]
 
@@ -109,6 +109,7 @@ def get_values2(entity,visit, r):
     visit = "'" + "','".join(visit) + "'"
 
     sql = """SELECT "Patient_ID","Visit","Key","Value"[1] FROM examination_numerical WHERE "Key" IN ({0}) and "Visit" IN ({1}) order by "Visit" """.format(entity_fin,visit)
+
     try:
         df = pd.read_sql(sql, r)
     except Exception:
