@@ -12,8 +12,8 @@ def get_plots():
 
     return render_template('scatter_plot.html',
                            numeric_tab=True,
-                           all_numeric_entities=all_numeric_entities,
                            all_categorical_entities=all_categorical_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_visit=all_visit)
 
@@ -144,8 +144,8 @@ def post_plots():
     return render_template('scatter_plot.html',
                            numeric_tab=True,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_numeric_entities=all_numeric_entities,
                            all_categorical_entities=all_categorical_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_visit=all_visit,
                            subcategory_entities=subcategory_entities,
                            categorical_entities=categorical_entities,

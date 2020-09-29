@@ -55,8 +55,8 @@ def load_data(entities, dataset,rdb):
             i += 1
             row = row.rstrip()
             row = row.replace("\n", "").split(",")
-            line = [i] + row[0:5]
             # insert data from dataset.csv to table examnination
+            line = [i] + row[0:5]
             if len(row) < 6:
                 print("This line doesn't have appropriate format:",row)
             elif 'instance' not in header:
@@ -66,6 +66,9 @@ def load_data(entities, dataset,rdb):
             elif 'instance' in header and row[6] != '0':
                 cur.execute("""UPDATE examination SET "Value"[{0}]='{4}' WHERE "Patient_ID"='{1}' and "Visit"='{2}'and "Key"='{3}' """.format((int(row[6])+1),row[0],row[1],row[2],row[5]))
             else :
+
+                line1 = row[5]
+                line.append([line1])
                 cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)",line)
 
     rdb.commit()

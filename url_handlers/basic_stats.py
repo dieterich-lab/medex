@@ -9,6 +9,7 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
+
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
                            all_categorical_entities=all_categorical_entities,
@@ -131,7 +132,7 @@ def get_basic_stats():
         # list selected data by client
         categorical_entities = request.form.getlist('categorical_entities')
         visit = request.form.getlist('visit')
-        if 'Select all' in visit: visit1.remove('Select all')
+        if 'Select all' in visit: visit.remove('Select all')
         # handling errors and load data from database
         error = None
         if len(visit) == 0:
