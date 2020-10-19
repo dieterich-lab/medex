@@ -32,7 +32,7 @@ def cluster_numeric_fields(entities, df):
     """
     import misc.math_utils as math_utils
 
-
+    df = df.dropna()
     X = df[entities].values
     scaler = sklearn.preprocessing.StandardScaler()
     X = scaler.fit_transform(X)
@@ -61,7 +61,6 @@ def cluster_numeric_fields(entities, df):
     cluster_labels = collections.defaultdict(int)
     for l in clusters:
         cluster_labels[l] += 1
-
 
     for i, means in enumerate(cluster_data.means_):
         cluster_data.means_[i] = scaler.inverse_transform(means)

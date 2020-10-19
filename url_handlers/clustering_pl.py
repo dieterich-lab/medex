@@ -27,7 +27,7 @@ def post_clustering():
     if visit == "Search entity":
         error = "Please select number of visit"
     elif len(numeric_entities) > 1:
-        df, error = ps.get_values(numeric_entities,visit, rdb)
+        df, error = ps.get_values_heatmap(numeric_entities,visit, rdb)
         for i in numeric_entities:
             if not i in df.columns:
                 numeric_entities.remove(i)

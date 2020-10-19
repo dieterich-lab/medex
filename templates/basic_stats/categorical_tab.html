@@ -64,6 +64,7 @@
                             <tr>
                                 <th>Entity</th>
                                 <th>Visit</th>
+                                <th>Instances number</th>
                                 <th>Count</th>
                                 <th>Count NaN</th>
                             </tr>
@@ -71,12 +72,17 @@
                         <tbody>
                             {% for entity in categorical_entities %}
                             {% for v in visit2 %}
+                            {% for i in instance %}
                             <tr>
+                                {% if basic_stats_c['count'][entity,v,i] is defined %}
                                 <td>{{ entity }}</td>
                                 <td>{{ v }}</td>
-                                <td>{{ basic_stats_c['count'][entity][v] }}</td>
-                                <td>{{ basic_stats_c['count NaN'][entity][v] }}</td>
+                                <td>{{ i }}</td>
+                                <td>{{ basic_stats_c['count'][entity,v,i]}}</td>
+                                <td>{{ basic_stats_c['count NaN'][entity,v,i] }}</td>
+                                {% endif %}
                             </tr>
+                            {% endfor %}
                             {% endfor %}
                             {% endfor %}
                         </tbody>

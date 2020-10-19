@@ -94,6 +94,7 @@ def post_plots():
                                error=error,
                                )
 
+
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
         if add_group_by :

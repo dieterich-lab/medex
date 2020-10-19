@@ -34,10 +34,10 @@ if os.environ.get('IMPORT_DISABLED') is None:
 
 # get all numeric and categorical entities from database
 all_numeric_entities = ps.get_numeric_entities(rdb)
-all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
-all_visit = ps.get_visit(rdb)
 all_numeric_entities = all_numeric_entities.to_dict('index')
+all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
 all_categorical_entities = all_categorical_entities.to_dict('index')
+all_visit = ps.get_visit(rdb)
 
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint

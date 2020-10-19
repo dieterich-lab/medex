@@ -6,10 +6,10 @@
 
 def create_table(rdb):
     """Remove tables from database if exists and create new name_type and examination tables in the PostgreSQL database"""
-#    from webserver import rdb
+
     sql1 = "DROP TABLE IF EXISTS name_type,examination,examination_categorical,examination_numerical,patient"
 
-    statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text,description text,link text)"""
+    statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text,"description" text,"link" text)"""
     statment_examination = """CREATE tABLE examination ("ID" numeric PRIMARY KEY,
                                 "Patient_ID" text,
                                 "Visit" text,
@@ -32,7 +32,7 @@ def load_data(entities, dataset,rdb):
     """ Load data from entities.csv, data.csv files into examination table in PostgreSQL  """
 
     cur = rdb.cursor()
-    # load data from entites file to name_type table
+    # load data from entites.ccv file to name_type table
     with open(entities, 'r') as in_file:
         next(in_file)
         for row in in_file:
@@ -50,26 +50,18 @@ def load_data(entities, dataset,rdb):
 
     with open(dataset, 'r') as in_file:
         i = 0
-        header = next(in_file)
         for row in in_file:
             i += 1
             row = row.rstrip()
             row = row.replace("\n", "").split(",")
             # insert data from dataset.csv to table examnination
             line = [i] + row[0:5]
+            line1 = row[5:]
+            line.append(line1)
             if len(row) < 6:
                 print("This line doesn't have appropriate format:",row)
-            elif 'instance' not in header:
-                line1 = row[5:]
-                line.append(line1)
+            else:
                 cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)", line)
-            elif 'instance' in header and row[6] != '0':
-                cur.execute("""UPDATE examination SET "Value"[{0}]='{4}' WHERE "Patient_ID"='{1}' and "Visit"='{2}'and "Key"='{3}' """.format((int(row[6])+1),row[0],row[1],row[2],row[5]))
-            else :
-
-                line1 = row[5]
-                line.append([line1])
-                cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)",line)
 
     rdb.commit()
     in_file.close()
@@ -81,8 +73,8 @@ def alter_table(rdb):
 
     sql0 = """Delete from examination where "Value"[1] is null """
 
-    sql2 = """  CREATE TABLE examination_categorical AS SELECT "ID","Patient_ID","Visit","Date","Key","Value" from (SELECT e.* from examination as e join name_type 
-                as n on e."Key" = n."Key" where n."type" = 'String') as f    """
+    sql2 = """CREATE TABLE examination_categorical AS SELECT "ID","Patient_ID","Visit","Date","Key","Value" from
+            (SELECT e.* from examination as e join name_type as n on e."Key" = n."Key" where n."type" = 'String') as f """
     sql3 = """CREATE TABLE examination_numerical AS SELECT "ID","Patient_ID","Visit","Date","Key",
                 ("Value"::double precision []) as "Value" from (SELECT e.* from examination as e join name_type 
                 as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value"[1] ~ '^\d+(\.\d+)?$') as f """

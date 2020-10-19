@@ -18,7 +18,6 @@
                  aria-labelledby="n_settings_header" data-parent="#numeric_accordion">
                 <div class="card-body">
                     {% import 'macro_template.html' as m %}
-
                     {% if error %}
                     {{ m.show_error(error) }}
                     {% endif %}
@@ -88,6 +87,7 @@
                     </button>
                 </h5>
             </div>
+
             <div id="numeric_results" class="collapse {% if numeric_entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
                 <div class="card-body">
                     {% if basic_stats and any_present %}
@@ -105,6 +105,7 @@
                                 <tr>
                                     <th>Entity</th>
                                     <th>Visit</th>
+                                    <th>Instance</th>
                                     {% if 'counts' in basic_stats %}<th>Counts</th>{% endif %}
                                     {% if 'counts NaN' in basic_stats %}<th title="Number of patients with missing entity value" >Counts NaN </th>{% endif %}
                                     {% if 'min' in basic_stats %}<th>Min</th>{% endif %}
@@ -118,20 +119,25 @@
                             <tbody>
                                 {% for entity in numeric_entities %}
                                 {% for v in visit1 %}
+                                {% for i in instance %}
                                 <tr>
-
+                                    {% if basic_stats['counts'][entity,v,i] is defined %}
                                     <td><a href="https://dzhk.de/en/research/data-and-sample-collections/data-catalogue/anamnesis-and-clinical-diagnoses-incl-basic-data-set/">{{ entity }}</a></td>
                                     <td>{{ v }}</td>
-                                    {% if 'counts' in basic_stats %}<td>{{ basic_stats['counts'][entity][v] }}</td>{% endif %}
-                                    {% if 'counts NaN' in basic_stats %}<td>{{ basic_stats['counts NaN'][entity][v] }}</td>{% endif %}
-                                    {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity][v] }}</td>{% endif %}
-                                    {% if 'max' in basic_stats %}<td>{{ basic_stats['max'][entity][v] }}</td>{% endif %}
-                                    {% if 'mean' in basic_stats %}<td>{{ basic_stats['mean'][entity][v] }}</td>{% endif %}
-                                    {% if 'median' in basic_stats %}<td>{{ basic_stats['median'][entity][v] }}</td>{% endif %}
-                                    {% if 'std_dev' in basic_stats %}<td>{{ basic_stats['std_dev'][entity][v] }}</td>{% endif %}
-                                    {% if 'std_err' in basic_stats %}<td>{{ basic_stats['std_err'][entity][v] }}</td>{% endif %}
-                                    <tr>
+                                    <td>{{ i }}</td>
+                                        {% if 'counts' in basic_stats %}<td>{{ basic_stats['counts'][entity,v,i] }}</td>{% endif %}
+                                        {% if 'counts NaN' in basic_stats %}<td>{{ basic_stats['counts NaN'][entity,v,i] }}</td>{% endif %}
+                                        {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity,v,i] }}</td>{% endif %}
+                                        {% if 'max' in basic_stats %}<td>{{ basic_stats['max'][entity,v,i] }}</td>{% endif %}
+                                        {% if 'mean' in basic_stats %}<td>{{ basic_stats['mean'][entity,v,i] }}</td>{% endif %}
+                                        {% if 'median' in basic_stats %}<td>{{ basic_stats['median'][entity,v,i] }}</td>{% endif %}
+                                        {% if 'std_dev' in basic_stats %}<td>{{ basic_stats['std_dev'][entity,v,i] }}</td>{% endif %}
+                                        {% if 'std_err' in basic_stats %}<td>{{ basic_stats['std_err'][entity,v,i] }}</td>{% endif %}
+                                    {% endif %}
+                                    </tr>
                             {% endfor %}
+                            {% endfor %}
+
                             {% endfor %}
                             </tbody>
                         </table>
