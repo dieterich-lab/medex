@@ -92,7 +92,7 @@ def number(r):
         return None, "Problem with load data from database"
 
 
-def get_numerical_values_basic_stats(entity,visit, r):
+def get_num_values_basic_stats(entity,visit, r):
     """ Get numerical values from numerical table  from database
 
     get_numerical_values_basic_stats use in basic_stats
@@ -101,32 +101,25 @@ def get_numerical_values_basic_stats(entity,visit, r):
 
     Returns
     -------
-    df: DataFrame with columns Patient_ID,Visit,Key,instance,Value  # remove Patient_ID,entity1,entity2,...
+    df: DataFrame with columns Patient_ID,Visit,Key,instance,Value
 
     """
 
     entity_fin = "'" + "','".join(entity) + "'"
     visit = "'" + "','".join(visit) + "'"
 
-    sql = """SELECT "Patient_ID","Visit","Key","Value"[1] FROM examination_numerical WHERE "Key" IN ({0}) and "Visit" IN ({1}) order by "Visit" """.format(entity_fin,visit) #remove
-    sql2 = """SELECT "Patient_ID","Visit","Key",instance,f."Value" FROM examination_numerical,unnest("Value") WITH ordinality as f ("Value", instance)  WHERE "Key" IN ({0}) and "Visit" IN ({1}) order by "Visit" """.format(
+    sql = """SELECT "Patient_ID","Visit","Key",instance,f."Value" FROM examination_numerical,unnest("Value") 
+            WITH ordinality as f ("Value", instance)  WHERE "Key" IN ({0}) and "Visit" IN ({1}) order by "Visit" """.format(
         entity_fin, visit)
     try:
-        df = pd.read_sql(sql, r) #remove
-        df2 = pd.read_sql(sql2, r)
+        df = pd.read_sql(sql, r)
     except Exception:
         return None, "Problem with load data from database"
-    # remove
-    if df.empty:
-        return df, "{} not measured during this visit".format(entity_fin)
-    else:
-        df = df.pivot_table(index=["Patient_ID", "Visit"], columns="Key", values="Value",
-                            aggfunc=np.min).reset_index()
 
-    return df,df2, None
+    return df, None
 
 
-def get_cat_values_basic_stas2(entity,visit, r):
+def get_cat_values_basic_stas(entity,visit, r):
     """ Get number of categorical values from database
 
     get_cat_values_basic_stas use only for basic_stas categorical
@@ -141,27 +134,21 @@ def get_cat_values_basic_stas2(entity,visit, r):
     entity_fin = "'" + "','".join(entity) + "'"
     visit = "'" + "','".join(visit) + "'"
 
-    sql = """SELECT "Visit","Key",count("Key") FROM examination_categorical WHERE "Key" IN ({0}) and "Visit" IN ({1})
-            group by "Visit","Key" """.format(entity_fin, visit)
-    sql2 = """SELECT "Key","Visit",number,count("Key") FROM examination_categorical,array_length("Value",1) as f (number) WHERE "Key" IN ({0}) and "Visit" IN ({1})
+    sql = """SELECT "Key","Visit",number,count("Key") FROM examination_categorical,array_length("Value",1) as f (number) WHERE "Key" IN ({0}) and "Visit" IN ({1})
             group by "Visit","Key",number """.format(entity_fin, visit)
-    df2 = pd.read_sql(sql2, r)
 
     try:
         df = pd.read_sql(sql, r)
     except Exception:
         return None, "Problem with load data from database"
-    if df.empty:
-        return df, "{} not measured during this visit".format(entity_fin)
-    else:
-        df = df.pivot_table(index="Visit", columns="Key", values="count")
-    return df,df2, None
+
+    return df,None
 
 
-def get_values(x_entity,y_entity,x_visit,y_visit, r):
+def get_values_scatter_plot(x_entity,y_entity,x_visit,y_visit, r):
     """ Get numerical values from numerical table  from database
 
-    get_values use in scatter basic_stats,plot, heatmap, clustering, coplots
+    get_values use in scatter plot, coplot
 
     r: connection with database
 
@@ -211,12 +198,11 @@ def get_cat_values(entity, subcategory,visit, r):
     subcategory_fin = "'" + "','".join(subcategory) + "'"
     visit = "'" + "','".join(visit) + "'"
 
-    sql = """SELECT "Patient_ID",string_agg(distinct f."Value",',') FROM examination_categorical,unnest("Value") WITH ordinality as f ("Value") WHERE "Key"= '{0}' 
+    sql = """SELECT "Patient_ID",string_agg(distinct f."Value",',') FROM examination_categorical,unnest("Value") as f ("Value") WHERE "Key"= '{0}' 
     and f."Value" IN ({1})  and "Visit" IN ({2}) Group by "Patient_ID"  """.format(entity, subcategory_fin,visit)
 
     try:
         df = pd.read_sql(sql, r)
-        print(df)
     except Exception:
         return None, "Problem with load data from database"
     if df.empty:
@@ -238,13 +224,15 @@ def get_cat_values_barchart(entity, subcategory,visit, r):
     df: DataFrame with columns Patient_ID,Key,Value
 
     """
-    subcategory = "'" + "','".join(subcategory) + "'"
+    print (subcategory)
+    if 'Select all' in subcategory: subcategory.remove('Select all')
     visit = "'" + "','".join(visit) + "'"
-    sql = """SELECT examination_categorical."Value","Visit",count(f."Value") FROM examination_categorical,unnest("Value") as f ("Value") WHERE "Key"='{0}' and "Visit" IN ({2})
-            and f."Value" IN ({1}) group by examination_categorical."Value","Visit" """.format(entity, subcategory, visit)
+    sql = """SELECT "Value","Visit",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "Visit" IN ({2})
+            and ARRAY{1} && "Value"  group by "Value","Visit" """.format(entity, subcategory, visit)
 
     try:
         df = pd.read_sql(sql, r)
+
     except Exception:
         return None, "Problem with load data from database"
     if df.empty:
@@ -270,12 +258,12 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,visit, r):
     subcategory = "'" + "','".join(subcategory) + "'"
     visit = "'" + "','".join(visit) + "'"
 
-    sql = """SELECT en."Patient_ID",en."Visit",en."Value"[1] as "{0}",f."Value" as "{1}" FROM examination_numerical as en
-            left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID",unnest(ec."Value") as f ("Value") 
-            where en."Key" = '{0}' and ec."Key" = '{1}' and en."Visit" IN ({3}) and ec."Visit" IN ({3})
-            and f."Value" IN ({2}) """.format(entity_num, entity_cat, subcategory, visit)
 
-    df = pd.read_sql(sql, r)
+    sql = """SELECT en."Patient_ID",en."Visit",AVG(a."Value") as "{0}",STRING_AGG(f."Value", ',') as "{1}" FROM examination_numerical as en
+                    left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" and en."Visit" = ec."Visit",unnest(en."Value") as a ("Value"),unnest(ec."Value") as f ("Value") 
+                    where en."Key" = '{0}' and ec."Key" = '{1}' and en."Visit" IN ({3}) and ec."Visit" IN ({3})
+                    and f."Value" IN ({2}) group by en."Patient_ID",en."Visit" order by en."Patient_ID",en."Visit" """.format(
+        entity_num, entity_cat, subcategory, visit)
 
     try:
         df = pd.read_sql(sql, r)
@@ -291,7 +279,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,visit, r):
 def get_values_heatmap(entity,visit, r):
     """ Get numerical values from numerical table  from database
 
-    get_values use in scatter basic_stats,plot, heatmap, clustering, coplots
+    get_values use in heatmap, clustering
 
     r: connection with database
 
@@ -312,3 +300,30 @@ def get_values_heatmap(entity,visit, r):
         return df, None
     except Exception:
         return None, "Problem with load data from database"
+
+
+def get_values_cat_heatmap(entity,visit, r):
+    """ Get numerical values from numerical table  from database
+
+    get_values use in heatmap, clustering
+
+    r: connection with database
+
+    Returns
+    -------
+    df: DataFrame with columns Patient_ID,entity1,entity2,...
+
+    """
+
+    entity_fin = "'" + "','".join(entity) + "'"
+
+    sql = """SELECT "Patient_ID","Key","Value"[1] as "Value" FROM examination_categoricalWHERE "Key" IN ({0}) """.format(entity_fin,visit)
+
+    try:
+        df = pd.read_sql(sql, r)
+        df = df.pivot_table(index=["Patient_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
+        print(df)
+        return df, None
+    except Exception:
+        return None, "Problem with load data from database"
+

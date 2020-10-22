@@ -48,7 +48,7 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     elif add_group_by and categorical_entities:
-        numerical_df, error = ps.get_values(x_axis, y_axis,x_visit,y_visit, rdb)
+        numerical_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_visit,y_visit, rdb)
         if x_axis == y_axis:
             x_axis_v=x_axis+'_x'
             y_axis_v =y_axis + '_y'
@@ -61,7 +61,7 @@ def post_plots():
             if len(categorical_df[categorical_entities]) == 0:
                 error = "Category {} is empty".format(categorical_entities)
     else:
-        numeric_df, error = ps.get_values(x_axis, y_axis,x_visit,y_visit, rdb)
+        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_visit,y_visit, rdb)
         if x_axis == y_axis:
             x_axis_v=x_axis+'_x'
             y_axis_v =y_axis + '_y'

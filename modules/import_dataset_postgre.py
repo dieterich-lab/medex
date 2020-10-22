@@ -53,10 +53,13 @@ def load_data(entities, dataset,rdb):
         for row in in_file:
             i += 1
             row = row.rstrip()
+            row = row.replace('"', "")
             row = row.replace("\n", "").split(",")
             # insert data from dataset.csv to table examnination
             line = [i] + row[0:5]
             line1 = row[5:]
+            #string.isnumeric()
+            line1[5:] = sorted(line1[5:])
             line.append(line1)
             if len(row) < 6:
                 print("This line doesn't have appropriate format:",row)

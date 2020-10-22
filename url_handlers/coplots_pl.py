@@ -64,7 +64,10 @@ def post_coplots():
     elif how_to_plot == 'log' and not log_x and not log_y:
         error = "Please select type of log"
     if not error:
-        num_data, error = ps.get_values(x_axis, y_axis,x_visit,y_visit, rdb) if not error else (None, error)
+        num_data, error = ps.get_values_scatter_plot(x_axis, y_axis,x_visit,y_visit, rdb) if not error else (None, error)
+        if x_axis == y_axis:
+            x_axis=x_axis+'_x'
+            y_axis=y_axis+'_y'
         if not x_axis in num_data.columns:
             error = "The entity {} wasn't measured".format(x_axis)
         elif not y_axis in num_data.columns:
@@ -102,7 +105,7 @@ def post_coplots():
     len1 = len(category11)
     len2 = len(category22)
     data[category1+' '+category2] = data[category1]+ '             '+ data[category2]
-    print(data.info())
+
     if how_to_plot2 == "linear":
         if how_to_plot == "single_plot":
             try:
@@ -116,8 +119,8 @@ def post_coplots():
                 fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category2, facet_col=category1,
                                  template="plotly_white", color=category1 + ' ' + category2)
             fig.update_layout(
-                height=200 * len1,
-                width=300 * len2)
+                height=300 * len2,
+                width=300 * len1)
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if how_to_plot == "single_plot":
@@ -134,8 +137,8 @@ def post_coplots():
                                      template="plotly_white", color=category1 + ' ' + category2,
                                      log_x=True, log_y=True)
                 fig.update_layout(
-                    height=200 * len1,
-                    width=300 * len2)
+                    height=300 * len2,
+                    width=300 * len1)
         elif log_x == 'log_x':
             if how_to_plot == "single_plot":
                 try:
@@ -151,8 +154,8 @@ def post_coplots():
                                      template="plotly_white", color=category1 + ' ' + category2,
                                      log_x=True)
                 fig.update_layout(
-                    height=200 * len1,
-                    width=300 * len2)
+                    height=300 * len2,
+                    width=300 * len1)
         elif log_y == 'log_y':
             if how_to_plot == "single_plot":
                 try:
@@ -168,8 +171,8 @@ def post_coplots():
                                      template="plotly_white", color=category1 + ' ' + category2,
                                      log_y=True)
                 fig.update_layout(
-                    height=200 * len1,
-                    width=300 * len2)
+                    height=300 * len2,
+                    width=300 * len1)
 
     fig.update_layout(
         title={
