@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import url_handlers.clustering_function as dwu
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_subcategory_entities,all_visit
 clustering_plot_page = Blueprint('clustering_pl', __name__,
                             template_folder='clustering_pl')
 
@@ -11,7 +11,9 @@ def cluster():
 
     return render_template('clustering_pl.html',
                            numeric_tab=True,
+                           all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
+                           all_subcategory_entities=all_subcategory_entities,
                            all_visit=all_visit
                            )
 
@@ -20,6 +22,7 @@ def cluster():
 def post_clustering():
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
+    categorical_entities = request.form.getlist('categorical_entities')
     visit = request.form.get('visit')
 
     # handling errors and load data from database
@@ -44,15 +47,23 @@ def post_clustering():
     if error:
         return render_template('heatmap.html',
                                numeric_tab=True,
+                               all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
+                               all_subcategory_entities=all_subcategory_entities,
                                numeric_entities=numeric_entities,
                                all_visit=all_visit,
                                visit=visit,
                                error=error)
 
+    if len(numeric_entities) > 1 and len(categorical_entities) > 1:
+        cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(numeric_entities, df)
+        cluster_category_values, cat_rep_np, category_values, label_uses, df, error = dwu.cluster_categorical_entities(
+            numeric_entities, df)
+    elif len(numeric_entities) > 1:
+        cluster_data,cluster_labels,df,error = dwu.cluster_numeric_fields(numeric_entities,df)
+    elif len(categorical_entities) > 1:
+        cluster_category_values, cat_rep_np, category_values, label_uses,df, error = dwu.cluster_categorical_entities(numeric_entities, df)
 
-
-    cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(numeric_entities,df)
 
     table_data = { }
     plot_data = []
@@ -77,21 +88,26 @@ def post_clustering():
             'type': 'scatter',
             "name": "Cluster {}".format(cluster),
         })
+    df=df.sort_values(by=['cluster'])
 
     any_present = df.shape[0]
     all_present = df.dropna().shape[0]
+    df = df.to_html()
 
     return render_template('clustering_pl.html',
-                            numeric_tab=True,
-                            numeric_entities=numeric_entities,
-                            all_numeric_entities=all_numeric_entities,
-                            any_present=any_present,
-                            all_present=all_present,
-                            table_data=table_data,
-                            all_visit=all_visit,
-                            visit=visit,
-                            plot_data=plot_data,
-                            error=error
+                           numeric_tab=True,
+                           numeric_entities=numeric_entities,
+                           all_categorical_entities=all_categorical_entities,
+                           all_numeric_entities=all_numeric_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           any_present=any_present,
+                           all_present=all_present,
+                           table_data=table_data,
+                           all_visit=all_visit,
+                           visit=visit,
+                           table=df,
+                           plot_data=plot_data,
+                           error=error
                            )
 
 

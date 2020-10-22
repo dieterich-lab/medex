@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
+    {# export tables #}
+    <script type="text/javascript" src="{{ url_for('static', filename='table2excel.js') }}" ></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='tabletoCSV.js') }}" ></script>
+
 {# end of imports #}
 
 
@@ -45,6 +49,7 @@
             <form method="POST">
                 {{ m.entity_form4(id4= "visit",name =all_visit,value=entity,select=visit,d="Visit number:") }}
                 {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities,select=numeric_entities,value=entity,d="Numeric entities:") }}
+                {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities,value=entity,select=categorical_entities,d="Group by:") }}
 
                 <button type="submit" name="cluster" class="btn btn-outline-info">Plot</button>
             </form>
@@ -65,22 +70,22 @@
         <div id="cluster" data-plot-series='{{ plot_data }}' data-plot-x="{{ selected_n_entities }}"
              data-plot-y="{{ selected_n_entities }}"></div>
         {% endif %}
-
+        </div>
+    <div class="card">
         {% if table_data %}
+        <div class="dropdown mt-4 float-right">
+            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Export table
+            </button>
+            <div class="dropdown-menu" aria-labelledby="export_button">
+                <a id='export_excel'  class="dropdown-item">.xl</a>
+                <a id="export_csv" class="dropdown-item">.csv</a>
+            </div>
+        </div>
+        <div id="table" style="display:none"> {{table|safe}}; </div>
         <table class="table table-striped">
             <thead>
-            <tr>
-                <div class="dropdown mt-4 float-right">
-                    <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Export table
-                    </button>
-                    <div class="dropdown-menu" aria-labelledby="export_button">
-                        <a id='export_excel' class="dropdown-item">.xl</a>
-                        <a id="export_csv" class="dropdown-item">.csv</a>
-                    </div>
-                </div>
-            </tr>
             <tr>
                 <th>Cluster</th>
                 <th>Patient count</th>
@@ -106,6 +111,7 @@
         </table>
         {% endif %}
     </div>
-</div>
+
+    </div>
 
 {% endblock %}
