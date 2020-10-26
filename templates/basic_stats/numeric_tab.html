@@ -122,7 +122,7 @@
                                 {% for i in instance %}
                                 <tr>
                                     {% if basic_stats['counts'][entity,v,i] is defined %}
-                                    <td><a href="https://dzhk.de/en/research/data-and-sample-collections/data-catalogue/anamnesis-and-clinical-diagnoses-incl-basic-data-set/">{{ entity }}</a></td>
+                                    <td>{{ entity }}</a></td>
                                     <td>{{ v }}</td>
                                     <td>{{ i }}</td>
                                         {% if 'counts' in basic_stats %}<td>{{ basic_stats['counts'][entity,v,i] }}</td>{% endif %}

@@ -22,7 +22,7 @@ def cluster():
 def post_clustering():
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
-    categorical_entities = request.form.getlist('categorical_entities')
+    #categorical_entities = request.form.getlist('categorical_entities')
     visit = request.form.get('visit')
 
     # handling errors and load data from database
@@ -55,6 +55,7 @@ def post_clustering():
                                visit=visit,
                                error=error)
 
+    """
     if len(numeric_entities) > 1 and len(categorical_entities) > 1:
         cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(numeric_entities, df)
         cluster_category_values, cat_rep_np, category_values, label_uses, df, error = dwu.cluster_categorical_entities(
@@ -63,8 +64,9 @@ def post_clustering():
         cluster_data,cluster_labels,df,error = dwu.cluster_numeric_fields(numeric_entities,df)
     elif len(categorical_entities) > 1:
         cluster_category_values, cat_rep_np, category_values, label_uses,df, error = dwu.cluster_categorical_entities(numeric_entities, df)
+    """
 
-
+    cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(numeric_entities, df)
     table_data = { }
     plot_data = []
 

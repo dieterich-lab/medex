@@ -50,7 +50,8 @@ def post_boxplots():
                                all_subcategory_entities=all_subcategory_entities,
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
-                               visit=visit,
+                               subcategory_entities=subcategory_entities,
+                               visit1=visit,
                                all_visit=all_visit)
 
 
@@ -70,5 +71,6 @@ def post_boxplots():
                            all_visit=all_visit,
                            numeric_entities=numeric_entities,
                            categorical_entities=categorical_entities,
-                           visit=visit,
+                           subcategory_entities=subcategory_entities,
+                           visit1=visit,
                            plot=fig)

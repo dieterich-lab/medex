@@ -8,7 +8,7 @@
 {%- endmacro %}
 
 <!-- single selector -->
-{%- macro entity_form(id,name,title,value,select,d) %}
+{%- macro entity_form(id,name,value,select,d) %}
     <div class="form-group">
         <label for="{{ id }}">{{ d }}</label>
         <select  name="{{ id }}" id="{{ id }}" style="width: 100%" class="js-example-basic-single" >
@@ -23,7 +23,7 @@
 
 
 <!-- multiple selector -->
-{%- macro entity_form2(id2,name,title,value,select,d) %}
+{%- macro entity_form2(id2,name,value,select,d) %}
     <div class="form-group">
         <label for="{{ id2 }}">{{ d }}</label>
         <select multiple name="{{ id2 }}" id="{{ id2 }}" class="form-control" style="width: 100%">
@@ -49,7 +49,7 @@
         </select>
     </div>
 {%- endmacro %}
-{%- macro entity_form4(id4,name,title,value,select,d) %}
+{%- macro entity_form4(id4,name,value,select,d) %}
     <div class="form-group">
         <label for="{{ id4 }}">{{ d }}</label>
         <select  name="{{ id4 }}" id="{{ id4 }}" style="width: 100%" class="js-example-basic-single" >

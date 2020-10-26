@@ -72,8 +72,9 @@ def get_visit(r):
     df["Key"]: list of all numerical entities
     """
     try:
-        sql = """Select distinct "Visit" from examination order by "Visit" """
+        sql = """Select distinct "Visit":: int from examination order by "Visit" """
         df = pd.read_sql(sql, r)
+        df['Visit']=df['Visit'].astype(str)
         return df['Visit']
     except Exception:
         return ["No data"]
@@ -205,7 +206,7 @@ def get_cat_values(entity, subcategory,visit, r):
         df = pd.read_sql(sql, r)
     except Exception:
         return None, "Problem with load data from database"
-    if df.empty:
+    if df.empty or len(df) == 0:
         return None, "The entity {} wasn't measured".format(entity)
     else:
         df.columns = ["Patient_ID", entity]
@@ -224,23 +225,23 @@ def get_cat_values_barchart(entity, subcategory,visit, r):
     df: DataFrame with columns Patient_ID,Key,Value
 
     """
-    print (subcategory)
-    if 'Select all' in subcategory: subcategory.remove('Select all')
+
+
     visit = "'" + "','".join(visit) + "'"
     sql = """SELECT "Value","Visit",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "Visit" IN ({2})
             and ARRAY{1} && "Value"  group by "Value","Visit" """.format(entity, subcategory, visit)
 
     try:
         df = pd.read_sql(sql, r)
-
     except Exception:
         return None, "Problem with load data from database"
-    if df.empty:
+    if df.empty or len(df) == 0:
         return df, "{} not measured during this visit".format(entity)
     else:
         a =lambda x: ','.join(x)
         df['Value']=df['Value'].map(a)
         df.columns = [entity,'Visit', 'count']
+        print(df)
         return df,None
 
 
@@ -270,7 +271,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,visit, r):
 
     except Exception:
         return None, "Problem with load data from database"
-    if df.empty:
+    if df.empty or len(df) == 0:
         return df, "The entity {0} or {1} wasn't measured".format(entity_num,entity_cat)
     else:
         return df, None
@@ -297,7 +298,10 @@ def get_values_heatmap(entity,visit, r):
     try:
         df = pd.read_sql(sql, r)
         df = df.pivot_table(index=["Patient_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
-        return df, None
+        if df.empty or len(df) == 0:
+            return df, "The entity wasn't measured"
+        else:
+            return df, None
     except Exception:
         return None, "Problem with load data from database"
 
@@ -322,8 +326,10 @@ def get_values_cat_heatmap(entity,visit, r):
     try:
         df = pd.read_sql(sql, r)
         df = df.pivot_table(index=["Patient_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
-        print(df)
-        return df, None
+        if df.empty or len(df) == 0:
+            return df, "The entity wasn't measured"
+        else:
+            return df, None
     except Exception:
         return None, "Problem with load data from database"
 
