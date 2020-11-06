@@ -94,7 +94,7 @@ def post_clustering():
 
     any_present = df.shape[0]
     all_present = df.dropna().shape[0]
-    df = df.to_html()
+    df = df.to_html(index=False,index_names=False)
 
     return render_template('clustering_pl.html',
                            numeric_tab=True,

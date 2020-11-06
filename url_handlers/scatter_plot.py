@@ -57,9 +57,11 @@ def post_plots():
             y_axis_v = y_axis
         if not error:
             df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_visit, y_visit], rdb)
-            categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
-            if len(categorical_df[categorical_entities]) == 0:
-                error = "Category {} is empty".format(categorical_entities)
+            if not error:
+                categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
+                categorical_df = categorical_df.sort_values(by=[categorical_entities])
+                if len(categorical_df[categorical_entities]) == 0:
+                    error = "Category {} is empty".format(categorical_entities)
     else:
         numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_visit,y_visit, rdb)
         if x_axis == y_axis:
@@ -93,6 +95,7 @@ def post_plots():
                                y_visit=y_visit,
                                error=error,
                                )
+
 
 
     # Plot figure and convert to an HTML string representation
@@ -133,6 +136,7 @@ def post_plots():
 #    results = px.get_trendline_results(fig)
 
     fig.update_layout(
+        font=dict(size=16),
         title={
             'text': "Compare values of <b>" + x_axis + "</b> : Visit <b>" + x_visit + "</b> and <b>" + y_axis + "</b> :Visit <b>" + y_visit + "</b> ",
             'y': 0.9,

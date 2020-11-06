@@ -75,9 +75,10 @@ def post_statistics():
                                 visit=visit,
                                 error=error)
 
-    fig =px.histogram(data, x=numeric_entities,facet_row='Visit', color=categorical_entities,nbins=bin_numbers,opacity=0.5,template="plotly_white")
+    fig =px.histogram(data, x=numeric_entities,facet_row='Visit', color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
 
     fig.update_layout(
+        font=dict(size=16),
         height=800,
         title={
             'y': 0.9,

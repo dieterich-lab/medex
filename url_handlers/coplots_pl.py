@@ -1,5 +1,9 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
+import plotly.graph_objects as go
+import statsmodels.api as sm
+import numpy as np
+from plotly.subplots import make_subplots
 
 import plotly.express as px
 from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities,all_visit
@@ -104,77 +108,108 @@ def post_coplots():
     # Plot figure and convert to an HTML string representation
     len1 = len(category11)
     len2 = len(category22)
-    data[category1+' '+category2] = data[category1]+ '             '+ data[category2]
+    data[category1+'|'+category2] = data[category1]+ '|'+ data[category2]
+    #regline = sm.OLS(data[x_axis], sm.add_constant(y_axis)).fit().fittedvalues
+
+
 
     if how_to_plot2 == "linear":
         if how_to_plot == "single_plot":
             try:
-                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols")
+                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",  color=category1 + '|' + category2,trendline="ols")
+
             except:
-                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white", color=category1 + ' ' + category2)
+                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white", color=category1 + '|' + category2)
         else:
             try:
-                fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category2, facet_col=category1,template="plotly_white",color=category1+' '+category2,trendline="ols")
+                fig = px.scatter(data,x=x_axis, y=y_axis,facet_row=category2, facet_col=category1,color=category1+'|'+category2,
+                                 template="plotly_white",render_mode="svg",trendline="ols",trendline_color_override="black")
+
+                #fig.update_traces(marker=dict(color="RoyalBlue"),selector=dict(type="scattergl"))
+
+
+                #fig.for_each_trace(
+                #    lambda trace: trace.update(marker_symbol="square") if trace.type == "scattergl" else (),
+                #)
+
             except:
                 fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category2, facet_col=category1,
-                                 template="plotly_white", color=category1 + ' ' + category2)
+                                 template="plotly_white", color=category1 + '|' + category2)
             fig.update_layout(
-                height=300 * len2,
-                width=300 * len1)
+                height=500 * len2,
+                width=800 * len1)
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if how_to_plot == "single_plot":
                 try:
-                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+'|'+category2,
+                                     trendline="ols",log_x=True, log_y=True)
                 except:
                     fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",
                                      color=category1 + ' ' + category2,log_x=True, log_y=True)
             else:
                 try:
-                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True, log_y=True)
+                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,color=category1+'|'+category2,
+                                     template="plotly_white",trendline="ols",trendline_color_override="black",log_x=True, log_y=True)
                 except:
                     fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
-                                     template="plotly_white", color=category1 + ' ' + category2,
+                                     template="plotly_white", color=category1 + '|' + category2,
                                      log_x=True, log_y=True)
                 fig.update_layout(
-                    height=300 * len2,
-                    width=300 * len1)
+                    height=500 * len2,
+                    width=800 * len1)
         elif log_x == 'log_x':
             if how_to_plot == "single_plot":
                 try:
-                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+'|'+category2,
+                                     trendline="ols",log_x=True)
                 except:
                     fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",
-                                     color=category1 + ' ' + category2, log_x=True)
+                                     color=category1 + '|' + category2, log_x=True)
             else:
                 try:
-                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_x=True)
+                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
+                                     template="plotly_white",color=category1+'|'+category2,trendline="ols",trendline_color_override="black",log_x=True)
                 except:
                     fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
-                                     template="plotly_white", color=category1 + ' ' + category2,
+                                     template="plotly_white", color=category1 + '|' + category2,
                                      log_x=True)
                 fig.update_layout(
-                    height=300 * len2,
-                    width=300 * len1)
+                    height=500 * len2,
+                    width=800 * len1)
         elif log_y == 'log_y':
             if how_to_plot == "single_plot":
                 try:
-                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+' '+category2,trendline="ols", log_y=True)
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+'|'+category2,
+                                     trendline="ols", log_y=True)
                 except:
                     fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",
-                                     color=category1 + ' ' + category2, log_y=True)
+                                     color=category1 + '|' + category2, log_y=True)
             else:
                 try:
-                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+' '+category2,trendline="ols",log_y=True)
+                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+'|'+category2,trendline="ols",log_y=True)
                 except:
                     fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
-                                     template="plotly_white", color=category1 + ' ' + category2,
+                                     template="plotly_white", color=category1 + '|' + category2,
                                      log_y=True)
                 fig.update_layout(
-                    height=300 * len2,
-                    width=300 * len1)
+                    height=500 * len2,
+                    width=800 * len1)
+    fig.for_each_annotation(lambda a: a.update(text=a.text.replace("=",'<br>')))
+    #fig.update_xaxes(title=x_axis.replace("_",'<br>'))
+
+    N=len(fig.data)
+    fig1=fig
+    #print(fig.data.type)
+    #for i in range(N):
+        #fig.data[i].mode = fig.data[i].mode.replace('markers', 'lines')
+        #fig1.data[i].type = fig1.data[i].type.replace('scattergl', 'scatter')
+        #print(fig.data[i].mode)
+
+
 
     fig.update_layout(
+        font=dict(size=16),
         title={
             'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "</b>",
             'y': 1,

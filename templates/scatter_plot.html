@@ -29,7 +29,7 @@
             </button>
         </h5>
     </div>
-    <div id="settings" class="collapse {% if not visit2 or error %} show {% endif %}"
+    <div id="settings" class="collapse {% if not x_visit or error %} show {% endif %}"
          aria-labelledby="c_settings_header" data-parent="#accordion">
         <div class="card-body">
             {% import 'macro_template.html' as m %}
@@ -79,7 +79,7 @@
                         <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
                 </div>
                 <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox" value="true">
-                    {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities ,value=entity,select=categorical_entities,d="Group by:") }}
+                    {{ m.entity_form(id= "categorical_entities",name=all_categorical_entities ,value=entity,select=categorical_entities,d="Group by:") }}
 
                      <!-- Send dictionary with subcategory data to javascript -->
                      <script type="text/javascript">
@@ -89,8 +89,9 @@
                      <div class="tooltips" title="Please select category and next subcategory">
                          <label>Subcategory: </label>
                         <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control" >
-                            {% for entity in subcategory_entities %}
-                            <option value="{{ entity }}" {% if entity == subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+                            <option value="Select all">Select all</option>
+                            {% for entity in all_subcategory_entities[categorical_entities] %}
+                            <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
                             {% endfor %}
                         </select>
                      </div>

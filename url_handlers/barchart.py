@@ -61,11 +61,11 @@ def post_statistics():
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'count':
         fig = px.bar(categorical_df,x='Visit', y="count", color=categorical_entities, barmode='group', template="plotly_white")
-        fig = fig.to_html()
-
     else:
         fig = px.bar(categorical_df,x='Visit', y="%", color=categorical_entities, barmode='group', template="plotly_white")
-        fig = fig.to_html()
+
+    fig.update_layout(font=dict(size=16))
+    fig = fig.to_html()
 
 
     return render_template('barchart.html',

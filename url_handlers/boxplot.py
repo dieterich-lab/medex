@@ -60,7 +60,7 @@ def post_boxplots():
         fig = px.box(numeric_df, x='Visit', y=numeric_entities, color=categorical_entities, template="plotly_white")
     else:
         fig = px.box(numeric_df, x='Visit', y=numeric_entities, color=categorical_entities, template="plotly_white", log_y=True)
-
+    fig.update_layout(font=dict(size=16))
     fig = fig.to_html()
 
 

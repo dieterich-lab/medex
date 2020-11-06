@@ -159,10 +159,10 @@ def get_values_scatter_plot(x_entity,y_entity,x_visit,y_visit, r):
 
     """
 
-    sql = """SELECT "Patient_ID",AVG(f."Value") as {0} FROM examination_numerical,unnest("Value") as f ("Value")  
+    sql = """SELECT "Patient_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
             WHERE "Key" IN ('{0}') and "Visit"= '{1}' Group by "Patient_ID","Visit","Key" order by "Visit"  """.format(
         x_entity,x_visit)
-    sql2 = """SELECT "Patient_ID",AVG(f."Value") as {0} FROM examination_numerical,unnest("Value") as f ("Value")  
+    sql2 = """SELECT "Patient_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
             WHERE "Key" IN ('{0}') and "Visit"= '{1}' Group by "Patient_ID","Visit","Key" order by "Visit" """.format(
         y_entity, y_visit)
 
@@ -200,7 +200,7 @@ def get_cat_values(entity, subcategory,visit, r):
     visit = "'" + "','".join(visit) + "'"
 
     sql = """SELECT "Patient_ID",string_agg(distinct f."Value",',') FROM examination_categorical,unnest("Value") as f ("Value") WHERE "Key"= '{0}' 
-    and f."Value" IN ({1})  and "Visit" IN ({2}) Group by "Patient_ID"  """.format(entity, subcategory_fin,visit)
+    and f."Value" IN ({1})  and "Visit" IN ({2}) Group by "Patient_ID" order by string_agg(distinct f."Value",',')   """.format(entity, subcategory_fin,visit)
 
     try:
         df = pd.read_sql(sql, r)
@@ -260,8 +260,8 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,visit, r):
     visit = "'" + "','".join(visit) + "'"
 
 
-    sql = """SELECT en."Patient_ID",en."Visit",AVG(a."Value") as "{0}",STRING_AGG(f."Value", ',') as "{1}" FROM examination_numerical as en
-                    left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID" and en."Visit" = ec."Visit",unnest(en."Value") as a ("Value"),unnest(ec."Value") as f ("Value") 
+    sql = """SELECT en."Patient_ID",en."Visit",AVG(a."Value") as "{0}",STRING_AGG(distinct f."Value", ',') as "{1}" FROM examination_numerical as en
+                    left join examination_categorical as ec on en."Patient_ID" = ec."Patient_ID",unnest(en."Value") as a ("Value"),unnest(ec."Value") as f ("Value") 
                     where en."Key" = '{0}' and ec."Key" = '{1}' and en."Visit" IN ({3}) and ec."Visit" IN ({3})
                     and f."Value" IN ({2}) group by en."Patient_ID",en."Visit" order by en."Patient_ID",en."Visit" """.format(
         entity_num, entity_cat, subcategory, visit)

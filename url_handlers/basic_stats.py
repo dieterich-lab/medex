@@ -96,10 +96,8 @@ def get_basic_stats():
             median = median.rename(columns={'Value': 'median'})
             basic_stats.append(median)
 
-        result = pd.concat(basic_stats, axis=1)
-        result =result.to_dict()
 
-        if not any(result.keys()):
+        if not basic_stats:
             error_message = "You must select at least some statistics"
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
@@ -109,8 +107,11 @@ def get_basic_stats():
                                    numeric_entities=numeric_entities,
                                    visit1=visit1,
                                    instance=instance,
-                                   basic_stats=result,
+                                   basic_stats=basic_stats,
                                    error=error_message)
+
+        result = pd.concat(basic_stats, axis=1)
+        result = result.to_dict()
 
         if any(result.keys()):
             any_present = numeric_df.shape[0]
@@ -146,7 +147,7 @@ def get_basic_stats():
             categorical_df,error = ps.get_cat_values_basic_stas(categorical_entities,visit, rdb)
             if not error:
                 if len(categorical_df.index) == 0:
-                    error = "The selected entities (" + ", ".join(categorical_df) + ") do not contain any values. "
+                    error = "The selected entities (" + ", ".join(categorical_entities) + ") do not contain any values. "
 
         if error:
             return render_template('basic_stats/basic_stats.html',
