@@ -23,6 +23,7 @@ $(function () {
                     r: 100,
                     b: 200,
                   },
+            font: {size: 18},
             title: 'Heatmap shows Pearson correlation ',annotations: [
             {
               text: 'Rows with missing values have been removed ',
