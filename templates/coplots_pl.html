@@ -41,7 +41,7 @@
                      {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
                      {{ m.entity_form4(id4= "y_visit",name =all_visit,value=entity,select=y_visit,d="Visit number:") }}
                      {{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
-                     {{ m.entity_form(id= "category1",name =categorical_entities ,value=entity,select=category1,d="Category1:") }}
+                     {{ m.entity_form(id= "category1",name=categorical_entities ,value=entity,select=category1,d="Category1:") }}
 
                      <script type="text/javascript">
                                 var cat = {{all_subcategory_entities|safe}};
@@ -49,8 +49,9 @@
                      <div class="tooltips" title="Please select category and next subcategory" >
                          <label>Subcategory: </label>
                             <select style="width: 100%" multiple id="category11" name="category11" class="form-control">
-                                {% for entity in category11 %}
-                                <option value="{{ entity }}" {% if entity == category11 %}selected{% endif %}>{{ entity }}</option>
+                                <option value="Select all">Select all</option>
+                                {% for entity in all_subcategory_entities[category1] %}
+                                <option value="{{ entity }}" {% if entity in category11 %}selected{% endif %}>{{ entity }}</option>
                                 {% endfor %}
                             </select>
                      </div>
@@ -59,8 +60,9 @@
                      <div class="tooltips" title="Please select category and next subcategory" >
                         <label>Subcategory: </label>
                             <select style="width: 100%" multiple id="category22" name="category22" class="form-control" >
-                                {% for entity in category22 %}
-                                <option value="{{ entity }}" {% if entity == category22 %}selected{% endif %}>{{ entity }}</option>
+                                <option value="Select all">Select all</option>
+                                {% for entity in all_subcategory_entities[category2] %}
+                                <option value="{{ entity }}" {% if entity in category22 %}selected{% endif %}>{{ entity }}</option>
                                 {% endfor %}
                             </select>
                      </div>

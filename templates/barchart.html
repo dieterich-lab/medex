@@ -48,8 +48,9 @@
             <div class="tooltips" title="Please select category and next subcategory">
                 <label>Subcategory: </label>
                 <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control" >
-                    {% for entity in subcategory_entities %}
-                    <option value="{{ entity }}" {% if entity == subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+                    <option value="Select all">Select all</option>
+                    {% for entity in all_subcategory_entities[categorical_entities] %}
+                    <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
                     {% endfor %}
                 </select>
             </div>
