@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, session, send_file
 import modules.load_data_postgre as ps
 from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit
 import pandas as pd
-
+import io
 basic_stats_page = Blueprint('basic_stats', __name__,
                              template_folder='basic_stats')
 
@@ -50,6 +50,9 @@ def get_basic_stats():
                                    numeric_entities=numeric_entities,
                                    visit1=visit1,
                                    error=error)
+
+        numeric_html = numeric_df.to_html(index=False,index_names=False)
+
 
         # calculation basic stats
         numeric_df = numeric_df.drop(columns=['Patient_ID'])
@@ -108,7 +111,8 @@ def get_basic_stats():
                                    visit1=visit1,
                                    instance=instance,
                                    basic_stats=basic_stats,
-                                   error=error_message)
+                                   error=error_message,
+                                   )
 
         result = pd.concat(basic_stats, axis=1)
         result = result.to_dict()
@@ -125,7 +129,9 @@ def get_basic_stats():
                                    basic_stats=result,
                                    visit1=visit1,
                                    instance=instance,
+                                   first_value=list(result.keys())[0],
                                    any_present=any_present,
+                                   table=numeric_html,
                                    all_present=all_present
                                    )
 
@@ -175,5 +181,6 @@ def get_basic_stats():
                                visit2=visit,
                                instance=instance,
                                basic_stats_c=basic_stats_c)
+
 
 

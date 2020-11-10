@@ -92,8 +92,18 @@
                 <div class="card-body">
                     {% if basic_stats and any_present %}
                         <div class="dropdown mt-4 float-right">
+                            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Export table <br> with all values
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="export_button">
+                                <a id='export_excel1' class="dropdown-item">.xl</a>
+                                <a id="export_csv1" class="dropdown-item">.csv</a>
+                            </div>
+                        </div>
+                        <div id="table" style="display:none"> {{table|safe}}; </div>
+                        <div class="dropdown mt-4 float-right">
                             <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Export table
+                                Export table <br> with statistic
                             </button>
                             <div class="dropdown-menu" aria-labelledby="export_button">
                                 <a id='export_excel' class="dropdown-item">.xl</a>
@@ -121,7 +131,7 @@
                                 {% for v in visit1 %}
                                 {% for i in instance %}
                                 <tr>
-                                    {% if basic_stats['counts'][entity,v,i] is defined %}
+                                    {% if basic_stats[first_value][entity,v,i] is defined %}
                                     <td>{{ entity }}</a></td>
                                     <td>{{ v }}</td>
                                     <td>{{ i }}</td>
@@ -134,7 +144,7 @@
                                         {% if 'std_dev' in basic_stats %}<td>{{ basic_stats['std_dev'][entity,v,i] }}</td>{% endif %}
                                         {% if 'std_err' in basic_stats %}<td>{{ basic_stats['std_err'][entity,v,i] }}</td>{% endif %}
                                     {% endif %}
-                                    </tr>
+                                </tr>
                             {% endfor %}
                             {% endfor %}
 

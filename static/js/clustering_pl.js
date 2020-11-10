@@ -2,7 +2,7 @@ $(function() {
     $('#export_excel').click(function() {
         // find closest parent with the class .card (accordion section)
         // and within the card find a table, which will be exported
-        ($(this).closest('.card').find('.table')).table2excel({
+        ($(this).closest('.card').find('#table')).table2excel({
             // todo: change the filename
         });
     });
@@ -10,7 +10,7 @@ $(function() {
     $('#export_csv').click(function() {
         // the same: find closest parent with the class .card (accordion section)
         // and within the card find a table, which will be exported
-        $('#table').tableToCSV();
+        ($(this).closest('.card').find('#table')).tableToCSV();
     });
 
 
