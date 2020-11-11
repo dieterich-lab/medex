@@ -1,23 +1,23 @@
 version: '3'
 services:
-  medex3:
+  medexuk:
     build: .
     ports:
       - "1000:1000"
     depends_on: # other containers it needs in order to run
-      - database
+      - databaseuk
     environment:
       - PYTHONUNBUFFERED=1
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
       - POSTGRES_DB=example
       - POSTGRES_PORT=5432
-      - POSTGRES_HOST=database
+      - POSTGRES_HOST=databaseuk
     volumes:
       - ./import:/app/import
     restart: always
 
-  database:
+  databaseuk:
     image: postgres
     ports:
       - "5428:5432"

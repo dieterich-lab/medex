@@ -92,18 +92,8 @@
                 <div class="card-body">
                     {% if basic_stats and any_present %}
                         <div class="dropdown mt-4 float-right">
-                            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Export table <br> with all values
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="export_button">
-                                <a id='export_excel1' class="dropdown-item">.xl</a>
-                                <a id="export_csv1" class="dropdown-item">.csv</a>
-                            </div>
-                        </div>
-                        <div id="table" style="display:none"> {{table|safe}}; </div>
-                        <div class="dropdown mt-4 float-right">
                             <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Export table <br> with statistic
+                                Export table
                             </button>
                             <div class="dropdown-menu" aria-labelledby="export_button">
                                 <a id='export_excel' class="dropdown-item">.xl</a>

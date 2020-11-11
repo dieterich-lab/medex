@@ -1,6 +1,7 @@
 # import the Flask class from the flask module
-from flask import Flask, redirect
+from flask import Flask, redirect, session, send_file
 import os
+import io
 from modules.import_scheduler import Scheduler
 import modules.load_data_postgre as ps
 from db import connect_db
@@ -8,7 +9,8 @@ from db import connect_db
 
 # create the application object
 app = Flask(__name__)
-
+SESSION_TYPE = 'redis'
+app.secret_key = os.urandom(24)
 with app.app_context():
     rdb = connect_db()
 
@@ -34,14 +36,17 @@ if os.environ.get('IMPORT_DISABLED') is None:
 
 # get all numeric and categorical entities from database
 all_numeric_entities = ps.get_numeric_entities(rdb)
-all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
+all_entities = all_numeric_entities .append(all_categorical_entities, ignore_index=True, sort=False)
+all_entities = all_entities.to_dict('index')
+all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
 all_visit = ps.get_visit(rdb)
 
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
 
+from url_handlers.data import data_page
 from url_handlers.basic_stats import basic_stats_page
 from url_handlers.histogram import histogram_page
 from url_handlers.boxplot import boxplot_page
@@ -53,6 +58,7 @@ from url_handlers.coplots_pl import coplots_plot_page
 from url_handlers.logout import logout_page
 
 # register blueprints here:
+app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
 app.register_blueprint(basic_stats_page)
 app.register_blueprint(histogram_page)
@@ -69,6 +75,20 @@ app.register_blueprint(coplots_plot_page)
 def login():
     return redirect('/basic_stats')
 
+@app.route("/download", methods=['GET', 'POST'])
+def download():
+
+    csv = session["df"] if "df" in session else ""
+    # Create a string buffer
+    buf_str = io.StringIO(csv)
+
+    # Create a bytes buffer from the string buffer
+    #buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
+    return send_file(buf_str,
+                    mimetype='"text/csv"',
+                    as_attachment=True,
+                    attachment_filename="data.csv"
+                    )
 
 def main():
     return app

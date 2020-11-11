@@ -93,6 +93,62 @@ def number(r):
         return None, "Problem with load data from database"
 
 
+def get_data(entity,entity_c,r):
+    """ Get numerical values from numerical table  from database
+
+    get_numerical_values_basic_stats use in basic_stats
+
+    r: connection with database
+
+    Returns
+    -------
+    df: DataFrame with columns Patient_ID,Visit,Key,instance,Value
+
+    """
+
+    entity_fin = "'" + "','".join(entity) + "'"
+    entity_finc = "'" + "','".join(entity_c) + "'"
+
+    sql = """SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
+     UNION
+            SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",',') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({1})""".format(entity_fin,entity_finc)
+
+
+    try:
+        df = pd.read_sql(sql, r)
+    except Exception:
+        return None, "Problem with load data from database"
+
+    return df, None
+
+def get_data2(entity,r):
+    """ Get numerical values from numerical table  from database
+
+    get_numerical_values_basic_stats use in basic_stats
+
+    r: connection with database
+
+    Returns
+    -------
+    df: DataFrame with columns Patient_ID,Visit,Key,instance,Value
+
+    """
+
+    entity_fin = "'" + "','".join(entity) + "'"
+
+    sql = """SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
+     UNION
+            SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",',') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})""".format(entity_fin)
+
+
+    try:
+        df = pd.read_sql(sql, r)
+    except Exception:
+        return None, "Problem with load data from database"
+
+    return df, None
+
+
 def get_num_values_basic_stats(entity,visit, r):
     """ Get numerical values from numerical table  from database
 
