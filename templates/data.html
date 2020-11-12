@@ -16,6 +16,8 @@
     {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='material.min.js') }}"></script>
+
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.css"/>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script>
 
@@ -43,6 +45,33 @@
 
             <form action="" method="POST">
                 {{ m.entity_form2(id2= "entities",name =all_entities,value=entity,select=entities,d="Entities:") }}
+                <label >Table: </label>
+                <div class="custom-control custom-radio" >
+                    <input type="radio" class="custom-control-input" id="long" name="what_table" value="long"
+                           {% if what_table =="long" or not what_table %}checked{% endif %}>
+                            <label class="custom-control-label" for="long">long format</label>
+                </div>
+                <div class="custom-control custom-radio">
+                    <input type="radio" class="custom-control-input" id="short" name="what_table" value="short"
+                           {% if short  %} checked {% endif %}>
+                            <label class="custom-control-label" for="short">entities as columns</label>
+                </div>
+
+                {% if not df %}
+                <div class="progress-circular">
+                  <div class="progress-circular-wrapper">
+                    <div class="progress-circular-inner">
+                      <div class="progress-circular-left">
+                        <div class="progress-circular-spinner"></div>
+                      </div>
+                      <div class="progress-circular-gap"></div>
+                      <div class="progress-circular-right">
+                        <div class="progress-circular-spinner"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                 {% endif %}
                 <button type="submit" name="Result" class="btn btn-outline-info">Result</button>
             </form>
         </div>
@@ -62,7 +91,7 @@
 <div id="numeric_results" class="collapse {% if entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
         {% if df %}
-            <div class="dropdown mt-4 float-left">
+                    <div class="dropdown mt-4 float-left">
                 <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Export table
                 </button>
@@ -71,34 +100,8 @@
                     <a id="export_csv" class="dropdown-item">.csv</a>
                 </div>
             </div>
-            <table class="display" id = "example" style="width:100%">
-                <thead>
-                <tr>
-                    <th>Patient ID</th>
-                    <th>Visit</th>
-                    <th>Entities</th>
-                    <th>Value</th>
-                 </tr>
-                </thead>
-                    <tbody>
-                    {% for i in range(999) %}
-                        <tr>
-                          <td>{{ df['Patient_ID'][i] }}</td>
-                            <td>{{ df['Visit'][i] }}</td>
-                            <td>{{ df['Key'][i] }}</td>
-                            <td>{{ df['Value'][i] }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                <tfoot>
-                           <tr>
-                    <th>Patient ID</th>
-                    <th>Visit</th>
-                    <th>Entities</th>
-                    <th>Value</th>
-            </tr>
-        </tfoot>
-                </table>
+            {{df|safe}}
+
         {% endif %}
             <div id="table" style="display:none"> {{table|safe}} </div>
     </div>

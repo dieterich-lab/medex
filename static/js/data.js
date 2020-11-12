@@ -35,7 +35,8 @@ $(function () {
 
 
     $('#example').DataTable( {
-        "order": [[ 3, "desc" ], [ 0, 'asc' ]]
+        "order": [[ 3, "desc" ], [ 0, 'asc' ]],
+        "scrollX": true
     } );
 
 
