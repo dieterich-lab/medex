@@ -13,10 +13,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
 {# end of imports #}
 
 
 <div class="card">
+        <div id="page" class="mx-4">
+
     <div class="card-header" id="settings_header">
         <h5 class="mb-0">
             <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
@@ -56,7 +63,7 @@
                 <label>Number of bins </label><input type="text" class="form-control"
                   name="number_of_bins"  id="number_of_bins"
                   value="{% if number_of_bins %}{{ number_of_bins }}{% else %}{% endif %}">
-                <button type="submit" name="plot_histogram" class="btn btn-outline-info mt-4">Plot histogram</button>
+                <button id="Plot" type="submit" name="plot_histogram" class="btn btn-outline-info mt-4">Plot histogram</button>
             </form>
         </div>
     </div>

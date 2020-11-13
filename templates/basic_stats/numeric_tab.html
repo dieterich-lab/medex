@@ -1,5 +1,6 @@
 {# Numeric tab. Using bootstrap classes. The tab container (div.#statistics) and navigation links (ul#statistics_tab)
             are defined in basic_stats.html. #}
+
 <div class="tab-pane fade {% if numeric_tab %}show active{% endif %}"
      id="numeric_tab" role="tabpanel" aria-labelledby="n_settings_header">
     <div id="numeric_accordion">
@@ -68,9 +69,9 @@
                                 <label class="custom-control-label" for="std_dev">Std. Deviation</label>
                             </div>
                         </div>
-                        <div class="row ml-1 mt-3">
-                            <button type="submit" name="basic_stats" class="btn btn-outline-info">Basic Stats</button>
-                        </div>
+
+                        <button id="Plot" type="submit" name="basic_stats" class="btn btn-outline-info">Basic Stats</button>
+
                     </form>
                 </div>
             </div>

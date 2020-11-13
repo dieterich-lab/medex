@@ -13,9 +13,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+
     {# export tables #}
     <script type="text/javascript" src="{{ url_for('static', filename='table2excel.js') }}" ></script>
     <script type="text/javascript" src="{{ url_for('static', filename='tabletoCSV.js') }}" ></script>
+
 
 {# end of imports #}
 
@@ -51,7 +57,7 @@
                 {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities,select=numeric_entities,value=entity,d="Numeric entities:") }}
                 <!-- {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities,value=entity,select=categorical_entities,d="Group by:") }} -->
 
-                <button type="submit" name="cluster" class="btn btn-outline-info">Plot</button>
+                <button id= "Plot" type="submit" name="cluster" class="btn btn-outline-info">Plot</button>
             </form>
         </div>
     </div>

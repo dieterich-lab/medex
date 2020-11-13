@@ -13,7 +13,12 @@ $(function () {
     $("#y_visit").select2();
     $("#categorical_entities").select2();
 
+    $('#Plot').click(function(){
+        // disable button
+        $(this).prop("disabled",true);
+        $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
 
+        });
     // apply filters for add group by
     $(document).on('change', '#add_group_by', function() {
         if(this.checked == false) {

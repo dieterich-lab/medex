@@ -13,6 +13,12 @@ $(document).ready(function() {
     $("#x_visit").select2();
     $("#y_visit").select2();
 
+    $('#Plot').click(function(){
+        // disable button
+        $(this).prop("disabled",true);
+        $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
+
+        });
 
     // apply filters for Single and multiple plot
     $(document).on('change', '#select_scale', function() {

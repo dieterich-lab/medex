@@ -13,19 +13,7 @@ $(function () {
         // and within the card find a table, which will be exported
         ($(this).closest('.card').find('.table')).tableToCSV();
     });
-    $('#export_excel1').click(function() {
-        // find closest parent with the class .card (accordion section)
-        // and within the card find a table, which will be exported
-        ($(this).closest('.card').find('#table')).table2excel({
-            // todo: change the filename
-        });
-    });
-    // export table as .csv file
-    $('#export_csv1').click(function() {
-        // the same: find closest parent with the class .card (accordion section)
-        // and within the card find a table, which will be exported
-        ($(this).closest('.card').find('#table')).tableToCSV();
-    });
+
 
     // close error message
     $(document).on('click', 'span.close', function() {
@@ -61,6 +49,7 @@ $(function () {
     $("#categorical_entities").select2({
     placeholder:"Search entity"
     });
+
 
 });
 

@@ -18,11 +18,14 @@ def get_categorical_entities(r):
     """
 
     # Retrieve all categorical values
+    sql0 = """SELECT count(*) FROM examination_categorical"""
     sql1 = """Select "Key","description" from name_type where "type" = 'String' order by "Key" """
 
     # Retrieve categorical values with subcategories
     sql2 = """Select distinct "Key","Value"[1] from examination_categorical order by "Key","Value"[1] """
     try:
+        df0 = pd.read_sql(sql0, r)
+        df0 = df0.iloc[0]['count']
         df1 = pd.read_sql(sql1, r)
         df = pd.read_sql(sql2, r)
 
@@ -36,9 +39,9 @@ def get_categorical_entities(r):
             dfr2[value] = list(df2['Value'])
             array.append(dfr2)
         df = dict(ChainMap(*array))
-        return df1,df
+        return df1,df,df0
     except Exception:
-        return ["No data"],["No data"]
+        return ["No data"],["No data"],["No data"]
 
 
 def get_numeric_entities(r):
@@ -53,11 +56,15 @@ def get_numeric_entities(r):
     df["Key"]: list of all numerical entities
     """
     try:
+        sql0="""SELECT count(*) FROM examination_numerical"""
+
         sql = """Select "Key","description" from name_type where type = 'Double' order by "Key" """
         df = pd.read_sql(sql, r)
-        return df
+        df1 = pd.read_sql(sql0, r)
+        df1=df1.iloc[0]['count']
+        return df,df1
     except Exception:
-        return ["No data"]
+        return ["No data"],["No data"]
 
 
 def get_visit(r):
@@ -106,8 +113,8 @@ def get_data(entity,entity_c,r):
 
     """
 
-    entity_fin = "'" + "','".join(entity) + "'"
-    entity_finc = "'" + "','".join(entity_c) + "'"
+    entity_fin = '"' + '","'.join(entity) + '"'
+    entity_finc = '"' + '","'.join(entity_c) + '"'
 
     sql = """SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
      UNION
@@ -134,11 +141,16 @@ def get_data2(entity,r):
 
     """
 
-    entity_fin = "'" + "','".join(entity) + "'"
+    entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
     sql = """SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
      UNION
-            SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",',') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})""".format(entity_fin)
+            SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})""".format(entity_fin)
+
+    sql2 = """SELECT * FROM crosstab('SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
+     UNION
+            SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})') 
+            as ct ("Patient_ID" text,"Visit" text,"Key" text)""".format(entity_fin)
 
 
     try:

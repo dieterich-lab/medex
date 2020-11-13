@@ -13,10 +13,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 
     {# export tables #}
     <script type="text/javascript" src="{{ url_for('static', filename='table2excel.js') }}" ></script>
     <script type="text/javascript" src="{{ url_for('static', filename='tabletoCSV.js') }}" ></script>
+
+
 
 
 {# end of imports #}
@@ -98,9 +104,9 @@
 
                 </div>
 
-               <div class="form-check mt-4">
-                   <button type="submit" name="scatter_plot" class="btn btn-outline-info">Plot data</button>
-               </div>
+
+                   <button id="Plot" type="submit" name="scatter_plot" class="btn btn-outline-info">Plot data</button>
+
             </form>
         </div>
     </div>

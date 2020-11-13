@@ -19,7 +19,12 @@ $(function() {
         $(this).closest('div.alert').addClass('d-none');
     });
 
+    $('#Plot').click(function(){
+        // disable button
+        $(this).prop("disabled",true);
+        $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
 
+        });
 
 
 

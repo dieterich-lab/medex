@@ -8,6 +8,7 @@
     {# custom style #}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
     {# requirements for bootstrap #}
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
         <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
         <script src="{{ url_for('static', filename='popper.min.js') }}"
@@ -20,12 +21,17 @@
         </script>
     {# end of requirements for bootstrap #}
 
-    <div id="page" class="mx-4">
+        <div class="w3-bar w3-border w3-light-blue">
+          <div class="w3-bar-item">{{ database }}</div>
+          <div class="w3-bar-item">{{ len_numeric }}</div>
+          <div class="w3-bar-item">{{ size_numeric }}</div>
+            <div class="w3-bar-item">{{ len_categorical }}</div>
+          <div class="w3-bar-item">{{ size_categorical }}</div>
+        </div>
       <nav class="navbar navbar-light bg-light justify-content-center">
         <ul class="nav">
-
           <li class="nav-item">
-            <a class="nav-link" href="/data">Data browser</a>
+            <a class="nav-link" href="/data">Table browser</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/basic_stats">Basic Stats</a>

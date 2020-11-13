@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import url_handlers.clustering_function as dwu
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_subcategory_entities,all_visit
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database
 clustering_plot_page = Blueprint('clustering_pl', __name__,
                             template_folder='clustering_pl')
 
@@ -14,7 +14,12 @@ def cluster():
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit
+                           all_visit=all_visit,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical
                            )
 
 

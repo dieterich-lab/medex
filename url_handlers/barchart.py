@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb,all_categorical_entities, all_subcategory_entities,all_visit
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database
 
 barchart_page = Blueprint('barchart', __name__,
                            template_folder='templates')
@@ -16,7 +16,13 @@ def get_statistics():
                            numeric_tab=True,
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit)
+                           all_visit=all_visit,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical
+                           )
 
 
 @barchart_page.route('/barchart', methods=['POST'])

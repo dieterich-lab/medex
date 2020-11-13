@@ -1,12 +1,9 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-import plotly.graph_objects as go
-import statsmodels.api as sm
-import numpy as np
-from plotly.subplots import make_subplots
+
 
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities,all_visit
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database
 
 coplots_plot_page = Blueprint('coplots_pl', __name__,
                          template_folder='templates')
@@ -19,7 +16,13 @@ def get_coplots():
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit)
+                           all_visit=all_visit,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical
+                           )
 
 
 @coplots_plot_page.route('/coplots_pl', methods=['POST'])

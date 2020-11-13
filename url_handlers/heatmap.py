@@ -3,7 +3,7 @@ import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities,all_visit
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,database
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,
@@ -16,7 +16,13 @@ def get_plots():
     return render_template('heatmap.html',
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
-                           all_visit=all_visit)
+                           all_visit=all_visit,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical
+                           )
 
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
@@ -64,13 +70,17 @@ def post_plots():
     dfcols = pd.DataFrame(columns=numeric_df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
     corr_values = dfcols.transpose().join(dfcols, how='outer')
+
     for r in numeric_df.columns:
         for c in numeric_df.columns:
             if c == r:
                 df_corr = numeric_df[[r]].dropna()
             else:
                 df_corr = numeric_df[[r, c]].dropna()
-            corr_values[r][c], pvalues[r][c] = pearsonr(df_corr[r], df_corr[c])
+            if len(df_corr) < 2:
+                corr_values[r][c], pvalues[r][c] = -1,-1
+            else:
+                corr_values[r][c], pvalues[r][c] = pearsonr(df_corr[r], df_corr[c])
 
     # currently don't use
     pvalues = pvalues.astype(float)

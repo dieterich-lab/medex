@@ -1,5 +1,5 @@
 # import the Flask class from the flask module
-from flask import Flask, redirect, session, send_file
+from flask import Flask, redirect, session, send_file,render_template
 import os
 import io
 from modules.import_scheduler import Scheduler
@@ -9,7 +9,7 @@ from db import connect_db
 
 # create the application object
 app = Flask(__name__)
-SESSION_TYPE = 'redis'
+
 app.secret_key = os.urandom(24)
 with app.app_context():
     rdb = connect_db()
@@ -35,16 +35,23 @@ if os.environ.get('IMPORT_DISABLED') is None:
     scheduler.stop()
 
 # get all numeric and categorical entities from database
-all_numeric_entities = ps.get_numeric_entities(rdb)
-all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
+all_numeric_entities,size_n = ps.get_numeric_entities(rdb)
+all_categorical_entities, all_subcategory_entities,size_c = ps.get_categorical_entities(rdb)
 all_entities = all_numeric_entities .append(all_categorical_entities, ignore_index=True, sort=False)
 all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
 all_visit = ps.get_visit(rdb)
 
+#database = os.environ['POSTGRES_DB']
+database='TORCH data'
+len_numeric='number of numerical entities: ' + str(len(all_numeric_entities))
+size_numeric='the size of the numeric table: ' + str(size_n) +' rows'
+len_categorical ='number of categorical entities: '+ str(len(all_categorical_entities))
+size_categorical='the size of the categorical table: '+ str(size_c)+' rows'
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
+
 
 from url_handlers.data import data_page
 from url_handlers.basic_stats import basic_stats_page
@@ -58,6 +65,7 @@ from url_handlers.coplots_pl import coplots_plot_page
 from url_handlers.logout import logout_page
 
 # register blueprints here:
+
 app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
 app.register_blueprint(basic_stats_page)
@@ -70,10 +78,15 @@ app.register_blueprint(clustering_plot_page)
 app.register_blueprint(coplots_plot_page)
 
 
-""" Direct to Basic Stats website during opening the program."""
+""" Direct to Data browser website during opening the program."""
 @app.route('/', methods=['GET'])
 def login():
-    return redirect('/basic_stats')
+    return redirect('/data')
+
+
+
+
+
 
 @app.route("/download", methods=['GET', 'POST'])
 def download():

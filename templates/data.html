@@ -21,6 +21,11 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.css"/>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script>
 
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+
+
 
 
 {# end of imports #}
@@ -72,7 +77,7 @@
                   </div>
                 </div>
                  {% endif %}
-                <button type="submit" name="Result" class="btn btn-outline-info">Result</button>
+                <button id="Plot" type="submit" name="Result" class="btn btn-outline-info">Result</button>
             </form>
         </div>
     </div>
@@ -91,7 +96,8 @@
 <div id="numeric_results" class="collapse {% if entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
         {% if df %}
-                    <div class="dropdown mt-4 float-left">
+
+                    <div class="dropdown mt-4 float-right">
                 <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     Export table
                 </button>
@@ -100,10 +106,15 @@
                     <a id="export_csv" class="dropdown-item">.csv</a>
                 </div>
             </div>
+        <div id="table" style="display:none"> {{table|safe}} </div>
+        <br>
+        <br>
+        <br>
             {{df|safe}}
 
         {% endif %}
-            <div id="table" style="display:none"> {{table|safe}} </div>
+
+        </div>
     </div>
 </div>
 

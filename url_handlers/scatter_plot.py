@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import plotly.express as px
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities, all_categorical_entities, all_subcategory_entities, all_visit
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database
 
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
@@ -15,7 +15,13 @@ def get_plots():
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit)
+                           all_visit=all_visit,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical
+                           )
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])

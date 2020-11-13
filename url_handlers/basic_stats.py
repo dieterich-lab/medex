@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, session, send_file
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database
 import pandas as pd
 import io
 basic_stats_page = Blueprint('basic_stats', __name__,
@@ -14,7 +14,13 @@ def get_statistics():
                            numeric_tab=True,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
-                           all_visit=all_visit)
+                           all_visit=all_visit,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical
+                           )
 
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
