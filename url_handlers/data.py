@@ -29,7 +29,7 @@ def post_data():
     if len(entities) == 0 :
         error = "Please select entities"
     else:
-       df, error = ps.get_data2(entities, rdb)
+       df, error = ps.get_data2(entities,what_table, rdb)
     # handling errors and load data from database
 
     if error:
@@ -39,29 +39,16 @@ def post_data():
                                entities=entities,
                                all_visit=all_visit)
 
-    if what_table == 'long':
-        df1 = df
-        N=len(df)
-        if N > 999: error="The result table was limited due to its size, please limit your search query or use the download button."
-        #df = df.to_dict()
-        df=df.head(999)
-        df = df.to_html(index=False, index_names=False, classes='display" id = "example').replace('border="1"','border="0" style="width:100%"')
 
-        df1 = df1.to_html(index=False, index_names=False)
-    else:
-        import time
-        start_time = time.time()
-        df = df.pivot_table(index=["Patient_ID", "Visit"], columns="Key", values="Value",
-                                  aggfunc=min).reset_index()
-        end_time = time.time()
-        time3 = end_time - start_time
-        print(time3)
-        df1 = df
-        N = len(df)
-        if N > 999: error = "The result table was limited due to its size, please limit your search query or use the export button."
-        df = df.head(999)
-        df = df.to_html(index=False, index_names=False, classes='display" id = "example').replace('border="1"','border="0" style="width:100%"')
-        df1 = df1.to_html(index=False, index_names=False)
+    df1 = df
+    N=len(df)
+    if N > 999: error="The result table was limited due to its size, please limit your search query or use the download button."
+    #df = df.to_dict()
+    df=df.head(999)
+    df = df.to_html(index=False, index_names=False, classes='display" id = "example').replace('border="1"','border="0" style="width:100%"')
+
+    df1 = df1.to_html(index=False, index_names=False)
+
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
