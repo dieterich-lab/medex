@@ -16,7 +16,7 @@ def create_table(rdb):
                                 "Date" text,
                                 "Time" text,
                                 "Key" text,
-                                "Value" text)"""
+                                "Value" text [])"""
 
     try:
         cur = rdb.cursor()
@@ -56,7 +56,7 @@ def load_data(entities, dataset,rdb):
             row = row.replace('"', "")
             row = row.replace("\n", "").split(",")
             # insert data from dataset.csv to table examnination
-            line = [i] + + row[0:5] + [";".join([str(x) for x in row[5:]])]
+            line = [i] + row[0:5] + [";".join([str(x) for x in row[5:]])]
             if len(row) < 6:
                 print("This line doesn't have appropriate format:",row)
             else:

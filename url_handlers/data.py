@@ -49,8 +49,13 @@ def post_data():
 
         df1 = df1.to_html(index=False, index_names=False)
     else:
+        import time
+        start_time = time.time()
         df = df.pivot_table(index=["Patient_ID", "Visit"], columns="Key", values="Value",
                                   aggfunc=min).reset_index()
+        end_time = time.time()
+        time3 = end_time - start_time
+        print(time3)
         df1 = df
         N = len(df)
         if N > 999: error = "The result table was limited due to its size, please limit your search query or use the export button."
@@ -65,5 +70,5 @@ def post_data():
                            df=df,
                            table=df1)
 
-database='TORCH data'
+
 

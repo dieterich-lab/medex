@@ -13,7 +13,16 @@ $(function () {
         // and within the card find a table, which will be exported
         ($(this).closest('.card').find('.table')).tableToCSV();
     });
+    $('#Plot').click(function(){
+        // disable button
+        $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
 
+    });
+    $('#Plot2').click(function(){
+        // disable button
+        $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
+
+    });
 
     // close error message
     $(document).on('click', 'span.close', function() {

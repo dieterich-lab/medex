@@ -142,23 +142,47 @@ def get_data2(entity,r):
     """
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
-
+    import time
+    start_time = time.time()
+    entity_fin2 = " text,".join(entity) + " text"
+    end_time = time.time()
+    time1=end_time-start_time
+    print(time1)
     sql = """SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
      UNION
             SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})""".format(entity_fin)
 
-    sql2 = """SELECT * FROM crosstab('SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
-     UNION
-            SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})') 
-            as ct ("Patient_ID" text,"Visit" text,"Key" text)""".format(entity_fin)
+    sql2 = """SELECT * FROM crosstab('SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
+        UNION
+            SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
+            'SELECT Distinct en."Key" FROM examination_numerical as en WHERE en."Key" IN ({0})') 
+            as ct ("Patient_ID" text,"Visit" text,{1})""".format(entity_fin,entity_fin2)
 
+    sql3 = """SELECT * FROM crosstab('SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination as en WHERE en."Key" IN ({0})',
+            'SELECT Distinct "Key" FROM examination WHERE "Key" IN ({0})') 
+            as ct ("Patient_ID" text,"Visit" text,{1})""".format(entity_fin,entity_fin2)
 
+    start_time = time.time()
+    df2 = pd.read_sql(sql2, r)
+    end_time = time.time()
+    time2=end_time-start_time
+    print(time2)
+    start_time = time.time()
+    df3 = pd.read_sql(sql3, r)
+    end_time = time.time()
+    time3=end_time-start_time
+    print(time3)
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        end_time = time.time()
+        time3 = end_time - start_time
+        print(time3)
+        return df, None
     except Exception:
         return None, "Problem with load data from database"
 
-    return df, None
+
 
 
 def get_num_values_basic_stats(entity,visit, r):
