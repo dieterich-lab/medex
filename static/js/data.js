@@ -1,19 +1,5 @@
 $(function () {
 
-        // export table as .xl file
-    $('#export_excel').click(function() {
-        // find closest parent with the class .card (accordion section)
-        // and within the card find a table, which will be exported
-        ($(this).closest('.card-body').find('#table')).table2excel({
-            // todo: change the filename
-        });
-    });
-    // export table as .csv file
-    $('#export_csv').click(function() {
-        // the same: find closest parent with the class .card (accordion section)
-        // and within the card find a table, which will be exported
-        ($(this).closest('.card-body').find('#table')).tableToCSV();
-    });
 
     // close error message
     $(document).on('click', 'span.close', function() {
@@ -38,12 +24,13 @@ $(function () {
     placeholder:"Search entity"
     });
 
+    var df = JSON.parse($('#tab').attr('df').replace(/'/g, '"')); //"));
+
 
     $('#example').DataTable( {
-        "order": [[ 3, "desc" ], [ 0, 'asc' ]],
-        "scrollX": true
-    } );
+        data: df,
 
+    } );
 
 
 });

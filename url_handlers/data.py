@@ -1,8 +1,13 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, g, send_file,session
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,database
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,database,data
 data_page = Blueprint('data', __name__,
                          template_folder='templates')
+import time
+
+
+
+
 
 
 @data_page.route('/data', methods=['GET'])
@@ -29,7 +34,11 @@ def post_data():
     if len(entities) == 0 :
         error = "Please select entities"
     else:
+       start_time = time.time()
        df, error = ps.get_data2(entities,what_table, rdb)
+       end_time = time.time()
+       time3 = end_time - start_time
+       print(time3)
     # handling errors and load data from database
 
     if error:
@@ -40,14 +49,36 @@ def post_data():
                                all_visit=all_visit)
 
 
-    df1 = df
+    start_time = time.time()
+    data.g =df.to_csv(index=False)
+    end_time = time.time()
+    time3 = end_time - start_time
+    print(time3)
+    start_time = time.time()
     N=len(df)
-    if N > 999: error="The result table was limited due to its size, please limit your search query or use the download button."
-    #df = df.to_dict()
-    df=df.head(999)
-    df = df.to_html(index=False, index_names=False, classes='display" id = "example').replace('border="1"','border="0" style="width:100%"')
+    end_time = time.time()
+    time3 = end_time - start_time
+    print(time3)
 
-    df1 = df1.to_html(index=False, index_names=False)
+    start_time = time.time()
+    if N > 999: error="The result table was limited due to its size, please limit your search query or use the download button."
+    end_time = time.time()
+    time3 = end_time - start_time
+    print(time3)
+    #df = df.to_dict()
+    start_time = time.time()
+    df=df.head(999)
+    end_time = time.time()
+    time3 = end_time - start_time
+    print(time3)
+
+    start_time = time.time()
+    name=df.columns.tolist()
+    df = df.to_json(orient="values")
+    end_time = time.time()
+    time3 = end_time - start_time
+    print('o',time3)
+
 
     return render_template('data.html',
                            error=error,
@@ -55,7 +86,7 @@ def post_data():
                            entities=entities,
                            N=N,
                            df=df,
-                           table=df1)
+                           name=name)
 
 
 

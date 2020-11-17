@@ -142,7 +142,7 @@ def get_data2(entity,what_table,r):
     """
     import time
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
-    entity_fin2 = " text,".join(entity) + " text"
+    entity_fin2 = '"'+'" text,"'.join(entity) + '" text'
 
     sql = """SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
      UNION
@@ -160,12 +160,6 @@ def get_data2(entity,what_table,r):
 
 
 
-    start_time = time.time()
-    df3 = pd.read_sql(sql3, r)
-    end_time = time.time()
-    time3=end_time-start_time
-    print(time3)
-
     try:
 
         if what_table == 'long':
@@ -173,13 +167,13 @@ def get_data2(entity,what_table,r):
             df = pd.read_sql(sql, r)
             end_time = time.time()
             time3 = end_time - start_time
-            print(time3)
+            print('t',time3)
         else:
             start_time = time.time()
             df = pd.read_sql(sql2, r)
             end_time = time.time()
             time2 = end_time - start_time
-            print(time2)
+            print('t',time2)
 
         return df, None
     except Exception:

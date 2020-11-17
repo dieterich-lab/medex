@@ -1,10 +1,11 @@
 # import the Flask class from the flask module
-from flask import Flask, redirect, session, send_file,render_template
+from flask import Flask, redirect, session, send_file,render_template,g,Response,request
 import os
 import io
 from modules.import_scheduler import Scheduler
 import modules.load_data_postgre as ps
 from db import connect_db
+import pandas as pd
 
 
 # create the application object
@@ -44,7 +45,7 @@ all_categorical_entities = all_categorical_entities.to_dict('index')
 all_visit = ps.get_visit(rdb)
 
 #database = os.environ['POSTGRES_DB']
-database='TORCH data'
+database='UK Biobank data'
 len_numeric='number of numerical entities: ' + str(len(all_numeric_entities))
 size_numeric='the size of the numeric table: ' + str(size_n) +' rows'
 len_categorical ='number of categorical entities: '+ str(len(all_categorical_entities))
@@ -52,6 +53,10 @@ size_categorical='the size of the categorical table: '+ str(size_c)+' rows'
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
 
+class DataStore():
+    g = None
+
+data = DataStore()
 
 from url_handlers.data import data_page
 from url_handlers.basic_stats import basic_stats_page
@@ -85,23 +90,23 @@ def login():
 
 
 
-
-
-
 @app.route("/download", methods=['GET', 'POST'])
 def download():
 
-    csv = session["df"] if "df" in session else ""
+    csv=data.g
+
     # Create a string buffer
     buf_str = io.StringIO(csv)
 
     # Create a bytes buffer from the string buffer
-    #buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
-    return send_file(buf_str,
-                    mimetype='"text/csv"',
-                    as_attachment=True,
-                    attachment_filename="data.csv"
-                    )
+    buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
+
+    # Return the CSV data as an attachment
+    return send_file(buf_byt,
+                     mimetype="text/csv",
+                     as_attachment=True,
+                     attachment_filename="data.csv")
+
 
 def main():
     return app

@@ -62,21 +62,7 @@
                             <label class="custom-control-label" for="short">entities as columns</label>
                 </div>
 
-                {% if not df %}
-                <div class="progress-circular">
-                  <div class="progress-circular-wrapper">
-                    <div class="progress-circular-inner">
-                      <div class="progress-circular-left">
-                        <div class="progress-circular-spinner"></div>
-                      </div>
-                      <div class="progress-circular-gap"></div>
-                      <div class="progress-circular-right">
-                        <div class="progress-circular-spinner"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                 {% endif %}
+
                 <button id="Plot" type="submit" name="Result" class="btn btn-outline-info">Result</button>
             </form>
         </div>
@@ -96,21 +82,20 @@
 <div id="numeric_results" class="collapse {% if entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
         {% if df %}
+        <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
+        <br>
+        <br>
+        <div id="tab"  df="{{ df }}"></div>
+        <table id="example" class="display" width="100%">
+            <thead>
+            <tr>
+                {% for i in name %}
+                <th>{{ i }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        </table>
 
-                    <div class="dropdown mt-4 float-right">
-                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Export table
-                </button>
-                <div class="dropdown-menu" aria-labelledby="export_button">
-                    <a id="export_excel" class="dropdown-item">.xl</a>
-                    <a id="export_csv" class="dropdown-item">.csv</a>
-                </div>
-            </div>
-        <div id="table" style="display:none"> {{table|safe}} </div>
-        <br>
-        <br>
-        <br>
-            {{df|safe}}
 
         {% endif %}
 
