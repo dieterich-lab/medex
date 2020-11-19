@@ -49,35 +49,22 @@ def post_data():
                                all_visit=all_visit)
 
 
+
     start_time = time.time()
     data.g =df.to_csv(index=False)
     end_time = time.time()
     time3 = end_time - start_time
     print(time3)
+
     start_time = time.time()
     N=len(df)
-    end_time = time.time()
-    time3 = end_time - start_time
-    print(time3)
-
-    start_time = time.time()
     if N > 999: error="The result table was limited due to its size, please limit your search query or use the download button."
-    end_time = time.time()
-    time3 = end_time - start_time
-    print(time3)
-    #df = df.to_dict()
-    start_time = time.time()
     df=df.head(999)
-    end_time = time.time()
-    time3 = end_time - start_time
-    print(time3)
-
-    start_time = time.time()
-    name=df.columns.tolist()
+    name = df.columns.tolist()
     df = df.to_json(orient="values")
     end_time = time.time()
     time3 = end_time - start_time
-    print('o',time3)
+    print(time3)
 
 
     return render_template('data.html',

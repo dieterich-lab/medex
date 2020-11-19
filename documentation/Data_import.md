@@ -9,14 +9,14 @@ To work the files should have the same format as the current example files that 
 
 The currently used format of the dataset.csv file comes from the research warehouse export format of the data we are analysing with this tool:
  
-`Patient_ID,Billing_ID,Date,Time,Key,Value`
+`Patient_ID,Visit,Date,Time,Entity,Value`
 
 Example file starts like this:
 ```
-f96ae85e2c3598e7eefa593a927fe1c8,d41d8cd98f00b204e9800998ecf8427e,2012-07-13,4:51:9,Gender,male
-f96ae85e2c3598e7eefa593a927fe1c8,d41d8cd98f00b204e9800998ecf8427e,1999-03-13,15:26:20,Jitter_rel,0.25546
+f96ae85e2c3598e7eefa593a927fe1c8,1,2012-07-13,4:51:9,Gender,male
+f96ae85e2c3598e7eefa593a927fe1c8,0,1999-03-13,15:26:20,Jitter_rel,0.25546
 ```
-Billing_ID, Date and Time are currently not used and are optional, required are only a unique identifier of the data instance (Patient), a parameter name and the respective value, and the six columns format, so this line works as well:
+Date and Time are currently not used and are optional, required are a unique identifier of the data instance (Patient), number of visit a parameter name and the respective value, and the six columns format, so this line works as well:
 ```
 Patient1,,,,A_numeric_parameter,5.8
 ```
@@ -24,10 +24,10 @@ Patient1,,,,A_numeric_parameter,5.8
 Also necessary is the entities.csv file, specifying the data type, which can be String or Double. 
 In our Example that would be a file starting like this:
 ```
-entity,datatype
 Gender,String
 Jitter_rel,Double
 ```
+If your data have entities with a different data type (ex.date), you can complete the columns with this data type, but the entity will not be taken into account in the subsequent analysis.
 
 Example files can be found in `./dataset_examples`. To test them copy them to `./import` and restart the tool.
 

@@ -16,7 +16,7 @@ def create_table(rdb):
                                 "Date" text,
                                 "Time" text,
                                 "Key" text,
-                                "Value" text [])"""
+                                "Value" text)"""
 
     try:
         cur = rdb.cursor()
@@ -34,7 +34,6 @@ def load_data(entities, dataset,rdb):
     cur = rdb.cursor()
     # load data from entites.csv file to name_type table
     with open(entities, 'r') as in_file:
-        next(in_file)
         for row in in_file:
             row = row.replace("\n", "").split(",")
             if len(row) == 2:
@@ -72,11 +71,13 @@ def alter_table(rdb):
 
     sql0 = """Delete from examination where "Value" is null """
 
-    sql2 = """CREATE TABLE examination_categorical AS SELECT "ID","Patient_ID","Visit","Date","Key","Value" from
-            (SELECT e.* from examination as e join name_type as n on e."Key" = n."Key" where n."type" = 'String') as f """
-    sql3 = """CREATE TABLE examination_numerical AS SELECT "ID","Patient_ID","Visit","Date","Key",
-                ("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type 
-                as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^\d+(\.\d+)?$') as f """
+    sql2 = """CREATE TABLE examination_categorical as select min("ID") as "ID","Patient_ID","Visit",min("Date") as "Date",
+            "Key",array_agg("Value") as "Value" from (SELECT e.* from examination as e join name_type as n on 
+            e."Key" = n."Key" where n."type" = 'String') as f group by "Patient_ID","Visit","Key" """
+    sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Patient_ID","Visit",min("Date") as "Date",
+            "Key",array_agg("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type
+             as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^\d+(\.\d+)?$') 
+             as f group by "Patient_ID","Visit","Key" """
     sql4 = """CREATE TABLE Patient AS select distinct "Patient_ID" from examination"""
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Patient_ID")"""

@@ -100,34 +100,6 @@ def number(r):
         return None, "Problem with load data from database"
 
 
-def get_data(entity,entity_c,r):
-    """ Get numerical values from numerical table  from database
-
-    get_numerical_values_basic_stats use in basic_stats
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Patient_ID,Visit,Key,instance,Value
-
-    """
-
-    entity_fin = '"' + '","'.join(entity) + '"'
-    entity_finc = '"' + '","'.join(entity_c) + '"'
-
-    sql = """SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
-     UNION
-            SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",',') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({1})""".format(entity_fin,entity_finc)
-
-
-    try:
-        df = pd.read_sql(sql, r)
-    except Exception:
-        return None, "Problem with load data from database"
-
-    return df, None
-
 def get_data2(entity,what_table,r):
     """ Get numerical values from numerical table  from database
 
@@ -163,17 +135,10 @@ def get_data2(entity,what_table,r):
     try:
 
         if what_table == 'long':
-            start_time = time.time()
             df = pd.read_sql(sql, r)
-            end_time = time.time()
-            time3 = end_time - start_time
-            print('t',time3)
+
         else:
-            start_time = time.time()
             df = pd.read_sql(sql2, r)
-            end_time = time.time()
-            time2 = end_time - start_time
-            print('t',time2)
 
         return df, None
     except Exception:
@@ -195,7 +160,7 @@ def get_num_values_basic_stats(entity,visit, r):
 
     """
 
-    entity_fin = "'" + "','".join(entity) + "'"
+    entity_fin = "$$" + "$$,$$".join(entity) + "$$"
     visit = "'" + "','".join(visit) + "'"
 
     sql = """SELECT "Patient_ID","Visit","Key",instance,f."Value" FROM examination_numerical,unnest("Value") 
@@ -221,7 +186,7 @@ def get_cat_values_basic_stas(entity,visit, r):
     df: DataFrame with columns Key,count
 
     """
-    entity_fin = "'" + "','".join(entity) + "'"
+    entity_fin = "$$" + "$$,$$".join(entity) + "$$"
     visit = "'" + "','".join(visit) + "'"
 
     sql = """SELECT "Key","Visit",number,count("Key") FROM examination_categorical,array_length("Value",1) as f (number) WHERE "Key" IN ({0}) and "Visit" IN ({1})
@@ -285,7 +250,7 @@ def get_cat_values(entity, subcategory,visit, r):
 
     """
 
-    subcategory_fin = "'" + "','".join(subcategory) + "'"
+    subcategory_fin = "$$" + "$$,$$".join(subcategory) + "$$"
     visit = "'" + "','".join(visit) + "'"
 
     sql = """SELECT "Patient_ID",string_agg(distinct f."Value",',') FROM examination_categorical,unnest("Value") as f ("Value") WHERE "Key"= '{0}' 
@@ -345,7 +310,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,visit, r):
     -------
     df: DataFrame with columns Patient_ID,entity_num,entity_cat
      """
-    subcategory = "'" + "','".join(subcategory) + "'"
+    subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     visit = "'" + "','".join(visit) + "'"
 
 
@@ -379,7 +344,7 @@ def get_values_heatmap(entity,visit, r):
 
     """
 
-    entity_fin = "'" + "','".join(entity) + "'"
+    entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
     sql = """SELECT "Patient_ID","Visit","Key",AVG(f."Value") as "Value" FROM examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "Visit" in ('{1}') 
             Group by "Patient_ID","Visit","Key" """.format(entity_fin,visit)
@@ -408,7 +373,7 @@ def get_values_cat_heatmap(entity,visit, r):
 
     """
 
-    entity_fin = "'" + "','".join(entity) + "'"
+    entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
     sql = """SELECT "Patient_ID","Key","Value"[1] as "Value" FROM examination_categoricalWHERE "Key" IN ({0}) """.format(entity_fin,visit)
 
