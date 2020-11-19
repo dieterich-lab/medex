@@ -1,4 +1,3 @@
-entity,type
 NYHA,String
 Diabetes,String
 Gender,String
