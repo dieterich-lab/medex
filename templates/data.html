@@ -79,7 +79,7 @@
     </h5>
 </div>
 
-<div id="numeric_results" class="collapse {% if entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+<div id="numeric_results" class="collapse show " aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
         {% if df %}
         <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>

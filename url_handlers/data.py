@@ -6,13 +6,8 @@ data_page = Blueprint('data', __name__,
 import time
 
 
-
-
-
-
 @data_page.route('/data', methods=['GET'])
 def get_data():
-
     return render_template('data.html',
                            all_entities=all_entities,
                            all_categorical_entities=all_categorical_entities,
@@ -34,11 +29,7 @@ def post_data():
     if len(entities) == 0 :
         error = "Please select entities"
     else:
-       start_time = time.time()
        df, error = ps.get_data2(entities,what_table, rdb)
-       end_time = time.time()
-       time3 = end_time - start_time
-       print(time3)
     # handling errors and load data from database
 
     if error:
@@ -49,23 +40,13 @@ def post_data():
                                all_visit=all_visit)
 
 
-
-    start_time = time.time()
     data.g =df.to_csv(index=False)
-    end_time = time.time()
-    time3 = end_time - start_time
-    print(time3)
 
-    start_time = time.time()
     N=len(df)
     if N > 999: error="The result table was limited due to its size, please limit your search query or use the download button."
     df=df.head(999)
     name = df.columns.tolist()
     df = df.to_json(orient="values")
-    end_time = time.time()
-    time3 = end_time - start_time
-    print(time3)
-
 
     return render_template('data.html',
                            error=error,

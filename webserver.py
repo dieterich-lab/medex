@@ -1,5 +1,5 @@
 # import the Flask class from the flask module
-from flask import Flask, redirect, session, send_file,render_template,g,Response,request
+from flask import Flask, redirect, session, send_file,render_template,g,Response,request,url_for
 import os
 import io
 from modules.import_scheduler import Scheduler
@@ -37,7 +37,7 @@ if os.environ.get('IMPORT_DISABLED') is None:
 
 # get all numeric and categorical entities from database
 all_numeric_entities,size_n = ps.get_numeric_entities(rdb)
-all_categorical_entities, all_subcategory_entities,size_c = ps.get_categorical_entities(rdb)
+all_categorical_entities, all_subcategory_entities,size_c,entity = ps.get_categorical_entities(rdb)
 all_entities = all_numeric_entities .append(all_categorical_entities, ignore_index=True, sort=False)
 all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
@@ -86,7 +86,76 @@ app.register_blueprint(coplots_plot_page)
 """ Direct to Data browser website during opening the program."""
 @app.route('/', methods=['GET'])
 def login():
-    return redirect('/data')
+
+    # get selected entities
+    entities = entity['Key'].tolist()
+    what_table = 'long'
+
+    if len(entities) == 0:
+        error = "Please select entities"
+    else:
+        df, error = ps.get_data2(entities, what_table, rdb)
+    # handling errors and load data from database
+
+    if error:
+        return render_template('data.html',
+                               error=error,
+                               all_entities=all_entities,
+                               entities=entities,
+                               all_visit=all_visit)
+
+    data.g = df.to_csv(index=False)
+
+    N = len(df)
+    if N > 999: error = "The result table was limited due to its size, please limit your search query or use the download button."
+    df = df.head(999)
+    name = df.columns.tolist()
+    df = df.to_json(orient="values")
+
+    return render_template('data.html',
+                           error=error,
+                           all_entities=all_entities,
+                           entities=entities,
+                           N=N,
+                           df=df,
+                           name=name)
+
+
+@app.route('/', methods=['POST'])
+def login2():
+    entities = request.form.getlist('entities')
+    what_table = request.form.get('what_table')
+
+    if len(entities) == 0 :
+        error = "Please select entities"
+    else:
+       df, error = ps.get_data2(entities,what_table, rdb)
+    # handling errors and load data from database
+
+    if error:
+        return render_template('data.html',
+                               error=error,
+                               all_entities=all_entities,
+                               entities=entities,
+                               all_visit=all_visit)
+
+
+    data.g =df.to_csv(index=False)
+
+    N=len(df)
+    if N > 999: error="The result table was limited due to its size, please limit your search query or use the download button."
+    df=df.head(999)
+    name = df.columns.tolist()
+    df = df.to_json(orient="values")
+
+    return render_template('data.html',
+                           error=error,
+                           all_entities=all_entities,
+                           entities=entities,
+                           N=N,
+                           df=df,
+                           name=name)
+
 
 
 
