@@ -20,14 +20,17 @@ def get_categorical_entities(r):
     # Retrieve all categorical values
     sql0 = """SELECT count(*) FROM examination_categorical"""
     sql1 = """Select "Key","description" from name_type where "type" = 'String' order by "Key" """
-
     # Retrieve categorical values with subcategories
     sql2 = """Select distinct "Key","Value"[1] from examination_categorical order by "Key","Value"[1] """
+
+    sql3 = """Select "Key" from name_type where "link" = '+' """
+
     try:
         df0 = pd.read_sql(sql0, r)
         df0 = df0.iloc[0]['count']
         df1 = pd.read_sql(sql1, r)
         df = pd.read_sql(sql2, r)
+        df3 = pd.read_sql(sql3, r)
 
         array = []
 
@@ -39,9 +42,9 @@ def get_categorical_entities(r):
             dfr2[value] = list(df2['Value'])
             array.append(dfr2)
         df = dict(ChainMap(*array))
-        return df1,df,df0
+        return df1,df,df0,df3
     except Exception:
-        return ["No data"],["No data"],["No data"]
+        return ["No data"],["No data"],["No data"],["No data"]
 
 
 def get_numeric_entities(r):
@@ -123,13 +126,13 @@ def get_data2(entity,what_table,r):
     sql2 = """SELECT * FROM crosstab('SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
         UNION
             SELECT ec."Patient_ID",ec."Visit",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
-            'SELECT Distinct en."Key" FROM examination_numerical as en WHERE en."Key" IN ({0}) order by 1') 
+            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type,"Key"') 
             as ct ("Patient_ID" text,"Visit" text,{1})""".format(entity_fin,entity_fin2)
+
 
     sql3 = """SELECT * FROM crosstab('SELECT en."Patient_ID",en."Visit",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination as en WHERE en."Key" IN ({0})',
             'SELECT Distinct "Key" FROM examination WHERE "Key" IN ({0}) order by 1') 
             as ct ("Patient_ID" text,"Visit" text,{1})""".format(entity_fin,entity_fin2)
-
 
 
     try:

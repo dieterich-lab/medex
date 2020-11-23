@@ -1,47 +1,48 @@
-NYHA,String
-Diabetes,String
-Gender,String
-Jitter_rel,Double
-Jitter_abs,Double
-Jitter_RAP,Double
-Jitter_PPQ,Double
-Shim_loc,Double
-Shim_dB,Double
-Shim_APQ3,Double
-Shim_APQ5,Double
-Shi_APQ11,Double
-HNR05,Double
-HNR15,Double
-HNR25,Double
-HNR35,Double
-HNR38,Double
-RPDE,Double
-DFA,Double
-PPE,Double
-GNE,Double
-MFCC0,Double
-MFCC1,Double
-MFCC2,Double
-MFCC3,Double
-MFCC4,Double
-MFCC5,Double
-MFCC6,Double
-MFCC7,Double
-MFCC8,Double
-MFCC9,Double
-MFCC10,Double
-MFCC11,Double
-MFCC12,Double
-Delta0,Double
-Delta1,Double
-Delta2,Double
-Delta3,Double
-Delta4,Double
-Delta5,Double
-Delta6,Double
-Delta7,Double
-Delta8,Double
-Delta9,Double
-Delta10,Double
-Delta11,Double
-Delta12,Double
+Key,type,description,show
+NYHA,String,NYHA,+
+Diabetes,String,+
+Gender,String,Gender,+
+Jitter_rel,Double,Pitch local perturbation measures:relative jitter,
+Jitter_abs,Double,Pitch local perturbation measures:absolute jitter,
+Jitter_RAP,Double,Pitch local perturbation measures:relative average perturbation,
+Jitter_PPQ,Double,Pitch local perturbation measures:and pitch perturbation quotient,
+Shim_loc,Double,Amplitude perturbation measures:local shimmer,
+Shim_dB,Double,Amplitude perturbation measures:shimmer in dB,
+Shim_APQ3,Double,Amplitude perturbation measures:3-point amplitude perturbation quotient,
+Shim_APQ5,Double,Amplitude perturbation measures:5-point amplitude perturbation quotient,
+Shi_APQ11,Double,Amplitude perturbation measures:11-point amplitude perturbation quotient,
+HNR05,Double,Harmonic-to-noise ratio measures:Harmonic-to-noise ratio measures: harmonic-to-noise ratio in the frequency band 0-500 Hz,
+HNR15,Double,Harmonic-to-noise ratio measures:Harmonic-to-noise ratio measures: harmonic-to-noise ratio in the frequency band 0-1500 Hz,
+HNR25,Double,Harmonic-to-noise ratio measures:Harmonic-to-noise ratio measures: harmonic-to-noise ratio in the frequency band 0-2500 Hz,
+HNR35,Double,Harmonic-to-noise ratio measures:Harmonic-to-noise ratio measures: harmonic-to-noise ratio in the frequency band 0-3500 Hz,
+HNR38,Double,Harmonic-to-noise ratio measures:Harmonic-to-noise ratio measures: harmonic-to-noise ratio in the frequency band 0-3800 Hz,
+RPDE,Double,Recurrence period density entropy,
+DFA,Double,Detrended fluctuation analysis,
+PPE,Double,Pitch period entropy,
+GNE,Double, Glottal-to-noise excitation ratio,
+MFCC0,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC1,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC2,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC3,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC4,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC5,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC6,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC7,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC8,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC9,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC10,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC11,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+MFCC12,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta0,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta1,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta2,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta3,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta4,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta5,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta6,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta7,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta8,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta9,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta10,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta11,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),
+Delta12,Double,Mel frequency cepstral coefficient-based spectral measures of order 0 to 12 (MFCC0, MFCC1,..., MFCC12) and their derivatives (Delta0, Delta1,..., Delta12),

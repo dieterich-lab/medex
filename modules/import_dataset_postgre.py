@@ -9,7 +9,10 @@ def create_table(rdb):
 
     sql1 = "DROP TABLE IF EXISTS name_type,examination,examination_categorical,examination_numerical,patient"
 
-    statment_entities = """CREATE TABLE name_type ("Key" text Primary key, "type" text,"description" text,"link" text)"""
+    statment_entities = """CREATE TABLE name_type ("Key" text Primary key,
+                                                    "type" text,
+                                                    "description" text,
+                                                    "show" text)"""
     statment_examination = """CREATE tABLE examination ("ID" numeric PRIMARY KEY,
                                 "Patient_ID" text,
                                 "Visit" text,
@@ -34,6 +37,7 @@ def load_data(entities, dataset,rdb):
     cur = rdb.cursor()
     # load data from entites.csv file to name_type table
     with open(entities, 'r') as in_file:
+        next(in_file)
         for row in in_file:
             row = row.replace("\n", "").split(",")
             if len(row) == 2:
@@ -90,6 +94,7 @@ def alter_table(rdb):
 
     sql12 = """CREATE INDEX IF NOT EXISTS "Key_index_numerical" ON examination_numerical ("Key")"""
     sql13 = """CREATE INDEX IF NOT EXISTS "Key_index_categorical" ON examination_categorical ("Key")"""
+    sql14 = """CREATE EXTENSION IF NOT EXISTS tablefunc"""
 
     try:
         cur = rdb.cursor()
@@ -112,6 +117,7 @@ def alter_table(rdb):
     try:
         cur.execute(sql12)
         cur.execute(sql13)
+        cur.execute(sql14)
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")

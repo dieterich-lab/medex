@@ -29,6 +29,16 @@ Jitter_rel,Double
 ```
 If your data have entities with a different data type (ex.date), you can complete the columns with this data type, but the entity will not be taken into account in the subsequent analysis.
 
+It is also possible to add two more columns(description,show ) to the entities.csv file.
+```
+Gender,String,Gender,+
+Jitter_rel,Double,relative jitter,+
+```
+
+The Description column should contain a description of the entity.The description is displayed as a tooltip after hovering the cursor over the selected entity.
+
+The show column can be empty or contain a "+" next to the entities you want to show in the "Table browser" after the program is started.
+
 Example files can be found in `./dataset_examples`. To test them copy them to `./import` and restart the tool.
 
 
