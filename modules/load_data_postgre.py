@@ -23,7 +23,7 @@ def get_categorical_entities(r):
     # Retrieve categorical values with subcategories
     sql2 = """Select distinct "Key","Value"[1] from examination_categorical order by "Key","Value"[1] """
 
-    sql3 = """Select "Key" from name_type where "link" = '+' """
+    sql3 = """Select "Key" from name_type where "show" = '+' """
 
     try:
         df0 = pd.read_sql(sql0, r)
@@ -378,15 +378,18 @@ def get_values_cat_heatmap(entity,visit, r):
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
-    sql = """SELECT "Patient_ID","Key","Value"[1] as "Value" FROM examination_categoricalWHERE "Key" IN ({0}) """.format(entity_fin,visit)
+    sql = """SELECT "Patient_ID","Key","Value"[1] as "Value" FROM examination_categorical WHERE "Key" IN ({0}) """.format(entity_fin,visit)
 
     try:
         df = pd.read_sql(sql, r)
-        df = df.pivot_table(index=["Patient_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
+        df = df.pivot_table(index=["Patient_ID"], columns="Key", values="Value", aggfunc=min).reset_index()
+        print(df)
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"
         else:
             return df, None
     except Exception:
         return None, "Problem with load data from database"
+
+
 
