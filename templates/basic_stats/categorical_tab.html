@@ -24,7 +24,7 @@
                     {{ m.show_error(error) }}
                     {% endif %}
                     <form action="" method="POST">
-                        {{ m.entity_form3(id3= "visit",name =all_visit,value=entity,select=visit2,d="Number of visit:") }}
+                        {{ m.entity_form3(id3= "visit",name =all_visit,value=entity,select=visit2,d=name) }}
                         {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
 
                         <button id="Plot2" type="submit" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
@@ -61,7 +61,7 @@
                         <thead>
                             <tr>
                                 <th>Entity</th>
-                                <th>Visit</th>
+                                <th>{{ measurement_name }}</th>
                                 <th>Instances number</th>
                                 <th>Count</th>
                                 <th>Count NaN</th>

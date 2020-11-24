@@ -9,11 +9,12 @@ from webserver import rdb, all_numeric_entities, all_categorical_entities,all_vi
 heatmap_plot_page = Blueprint('heatmap', __name__,
                        template_folder='tepmlates')
 
-
+name = "Replicate number"
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
 
     return render_template('heatmap.html',
+                           name=name,
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
                            all_visit=all_visit,
@@ -35,7 +36,7 @@ def post_plots():
     # handling errors and load data from database
     error = None
     if visit == "Search entity":
-        error = "Please select number of visit"
+        error = "Please select number of Replicate"
     elif len(numeric_entities) > 1:
         numeric_df, error = ps.get_values_heatmap(numeric_entities,visit, rdb)
 
@@ -50,6 +51,7 @@ def post_plots():
         error = "Please select numeric entities"
     if error:
         return render_template('heatmap.html',
+                               name=name,
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
                                numeric_entities=numeric_entities,
@@ -59,11 +61,11 @@ def post_plots():
     error=None
     # calculate person correlation
 
-    numeric_df = numeric_df.drop(columns=['Patient_ID'])
+    numeric_df = numeric_df.drop(columns=['Transcript_ID'])
     new_numeric_entities = numeric_df.columns.tolist()
     numeric_entities_not_measured = set(numeric_entities).difference(set(new_numeric_entities))
     if len(numeric_entities_not_measured) > 0:
-        error = "{} not measure during visit".format(numeric_entities_not_measured)
+        error = "{} not measure during Replicate".format(numeric_entities_not_measured)
     numeric_entities = new_numeric_entities
 
 
@@ -108,6 +110,7 @@ def post_plots():
 
 
     return render_template('heatmap.html',
+                           name=name,
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
                            numeric_entities=numeric_entities,

@@ -6,11 +6,12 @@ from webserver import rdb, all_numeric_entities, all_categorical_entities,all_vi
 boxplot_page = Blueprint('boxplot', __name__,
                          template_folder='templates')
 
-
+name = "Replicate number"
 @boxplot_page.route('/boxplot', methods=['GET'])
 def get_boxplots():
 
     return render_template('boxplot.html',
+                           name=name,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
@@ -35,13 +36,14 @@ def post_boxplots():
     # handling errors and load data from database
     error = None
     if not visit:
-        error = "Please select number of visit"
+        error = "Please select number of Replicate"
     elif numeric_entities == "Search entity" or categorical_entities == "Search entity":
         error = "Please select entity"
     elif not subcategory_entities:
         error = "Please select subcategory"
     if not error:
         numeric_df,error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities,visit, rdb)
+        # categorical_df = categorical_df.rename(columns={"ID": "{}".format(name), "measurement": "{}".format(name)})
         if not error:
             numeric_df = numeric_df.dropna()
             if len(numeric_df.index) == 0:
@@ -50,6 +52,7 @@ def post_boxplots():
 
     if error:
         return render_template('boxplot.html',
+                               name=name,
                                error=error,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
@@ -63,14 +66,15 @@ def post_boxplots():
 
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
-        fig = px.box(numeric_df, x='Visit', y=numeric_entities, color=categorical_entities, template="plotly_white")
+        fig = px.box(numeric_df, x='Replicate', y=numeric_entities, color=categorical_entities, template="plotly_white")
     else:
-        fig = px.box(numeric_df, x='Visit', y=numeric_entities, color=categorical_entities, template="plotly_white", log_y=True)
+        fig = px.box(numeric_df, x='Replicate', y=numeric_entities, color=categorical_entities, template="plotly_white", log_y=True)
     fig.update_layout(font=dict(size=16))
     fig = fig.to_html()
 
 
     return render_template('boxplot.html',
+                           name=name,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,

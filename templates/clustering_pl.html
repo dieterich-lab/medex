@@ -53,7 +53,7 @@
             {% endif %}
 
             <form method="POST">
-                {{ m.entity_form4(id4= "visit",name =all_visit,value=entity,select=visit,d="Visit number:") }}
+                {{ m.entity_form4(id4= "visit",name =all_visit,value=entity,select=visit,d=name) }}
                 {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities,select=numeric_entities,value=entity,d="Numeric entities:") }}
                 <!-- {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities,value=entity,select=categorical_entities,d="Group by:") }} -->
 
@@ -96,7 +96,7 @@
                 <th>Cluster</th>
                 <th>Patient count</th>
                 <th>Patient percent</th>
-                {% for entity in selected_n_entities %}
+                {% for entity in numeric_entities %}
                 <th>{{ entity }} (mean value)</th>
                 {% endfor %}
             </tr>
@@ -108,7 +108,7 @@
                 <td>{{ cluster }}</td>
                 <td>{{ table_data[cluster]['patient_count'] }}</td>
                 <td>{{ table_data[cluster]['patient_percent'] }}</td>
-                {% for entity in selected_n_entities %}
+                {% for entity in numeric_entities %}
                 <td>{{ table_data[cluster][entity] }}</td>
                 {% endfor %}
             </tr>

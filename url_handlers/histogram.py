@@ -5,11 +5,12 @@ from webserver import rdb, all_numeric_entities, all_categorical_entities,all_vi
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
 
-
+name = "Replicate number"
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
 
     return render_template('histogram.html',
+                           name=name,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
@@ -35,13 +36,14 @@ def post_statistics():
     # handling errors and load data from database
     error = None
     if visit == "Search entity":
-        error = "Please select number of visit"
+        error = "Please select number of Replicate"
     elif numeric_entities == "Search entity" or categorical_entities == "Search entity":
         error = "Please select entity"
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
         data, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,visit,rdb)
+        # data = data.rename(columns={"ID": "{}".format(name), "measurement": "{}".format(name)})
         if not error:
             data = data.dropna()
             if len(data.index) == 0:
@@ -50,6 +52,7 @@ def post_statistics():
 
     if error:
         return render_template('histogram.html',
+                               name=name,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
@@ -71,6 +74,7 @@ def post_statistics():
     else:
         error = "You have entered non-integer or negative value. Please use positive integer"
         return render_template('histogram.html',
+                               name=name,
                                 all_categorical_entities=all_categorical_entities,
                                 all_numeric_entities=all_numeric_entities,
                                 all_subcategory_entities=all_subcategory_entities,
@@ -81,7 +85,7 @@ def post_statistics():
                                 visit=visit,
                                 error=error)
 
-    fig =px.histogram(data, x=numeric_entities,facet_row='Visit', color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
+    fig =px.histogram(data, x=numeric_entities,facet_row='Replicate', color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
 
     fig.update_layout(
         font=dict(size=16),
@@ -94,6 +98,7 @@ def post_statistics():
     fig = fig.to_html()
 
     return render_template('histogram.html',
+                           name=name,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            selected_entity=numeric_entities,

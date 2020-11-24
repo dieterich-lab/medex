@@ -5,11 +5,12 @@ from webserver import rdb, all_numeric_entities, all_categorical_entities,all_vi
 clustering_plot_page = Blueprint('clustering_pl', __name__,
                             template_folder='clustering_pl')
 
-
+name = "Replicate number"
 @clustering_plot_page.route('/clustering_pl', methods=['GET'])
 def cluster():
 
     return render_template('clustering_pl.html',
+                           name=name,
                            numeric_tab=True,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
@@ -51,6 +52,7 @@ def post_clustering():
         error = "Please select numeric entities"
     if error:
         return render_template('heatmap.html',
+                               name=name,
                                numeric_tab=True,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
@@ -102,6 +104,7 @@ def post_clustering():
     df = df.to_html(index=False,index_names=False)
 
     return render_template('clustering_pl.html',
+                           name=name,
                            numeric_tab=True,
                            numeric_entities=numeric_entities,
                            all_categorical_entities=all_categorical_entities,

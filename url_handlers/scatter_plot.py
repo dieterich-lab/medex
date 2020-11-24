@@ -6,11 +6,13 @@ from webserver import rdb, all_numeric_entities, all_categorical_entities,all_vi
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
-
+name = "Replicate number"
+measurement_name = 'replicate'
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
 
     return render_template('scatter_plot.html',
+                           name=name,
                            numeric_tab=True,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
@@ -42,7 +44,7 @@ def post_plots():
     # handling errors and load data from database
     error = None
     if x_visit == "Search entity" or y_axis == "Search entity":
-        error = "Please select number of visit"
+        error = "Please select number of Replicate"
     elif x_axis == "Search entity" or y_axis == "Search entity":
         error = "Please select x_axis and y_axis"
     elif x_axis == y_axis and x_visit == y_visit:
@@ -64,7 +66,7 @@ def post_plots():
         if not error:
             df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_visit, y_visit], rdb)
             if not error:
-                categorical_df = numerical_df.merge(df, on="Patient_ID").dropna()
+                categorical_df = numerical_df.merge(df, on="Transcript_ID").dropna()
                 categorical_df = categorical_df.sort_values(by=[categorical_entities])
                 if len(categorical_df[categorical_entities]) == 0:
                     error = "Category {} is empty".format(categorical_entities)
@@ -87,6 +89,7 @@ def post_plots():
 
     if error:
         return render_template('scatter_plot.html',
+                               name=name,
                                numeric_tab=True,
                                all_subcategory_entities=all_subcategory_entities,
                                all_categorical_entities=all_categorical_entities,
@@ -107,36 +110,36 @@ def post_plots():
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
         if add_group_by :
-            fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Patient_ID', template="plotly_white",
+            fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Transcript_ID', template="plotly_white",
                                  trendline="ols")
         else:
 
-            fig = px.scatter(numeric_df,x=x_axis_v, y=y_axis_v,hover_name = "Patient_ID", template = "plotly_white",trendline="ols")
+            fig = px.scatter(numeric_df,x=x_axis_v, y=y_axis_v,hover_name = "Transcript_ID", template = "plotly_white",trendline="ols")
 
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if add_group_by:
-                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Patient_ID',
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Transcript_ID',
                                  template="plotly_white",trendline="ols",log_x=True, log_y=True)
 
             else:
-                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='Patient_ID', template="plotly_white",
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='Transcript_ID', template="plotly_white",
                                  trendline="ols",log_x=True, log_y=True)
         elif log_x == 'log_x':
             if add_group_by:
-                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Patient_ID',
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Transcript_ID',
                                  template="plotly_white", trendline="ols", log_x=True)
 
             else:
-                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='Patient_ID', template="plotly_white",
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='Transcript_ID', template="plotly_white",
                                  trendline="ols", log_x=True)
         elif log_y == 'log_y':
             if add_group_by:
-                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Patient_ID',
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='Transcript_ID',
                                  template="plotly_white", trendline="ols",  log_y=True)
 
             else:
-                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='Patient_ID', template="plotly_white",
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='Transcript_ID', template="plotly_white",
                                  trendline="ols", log_y=True)
 
 #    results = px.get_trendline_results(fig)
@@ -144,7 +147,7 @@ def post_plots():
     fig.update_layout(
         font=dict(size=16),
         title={
-            'text': "Compare values of <b>" + x_axis + "</b> : Visit <b>" + x_visit + "</b> and <b>" + y_axis + "</b> :Visit <b>" + y_visit + "</b> ",
+            'text': "Compare values of <b>" + x_axis + "</b> :"+ measurement_name +"<b>" + x_visit + "</b> and <b>" + y_axis + "</b> :" + measurement_name  + "<b>" + y_visit + "</b> ",
             'y': 0.9,
             'x': 0.5,
             'xanchor': 'center',
@@ -153,6 +156,7 @@ def post_plots():
     fig = fig.to_html()
 
     return render_template('scatter_plot.html',
+                           name=name,
                            numeric_tab=True,
                            all_subcategory_entities=all_subcategory_entities,
                            all_categorical_entities=all_categorical_entities,

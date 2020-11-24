@@ -13,9 +13,9 @@ def create_table(rdb):
                                                     "type" text,
                                                     "description" text,
                                                     "show" text)"""
-    statment_examination = """CREATE tABLE examination ("ID" numeric PRIMARY KEY,
-                                "Patient_ID" text,
-                                "Visit" text,
+    statment_examination = """CREATE TABLE examination ("ID" numeric PRIMARY KEY,
+                                "Transcript_ID" text,
+                                "Replicate" text,
                                 "Date" text,
                                 "Time" text,
                                 "Key" text,
@@ -75,20 +75,20 @@ def alter_table(rdb):
 
     sql0 = """Delete from examination where "Value" is null """
 
-    sql2 = """CREATE TABLE examination_categorical as select min("ID") as "ID","Patient_ID","Visit",min("Date") as "Date",
+    sql2 = """CREATE TABLE examination_categorical as select min("ID") as "ID","Transcript_ID","Replicate",min("Date") as "Date",
             "Key",array_agg("Value") as "Value" from (SELECT e.* from examination as e join name_type as n on 
-            e."Key" = n."Key" where n."type" = 'String') as f group by "Patient_ID","Visit","Key" """
-    sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Patient_ID","Visit",min("Date") as "Date",
+            e."Key" = n."Key" where n."type" = 'String') as f group by "Transcript_ID","Replicate","Key" """
+    sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Transcript_ID","Replicate",min("Date") as "Date",
             "Key",array_agg("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type
              as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^\d+(\.\d+)?$') 
-             as f group by "Patient_ID","Visit","Key" """
-    sql4 = """CREATE TABLE Patient AS select distinct "Patient_ID" from examination"""
+             as f group by "Transcript_ID","Replicate","Key" """
+    sql4 = """CREATE TABLE Patient AS select distinct "Transcript_ID" from examination"""
 
-    sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Patient_ID")"""
+    sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Transcript_ID")"""
     sql6 = """ALTER TABLE examination_numerical ADD CONSTRAINT examination_numerical_pkey PRIMARY KEY ("ID")"""
     sql7 = """ALTER TABLE examination_categorical ADD CONSTRAINT examination_categorical_pkey PRIMARY KEY ("ID")"""
-    sql8 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Patient_ID") REFERENCES patient ("Patient_ID")"""
-    sql9 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n2 FOREIGN KEY ("Patient_ID") REFERENCES patient ("Patient_ID")"""
+    sql8 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Transcript_ID") REFERENCES patient ("Transcript_ID")"""
+    sql9 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n2 FOREIGN KEY ("Transcript_ID") REFERENCES patient ("Transcript_ID")"""
     sql10 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c1 FOREIGN KEY ("Key") REFERENCES name_type ("Key")"""
     sql11 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n1 FOREIGN KEY ("Key") REFERENCES name_type ("Key")"""
 

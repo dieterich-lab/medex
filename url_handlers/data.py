@@ -39,6 +39,8 @@ def post_data():
                                entities=entities,
                                all_visit=all_visit)
 
+    #df = df.rename(columns={"ID": "{}".format(name), "measurement": "{}".format(name)})
+
 
     data.g =df.to_csv(index=False)
 

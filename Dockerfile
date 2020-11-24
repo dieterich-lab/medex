@@ -21,7 +21,7 @@ ENV TZ=Europe/Berlin
 
 
 EXPOSE 5428
-EXPOSE 1000
+EXPOSE 800
 
 
-CMD [ "waitress-serve","--port", "1000", "--call", "webserver:main"  ]
+CMD [ "waitress-serve","--port", "800", "--call", "webserver:main"  ]

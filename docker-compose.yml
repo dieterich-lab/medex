@@ -1,30 +1,30 @@
 version: '3'
 services:
-  medexuk:
+  medex_calinca:
     build: .
     ports:
-      - "1000:1000"
+      - "800:800"
     depends_on: # other containers it needs in order to run
-      - databaseuk
+      - database
     environment:
       - PYTHONUNBUFFERED=1
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=example
+      - POSTGRES_DB=calinca
       - POSTGRES_PORT=5432
-      - POSTGRES_HOST=databaseuk
+      - POSTGRES_HOST=database
     volumes:
       - ./import:/app/import
     restart: always
 
-  databaseuk:
+  database:
     image: postgres
     ports:
       - "5428:5432"
     environment:
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=example
+      - POSTGRES_DB=calinca
     restart: always
 
 

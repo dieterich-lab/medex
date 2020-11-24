@@ -23,7 +23,7 @@
                     {{ m.show_error(error) }}
                     {% endif %}
                     <form action="" method="POST">
-                        {{ m.entity_form3(id3= "visit1",name =all_visit,value=entity,select=visit1,d="Number of visit:") }}
+                        {{ m.entity_form3(id3= "visit1",name =all_visit,value=entity,select=visit1,d=name) }}
                         {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities ,value=entity,select=numeric_entities,d="Numeric entities:") }}
 
                         <label>Include following statistics:</label>
@@ -105,7 +105,7 @@
                             <thead>
                                 <tr>
                                     <th>Entity</th>
-                                    <th>Visit</th>
+                                    <th>{{ measurement_name }}</th>
                                     <th>Instance</th>
                                     {% if 'counts' in basic_stats %}<th>Counts</th>{% endif %}
                                     {% if 'counts NaN' in basic_stats %}<th title="Number of patients with missing entity value" >Counts NaN </th>{% endif %}

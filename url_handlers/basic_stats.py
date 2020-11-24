@@ -3,15 +3,19 @@ import modules.load_data_postgre as ps
 from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database
 import pandas as pd
 import io
+
 basic_stats_page = Blueprint('basic_stats', __name__,
                              template_folder='basic_stats')
 
-
+name = "Replicate number"
+measurement_name = 'Replicate'
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
 
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
+                           name=name,
+                           measurement_name=measurement_name,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_visit=all_visit,
@@ -37,7 +41,7 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if not visit1:
-            error = "Please select number of visit"
+            error = "Please select number of replicate"
         elif len(numeric_entities) == 0:
             error = "Please select numeric entities"
         elif numeric_entities:
@@ -50,6 +54,8 @@ def get_basic_stats():
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
+                                   name=name,
+                                   measurement_name=measurement_name,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_visit=all_visit,
@@ -61,47 +67,47 @@ def get_basic_stats():
 
 
         # calculation basic stats
-        numeric_df = numeric_df.drop(columns=['Patient_ID'])
+        numeric_df = numeric_df.drop(columns=['Transcript_ID'])
         instance=numeric_df['instance'].unique()
         basic_stats =[]
         if 'counts' in request.form:
-            counts = numeric_df.groupby(['Key','Visit','instance']).count()
+            counts = numeric_df.groupby(['Key','Replicate','instance']).count()
             counts = counts.rename(columns={'Value': 'counts'})
             basic_stats.append(counts)
 
         if 'counts NaN' in request.form:
-            counts2n = numeric_df.groupby(['Key','Visit', 'instance']).count()
+            counts2n = numeric_df.groupby(['Key','Replicate', 'instance']).count()
             counts2n = int(n) - counts2n
             counts2n = counts2n.rename(columns={'Value': 'counts NaN'})
             basic_stats.append(counts2n)
 
         if 'mean' in request.form:
-            mean2 = numeric_df.groupby(['Key','Visit','instance']).mean().round(decimals=2)
+            mean2 = numeric_df.groupby(['Key','Replicate','instance']).mean().round(decimals=2)
             mean2 = mean2.rename(columns={'Value': 'mean'})
             basic_stats.append(mean2)
 
         if 'min' in request.form:
-            min = numeric_df.groupby(['Key','Visit', 'instance']).min()
+            min = numeric_df.groupby(['Key','Replicate', 'instance']).min()
             min = min.rename(columns={'Value': 'min'})
             basic_stats.append(min)
 
         if 'max' in request.form:
-            max = numeric_df.groupby(['Key','Visit', 'instance']).max()
+            max = numeric_df.groupby(['Key','Replicate', 'instance']).max()
             max = max.rename(columns={'Value': 'max'})
             basic_stats.append(max)
 
         if 'std_dev' in request.form:
-            std_dev = numeric_df.groupby(['Key','Visit', 'instance']).std().round(decimals=2)
+            std_dev = numeric_df.groupby(['Key','Replicate', 'instance']).std().round(decimals=2)
             std_dev = std_dev.rename(columns={'Value': 'std_dev'})
             basic_stats.append(std_dev)
 
         if 'std_err' in request.form:
-            std_err2 = numeric_df.groupby(['Key','Visit', 'instance']).sem().round(decimals=2)
+            std_err2 = numeric_df.groupby(['Key','Replicate', 'instance']).sem().round(decimals=2)
             std_err2 = std_err2.rename(columns={'Value': 'std_err'})
             basic_stats.append(std_err2)
 
         if 'median' in request.form:
-            median = numeric_df.groupby(['Key','Visit', 'instance']).median().round(decimals=2)
+            median = numeric_df.groupby(['Key','Replicate', 'instance']).median().round(decimals=2)
             median = median.rename(columns={'Value': 'median'})
             basic_stats.append(median)
 
@@ -110,9 +116,11 @@ def get_basic_stats():
             error_message = "You must select at least some statistics"
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
+                                   name=name,
+                                   measurement_name=measurement_name,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
-                                   all_visit=all_visit,
+                                   all_Replicate=all_Replicate,
                                    numeric_entities=numeric_entities,
                                    visit1=visit1,
                                    instance=instance,
@@ -128,6 +136,8 @@ def get_basic_stats():
             all_present = numeric_df.dropna().shape[0]
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
+                                   name=name,
+                                   measurement_name=measurement_name,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_visit=all_visit,
@@ -151,7 +161,7 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if len(visit) == 0:
-            error = "Please select number of visit"
+            error = "Please select number of Replicate"
         elif len(categorical_entities) == 0:
             error = "Please select entities"
         else:
@@ -164,6 +174,8 @@ def get_basic_stats():
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    categorical_tab=True,
+                                   name=name,
+                                   measurement_name=measurement_name,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_visit=all_visit,
@@ -176,10 +188,12 @@ def get_basic_stats():
         instance=categorical_df['number'].unique()
 
 
-        categorical_df=categorical_df.set_index(['Key', 'Visit','number'])
+        categorical_df=categorical_df.set_index(['Key', 'Replicate','number'])
         basic_stats_c=categorical_df.to_dict()
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,
+                               name=name,
+                               measurement_name=measurement_name,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_visit=all_visit,

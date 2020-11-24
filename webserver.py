@@ -44,8 +44,8 @@ all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
 all_visit = ps.get_visit(rdb)
 
-#database = os.environ['POSTGRES_DB']
-database='UK Biobank data'
+database_name = os.environ['POSTGRES_DB']
+database='{} data'.format(database_name)
 len_numeric='number of numerical entities: ' + str(len(all_numeric_entities))
 size_numeric='the size of the numeric table: ' + str(size_n) +' rows'
 len_categorical ='number of categorical entities: '+ str(len(all_categorical_entities))

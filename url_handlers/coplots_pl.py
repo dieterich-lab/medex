@@ -8,11 +8,12 @@ from webserver import rdb, all_numeric_entities, all_categorical_entities,all_vi
 coplots_plot_page = Blueprint('coplots_pl', __name__,
                          template_folder='templates')
 
-
+name = "Replicate number"
 @coplots_plot_page.route('/coplots_pl', methods=['GET'])
 def get_coplots():
 
     return render_template('coplots_pl.html',
+                           name=name,
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
@@ -51,7 +52,7 @@ def post_coplots():
     # handling errors and load data from database
     error = None
     if x_visit == "Search entity" or y_visit == "Search entity":
-        error = "Please select number of visit"
+        error = "Please select number of Replicate"
     elif category1 is None or category1 == 'Search entity':
         error = 'Please select category1'
     elif category2 is None or category2 == 'Search entity':
@@ -84,14 +85,15 @@ def post_coplots():
             if not error:
                 cat_data2, error = ps.get_cat_values(category2,category22,[x_visit,y_visit], rdb)
                 if not error:
-                    data = num_data.merge(cat_data1, on ="Patient_ID")
-                    data = data.merge(cat_data2, on="Patient_ID")
+                    data = num_data.merge(cat_data1, on ="Transcript_ID")
+                    data = data.merge(cat_data2, on="Transcript_ID")
                     data = data.dropna()
                     if len(data.index) == 0:
                         error = "No data based on the selected options"
                 else: (None, error)
     if error:
         return render_template('coplots_pl.html',
+                               name=name,
                                all_subcategory_entities=all_subcategory_entities,
                                all_numeric_entities=all_numeric_entities,
                                categorical_entities=all_categorical_entities,
@@ -140,7 +142,7 @@ def post_coplots():
                                  template="plotly_white", color=category1 + '|' + category2)
             fig.update_layout(
                 height=500 * len2,
-                width=800 * len1)
+                width=700 * len1)
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if how_to_plot == "single_plot":
@@ -160,7 +162,7 @@ def post_coplots():
                                      log_x=True, log_y=True)
                 fig.update_layout(
                     height=500 * len2,
-                    width=800 * len1)
+                    width=700 * len1)
         elif log_x == 'log_x':
             if how_to_plot == "single_plot":
                 try:
@@ -179,7 +181,7 @@ def post_coplots():
                                      log_x=True)
                 fig.update_layout(
                     height=500 * len2,
-                    width=800 * len1)
+                    width=700 * len1)
         elif log_y == 'log_y':
             if how_to_plot == "single_plot":
                 try:
@@ -197,7 +199,7 @@ def post_coplots():
                                      log_y=True)
                 fig.update_layout(
                     height=500 * len2,
-                    width=800 * len1)
+                    width=700 * len1)
     fig.for_each_annotation(lambda a: a.update(text=a.text.replace("=",'<br>')))
     #fig.update_xaxes(title=x_axis.replace("_",'<br>'))
 
@@ -223,6 +225,7 @@ def post_coplots():
 
     fig = fig.to_html()
     return render_template('coplots_pl.html',
+                           name=name,
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
