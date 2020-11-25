@@ -80,7 +80,7 @@ def alter_table(rdb):
             e."Key" = n."Key" where n."type" = 'String') as f group by "Transcript_ID","Replicate","Key" """
     sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Transcript_ID","Replicate",min("Date") as "Date",
             "Key",array_agg("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type
-             as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^\d+(\.\d+)?$') 
+             as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') 
              as f group by "Transcript_ID","Replicate","Key" """
     sql4 = """CREATE TABLE Patient AS select distinct "Transcript_ID" from examination"""
 
