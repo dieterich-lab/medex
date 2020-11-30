@@ -1,20 +1,19 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
 
-name = "Replicate number"
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
 
     return render_template('histogram.html',
-                           name=name,
+                           name='{} number'.format(name),
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit,
+                           all_measurement=all_measurement,
                            database=database,
                            size_categorical=size_categorical,
                            size_numeric=size_numeric,
@@ -31,19 +30,19 @@ def post_statistics():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     number_of_bins = request.form.get('number_of_bins')
-    visit = request.form.getlist('visit')
+    measurement = request.form.getlist('measurement')
 
     # handling errors and load data from database
     error = None
-    if visit == "Search entity":
-        error = "Please select number of Replicate"
+    if measurement == "Search entity":
+        error = "Please select number of {}".format(name)
     elif numeric_entities == "Search entity" or categorical_entities == "Search entity":
         error = "Please select entity"
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
-        data, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,visit,rdb)
-        # data = data.rename(columns={"ID": "{}".format(name), "measurement": "{}".format(name)})
+        data, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,measurement,rdb)
+        data = data.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
         if not error:
             data = data.dropna()
             if len(data.index) == 0:
@@ -52,15 +51,15 @@ def post_statistics():
 
     if error:
         return render_template('histogram.html',
-                               name=name,
+                               name='{} number'.format(name),
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
-                               visit=visit,
-                               all_visit=all_visit,
+                               measurement=measurement,
+                               all_measurement=all_measurement,
                                error=error)
 
 
@@ -74,18 +73,18 @@ def post_statistics():
     else:
         error = "You have entered non-integer or negative value. Please use positive integer"
         return render_template('histogram.html',
-                               name=name,
+                               name='{} number'.format(name),
                                 all_categorical_entities=all_categorical_entities,
                                 all_numeric_entities=all_numeric_entities,
                                 all_subcategory_entities=all_subcategory_entities,
-                                all_visit=all_visit,
+                                all_measurement=all_measurement,
                                 numeric_entities=numeric_entities,
                                 categorical_entities=categorical_entities,
                                 subcategory_entities=subcategory_entities,
-                                visit=visit,
+                                measurement=measurement,
                                 error=error)
 
-    fig =px.histogram(data, x=numeric_entities,facet_row='Replicate', color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
+    fig =px.histogram(data, x=numeric_entities,facet_row=name, color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
 
     fig.update_layout(
         font=dict(size=16),
@@ -98,7 +97,7 @@ def post_statistics():
     fig = fig.to_html()
 
     return render_template('histogram.html',
-                           name=name,
+                           name='{} number'.format(name),
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            selected_entity=numeric_entities,
@@ -106,9 +105,9 @@ def post_statistics():
                            plot=fig,
                            number_of_bins=number_of_bins,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit,
+                           all_measurement=all_measurement,
                            numeric_entities=numeric_entities,
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
-                           visit=visit,
+                           measurement=measurement,
                            )

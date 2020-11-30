@@ -13,4 +13,4 @@ export POSTGRES_PORT=5428
 export POSTGRES_HOST=localhost
 
 # run flask
-flask run --host=0.0.0.0
+flask run

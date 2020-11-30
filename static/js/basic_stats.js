@@ -29,30 +29,30 @@ $(function () {
         $(this).closest('div.alert').addClass('d-none');
     });
 
-    $('#visit').on("select2:select", function (e) {
+    $('#measurement').on("select2:select", function (e) {
            var data = e.params.data.text;
            if(data=='Select all'){
-            $("#visit> option").prop("selected","selected");
-            $("#visit").trigger("change");
+            $("#measurement> option").prop("selected","selected");
+            $("#measurement").trigger("change");
            }
       });
 
-    $('#visit1').on("select2:select", function (e) {
+    $('#measurement1').on("select2:select", function (e) {
            var data = e.params.data.text;
            if(data=='Select all'){
-            $("#visit1> option").prop("selected","selected");
-            $("#visit1").trigger("change");
+            $("#measurement1> option").prop("selected","selected");
+            $("#measurement1").trigger("change");
            }
       });
 
     // use plugin select2 for selector
-    $("#visit").select2({
+    $("#measurement").select2({
     placeholder:"Search entity"
     });
     $("#numeric_entities").select2({
     placeholder:"Search entity"
     });
-    $("#visit1").select2({
+    $("#measurement1").select2({
     placeholder:"Search entity"
     });
     $("#categorical_entities").select2({

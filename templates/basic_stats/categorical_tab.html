@@ -24,7 +24,7 @@
                     {{ m.show_error(error) }}
                     {% endif %}
                     <form action="" method="POST">
-                        {{ m.entity_form3(id3= "visit",name =all_visit,value=entity,select=visit2,d=name) }}
+                        {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement2,d=name) }}
                         {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
 
                         <button id="Plot2" type="submit" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
@@ -48,15 +48,7 @@
                  aria-labelledby="c_results_header" data-parent="#categorical_accordion">
                 <div class="card-body">
                     {% if basic_stats_c %}
-                    <div class="dropdown mt-4 float-right">
-                        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Export table
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="export_button">
-                            <a id='export_excel' class="dropdown-item">.xl</a>
-                            <a id="export_csv" class="dropdown-item">.csv</a>
-                        </div>
-                    </div>
+                    <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
                     <table class="table table-stripped">
                         <thead>
                             <tr>
@@ -69,7 +61,7 @@
                         </thead>
                         <tbody>
                             {% for entity in categorical_entities %}
-                            {% for v in visit2 %}
+                            {% for v in measurement2 %}
                             {% for i in instance %}
                             <tr>
                                 {% if basic_stats_c['count'][entity,v,i] is defined %}

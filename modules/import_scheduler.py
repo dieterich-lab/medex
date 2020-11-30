@@ -64,6 +64,7 @@ def start_import(rdb):
     print('starting import', datetime.now().strftime('%H:%M:%S'))
     dataset = './import/dataset.csv'
     entities ='./import/entities.csv'
+    header = './import/header.csv'
 
 
     if not os.path.isfile(dataset) or not os.path.isfile(entities):
@@ -71,11 +72,18 @@ def start_import(rdb):
     elif not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
         return print("Data set not changed", file=sys.stderr)
     else:
+        if os.path.isfile(dataset):
+            header = ['Patient_ID','Visit']
+        else:
+            with open('header.csv', 'r') as in_file:
+                for row in in_file:
+                    header = row.replace("\n", "").split(",")
+            header=header[0:2]
         # use function from import_dataset_postgre.py to create tables in database
         print("Start create tables")
         idp.create_table(rdb)
         print("Start load data ")
-        idp.load_data(entities,dataset,rdb)
+        idp.load_data(entities,dataset,header,rdb)
         print("Start alter table ")
         idp.alter_table(rdb)
 

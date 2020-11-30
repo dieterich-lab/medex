@@ -6,7 +6,7 @@ from modules.import_scheduler import Scheduler
 import modules.load_data_postgre as ps
 from db import connect_db
 import pandas as pd
-
+from waitress import serve
 
 # create the application object
 app = Flask(__name__)
@@ -36,13 +36,15 @@ if os.environ.get('IMPORT_DISABLED') is None:
     scheduler.stop()
 
 # get all numeric and categorical entities from database
+name2,name = ps.get_header(rdb)['Name_ID'][0],ps.get_header(rdb)['measurement'][0]
+print(name,name2)
 all_numeric_entities,size_n = ps.get_numeric_entities(rdb)
 all_categorical_entities, all_subcategory_entities,size_c,entity = ps.get_categorical_entities(rdb)
 all_entities = all_numeric_entities .append(all_categorical_entities, ignore_index=True, sort=False)
 all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
-all_visit = ps.get_visit(rdb)
+all_measurement = ps.get_measurement(rdb)
 
 database_name = os.environ['POSTGRES_DB']
 database='{} data'.format(database_name)
@@ -55,6 +57,7 @@ size_categorical='the size of the categorical table: '+ str(size_c)+' rows'
 
 class DataStore():
     g = None
+
 
 data = DataStore()
 
@@ -94,31 +97,29 @@ def login():
     if len(entities) == 0:
         error = "Please select entities"
     else:
-        df, error = ps.get_data2(entities, what_table, rdb)
+        df, error = ps.get_data(entities, what_table, rdb)
     # handling errors and load data from database
 
     if error:
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
-                               entities=entities,
-                               all_visit=all_visit)
+                               entities=entities)
 
+    df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
     data.g = df.to_csv(index=False)
 
-    N = len(df)
-    if N > 999: error = "The result table was limited due to its size, please limit your search query or use the download button."
+    if len(df) > 999: error = "The result table was limited due to its size, please limit your search query or use the download button."
     df = df.head(999)
-    name = df.columns.tolist()
+    column = df.columns.tolist()
     df = df.to_json(orient="values")
 
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
                            entities=entities,
-                           N=N,
                            df=df,
-                           name=name)
+                           name=column)
 
 
 @app.route('/', methods=['POST'])
@@ -129,32 +130,30 @@ def login2():
     if len(entities) == 0 :
         error = "Please select entities"
     else:
-       df, error = ps.get_data2(entities,what_table, rdb)
+       df, error = ps.get_data(entities,what_table, rdb)
     # handling errors and load data from database
 
     if error:
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
-                               entities=entities,
-                               all_visit=all_visit)
+                               entities=entities)
 
 
+    df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
     data.g =df.to_csv(index=False)
 
-    N=len(df)
-    if N > 999: error="The result table was limited due to its size, please limit your search query or use the download button."
+    if len(df)> 999: error="The result table was limited due to its size, please limit your search query or use the download button."
     df=df.head(999)
-    name = df.columns.tolist()
+    column = df.columns.tolist()
     df = df.to_json(orient="values")
 
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
                            entities=entities,
-                           N=N,
                            df=df,
-                           name=name)
+                           name=column)
 
 
 
@@ -178,4 +177,5 @@ def download():
 
 
 def main():
+
     return app

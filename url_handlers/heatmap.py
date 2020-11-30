@@ -3,21 +3,21 @@ import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,database
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,database,name
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,
                        template_folder='tepmlates')
 
-name = "Replicate number"
+
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
 
     return render_template('heatmap.html',
-                           name=name,
+                           name='{} number'.format(name),
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
-                           all_visit=all_visit,
+                           all_measurement=all_measurement,
                            database=database,
                            size_categorical=size_categorical,
                            size_numeric=size_numeric,
@@ -31,14 +31,14 @@ def post_plots():
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
 
-    visit = request.form.get('visit')
+    measurement = request.form.get('measurement')
 
     # handling errors and load data from database
     error = None
-    if visit == "Search entity":
-        error = "Please select number of Replicate"
+    if measurement == "Search entity":
+        error = "Please select number of {}".format(name)
     elif len(numeric_entities) > 1:
-        numeric_df, error = ps.get_values_heatmap(numeric_entities,visit, rdb)
+        numeric_df, error = ps.get_values_heatmap(numeric_entities,measurement, rdb)
 
         if not error:
             if len(numeric_df.index) == 0:
@@ -51,17 +51,17 @@ def post_plots():
         error = "Please select numeric entities"
     if error:
         return render_template('heatmap.html',
-                               name=name,
+                               name='{} number'.format(name),
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
                                numeric_entities=numeric_entities,
-                               visit=visit,
-                               all_visit=all_visit,
+                               measurement=measurement,
+                               all_measurement=all_measurement,
                                error=error)
     error=None
     # calculate person correlation
 
-    numeric_df = numeric_df.drop(columns=['Transcript_ID'])
+    numeric_df = numeric_df.drop(columns=['Name_ID'])
     new_numeric_entities = numeric_df.columns.tolist()
     numeric_entities_not_measured = set(numeric_entities).difference(set(new_numeric_entities))
     if len(numeric_entities_not_measured) > 0:
@@ -110,12 +110,12 @@ def post_plots():
 
 
     return render_template('heatmap.html',
-                           name=name,
+                           name='{} number'.format(name),
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
                            numeric_entities=numeric_entities,
-                           visit=visit,
-                           all_visit=all_visit,
+                           measurement=measurement,
+                           all_measurement=all_measurement,
                            plot_series=plot_series,
                            error=error
                            )

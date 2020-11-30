@@ -29,8 +29,6 @@
 
 
 {# end of imports #}
-
-
 <div class="card">
     <div class="card-header" id="settings_header">
         <h5 class="mb-0">
@@ -58,11 +56,9 @@
                 </div>
                 <div class="custom-control custom-radio">
                     <input type="radio" class="custom-control-input" id="short" name="what_table" value="short"
-                           {% if short  %} checked {% endif %}>
+                           {% if what_table =="short"  %} checked {% endif %}>
                             <label class="custom-control-label" for="short">entities as columns</label>
                 </div>
-
-
                 <button id="Plot" type="submit" name="Result" class="btn btn-outline-info">Result</button>
             </form>
         </div>

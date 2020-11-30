@@ -13,15 +13,11 @@ RUN apt-get update && \
 WORKDIR /app
 
 ENV FLASK_ENV production
-# not really needed as weitress ignores this option
-ENV FLASK_APP webserver.py
-ENV FLASK_RUN_HOST 0.0.0.0
+# not really needed as waitress ignores this option
 ENV TZ=Europe/Berlin
-
-
 
 EXPOSE 5428
 EXPOSE 800
 
 
-CMD [ "waitress-serve","--port", "800", "--call", "webserver:main"  ]
+CMD [ "waitress-serve","--port","800","--call", "webserver:main"  ]

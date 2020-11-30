@@ -3,21 +3,21 @@ import modules.load_data_postgre as ps
 
 
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name
 
 coplots_plot_page = Blueprint('coplots_pl', __name__,
                          template_folder='templates')
 
-name = "Replicate number"
+
 @coplots_plot_page.route('/coplots_pl', methods=['GET'])
 def get_coplots():
 
     return render_template('coplots_pl.html',
-                           name=name,
+                           name='{} number'.format(name),
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit,
+                           all_measurement=all_measurement,
                            database=database,
                            size_categorical=size_categorical,
                            size_numeric=size_numeric,
@@ -38,8 +38,8 @@ def post_coplots():
     x_axis = request.form.get('x_axis')
     y_axis = request.form.get('y_axis')
 
-    x_visit = request.form.get('x_visit')
-    y_visit = request.form.get('y_visit')
+    x_measurement = request.form.get('x_measurement')
+    y_measurement = request.form.get('y_measurement')
 
     how_to_plot = request.form.get('how_to_plot')
     how_to_plot2 = request.form.get('how_to_plot2')
@@ -51,8 +51,8 @@ def post_coplots():
 
     # handling errors and load data from database
     error = None
-    if x_visit == "Search entity" or y_visit == "Search entity":
-        error = "Please select number of Replicate"
+    if x_measurement == "Search entity" or y_measurement == "Search entity":
+        error = "Please select number of {}".format(name)
     elif category1 is None or category1 == 'Search entity':
         error = 'Please select category1'
     elif category2 is None or category2 == 'Search entity':
@@ -63,7 +63,7 @@ def post_coplots():
         error = 'Please select y_axis'
     elif x_axis == y_axis and category1 == category2:
         error = "You can't compare the same entities and categories"
-    elif x_axis == y_axis and x_visit == y_visit:
+    elif x_axis == y_axis and x_measurement == y_measurement:
         error = "You can't compare the same entities for x and y axis"
     elif category1 == category2:
         error = "You can't compare the same category"
@@ -72,7 +72,7 @@ def post_coplots():
     elif how_to_plot == 'log' and not log_x and not log_y:
         error = "Please select type of log"
     if not error:
-        num_data, error = ps.get_values_scatter_plot(x_axis, y_axis,x_visit,y_visit, rdb) if not error else (None, error)
+        num_data, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement, rdb) if not error else (None, error)
         if x_axis == y_axis:
             x_axis=x_axis+'_x'
             y_axis=y_axis+'_y'
@@ -81,30 +81,30 @@ def post_coplots():
         elif not y_axis in num_data.columns:
             error = "The entity {} wasn't measured".format(y_axis)
         elif not error:
-            cat_data1, error = ps.get_cat_values(category1,category11,[x_visit,y_visit], rdb) if not error else (None, error)
+            cat_data1, error = ps.get_cat_values(category1,category11,[x_measurement,y_measurement], rdb) if not error else (None, error)
             if not error:
-                cat_data2, error = ps.get_cat_values(category2,category22,[x_visit,y_visit], rdb)
+                cat_data2, error = ps.get_cat_values(category2,category22,[x_measurement,y_measurement], rdb)
                 if not error:
-                    data = num_data.merge(cat_data1, on ="Transcript_ID")
-                    data = data.merge(cat_data2, on="Transcript_ID")
+                    data = num_data.merge(cat_data1, on ="Name_ID")
+                    data = data.merge(cat_data2, on="Name_ID")
                     data = data.dropna()
                     if len(data.index) == 0:
                         error = "No data based on the selected options"
                 else: (None, error)
     if error:
         return render_template('coplots_pl.html',
-                               name=name,
+                               name='{} number'.format(name),
                                all_subcategory_entities=all_subcategory_entities,
                                all_numeric_entities=all_numeric_entities,
                                categorical_entities=all_categorical_entities,
-                               all_visit=all_visit,
+                               all_measurement=all_measurement,
                                error=error,
                                category1=category1,
                                category2=category2,
                                x_axis=x_axis,
                                y_axis=y_axis,
-                               x_visit=x_visit,
-                               y_visit=y_visit,
+                               x_measurement=x_measurement,
+                               y_measurement=y_measurement,
                                how_to_plot=how_to_plot,
                                select_scale=select_scale,
                                category11=category11,
@@ -114,28 +114,17 @@ def post_coplots():
     len1 = len(category11)
     len2 = len(category22)
     data[category1+'|'+category2] = data[category1]+ '|'+ data[category2]
-    #regline = sm.OLS(data[x_axis], sm.add_constant(y_axis)).fit().fittedvalues
-
-
 
     if how_to_plot2 == "linear":
         if how_to_plot == "single_plot":
             try:
                 fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",  color=category1 + '|' + category2,trendline="ols")
-
             except:
                 fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white", color=category1 + '|' + category2)
         else:
             try:
                 fig = px.scatter(data,x=x_axis, y=y_axis,facet_row=category2, facet_col=category1,color=category1+'|'+category2,
                                  template="plotly_white",render_mode="svg",trendline="ols",trendline_color_override="black")
-
-                #fig.update_traces(marker=dict(color="RoyalBlue"),selector=dict(type="scattergl"))
-
-
-                #fig.for_each_trace(
-                #    lambda trace: trace.update(marker_symbol="square") if trace.type == "scattergl" else (),
-                #)
 
             except:
                 fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category2, facet_col=category1,
@@ -201,17 +190,6 @@ def post_coplots():
                     height=500 * len2,
                     width=700 * len1)
     fig.for_each_annotation(lambda a: a.update(text=a.text.replace("=",'<br>')))
-    #fig.update_xaxes(title=x_axis.replace("_",'<br>'))
-
-    N=len(fig.data)
-    fig1=fig
-    #print(fig.data.type)
-    #for i in range(N):
-        #fig.data[i].mode = fig.data[i].mode.replace('markers', 'lines')
-        #fig1.data[i].type = fig1.data[i].type.replace('scattergl', 'scatter')
-        #print(fig.data[i].mode)
-
-
 
     fig.update_layout(
         font=dict(size=16),
@@ -225,11 +203,11 @@ def post_coplots():
 
     fig = fig.to_html()
     return render_template('coplots_pl.html',
-                           name=name,
+                           name='{} number'.format(name),
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit,
+                           all_measurement=all_measurement,
                            how_to_plot=how_to_plot,
                            select_scale=select_scale,
                            category11=category11,
@@ -238,7 +216,7 @@ def post_coplots():
                            category2=category2,
                            x_axis=x_axis,
                            y_axis=y_axis,
-                           x_visit=x_visit,
-                           y_visit=y_visit,
+                           x_measurement=x_measurement,
+                           y_measurement=y_measurement,
                            plot=fig
                            )

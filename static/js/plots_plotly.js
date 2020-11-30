@@ -9,13 +9,12 @@ $(function () {
     // use plugin select2 for selector
     $("#x_axis").select2();
     $("#y_axis").select2();
-    $("#x_visit").select2();
-    $("#y_visit").select2();
+    $("#x_measurement").select2();
+    $("#y_measurement").select2();
     $("#categorical_entities").select2();
 
     $('#Plot').click(function(){
         // disable button
-        $(this).prop("disabled",true);
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
 
         });

@@ -7,13 +7,12 @@ $(function () {
     // use plugin select2 for selector
     $("#numeric_entities").select2();
     $('#categorical_entities').select2();
-    $("#visit").select2({
+    $("#measurement").select2({
     placeholder:"Search entity"
     });
 
     $('#Plot').click(function(){
         // disable button
-        $(this).prop("disabled",true);
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
 
         });
@@ -31,11 +30,11 @@ $(function () {
            }
       });
 
-    $('#visit').on("select2:select", function (e) {
+    $('#measurement').on("select2:select", function (e) {
            var data = e.params.data.text;
            if(data=='Select all'){
-            $("#visit> option").prop("selected","selected");
-            $("#visit").trigger("change");
+            $("#measurement> option").prop("selected","selected");
+            $("#measurement").trigger("change");
            }
       });
 

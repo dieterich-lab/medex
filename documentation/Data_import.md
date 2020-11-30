@@ -39,6 +39,9 @@ The Description column should contain a description of the entity.The descriptio
 
 The show column can be empty or contain a "+" next to the entities you want to show in the "Table browser" after the program is started.
 
+It is also possible to add file header.csv by adding this file you can rename columns from dataset.csv file.
+In default column names are Name_ID,measurement,description,Date,Time,Key,Value.
+
 Example files can be found in `./dataset_examples`. To test them copy them to `./import` and restart the tool.
 
 

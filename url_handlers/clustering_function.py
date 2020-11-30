@@ -68,6 +68,7 @@ def cluster_numeric_fields(entities, df):
         cluster_data.means_[i] = scaler.inverse_transform(means)
 
     return cluster_data, cluster_labels, df, None
+
 def _get_patient_categorical_rep(row, categorical_entities):
     ret = {}
 

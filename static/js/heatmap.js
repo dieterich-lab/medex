@@ -5,13 +5,12 @@ $(function () {
     });
     $('#Plot').click(function(){
         // disable button
-        $(this).prop("disabled",true);
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
 
         });
 
     // use plugin select2 for selector
-    $("#visit").select2();
+    $("#measurement").select2();
     $("#numeric_entities").select2({
     placeholder:"Search entity"
     });

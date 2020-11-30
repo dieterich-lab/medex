@@ -41,9 +41,9 @@
             {% endif %}
             <form action="" method="POST">
                 <div class="form-group" id="coplot_controls">
-                     {{ m.entity_form4(id4= "x_visit",name =all_visit,value=entity,select=x_visit,d=name) }}
+                     {{ m.entity_form4(id4= "x_measurement",name =all_measurement,value=entity,select=x_measurement,d=name) }}
                      {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
-                     {{ m.entity_form4(id4= "y_visit",name =all_visit,value=entity,select=y_visit,d=name) }}
+                     {{ m.entity_form4(id4= "y_measurement",name =all_measurement,value=entity,select=y_measurement,d=name) }}
                      {{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
                      {{ m.entity_form(id= "category1",name=categorical_entities ,value=entity,select=category1,d="Category1:") }}
 
@@ -129,12 +129,12 @@
 <div class="card-header" id="results_header">
     <h5 class="mb-0">
         <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                {% if visit %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                {% if measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
             Results
         </button>
     </h5>
 </div>
-<div id="numeric_results" class="collapse {% if x_visit %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+<div id="numeric_results" class="collapse {% if x_measurement %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
         {% if plot %}
         <div id="coplot" >

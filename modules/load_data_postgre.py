@@ -2,6 +2,13 @@ import pandas as pd
 import numpy as np
 from collections import ChainMap
 
+def get_header(r):
+
+    sql="Select * from header"
+    df = pd.read_sql(sql, r)
+
+    return df
+
 
 def get_categorical_entities(r):
     """ Retrieve  categorical entities and their subcategories from PostrgreSQL
@@ -42,6 +49,7 @@ def get_categorical_entities(r):
             dfr2[value] = list(df2['Value'])
             array.append(dfr2)
         df = dict(ChainMap(*array))
+
         return df1,df,df0,df3
     except Exception:
         return ["No data"],["No data"],["No data"],["No data"]
@@ -70,7 +78,7 @@ def get_numeric_entities(r):
         return ["No data"],["No data"]
 
 
-def get_visit(r):
+def get_measurement(r):
     """ Retrieve numerical entities from PostgreSQL
 
     get_numeric_entities use in websever
@@ -82,10 +90,10 @@ def get_visit(r):
     df["Key"]: list of all numerical entities
     """
     try:
-        sql = """Select distinct "Replicate":: int from examination order by "Replicate" """
+        sql = """Select distinct "measurement":: int from examination order by "measurement" """
         df = pd.read_sql(sql, r)
-        df['Replicate']=df['Replicate'].astype(str)
-        return df['Replicate']
+        df['measurement']=df['measurement'].astype(str)
+        return df['measurement']
     except Exception:
         return ["No data"]
 
@@ -103,7 +111,7 @@ def number(r):
         return None, "Problem with load data from database"
 
 
-def get_data2(entity,what_table,r):
+def get_data(entity,what_table,r):
     """ Get numerical values from numerical table  from database
 
     get_numerical_values_basic_stats use in basic_stats
@@ -112,27 +120,22 @@ def get_data2(entity,what_table,r):
 
     Returns
     -------
-    df: DataFrame with columns Patient_ID,Replicate,Key,instance,Value
+    df: DataFrame with columns Name_ID,measurement,Key,instance,Value
 
     """
     import time
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
     entity_fin2 = '"'+'" text,"'.join(entity) + '" text'
 
-    sql = """SELECT en."Transcript_ID",en."Replicate",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
+    sql = """SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
      UNION
-            SELECT ec."Transcript_ID",ec."Replicate",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})""".format(entity_fin)
+            SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})""".format(entity_fin)
 
-    sql2 = """SELECT * FROM crosstab('SELECT en."Transcript_ID",en."Replicate",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
+    sql2 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
         UNION
-            SELECT ec."Transcript_ID",ec."Replicate",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
+            SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
             'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type,"Key"') 
-            as ct ("Transcript_ID" text,"Replicate" text,{1})""".format(entity_fin,entity_fin2)
-
-
-    sql3 = """SELECT * FROM crosstab('SELECT en."Transcript_ID",en."Replicate",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination as en WHERE en."Key" IN ({0})',
-            'SELECT Distinct "Key" FROM examination WHERE "Key" IN ({0}) order by 1') 
-            as ct ("Transcript_ID" text,"Replicate" text,{1})""".format(entity_fin,entity_fin2)
+            as ct ("Name_ID" text,"measurement" text,{1})""".format(entity_fin,entity_fin2)
 
 
     try:
@@ -150,7 +153,7 @@ def get_data2(entity,what_table,r):
 
 
 
-def get_num_values_basic_stats(entity,Replicate, r):
+def get_num_values_basic_stats(entity,measurement, r):
     """ Get numerical values from numerical table  from database
 
     get_numerical_values_basic_stats use in basic_stats
@@ -159,16 +162,18 @@ def get_num_values_basic_stats(entity,Replicate, r):
 
     Returns
     -------
-    df: DataFrame with columns Patient_ID,Replicate,Key,instance,Value
+    df: DataFrame with columns Name_ID,measurement,Key,instance,Value
 
     """
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
-    Replicate = "'" + "','".join(Replicate) + "'"
+    measurement = "'" + "','".join(measurement) + "'"
 
-    sql = """SELECT "Transcript_ID","Replicate","Key",instance,f."Value" FROM examination_numerical,unnest("Value") 
-            WITH ordinality as f ("Value", instance)  WHERE "Key" IN ({0}) and "Replicate" IN ({1}) order by "Replicate" """.format(
-        entity_fin, Replicate)
+    sql = """SELECT "Key","measurement","instance",count(f."Value"),min(f."Value"),max(f."Value"),AVG(f."Value") as "mean",
+    stddev(f."Value"),(stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",(percentile_disc(0.5) within group (order by f."Value")) as median FROM examination_numerical,unnest("Value") WITH ordinality as f ("Value", instance)  
+            WHERE "Key" IN ({0}) and "measurement" IN ({1}) group by "Key","measurement","instance" order by "Key","measurement","instance" """.format(
+        entity_fin, measurement)
+
     try:
         df = pd.read_sql(sql, r)
     except Exception:
@@ -177,7 +182,7 @@ def get_num_values_basic_stats(entity,Replicate, r):
     return df, None
 
 
-def get_cat_values_basic_stas(entity,Replicate, r):
+def get_cat_values_basic_stas(entity,measurement, r):
     """ Get number of categorical values from database
 
     get_cat_values_basic_stas use only for basic_stas categorical
@@ -190,10 +195,10 @@ def get_cat_values_basic_stas(entity,Replicate, r):
 
     """
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
-    Replicate = "'" + "','".join(Replicate) + "'"
+    measurement = "'" + "','".join(measurement) + "'"
 
-    sql = """SELECT "Key","Replicate",number,count("Key") FROM examination_categorical,array_length("Value",1) as f (number) WHERE "Key" IN ({0}) and "Replicate" IN ({1})
-            group by "Replicate","Key",number """.format(entity_fin, Replicate)
+    sql = """SELECT "Key","measurement",number,count("Key") FROM examination_categorical,array_length("Value",1) as f (number) WHERE "Key" IN ({0}) and "measurement" IN ({1})
+            group by "measurement","Key",number """.format(entity_fin, measurement)
 
     try:
         df = pd.read_sql(sql, r)
@@ -203,7 +208,7 @@ def get_cat_values_basic_stas(entity,Replicate, r):
     return df,None
 
 
-def get_values_scatter_plot(x_entity,y_entity,x_Replicate,y_Replicate, r):
+def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement, r):
     """ Get numerical values from numerical table  from database
 
     get_values use in scatter plot, coplot
@@ -212,16 +217,16 @@ def get_values_scatter_plot(x_entity,y_entity,x_Replicate,y_Replicate, r):
 
     Returns
     -------
-    df: DataFrame with columns Transcript_ID,entity1,entity2,...
+    df: DataFrame with columns Name_ID,entity1,entity2,...
 
     """
 
-    sql = """SELECT "Transcript_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
-            WHERE "Key" IN ('{0}') and "Replicate"= '{1}' Group by "Transcript_ID","Replicate","Key" order by "Replicate"  """.format(
-        x_entity,x_Replicate)
-    sql2 = """SELECT "Transcript_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
-            WHERE "Key" IN ('{0}') and "Replicate"= '{1}' Group by "Transcript_ID","Replicate","Key" order by "Replicate" """.format(
-        y_entity, y_Replicate)
+    sql = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
+            WHERE "Key" IN ('{0}') and "measurement"= '{1}' Group by "Name_ID","measurement","Key" order by "measurement"  """.format(
+        x_entity,x_measurement)
+    sql2 = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
+            WHERE "Key" IN ('{0}') and "measurement"= '{1}' Group by "Name_ID","measurement","Key" order by "measurement" """.format(
+        y_entity, y_measurement)
 
     try:
         df1 = pd.read_sql(sql, r)
@@ -234,13 +239,13 @@ def get_values_scatter_plot(x_entity,y_entity,x_Replicate,y_Replicate, r):
             error = "Category {} is empty".format(y_entity)
             return None, error
         else :
-            df = df1.merge(df2, on="Transcript_ID")
+            df = df1.merge(df2, on="Name_ID")
             return df, None
     except Exception:
         return None, "Problem with load data from database"
 
 
-def get_cat_values(entity, subcategory,Replicate, r):
+def get_cat_values(entity, subcategory,measurement, r):
     """ Get categorical values from database
 
     get_cat_values use in scatter plot and coplots
@@ -249,15 +254,15 @@ def get_cat_values(entity, subcategory,Replicate, r):
 
     Returns
     -------
-    df: DataFrame with columns Transcript_ID,entity
+    df: DataFrame with columns Name_ID,entity
 
     """
 
     subcategory_fin = "$$" + "$$,$$".join(subcategory) + "$$"
-    Replicate = "'" + "','".join(Replicate) + "'"
+    measurement = "'" + "','".join(measurement) + "'"
 
-    sql = """SELECT "Transcript_ID",string_agg(distinct f."Value",',') FROM examination_categorical,unnest("Value") as f ("Value") WHERE "Key"= '{0}' 
-    and f."Value" IN ({1})  and "Replicate" IN ({2}) Group by "Transcript_ID" order by string_agg(distinct f."Value",',')   """.format(entity, subcategory_fin,Replicate)
+    sql = """SELECT "Name_ID",string_agg(distinct f."Value",',') FROM examination_categorical,unnest("Value") as f ("Value") WHERE "Key"= '{0}' 
+    and f."Value" IN ({1})  and "measurement" IN ({2}) Group by "Name_ID" order by string_agg(distinct f."Value",',')   """.format(entity, subcategory_fin,measurement)
 
     try:
         df = pd.read_sql(sql, r)
@@ -266,11 +271,11 @@ def get_cat_values(entity, subcategory,Replicate, r):
     if df.empty or len(df) == 0:
         return None, "The entity {} wasn't measured".format(entity)
     else:
-        df.columns = ["Transcript_ID", entity]
+        df.columns = ["Name_ID", entity]
         return df, None
 
 
-def get_cat_values_barchart(entity, subcategory,Replicate, r):
+def get_cat_values_barchart(entity, subcategory,measurement, r):
     """ Get number of subcategory values from database
 
     get_cat_values_barchart use only for barchart
@@ -279,30 +284,29 @@ def get_cat_values_barchart(entity, subcategory,Replicate, r):
 
     Returns
     -------
-    df: DataFrame with columns Transcript_ID,Key,Value
+    df: DataFrame with columns Name_ID,Key,Value
 
     """
 
 
-    Replicate = "'" + "','".join(Replicate) + "'"
-    sql = """SELECT "Value","Replicate",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "Replicate" IN ({2})
-            and ARRAY{1} && "Value"  group by "Value","Replicate" """.format(entity, subcategory, Replicate)
+    measurement = "'" + "','".join(measurement) + "'"
+    sql = """SELECT "Value","measurement",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "measurement" IN ({2})
+            and ARRAY{1} && "Value"  group by "Value","measurement" """.format(entity, subcategory, measurement)
 
     try:
         df = pd.read_sql(sql, r)
     except Exception:
         return None, "Problem with load data from database"
     if df.empty or len(df) == 0:
-        return df, "{} not measured during this Replicate".format(entity)
+        return df, "{} not measured during this measurement".format(entity)
     else:
         a =lambda x: ','.join(x)
         df['Value']=df['Value'].map(a)
-        df.columns = [entity,'Replicate', 'count']
-        print(df)
+        df.columns = [entity,'measurement', 'count']
         return df,None
 
 
-def get_num_cat_values(entity_num, entity_cat, subcategory,Replicate, r):
+def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, r):
     """ Retrieve categorical and numerical value
 
     get_num_cat_values use in histogram and boxplot
@@ -311,17 +315,17 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,Replicate, r):
 
     Returns
     -------
-    df: DataFrame with columns Transcript_ID,entity_num,entity_cat
+    df: DataFrame with columns Name_ID,entity_num,entity_cat
      """
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
-    Replicate = "'" + "','".join(Replicate) + "'"
+    measurement = "'" + "','".join(measurement) + "'"
 
 
-    sql = """SELECT en."Transcript_ID",en."Replicate",AVG(a."Value") as "{0}",STRING_AGG(distinct f."Value", ',') as "{1}" FROM examination_numerical as en
-                    left join examination_categorical as ec on en."Transcript_ID" = ec."Transcript_ID",unnest(en."Value") as a ("Value"),unnest(ec."Value") as f ("Value") 
-                    where en."Key" = '{0}' and ec."Key" = '{1}' and en."Replicate" IN ({3}) and ec."Replicate" IN ({3})
-                    and f."Value" IN ({2}) group by en."Transcript_ID",en."Replicate" order by en."Transcript_ID",en."Replicate" """.format(
-        entity_num, entity_cat, subcategory, Replicate)
+    sql = """SELECT en."Name_ID",en."measurement",AVG(a."Value") as "{0}",STRING_AGG(distinct f."Value", ',') as "{1}" FROM examination_numerical as en
+                    left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as a ("Value"),unnest(ec."Value") as f ("Value") 
+                    where en."Key" = '{0}' and ec."Key" = '{1}' and en."measurement" IN ({3}) and ec."measurement" IN ({3})
+                    and f."Value" IN ({2}) group by en."Name_ID",en."measurement" order by en."Name_ID",en."measurement" """.format(
+        entity_num, entity_cat, subcategory, measurement)
 
     try:
         df = pd.read_sql(sql, r)
@@ -334,7 +338,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,Replicate, r):
         return df, None
 
 
-def get_values_heatmap(entity,Replicate, r):
+def get_values_heatmap(entity,measurement, r):
     """ Get numerical values from numerical table  from database
 
     get_values use in heatmap, clustering
@@ -343,18 +347,18 @@ def get_values_heatmap(entity,Replicate, r):
 
     Returns
     -------
-    df: DataFrame with columns Transcript_ID,entity1,entity2,...
+    df: DataFrame with columns Name_ID,entity1,entity2,...
 
     """
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
-    sql = """SELECT "Transcript_ID","Replicate","Key",AVG(f."Value") as "Value" FROM examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "Replicate" in ('{1}') 
-            Group by "Transcript_ID","Replicate","Key" """.format(entity_fin,Replicate)
+    sql = """SELECT "Name_ID","measurement","Key",AVG(f."Value") as "Value" FROM examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "measurement" in ('{1}') 
+            Group by "Name_ID","measurement","Key" """.format(entity_fin,measurement)
 
     try:
         df = pd.read_sql(sql, r)
-        df = df.pivot_table(index=["Transcript_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
+        df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"
         else:
@@ -363,7 +367,7 @@ def get_values_heatmap(entity,Replicate, r):
         return None, "Problem with load data from database"
 
 
-def get_values_cat_heatmap(entity,Replicate, r):
+def get_values_cat_heatmap(entity,measurement, r):
     """ Get numerical values from numerical table  from database
 
     get_values use in heatmap, clustering
@@ -372,18 +376,17 @@ def get_values_cat_heatmap(entity,Replicate, r):
 
     Returns
     -------
-    df: DataFrame with columns Transcript_ID,entity1,entity2,...
+    df: DataFrame with columns Name_ID,entity1,entity2,...
 
     """
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
-    sql = """SELECT "Transcript_ID","Key","Value"[1] as "Value" FROM examination_categorical WHERE "Key" IN ({0}) """.format(entity_fin,Replicate)
+    sql = """SELECT "Name_ID","Key","Value"[1] as "Value" FROM examination_categorical WHERE "Key" IN ({0}) """.format(entity_fin,measurement)
 
     try:
         df = pd.read_sql(sql, r)
-        df = df.pivot_table(index=["Transcript_ID"], columns="Key", values="Value", aggfunc=min).reset_index()
-        print(df)
+        df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=min).reset_index()
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"
         else:

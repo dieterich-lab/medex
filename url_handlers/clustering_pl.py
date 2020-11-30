@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import url_handlers.clustering_function as dwu
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_visit,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,\
+                        size_categorical,size_numeric,len_categorical,all_subcategory_entities,database, data,name
 clustering_plot_page = Blueprint('clustering_pl', __name__,
                             template_folder='clustering_pl')
 
-name = "Replicate number"
+
 @clustering_plot_page.route('/clustering_pl', methods=['GET'])
 def cluster():
 
@@ -15,7 +16,7 @@ def cluster():
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_visit=all_visit,
+                           all_measurement=all_measurement,
                            database=database,
                            size_categorical=size_categorical,
                            size_numeric=size_numeric,
@@ -28,15 +29,14 @@ def cluster():
 def post_clustering():
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
-    #categorical_entities = request.form.getlist('categorical_entities')
-    visit = request.form.get('visit')
+    measurement = request.form.get('measurement')
 
     # handling errors and load data from database
     error = None
-    if visit == "Search entity":
-        error = "Please select number of visit"
+    if measurement == "Search entity":
+        error = "Please select number of {}".format(name)
     elif len(numeric_entities) > 1:
-        df, error = ps.get_values_heatmap(numeric_entities,visit, rdb)
+        df, error = ps.get_values_heatmap(numeric_entities,measurement, rdb)
         for i in numeric_entities:
             if not i in df.columns:
                 numeric_entities.remove(i)
@@ -58,20 +58,10 @@ def post_clustering():
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                numeric_entities=numeric_entities,
-                               all_visit=all_visit,
-                               visit=visit,
+                               all_measurement=all_measurement,
+                               measurement=measurement,
                                error=error)
 
-    """
-    if len(numeric_entities) > 1 and len(categorical_entities) > 1:
-        cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(numeric_entities, df)
-        cluster_category_values, cat_rep_np, category_values, label_uses, df, error = dwu.cluster_categorical_entities(
-            numeric_entities, df)
-    elif len(numeric_entities) > 1:
-        cluster_data,cluster_labels,df,error = dwu.cluster_numeric_fields(numeric_entities,df)
-    elif len(categorical_entities) > 1:
-        cluster_category_values, cat_rep_np, category_values, label_uses,df, error = dwu.cluster_categorical_entities(numeric_entities, df)
-    """
 
     cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(numeric_entities, df)
     table_data = { }
@@ -101,8 +91,8 @@ def post_clustering():
 
     any_present = df.shape[0]
     all_present = df.dropna().shape[0]
-    df = df.to_html(index=False,index_names=False)
 
+    data.g = df.to_csv(index=False)
     return render_template('clustering_pl.html',
                            name=name,
                            numeric_tab=True,
@@ -113,8 +103,8 @@ def post_clustering():
                            any_present=any_present,
                            all_present=all_present,
                            table_data=table_data,
-                           all_visit=all_visit,
-                           visit=visit,
+                           all_measurement=all_measurement,
+                           measurement=measurement,
                            table=df,
                            plot_data=plot_data,
                            error=error

@@ -10,12 +10,11 @@ $(document).ready(function() {
     $("#y_axis").select2();
     $("#category1").select2();
     $("#category2").select2();
-    $("#x_visit").select2();
-    $("#y_visit").select2();
+    $("#x_measurement").select2();
+    $("#y_measurement").select2();
 
     $('#Plot').click(function(){
         // disable button
-        $(this).prop("disabled",true);
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
 
         });

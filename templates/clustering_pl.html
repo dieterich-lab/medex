@@ -53,9 +53,8 @@
             {% endif %}
 
             <form method="POST">
-                {{ m.entity_form4(id4= "visit",name =all_visit,value=entity,select=visit,d=name) }}
+                {{ m.entity_form4(id4= "measurement",name =all_measurement,value=entity,select=measurement,d=name) }}
                 {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities,select=numeric_entities,value=entity,d="Numeric entities:") }}
-                <!-- {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities,value=entity,select=categorical_entities,d="Group by:") }} -->
 
                 <button id= "Plot" type="submit" name="cluster" class="btn btn-outline-info">Plot</button>
             </form>
@@ -65,31 +64,23 @@
 <div class="card-header" id="results_header">
     <h5 class="mb-0">
         <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-            {% if visit %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            {% if measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
             Results
         </button>
     </h5>
 </div>
-<div id="numeric_results" class="collapse {% if visit %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+<div id="numeric_results" class="collapse {% if measurement %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
         {% if plot_data %}
         <div id="cluster" data-plot-series='{{ plot_data }}' data-plot-x="{{ selected_n_entities }}"
              data-plot-y="{{ selected_n_entities }}"></div>
         {% endif %}
         </div>
-    <div class="card">
+    <div class="card-body">
         {% if table_data %}
-        <div class="dropdown mt-4 float-right">
-            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="export_button"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                Export table
-            </button>
-            <div class="dropdown-menu" aria-labelledby="export_button">
-                <a id='export_excel'  class="dropdown-item">.xl</a>
-                <a id="export_csv" class="dropdown-item">.csv</a>
-            </div>
-        </div>
-        <div id="table" style="display:none"> {{table|safe}}; </div>
+        <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
+        <br>
+        <br>
         <table class="table table-striped">
             <thead>
             <tr>
