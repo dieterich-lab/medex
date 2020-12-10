@@ -37,9 +37,7 @@ def post_data():
     df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
 
     data.g = df.to_csv(index=False)
-    if len(df) > 999: error = "The result table was limited due to its size, please limit your search query or use " \
-                              "the download button."
-    df=df.head(999)
+
     column = df.columns.tolist()
     df = df.to_json(orient="values")
 

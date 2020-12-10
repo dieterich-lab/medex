@@ -72,10 +72,10 @@ def start_import(rdb):
     elif not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
         return print("Data set not changed", file=sys.stderr)
     else:
-        if not os.path.isfile(dataset):
+        if not os.path.isfile(header):
             header = ['Name_ID','measurement']
         else:
-            with open('header.csv', 'r') as in_file:
+            with open(header, 'r') as in_file:
                 for row in in_file:
                     header = row.replace("\n", "").split(",")
             header=header[0:2]

@@ -151,8 +151,6 @@ def get_data(entity,what_table,r):
         return None, "Problem with load data from database"
 
 
-
-
 def get_num_values_basic_stats(entity,measurement, r):
     """ Get numerical values from numerical table  from database
 
@@ -395,4 +393,33 @@ def get_values_cat_heatmap(entity,measurement, r):
         return None, "Problem with load data from database"
 
 
+def get_values_clustering(entity, r):
+    """ Get numerical values from numerical table  from database
+
+    get_values use in heatmap, clustering
+
+    r: connection with database
+
+    Returns
+    -------
+    df: DataFrame with columns Name_ID,entity1,entity2,...
+
+    """
+
+    entity_fin = "$$" + "$$,$$".join(entity) + "$$"
+    entity_fin2 = '"'+'" text,"'.join(entity) + '" text'
+
+    sql2 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') 
+                as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0}) 
+        UNION
+            SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
+            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type,"Key"') 
+            as ct ("Name_ID" text,"measurement" text,{1})""".format(entity_fin,entity_fin2)
+    try:
+        df = pd.read_sql(sql2, r)
+
+        return df, None
+
+    except Exception:
+        return None, "Problem with load data from database"
 
