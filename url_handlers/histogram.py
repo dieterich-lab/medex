@@ -1,15 +1,17 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
 
+block = 'none'
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
 
     return render_template('histogram.html',
                            name='{} number'.format(name),
+                           block=block,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
@@ -30,7 +32,11 @@ def post_statistics():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     number_of_bins = request.form.get('number_of_bins')
-    measurement = request.form.getlist('measurement')
+
+    if block == 'none':
+        measurement = all_measurement.values
+    else:
+        measurement = request.form.getlist('measurement')
 
     # handling errors and load data from database
     error = None
@@ -52,6 +58,7 @@ def post_statistics():
     if error:
         return render_template('histogram.html',
                                name='{} number'.format(name),
+                               block=block,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
@@ -74,6 +81,7 @@ def post_statistics():
         error = "You have entered non-integer or negative value. Please use positive integer"
         return render_template('histogram.html',
                                name='{} number'.format(name),
+                               block=block,
                                 all_categorical_entities=all_categorical_entities,
                                 all_numeric_entities=all_numeric_entities,
                                 all_subcategory_entities=all_subcategory_entities,
@@ -98,6 +106,7 @@ def post_statistics():
 
     return render_template('histogram.html',
                            name='{} number'.format(name),
+                           block=block,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            selected_entity=numeric_entities,

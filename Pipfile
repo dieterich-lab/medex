@@ -35,6 +35,8 @@ waitress = "*"
 ipdb = "*"
 psycopg2 = "*"
 statsmodels = "*"
+gower = "*"
+umap = "*"
 
 
 [dev-packages]

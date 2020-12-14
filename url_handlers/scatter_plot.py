@@ -1,17 +1,18 @@
 from flask import Blueprint, render_template, request
 import plotly.express as px
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
 
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
-
+block = 'none'
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
 
     return render_template('scatter_plot.html',
                            name='{} number'.format(name),
+                           block=block,
                            numeric_tab=True,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
@@ -31,8 +32,14 @@ def post_plots():
     # list selected data
     y_axis = request.form.get('y_axis')
     x_axis = request.form.get('x_axis')
-    x_measurement = request.form.get('x_measurement')
-    y_measurement = request.form.get('y_measurement')
+
+    if block == 'none':
+        x_measurement = all_measurement.values[0]
+        y_measurement = all_measurement.values[0]
+    else:
+        x_measurement = request.form.get('x_measurement')
+        y_measurement = request.form.get('y_measurement')
+
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
@@ -92,6 +99,7 @@ def post_plots():
     if error:
         return render_template('scatter_plot.html',
                                name='{} number'.format(name),
+                               block=block,
                                numeric_tab=True,
                                all_subcategory_entities=all_subcategory_entities,
                                all_categorical_entities=all_categorical_entities,
@@ -159,6 +167,7 @@ def post_plots():
 
     return render_template('scatter_plot.html',
                            name='{} number'.format(name),
+                           block=block,
                            numeric_tab=True,
                            all_subcategory_entities=all_subcategory_entities,
                            all_categorical_entities=all_categorical_entities,

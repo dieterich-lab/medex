@@ -24,7 +24,7 @@
                     {{ m.show_error(error) }}
                     {% endif %}
                     <form action="" method="POST">
-                        {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement2,d=name) }}
+                        {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement2,d=name,block=block) }}
                         {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
 
                         <button id="Plot2" type="submit" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
@@ -53,8 +53,8 @@
                         <thead>
                             <tr>
                                 <th>Entity</th>
-                                <th>{{ measurement_name }}</th>
-                                <th>Instances number</th>
+                                {% if block != 'none' %}<th>{{ measurement_name }}</th>{% endif %}
+                                {% if block != 'none' %}<th>Instances number</th>{% endif %}
                                 <th>Count</th>
                                 <th>Count NaN</th>
                             </tr>
@@ -66,8 +66,8 @@
                             <tr>
                                 {% if basic_stats_c['count'][entity,v,i] is defined %}
                                 <td>{{ entity }}</td>
-                                <td>{{ v }}</td>
-                                <td>{{ i }}</td>
+                                {% if block != 'none' %}<td>{{ v }}</td>{% endif %}
+                                {% if block != 'none' %}<td>{{ i }}</td>{% endif %}
                                 <td>{{ basic_stats_c['count'][entity,v,i]}}</td>
                                 <td>{{ basic_stats_c['count NaN'][entity,v,i] }}</td>
                                 {% endif %}

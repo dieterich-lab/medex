@@ -53,7 +53,7 @@
             {% endif %}
 
             <form method="POST">
-                {{ m.entity_form4(id4= "measurement",name =all_measurement,value=entity,select=measurement,d=name) }}
+                {{ m.entity_form4(id4= "measurement",name =all_measurement,value=entity,select=measurement,d=name,block=block) }}
                 {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities,select=numeric_entities,value=entity,d="Numeric entities:") }}
 
                 <button id= "Plot" type="submit" name="cluster" class="btn btn-outline-info">Plot</button>

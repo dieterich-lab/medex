@@ -5,16 +5,17 @@ import url_handlers.UMAP as um
 import plotly.express as px
 import pandas as pd
 from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,\
-                        size_categorical,size_numeric,len_categorical,all_subcategory_entities,database, data,name
+                        size_categorical,size_numeric,len_categorical,all_subcategory_entities,database, data,name,block
 clustering_plot_page = Blueprint('clustering_pl', __name__,
                             template_folder='clustering_pl')
 
-
+block = 'none'
 @clustering_plot_page.route('/clustering', methods=['GET'])
 def cluster():
 
     return render_template('clustering/clustering.html',
                            name=name,
+                           block=block,
                            numeric_tab=True,
                            all_entities=all_entities,
                            all_categorical_entities=all_categorical_entities,
@@ -34,7 +35,10 @@ def post_clustering():
     if 'cluster_numeric' in request.form:
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities')
-        measurement = request.form.get('measurement')
+        if block == 'none':
+            measurement = all_measurement.values[0]
+        else:
+            measurement = request.form.get('measurement')
 
         # handling errors and load data from database
         error = None
@@ -58,6 +62,7 @@ def post_clustering():
         if error:
             return render_template('clustering/clustering.html',
                                    name=name,
+                                   block=block,
                                    numeric_tab=True,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
@@ -111,6 +116,7 @@ def post_clustering():
         data.g = df.to_csv(index=False)
         return render_template('clustering/clustering.html',
                                name=name,
+                               block=block,
                                numeric_tab=True,
                                numeric_entities=numeric_entities,
                                all_categorical_entities=all_categorical_entities,
@@ -135,6 +141,7 @@ def post_clustering():
             error = "Please select entities"
             return render_template('clustering/clustering.html',
                                    numeric_tab=True,
+                                   block=block,
                                    all_numeric_entities=all_numeric_entities,
                                    all_categorical_entities=all_categorical_only_entities,
                                    all_measurement=all_measurement,
@@ -169,6 +176,7 @@ def post_clustering():
 
         return render_template('clustering/clustering.html',
                                categorical_tab=True,
+                               block=block,
                                all_numeric_entities=all_numeric_entities,
                                all_categorical_entities=all_categorical_entities,
                                selected_c_entities=categorical_entities,
@@ -191,6 +199,7 @@ def post_clustering():
             error = "Please select entities"
             return render_template('clustering/clustering.html',
                                     numeric_tab=True,
+                                   block=block,
                                     all_numeric_entities=all_numeric_entities,
                                     all_categorical_entities=all_categorical_entities,
                                     error=error,
@@ -225,6 +234,7 @@ def post_clustering():
 
             return render_template('clustering/clustering.html',
                                     categorical_tab=True,
+                                   block=block,
                                    all_entities=all_entities,
                                    entities=entities,
                                     all_numeric_entities=all_numeric_entities,

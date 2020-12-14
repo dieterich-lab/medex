@@ -3,18 +3,19 @@ import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,database,name
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,database,name, block
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,
                        template_folder='tepmlates')
 
-
+block = 'none'
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
 
     return render_template('heatmap.html',
                            name='{} number'.format(name),
+                           block=block,
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
                            all_measurement=all_measurement,
@@ -31,7 +32,10 @@ def post_plots():
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
 
-    measurement = request.form.get('measurement')
+    if block == 'none':
+        measurement = all_measurement.values[0]
+    else:
+        measurement = request.form.get('measurement')
 
     # handling errors and load data from database
     error = None
@@ -52,6 +56,7 @@ def post_plots():
     if error:
         return render_template('heatmap.html',
                                name='{} number'.format(name),
+                               block=block,
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
                                numeric_entities=numeric_entities,
@@ -111,6 +116,7 @@ def post_plots():
 
     return render_template('heatmap.html',
                            name='{} number'.format(name),
+                           block=block,
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
                            numeric_entities=numeric_entities,

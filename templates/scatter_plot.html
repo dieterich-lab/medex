@@ -44,9 +44,9 @@
             {{ m.show_error(error) }}
             {% endif %}
             <form action="" method="POST">
-                {{ m.entity_form4(id4= "x_measurement",name =all_measurement,value=entity,select=x_measurement,d=name) }}
+                {{ m.entity_form4(id4= "x_measurement",name =all_measurement,value=entity,select=x_measurement,d=name,block=block) }}
                 {{ m.entity_form(id= "x_axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
-                {{ m.entity_form4(id4= "y_measurement",name =all_measurement,value=entity,select=y_measurement,d=name) }}
+                {{ m.entity_form4(id4= "y_measurement",name =all_measurement,value=entity,select=y_measurement,d=name,block=block) }}
                 {{ m.entity_form(id= "y_axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
 
                 <label >Scale</label>

@@ -1,18 +1,21 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data,name,name2
+from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data,name,name2,block
 data_page = Blueprint('data', __name__, template_folder='templates')
 
 
 @data_page.route('/data', methods=['GET'])
 def get_data():
+
     return render_template('data.html',
                            all_entities=all_entities,
                            database=database,
                            size_categorical=size_categorical,
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
-                           len_categorical=len_categorical)
+                           len_categorical=len_categorical,
+
+                           )
 
 
 @data_page.route('/data', methods=['POST'])
@@ -33,8 +36,10 @@ def post_data():
                                all_entities=all_entities,
                                entities=entities)
 
-
-    df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+    if block == 'none':
+        df=df.drop(columns=['measurement'])
+    else:
+        df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
 
     data.g = df.to_csv(index=False)
 

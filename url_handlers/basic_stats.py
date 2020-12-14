@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, session, send_file
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,data,name
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,data,name,block
 import pandas as pd
 import io
 import time
@@ -16,6 +16,7 @@ def get_statistics():
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
                            name=name,
+                           block=block,
                            measurement_name=name,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
@@ -36,8 +37,13 @@ def get_basic_stats():
 
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities')
-        measurement1 = request.form.getlist('measurement1')
+        if block == 'none':
+            measurement1 = all_measurement.values
+        else:
+            measurement1 = request.form.getlist('measurement1')
         if 'Select all' in measurement1: measurement1.remove('Select all')
+
+
 
         # handling errors and load data from database
         error = None
@@ -56,6 +62,7 @@ def get_basic_stats():
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
                                    name=name,
+                                   block=block,
                                    measurement_name=name,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
@@ -71,8 +78,8 @@ def get_basic_stats():
 
         instance=df['instance'].unique()
 
+        if 'count NaN' in request.form: df['count NaN'] = int(n) - df['count']
         if not 'count' in request.form: df= df.drop(['count'], axis=1)
-        if 'count NaN' in request.form: df['count NaN'] = int(n) - df0['count']
         if not 'mean' in request.form: df= df.drop(['mean'], axis=1)
         if not 'min' in request.form: df= df.drop(['min'], axis=1)
         if not 'max' in request.form: df= df.drop(['max'], axis=1)
@@ -87,6 +94,7 @@ def get_basic_stats():
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
                                    name=name,
+                                   block=block,
                                    measurement_name=name,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
@@ -104,6 +112,7 @@ def get_basic_stats():
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
                                    name=name,
+                                   block=block,
                                    measurement_name=name,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
@@ -120,7 +129,10 @@ def get_basic_stats():
 
         # list selected data by client
         categorical_entities = request.form.getlist('categorical_entities')
-        measurement = request.form.getlist('measurement')
+        if block == 'none':
+            measurement = all_measurement.values
+        else:
+            measurement = request.form.getlist('measurement')
         if 'Select all' in measurement: measurement.remove('Select all')
         # handling errors and load data from database
         error = None
@@ -139,6 +151,7 @@ def get_basic_stats():
             return render_template('basic_stats/basic_stats.html',
                                    categorical_tab=True,
                                    name=name,
+                                   block=block,
                                    measurement_name=name,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
@@ -158,6 +171,7 @@ def get_basic_stats():
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,
                                name=name,
+                               block=block,
                                measurement_name=name,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,

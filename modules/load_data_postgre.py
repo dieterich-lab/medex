@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from collections import ChainMap
 
+
 def get_header(r):
 
     sql="Select * from header"
@@ -171,6 +172,7 @@ def get_num_values_basic_stats(entity,measurement, r):
     stddev(f."Value"),(stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",(percentile_disc(0.5) within group (order by f."Value")) as median FROM examination_numerical,unnest("Value") WITH ordinality as f ("Value", instance)  
             WHERE "Key" IN ({0}) and "measurement" IN ({1}) group by "Key","measurement","instance" order by "Key","measurement","instance" """.format(
         entity_fin, measurement)
+
 
     try:
         df = pd.read_sql(sql, r)

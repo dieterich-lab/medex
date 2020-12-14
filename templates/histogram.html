@@ -40,7 +40,7 @@
             {{ m.show_error(error) }}
             {% endif %}
             <form action="" method="POST">
-                {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement,d=name) }}
+                {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement,d=name,block=block) }}
                 {{ m.entity_form(id= "numeric_entities",name =all_numeric_entities,value=entity,select=numeric_entities,d="Numeric entities:") }}
                 {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities,value=entity,select=categorical_entities,d="Group by:") }}
 

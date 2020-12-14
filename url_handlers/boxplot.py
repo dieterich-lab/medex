@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
 
 boxplot_page = Blueprint('boxplot', __name__,
                          template_folder='templates')
@@ -12,6 +12,7 @@ def get_boxplots():
 
     return render_template('boxplot.html',
                            name='{} number'.format(name),
+                           block=block,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
@@ -31,7 +32,10 @@ def post_boxplots():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
-    measurement = request.form.getlist('measurement')
+    if block == 'none':
+        measurement = all_measurement.values
+    else:
+        measurement = request.form.getlist('measurement')
 
     # handling errors and load data from database
     error = None
@@ -53,6 +57,7 @@ def post_boxplots():
     if error:
         return render_template('boxplot.html',
                                name='{} number'.format(name),
+                               block=block,
                                error=error,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
@@ -75,6 +80,7 @@ def post_boxplots():
 
     return render_template('boxplot.html',
                            name='{} number'.format(name),
+                           block=block,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,

@@ -21,7 +21,7 @@
                     {{ m.show_error(error) }}
                     {% endif %}
                     <form action="" method="POST">
-                        {{ m.entity_form4(id4= "measurement_cat",name =all_measurement,value=entity,select=measurement,d=name) }}
+                        {{ m.entity_form4(id4= "measurement_cat",name =all_measurement,value=entity,select=measurement,d=name,block=block) }}
                         {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
 
                         <div class="row ml-1">

@@ -44,6 +44,12 @@ all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
 all_measurement = ps.get_measurement(rdb)
+if len(all_measurement) < 2:
+    block = 'none'
+else:
+    block = 'block'
+
+
 
 database_name = os.environ['POSTGRES_DB']
 database='{} data'.format(database_name)
@@ -105,7 +111,11 @@ def login():
                                all_entities=all_entities,
                                entities=entities)
 
-    df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+    if block == 'none':
+        df.drop(columns=['measurement'])
+    else:
+        df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+
     data.g = df.to_csv(index=False)
 
     column = df.columns.tolist()
@@ -137,8 +147,12 @@ def login2():
                                entities=entities)
 
 
-    df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
-    data.g =df.to_csv(index=False)
+    if block == 'none':
+        df.drop(columns=['measurement'])
+    else:
+        df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+
+    data.g = df.to_csv(index=False)
 
     column = df.columns.tolist()
     df = df.to_json(orient="values")

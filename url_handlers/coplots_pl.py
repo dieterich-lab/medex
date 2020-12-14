@@ -3,17 +3,18 @@ import modules.load_data_postgre as ps
 
 
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name, block
 
 coplots_plot_page = Blueprint('coplots_pl', __name__,
                          template_folder='templates')
 
-
+block = 'none'
 @coplots_plot_page.route('/coplots_pl', methods=['GET'])
 def get_coplots():
 
     return render_template('coplots_pl.html',
                            name='{} number'.format(name),
+                           block=block,
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
@@ -38,8 +39,12 @@ def post_coplots():
     x_axis = request.form.get('x_axis')
     y_axis = request.form.get('y_axis')
 
-    x_measurement = request.form.get('x_measurement')
-    y_measurement = request.form.get('y_measurement')
+    if block == 'none':
+        x_measurement = all_measurement.values[0]
+        y_measurement = all_measurement.values[0]
+    else:
+        x_measurement = request.form.get('x_measurement')
+        y_measurement = request.form.get('y_measurement')
 
     how_to_plot = request.form.get('how_to_plot')
     how_to_plot2 = request.form.get('how_to_plot2')
@@ -94,6 +99,7 @@ def post_coplots():
     if error:
         return render_template('coplots_pl.html',
                                name='{} number'.format(name),
+                               block=block,
                                all_subcategory_entities=all_subcategory_entities,
                                all_numeric_entities=all_numeric_entities,
                                categorical_entities=all_categorical_entities,
@@ -204,6 +210,7 @@ def post_coplots():
     fig = fig.to_html()
     return render_template('coplots_pl.html',
                            name='{} number'.format(name),
+                           block=block,
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,

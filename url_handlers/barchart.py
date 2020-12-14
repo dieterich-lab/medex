@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
 
 barchart_page = Blueprint('barchart', __name__,
                            template_folder='templates')
@@ -14,6 +14,7 @@ def get_statistics():
 
     return render_template('barchart.html',
                            numeric_tab=True,
+                           block=block,
                            name='{} number'.format(name),
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
@@ -29,10 +30,11 @@ def get_statistics():
 @barchart_page.route('/barchart', methods=['POST'])
 def post_statistics():
 
-
-
     # list selected entities
-    measurement = request.form.getlist('measurement')
+    if block == 'none':
+        measurement = all_measurement.values
+    else:
+        measurement = request.form.getlist('measurement')
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
@@ -55,6 +57,7 @@ def post_statistics():
     if error:
         return render_template('barchart.html',
                                name='{} number'.format(name),
+                                block=block,
                                all_categorical_entities=all_categorical_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_measurement=all_measurement,
@@ -79,6 +82,7 @@ def post_statistics():
 
     return render_template('barchart.html',
                            name='{} number'.format(name),
+                           block=block,
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            measurement2=measurement,
