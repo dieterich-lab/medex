@@ -37,7 +37,7 @@
             </button>
         </h5>
     </div>
-    <div id="settings" class="collapse {% if not entities or error %} show {% endif %}"
+    <div id="settings" class="collapse show "
          aria-labelledby="c_settings_header" data-parent="#accordion">
         <div class="card-body">
             {% import 'macro_template.html' as m %}
@@ -79,12 +79,12 @@
 
 <div id="numeric_results" class="collapse show " aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
-        {% if df %}
+        {% if name %}
         <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
         <br>
         <br>
-        <div id="tab"  df="{{ df }}"></div>
-        <table id="example" class="display" width="100%">
+        <div id="tab"  column="{{ column }}"></div>
+        <table id="serverside_table" class="display" width="100%">
             <thead>
             <tr>
                 {% for i in name %}
@@ -93,6 +93,7 @@
             </tr>
         </thead>
         </table>
+
 
 
         {% endif %}

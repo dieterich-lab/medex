@@ -8,10 +8,11 @@ histogram_page = Blueprint('histogram', __name__,
 block = 'none'
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
-
+    number_of_bins = 20
     return render_template('histogram.html',
                            name='{} number'.format(name),
                            block=block,
+                           number_of_bins=number_of_bins,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
@@ -59,6 +60,7 @@ def post_statistics():
         return render_template('histogram.html',
                                name='{} number'.format(name),
                                block=block,
+                               number_of_bins=number_of_bins,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
@@ -83,6 +85,7 @@ def post_statistics():
                                name='{} number'.format(name),
                                block=block,
                                 all_categorical_entities=all_categorical_entities,
+                               number_of_bins=number_of_bins,
                                 all_numeric_entities=all_numeric_entities,
                                 all_subcategory_entities=all_subcategory_entities,
                                 all_measurement=all_measurement,

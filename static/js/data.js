@@ -23,11 +23,16 @@ $(function () {
     placeholder:"Search entity"
     });
 
-    var df = JSON.parse($('#tab').attr('df').replace(/'/g, '"')); //"));
-    $('#example').DataTable( {
-        data: df,
-
-    } );
+    var column = JSON.parse($('#tab').attr('column').replace(/'/g, '"')); //"));
+    $('#serverside_table').DataTable({
+    bProcessing: true,
+    bServerSide: true,
+    sPaginationType: "full_numbers",
+    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+    bjQueryUI: true,
+    sAjaxSource: '/data/data1',
+    columns: column
+  });
 
 
 });

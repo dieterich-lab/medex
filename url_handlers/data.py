@@ -1,11 +1,22 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request,jsonify
 import modules.load_data_postgre as ps
-from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data,name,name2,block
+from serverside.serverside_table import ServerSideTable
+from serverside import table_schemas
+from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data,name,name2,block,table_builder
+
 data_page = Blueprint('data', __name__, template_folder='templates')
 
 
-@data_page.route('/data', methods=['GET'])
+@data_page.route('/data/data1', methods=['GET', 'POST'])
 def get_data():
+    datu = data.dict
+    table_schema=data.table_schema
+    dat = table_builder.collect_data_serverside(request,datu,table_schema)
+    return jsonify(dat)
+
+
+@data_page.route('/data', methods=['GET'])
+def get_data2():
 
     return render_template('data.html',
                            all_entities=all_entities,
@@ -19,7 +30,7 @@ def get_data():
 
 
 @data_page.route('/data', methods=['POST'])
-def post_data():
+def post_data2():
     # get selected entities
 
     entities = request.form.getlist('entities')
@@ -41,18 +52,28 @@ def post_data():
     else:
         df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
 
-    data.g = df.to_csv(index=False)
-
+    data.csv = df.to_csv(index=False)
     column = df.columns.tolist()
-    df = df.to_json(orient="values")
+
+    column_change_name=[]
+    [column_change_name.append(i.replace('.','_')) for i in column]
+    df.columns = column_change_name
+
+    data.dict = df.to_dict("records")
+    dictOfcolumn = []
+    table_schema = []
+    [dictOfcolumn.append({'data': column_change_name[i]}) for i in range(0, len(column_change_name))]
+    [table_schema.append({'data_name': column_change_name[i],'column_name': column_change_name[i],"default": "","order": 1,"searchable": True}) for i in range(0, len(column_change_name))]
+    data.table_schema = table_schema
 
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
-                           what_table=what_table,
                            entities=entities,
-                           df=df,
-                           name=column)
+                           name=column,
+                           what_table=what_table,
+                           column=dictOfcolumn
+                           )
 
 
 
