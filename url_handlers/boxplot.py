@@ -70,10 +70,16 @@ def post_boxplots():
 
 
     # Plot figure and convert to an HTML string representation
-    if how_to_plot == 'linear':
-        fig = px.box(numeric_df, x=name, y=numeric_entities, color=categorical_entities, template="plotly_white")
+    if block == 'none':
+        if how_to_plot == 'linear':
+            fig = px.box(numeric_df, x=categorical_entities, y=numeric_entities, color=categorical_entities, template="plotly_white")
+        else:
+            fig = px.box(numeric_df, x=categorical_entities, y=numeric_entities, color=categorical_entities, template="plotly_white", log_y=True)
     else:
-        fig = px.box(numeric_df, x=name, y=numeric_entities, color=categorical_entities, template="plotly_white", log_y=True)
+        if how_to_plot == 'linear':
+            fig = px.box(numeric_df, x=name, y=numeric_entities, color=categorical_entities, template="plotly_white")
+        else:
+            fig = px.box(numeric_df, x=name, y=numeric_entities, color=categorical_entities, template="plotly_white", log_y=True)
     fig.update_layout(font=dict(size=16))
     fig = fig.to_html()
 

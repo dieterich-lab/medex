@@ -12,7 +12,7 @@
     <div class="form-group">
         <label for="{{ id }}">{{ d }}</label>
         <select  name="{{ id }}" id="{{ id }}" style="width: 100%" class="js-example-basic-single" >
-            <option {% if not select %} selected {% endif %}>Search entity</option>
+            <option {% if select %} selected {% endif %}>{{ select }}</option>
             {% for entity in name %}
                 <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key in select %}selected{% endif %}>{{ name[entity].Key }}</option>
             {% endfor %}
@@ -27,6 +27,20 @@
     <div class="form-group">
         <label for="{{ id2 }}">{{ d }}</label>
         <select multiple name="{{ id2 }}" id="{{ id2 }}" class="form-control" style="width: 100%">
+        {% for entity in name %}
+            <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key in select %}selected{% endif %}>{{ name[entity].Key }}</option>
+        {% endfor %}
+        </select>
+    </div>
+{%- endmacro %}
+
+
+<!-- multiple selector + Select All-->
+{%- macro entity_form22(id22,name,value,select,d) %}
+    <div class="form-group">
+        <label for="{{ id22 }}">{{ d }}</label>
+        <select multiple name="{{ id22 }}" id="{{ id22 }}" class="form-control" style="width: 100%">
+        <option value="Select all">Select all</option>
         {% for entity in name %}
             <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key in select %}selected{% endif %}>{{ name[entity].Key }}</option>
         {% endfor %}

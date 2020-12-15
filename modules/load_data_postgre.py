@@ -132,10 +132,10 @@ def get_data(entity,what_table,r):
      UNION
             SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})""".format(entity_fin)
 
-    sql2 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
+    sql2 = """SELECT * FROM crosstab('SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})
         UNION
-            SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
-            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type,"Key"') 
+            SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})',
+            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type desc , "Key" asc') 
             as ct ("Name_ID" text,"measurement" text,{1})""".format(entity_fin,entity_fin2)
 
 
@@ -228,18 +228,30 @@ def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement, r):
             WHERE "Key" IN ('{0}') and "measurement"= '{1}' Group by "Name_ID","measurement","Key" order by "measurement" """.format(
         y_entity, y_measurement)
 
+    # load data with Gene symbol remove in case of Patient data
+    sql3 = """SELECT en."Name_ID",min(fc."Value") as "Gene.Symbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
+            WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='Gene.Symbol' Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """.format(
+        x_entity,x_measurement)
+    sql4 = """SELECT en."Name_ID",min(fc."Value") as "Gene.Symbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
+            WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='Gene.Symbol' Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """.format(
+        y_entity, y_measurement)
+
+
+
     try:
         df1 = pd.read_sql(sql, r)
         df2 = pd.read_sql(sql2, r)
-
+        df3 = pd.read_sql(sql3, r)
+        df4 = pd.read_sql(sql4, r)
         if len(df1) == 0:
             error = "Category {} is empty".format(x_entity)
             return None, error
         elif len(df2) == 0:
             error = "Category {} is empty".format(y_entity)
             return None, error
-        else :
+        else:
             df = df1.merge(df2, on="Name_ID")
+            df = df3.merge(df4, on=["Name_ID", "Gene.Symbol"])
             return df, None
     except Exception:
         return None, "Problem with load data from database"

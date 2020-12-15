@@ -18,15 +18,34 @@ def get_data():
 @data_page.route('/data', methods=['GET'])
 def get_data2():
 
-    return render_template('data.html',
-                           all_entities=all_entities,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical,
+    if not data.table_browser_entites:
+        print('not')
+        return render_template('data.html',
+                               all_entities=all_entities,
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical)
+    else:
 
-                           )
+        entities = data.table_browser_entites
+        column = data.table_browser_column
+        dictOfcolumn = data.table_browser_column2
+        what_table = data.table_browser_what_table
+
+        return render_template('data.html',
+                               all_entities=all_entities,
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical,
+                               entities=entities,
+                               name=column,
+                               what_table=what_table,
+                               column=dictOfcolumn
+                               )
 
 
 @data_page.route('/data', methods=['POST'])
@@ -34,6 +53,7 @@ def post_data2():
     # get selected entities
 
     entities = request.form.getlist('entities')
+    data.table_browser_entites =entities
     what_table = request.form.get('what_table')
 
     if len(entities) == 0:
@@ -65,6 +85,10 @@ def post_data2():
     [dictOfcolumn.append({'data': column_change_name[i]}) for i in range(0, len(column_change_name))]
     [table_schema.append({'data_name': column_change_name[i],'column_name': column_change_name[i],"default": "","order": 1,"searchable": True}) for i in range(0, len(column_change_name))]
     data.table_schema = table_schema
+
+    data.table_browser_column = column
+    data.table_browser_what_table = what_table
+    data.table_browser_column2 = dictOfcolumn
 
     return render_template('data.html',
                            error=error,

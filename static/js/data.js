@@ -23,10 +23,29 @@ $(function () {
     placeholder:"Search entity"
     });
 
+    $('#entities').on("select2:select", function (evt) {
+      var element = evt.params.data.element;
+      var $element = $(element);
+
+      $element.detach();
+      $(this).append($element);
+      $(this).trigger("change");
+    });
+
+        // handling select all choice
+    $('#entities').on("select2:select", function (e) {
+           var data = e.params.data.text;
+           if(data=='Select all'){
+            $("#entities> option").prop("selected","selected");
+            $("#entities ").trigger("change");
+           }
+      });
+
     var column = JSON.parse($('#tab').attr('column').replace(/'/g, '"')); //"));
     $('#serverside_table').DataTable({
     bProcessing: true,
     bServerSide: true,
+    scrollX: true,
     sPaginationType: "full_numbers",
     lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
     bjQueryUI: true,

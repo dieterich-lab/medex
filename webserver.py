@@ -42,7 +42,7 @@ if os.environ.get('IMPORT_DISABLED') is None:
 name2, name = ps.get_header(rdb)['Name_ID'][0], ps.get_header(rdb)['measurement'][0]
 all_numeric_entities, size_n = ps.get_numeric_entities(rdb)
 all_categorical_entities, all_subcategory_entities, size_c, entity = ps.get_categorical_entities(rdb)
-all_entities = all_numeric_entities .append(all_categorical_entities, ignore_index=True, sort=False)
+all_entities = all_categorical_entities.append(all_numeric_entities, ignore_index=True, sort=False)
 all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
@@ -68,8 +68,79 @@ class DataStore():
     csv = None
     dict = None
     table_schema = None
+
+    # table browser
     table_browser_entites = None
-    data_x_axis= None
+    table_browser_column = None
+    table_browser_what_table = None
+    table_browser_column2 = None
+
+    # Basic Stats
+    basic_stats_numeric_entities = None
+    basic_stats_measurement_n = None
+    basic_stats_instance_n = None
+    basic_stats_numeric_results_n = None
+
+    basic_stats_categorical_entities = None
+    basic_stats_measurement_c = None
+    basic_stats_instance_c = None
+    basic_stats_numeric_results_c = None
+
+
+    # Scatter plot
+    scatter_plot_x_axis = None
+    scatter_plot_y_axis = None
+    scatter_plot_x_measurement = None
+    scatter_plot_y_measurement =None
+    scatter_plot_categorical_entities = None
+    scatter_plot_subcategory_entities = None
+    scatter_plot_how_to_plot = None
+    scatter_plot_log_x = None
+    scatter_plot_log_y = None
+    scatter_plot_add_group_by = None
+    scatter_plot_fig = None
+
+    # Barchart
+    barchart_measurement = None
+    barchart_all_measurement = None
+    barchart_categorical_entities = None
+    barchart_subcategory_entities = None
+    barchart_fig = None
+
+    # Histogram
+    histogram_number_of_bins = None
+    histogram_numeric_entities = None
+    histogram_categorical_entities = None
+    histogram_subcategory_entities = None
+    histogram_measurement = None
+    histogram_fig = None
+
+    # Boxplot
+
+    # Heatmap
+    heatmap_numeric_entities = None
+    heatmap_measurement = None
+    heatmap_plot_series = None
+
+    # Clustering
+    clustering_entities = None
+    clustering_cluster_info = None
+    clustering_all_present = None
+    clustering_any_present = None
+    clustering_fig = None
+
+    # Coplots
+    coplots_how_to_plot = None
+    coplots_select_scale = None
+    coplots_category11 = None
+    coplots_category22 = None
+    coplots_category1 = None
+    coplots_category2 = None
+    coplots_x_axis = None
+    coplots_y_axis = None
+    coplots_x_measurement = None
+    coplots_y_measurement = None
+    coplots_fig = None
 
 table_builder = TableBuilder()
 data = DataStore()

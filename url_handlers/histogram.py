@@ -95,7 +95,11 @@ def post_statistics():
                                 measurement=measurement,
                                 error=error)
 
-    fig =px.histogram(data, x=numeric_entities,facet_row=name, color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
+    if block == 'none':
+        fig =px.histogram(data, x=numeric_entities, color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
+    else:
+        fig = px.histogram(data, x=numeric_entities, facet_row=name, color=categorical_entities, barmode='overlay',
+                           nbins=bin_numbers, opacity=0.7, template="plotly_white")
 
     fig.update_layout(
         font=dict(size=16),
@@ -112,14 +116,12 @@ def post_statistics():
                            block=block,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
-                           selected_entity=numeric_entities,
-                           group_by=categorical_entities,
-                           plot=fig,
-                           number_of_bins=number_of_bins,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
+                           number_of_bins=number_of_bins,
                            numeric_entities=numeric_entities,
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
+                           plot=fig,
                            )

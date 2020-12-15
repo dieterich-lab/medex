@@ -12,22 +12,59 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
+    if data.basic_stats_numeric_entities:
+        numeric_entities = data.basic_stats_numeric_entities
+        measurement1 = data.basic_stats_measurement_n
+        instance = data.basic_stats_instance_n
+        result = data.basic_stats_numeric_results_n
 
-    return render_template('basic_stats/basic_stats.html',
-                           numeric_tab=True,
-                           name=name,
-                           block=block,
-                           measurement_name=name,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
-                           all_measurement=all_measurement,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical
-                           )
+        return render_template('basic_stats/basic_stats.html',
+                               numeric_tab=True,
+                               name=name,
+                               block=block,
+                               measurement_name=name,
+                               all_categorical_entities=all_categorical_entities,
+                               all_numeric_entities=all_numeric_entities,
+                               all_measurement=all_measurement,
+                               numeric_entities=numeric_entities,
+                               basic_stats=result,
+                               measurement1=measurement1,
+                               instance=instance,
+                               first_value=list(result.keys())[0],
+                               )
+    elif data.basic_stats_categorical_entities:
+        categorical_entities = data.basic_stats_categorical_entities
+        measurement = data.basic_stats_measurement_c
+        instance = data.basic_stats_instance_c
+        basic_stats_c = data.basic_stats_numeric_results_c
 
+        return render_template('basic_stats/basic_stats.html',
+                               categorical_tab=True,
+                               name=name,
+                               block=block,
+                               measurement_name=name,
+                               all_categorical_entities=all_categorical_entities,
+                               all_numeric_entities=all_numeric_entities,
+                               all_measurement=all_measurement,
+                               categorical_entities=categorical_entities,
+                               measurement2=measurement,
+                               instance=instance,
+                               basic_stats_c=basic_stats_c)
+    else:
+        return render_template('basic_stats/basic_stats.html',
+                               numeric_tab=True,
+                               name=name,
+                               block=block,
+                               measurement_name=name,
+                               all_categorical_entities=all_categorical_entities,
+                               all_numeric_entities=all_numeric_entities,
+                               all_measurement=all_measurement,
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical
+                               )
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
@@ -87,8 +124,8 @@ def get_basic_stats():
         if not 'std_err' in request.form: df= df.drop(['stderr'], axis=1)
         if not 'median' in request.form: df= df.drop(['median'], axis=1)
 
-        df=df.set_index(['Key', 'measurement',  'instance' ])
-        data.g = df.to_csv()
+        df = df.set_index(['Key', 'measurement',  'instance' ])
+        data.csv = df.to_csv()
         if df.empty:
             error_message = "You must select at least some statistics"
             return render_template('basic_stats/basic_stats.html',
@@ -98,15 +135,19 @@ def get_basic_stats():
                                    measurement_name=name,
                                    all_categorical_entities=all_categorical_entities,
                                    all_numeric_entities=all_numeric_entities,
-                                   all_Replicate=all_Replicate,
+                                   all_measurement=all_measurement,
                                    numeric_entities=numeric_entities,
                                    measurement1=measurement1,
                                    instance=instance,
-                                   basic_stats=df,
                                    error=error_message,
                                    )
 
-        result=df.to_dict()
+        result = df.to_dict()
+        data.basic_stats_numeric_entities = numeric_entities
+        data.basic_stats_measurement_n = measurement1
+        data.basic_stats_instance_n = instance
+        data.basic_stats_numeric_results_n = result
+
         if any(df.keys()):
 
             return render_template('basic_stats/basic_stats.html',
@@ -167,7 +208,13 @@ def get_basic_stats():
 
         categorical_df=categorical_df.set_index(['Key', 'measurement','number'])
         basic_stats_c=categorical_df.to_dict()
-        data.g = categorical_df.to_csv()
+
+        data.csv = categorical_df.to_csv()
+        data.basic_stats_categorical_entities = categorical_entities
+        data.basic_stats_measurement_c = measurement
+        data.basic_stats_instance_c = instance
+        data.basic_stats_numeric_results_c = basic_stats_c
+
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,
                                name=name,

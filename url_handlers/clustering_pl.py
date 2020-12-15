@@ -233,15 +233,15 @@ def post_clustering():
             #    cvv_dict[key] = normal_value
 
             return render_template('clustering/clustering.html',
-                                    categorical_tab=True,
+                                   categorical_tab=True,
                                    block=block,
+                                   all_numeric_entities=all_numeric_entities,
+                                   all_categorical_entities=all_categorical_entities,
                                    all_entities=all_entities,
                                    entities=entities,
-                                    all_numeric_entities=all_numeric_entities,
-                                    all_categorical_entities=all_categorical_entities,
-                                    c_cluster_info=cluster_info,
-                                    all_present=all_present,
-                                    any_present=any_present,
+                                   c_cluster_info=cluster_info,
+                                   all_present=all_present,
+                                   any_present=any_present,
                                    plot=fig,
                                     )
 

@@ -1,29 +1,65 @@
 from flask import Blueprint, render_template, request
 import plotly.express as px
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,\
+    size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block,data
 
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
-block = 'none'
+
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
 
-    return render_template('scatter_plot.html',
-                           name='{} number'.format(name),
-                           block=block,
-                           numeric_tab=True,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
-                           all_subcategory_entities=all_subcategory_entities,
-                           all_measurement=all_measurement,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical
-                           )
+    if data.scatter_plot_x_axis == None:
+
+        return render_template('scatter_plot.html',
+                               name='{} number'.format(name),
+                               block=block,
+                               numeric_tab=True,
+                               all_categorical_entities=all_categorical_entities,
+                               all_numeric_entities=all_numeric_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_measurement=all_measurement,
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical,
+                               )
+    else:
+        x_axis = data.scatter_plot_x_axis
+        y_axis = data.scatter_plot_y_axis
+        x_measurement = data.scatter_plot_x_measurement
+        y_measurement = data.scatter_plot_y_measurement
+        categorical_entities = data.scatter_plot_categorical_entities
+        subcategory_entities = data.scatter_plot_subcategory_entities
+        how_to_plot = data.scatter_plot_how_to_plot
+        log_x = data.scatter_plot_log_x
+        log_y = data.scatter_plot_log_y
+        add_group_by = data.scatter_plot_add_group_by
+        fig = data.scatter_plot_fig
+
+        return render_template('scatter_plot.html',
+                               name='{} number'.format(name),
+                               block=block,
+                               numeric_tab=True,
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_categorical_entities=all_categorical_entities,
+                               all_numeric_entities=all_numeric_entities,
+                               all_measurement=all_measurement,
+                               subcategory_entities=subcategory_entities,
+                               categorical_entities=categorical_entities,
+                               add_group_by=add_group_by,
+                               x_axis=x_axis,
+                               y_axis=y_axis,
+                               log_x=log_x,
+                               log_y=log_y,
+                               how_to_plot=how_to_plot,
+                               x_measurement=x_measurement,
+                               y_measurement=y_measurement,
+                               plot=fig
+                               )
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
@@ -120,50 +156,79 @@ def post_plots():
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
         if add_group_by :
-            fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name=name2, template="plotly_white",
+            categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["Gene.Symbol"]
+            fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols")
         else:
-
-            fig = px.scatter(numeric_df,x=x_axis_v, y=y_axis_v,hover_name = name2, template = "plotly_white",trendline="ols")
+            numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["Gene.Symbol"]
+            fig = px.scatter(numeric_df,x=x_axis_v, y=y_axis_v,hover_name ='hover_mouse', template = "plotly_white",trendline="ols")
 
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if add_group_by:
-                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name=name2,
+                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["Gene.Symbol"]
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white",trendline="ols",log_x=True, log_y=True)
 
             else:
-                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name=name2, template="plotly_white",
+                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["Gene.Symbol"]
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols",log_x=True, log_y=True)
         elif log_x == 'log_x':
             if add_group_by:
-                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name=name2,
+                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["Gene.Symbol"]
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols", log_x=True)
 
             else:
-                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name=name2, template="plotly_white",
+                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["Gene.Symbol"]
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_x=True)
         elif log_y == 'log_y':
             if add_group_by:
-                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name=name2,
+                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["Gene.Symbol"]
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols",  log_y=True)
 
             else:
-                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name=name2, template="plotly_white",
+                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["Gene.Symbol"]
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_y=True)
 
 #    results = px.get_trendline_results(fig)
+    if block == 'none':
+        fig.update_layout(
+            font=dict(size=16),
+            title={
+                'text': "Compare values of <b>" + x_axis +  "</b> and <b>" + y_axis,
+                'y': 0.9,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'})
+    else:
 
-    fig.update_layout(
-        font=dict(size=16),
-        title={
-            'text': "Compare values of <b>" + x_axis + "</b> : "+ name +" <b>" + x_measurement + "</b> and <b>" + y_axis + "</b> : " + name + " <b>" + y_measurement + "</b> ",
-            'y': 0.9,
-            'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'})
+        fig.update_layout(
+            font=dict(size=16),
+            title={
+                'text': "Compare values of <b>" + x_axis + "</b> : "+ name +" <b>" + x_measurement + "</b> and <b>" + y_axis + "</b> : " + name + " <b>" + y_measurement + "</b> ",
+                'y': 0.9,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'})
 
     fig = fig.to_html()
+
+    data.scatter_plot_x_axis = x_axis
+    data.scatter_plot_y_axis = y_axis
+    data.scatter_plot_x_measurement = x_measurement
+    data.scatter_plot_y_measurement = y_measurement
+    data.scatter_plot_categorical_entities = categorical_entities
+    data.scatter_plot_subcategory_entities = subcategory_entities
+    data.scatter_plot_how_to_plot = how_to_plot
+    data.scatter_plot_log_x = log_x
+    data.scatter_plot_log_y = log_y
+    data.scatter_plot_add_group_by = add_group_by
+    data.scatter_plot_fig = fig
 
     return render_template('scatter_plot.html',
                            name='{} number'.format(name),
@@ -178,6 +243,9 @@ def post_plots():
                            add_group_by=add_group_by,
                            x_axis=x_axis,
                            y_axis=y_axis,
+                           log_x=log_x,
+                           log_y=log_y,
+                           how_to_plot=how_to_plot,
                            x_measurement=x_measurement,
                            y_measurement=y_measurement,
                            plot=fig

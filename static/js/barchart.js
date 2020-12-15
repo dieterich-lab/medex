@@ -44,7 +44,7 @@ $(function () {
            }
       });
 
-          // handling select all choice
+    // handling select all choice
     $('#measurement').on("select2:select", function (e) {
            var data = e.params.data.text;
            if(data=='Select all'){

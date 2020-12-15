@@ -119,9 +119,9 @@ def post_plots():
                            block=block,
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
+                           all_measurement=all_measurement,
                            numeric_entities=numeric_entities,
                            measurement=measurement,
-                           all_measurement=all_measurement,
                            plot_series=plot_series,
                            error=error
                            )
