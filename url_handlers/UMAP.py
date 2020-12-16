@@ -5,6 +5,7 @@ from sklearn.decomposition import PCA
 import pandas as pd
 #UMAP
 import umap
+
 def plot_2d(component1, component2,y):
     fig = go.Figure(data=go.Scatter(
         x=component1,

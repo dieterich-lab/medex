@@ -46,7 +46,7 @@ def cluster_numeric_fields(entities, df):
 
     # make sure we do not use too many components
     # otherwise, sklearn will complain
-    n_components = min(20, X.shape[0] - 1)
+    n_components = min(5, X.shape[0] - 1)
 
     cluster_data = math_utils.fit_bayesian_gaussian_mixture(
         X,

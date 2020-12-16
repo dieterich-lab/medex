@@ -19,7 +19,7 @@
                 integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
                 crossorigin="anonymous">
         </script>
-    {# end of requirements for bootstrap #}
+
 
         <div class="w3-bar w3-border w3-light-blue">
           <div class="w3-bar-item">{{ database }}</div>
@@ -28,6 +28,10 @@
             <div class="w3-bar-item">{{ len_categorical }}</div>
           <div class="w3-bar-item">{{ size_categorical }}</div>
         </div>
+
+
+
+
       <nav class="navbar navbar-light bg-light justify-content-center">
         <ul class="nav">
           <li class="nav-item">
@@ -62,7 +66,10 @@
           </li>
         </ul>
         </nav>
-        {% block body %}{% endblock %}
-    </div>
+        {% block body %}
+        {% endblock %}
+
+
+
 </body>
 </html>

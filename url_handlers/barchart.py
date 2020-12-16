@@ -11,22 +11,6 @@ barchart_page = Blueprint('barchart', __name__,
 def get_statistics():
 
 
-    categorical_entities = data.data_x_axis
-    print(categorical_entities)
-    if block == 'none':
-        measurement = all_measurement.values
-    else:
-        measurement = request.form.getlist('measurement')
-    categorical_entities = request.form.get('categorical_entities')
-    if categorical_entities == None:
-        categorical_entities = 'cos'
-    subcategory_entities = request.form.getlist('subcategory_entities')
-    if len(subcategory_entities) == 0:
-        subcategory_entities.append('cos')
-
-
-
-
     return render_template('barchart.html',
                            numeric_tab=True,
                            block=block,
@@ -39,9 +23,6 @@ def get_statistics():
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
-                           measurement2=measurement,
-                           categorical_entities=categorical_entities,
-                           subcategory_entities=subcategory_entities,
                            )
 
 

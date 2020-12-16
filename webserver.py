@@ -8,6 +8,7 @@ import pandas as pd
 import os
 import io
 
+import plotly.express as px
 
 # create the application object
 app = Flask(__name__)
@@ -61,19 +62,43 @@ size_numeric = 'the size of the numeric table: ' + str(size_n) + ' rows'
 len_categorical = 'number of categorical entities: ' + str(len(all_categorical_entities))
 size_categorical = 'the size of the categorical table: ' + str(size_c)+' rows'
 
+numeric_df, error = ps.get_values_scatter_plot('Pod.R231Q_A286V.4h.FDR', 'Pod.R231Q_A286V.12h.FDR', '0', '0', rdb)
+numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["Gene.Symbol"]
+fig = px.scatter(numeric_df, x='Pod.R231Q_A286V.4h.FDR', y='Pod.R231Q_A286V.12h.FDR', hover_name='hover_mouse',
+                 template="plotly_white", trendline="ols")
+fig.update_layout(
+    font=dict(size=16),
+    title={
+        'text': "Compare values of <b>" + 'Pod.R231Q_A286V.4h.FDR' + "</b> and <b>" + 'Pod.R231Q_A286V.12h.FDR',
+        'y': 0.9,
+        'x': 0.5,
+        'xanchor': 'center',
+        'yanchor': 'top'})
+fig = fig.to_html()
 
+dictOfcolumn = []
+table_schema = []
+entities = entity['Key'].tolist()
+what_table = 'long'
+df, error = ps.get_data(entities, what_table, rdb)
+df = df.drop(columns=['measurement'])
+column = df.columns.tolist()
+[dictOfcolumn.append({'data': column[i]}) for i in range(0, len(column))]
+[table_schema.append({'data_name': column[i],'column_name': column[i],"default": "","order": 1,"searchable": True}) for i in range(0, len(column))]
 
 # data store for download and so I need work on this and check !!!
 class DataStore():
-    csv = None
-    dict = None
-    table_schema = None
 
     # table browser
-    table_browser_entites = None
-    table_browser_column = None
-    table_browser_what_table = None
-    table_browser_column2 = None
+    table_browser_entites = entity['Key'].tolist()
+    table_browser_what_table = 'long'
+    csv = df.to_csv(index=False)
+    dict = df.to_dict("records")
+    table_schema = table_schema
+    table_browser_column = column
+    table_browser_column2 = dictOfcolumn
+
 
     # Basic Stats
     basic_stats_numeric_entities = None
@@ -88,17 +113,17 @@ class DataStore():
 
 
     # Scatter plot
-    scatter_plot_x_axis = None
-    scatter_plot_y_axis = None
-    scatter_plot_x_measurement = None
-    scatter_plot_y_measurement =None
-    scatter_plot_categorical_entities = None
-    scatter_plot_subcategory_entities = None
-    scatter_plot_how_to_plot = None
+    scatter_plot_x_axis = "Pod.R231Q_a286V.4h.FDR"
+    scatter_plot_y_axis = "Pod.R231Q_a286V.1h.FDR"
+    scatter_plot_x_measurement = '0'
+    scatter_plot_y_measurement = '0'
+    scatter_plot_categorical_entities = ""
+    scatter_plot_subcategory_entities = []
+    scatter_plot_how_to_plot = 'linear'
     scatter_plot_log_x = None
     scatter_plot_log_y = None
-    scatter_plot_add_group_by = None
-    scatter_plot_fig = None
+    scatter_plot_add_group_by = False
+    scatter_plot_fig = fig
 
     # Barchart
     barchart_measurement = None
@@ -174,93 +199,7 @@ app.register_blueprint(coplots_plot_page)
 # Direct to Data browser website during opening the program.
 @app.route('/', methods=['GET'])
 def login():
-    # get selected entities
-    entities = entity['Key'].tolist()
-    what_table = 'long'
-
-    if len(entities) == 0:
-        error = "Please select entities"
-    else:
-        df, error = ps.get_data(entities, what_table, rdb)
-    # handling errors and load data from database
-
-    if error:
-        return render_template('data.html',
-                               error=error,
-                               all_entities=all_entities,
-                               entities=entities)
-
-    if block == 'none':
-        df = df.drop(columns=['measurement'])
-    else:
-        df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
-
-    column = df.columns.tolist()
-
-    data.csv = df.to_csv(index=False)
-    data.dict = df.to_dict("records")
-
-
-    dictOfcolumn=[]
-    table_schema=[]
-    [dictOfcolumn.append({'data': column[i]}) for i in range(0, len(column))]
-    [table_schema.append({'data_name': column[i],'column_name': column[i],"default": "","order": 1,"searchable": True}) for i in range(0, len(column))]
-    data.table_schema = table_schema
-
-    return render_template('data.html',
-                           error=error,
-                           all_entities=all_entities,
-                           entities=entities,
-                           name=column,
-                           what_table=what_table,
-                           column=dictOfcolumn)
-
-
-@app.route('/', methods=['POST'])
-def login2():
-    entities = request.form.getlist('entities')
-    what_table = request.form.get('what_table')
-
-    if len(entities) == 0 :
-        error = "Please select entities"
-    else:
-       df, error = ps.get_data(entities,what_table, rdb)
-    # handling errors and load data from database
-
-    if error:
-        return render_template('data.html',
-                               error=error,
-                               all_entities=all_entities,
-                               entities=entities)
-
-    if block == 'none':
-        df = df.drop(columns=['measurement'])
-    else:
-        df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
-
-    data.csv = df.to_csv(index=False)
-    column = df.columns.tolist()
-
-    column_change_name=[]
-    [column_change_name.append(i.replace('.','_')) for i in column]
-    df.columns = column_change_name
-
-    data.dict = df.to_dict("records")
-    dictOfcolumn=[]
-    table_schema=[]
-    [dictOfcolumn.append({'data': column_change_name[i]}) for i in range(0, len(column_change_name))]
-    [table_schema.append({'data_name': column_change_name[i],'column_name': column_change_name[i],"default": "","order": 1,"searchable": True}) for i in range(0, len(column_change_name))]
-    data.table_schema = table_schema
-
-    return render_template('data.html',
-                           error=error,
-                           all_entities=all_entities,
-                           entities=entities,
-                           name=column,
-                           what_table=what_table,
-                           column=dictOfcolumn
-                           )
-
+    return redirect('/data')
 
 @app.route("/download", methods=['GET', 'POST'])
 def download():

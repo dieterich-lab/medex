@@ -12,9 +12,9 @@
     <div class="form-group">
         <label for="{{ id }}">{{ d }}</label>
         <select  name="{{ id }}" id="{{ id }}" style="width: 100%" class="js-example-basic-single" >
-            <option {% if select %} selected {% endif %}>{{ select }}</option>
+            <option {% if not select %} selected {% endif %}>Search entity</option>
             {% for entity in name %}
-                <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key in select %}selected{% endif %}>{{ name[entity].Key }}</option>
+                <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key == select %}selected{% endif %}>{{ name[entity].Key }}</option>
             {% endfor %}
         </select>
     </div>

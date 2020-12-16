@@ -98,7 +98,6 @@ def post_clustering():
 
         df_c = df[numeric_entities]
         df_label = df['cluster'].values
-        print(df_label)
 
         reducer,embedding=um.calculate(df_c.values, df_label)
         df_new = pd.DataFrame()
@@ -194,7 +193,7 @@ def post_clustering():
         entities = request.form.getlist('mixed_entities')
         data3,error=ps.get_values_clustering(entities,rdb)
         df = df.fillna(value=np.nan)
-        print(data3)
+
         if not entities:
             error = "Please select entities"
             return render_template('clustering/clustering.html',

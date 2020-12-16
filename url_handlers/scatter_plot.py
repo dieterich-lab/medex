@@ -39,6 +39,7 @@ def get_plots():
         log_y = data.scatter_plot_log_y
         add_group_by = data.scatter_plot_add_group_by
         fig = data.scatter_plot_fig
+        print(x_axis,y_axis)
 
         return render_template('scatter_plot.html',
                                name='{} number'.format(name),
