@@ -10,7 +10,9 @@ $(function () {
         });
 
     // use plugin select2 for selector
-    $("#measurement").select2();
+    $("#measurement").select2({
+    placeholder:"Search entity"
+    });
     $("#numeric_entities").select2({
     placeholder:"Search entity"
     });

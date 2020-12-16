@@ -23,14 +23,14 @@ $(function () {
     placeholder:"Search entity"
     });
 
-    $('#entities').on("select2:select", function (evt) {
-      var element = evt.params.data.element;
-      var $element = $(element);
+   // $('#entities').on("select2:select", function (evt) {
+   //   var element = evt.params.data.element;
+   //   var $element = $(element);
 
-      $element.detach();
-      $(this).append($element);
-      $(this).trigger("change");
-    });
+   //   $element.detach();
+   //   $(this).append($element);
+   //   $(this).trigger("change");
+   // });
 
         // handling select all choice
     $('#entities').on("select2:select", function (e) {

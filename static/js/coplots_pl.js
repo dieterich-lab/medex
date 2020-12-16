@@ -6,12 +6,24 @@ $(document).ready(function() {
     });
 
     // use plugin select2 for selector
-    $("#x_axis").select2();
-    $("#y_axis").select2();
-    $("#category1").select2();
-    $("#category2").select2();
-    $("#x_measurement").select2();
-    $("#y_measurement").select2();
+    $("#x_axis").select2({
+    placeholder:"Search entity"
+    });
+    $("#y_axis").select2({
+    placeholder:"Search entity"
+    });
+    $("#category1").select2({
+    placeholder:"Search entity"
+    });
+    $("#category2").select2({
+    placeholder:"Search entity"
+    });
+    $("#x_measurement").select2({
+    placeholder:"Search entity"
+    });
+    $("#y_measurement").select2({
+    placeholder:"Search entity"
+    });
 
     $('#Plot').click(function(){
         // disable button
