@@ -66,9 +66,17 @@ def get_plots():
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
 
-    # list selected data
-    y_axis = request.form.get('y_axis')
-    x_axis = request.form.get('x_axis')
+    if 'example1' in request.form:
+        y_axis = 'Pod.R231Q_A286V.4wks.log2FC'
+        x_axis = 'Pod.R231Q_A286V.12wks.log2FC'
+    elif 'example2' in request.form:
+        y_axis = 'Wt1.het.2Factor.log2FC'
+        x_axis = 'Wt1.het.2Factor.FDR'
+    else:
+        # list selected data
+        y_axis = request.form.get('y_axis')
+        x_axis = request.form.get('x_axis')
+
 
     if block == 'none':
         x_measurement = all_measurement.values[0]
