@@ -12,11 +12,16 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
+    """
     if data.basic_stats_numeric_entities:
         numeric_entities = data.basic_stats_numeric_entities
         measurement1 = data.basic_stats_measurement_n
         instance = data.basic_stats_instance_n
         result = data.basic_stats_numeric_results_n
+        #numeric_entities = session['data.basic_stats_numeric_entities']
+        #measurement1 = session['data.basic_stats_measurement_n']
+        #instance = session['data.basic_stats_instance_n']
+        #result = session['data.basic_stats_numeric_results_n']
 
         return render_template('basic_stats/basic_stats.html',
                                numeric_tab=True,
@@ -51,7 +56,8 @@ def get_statistics():
                                instance=instance,
                                basic_stats_c=basic_stats_c)
     else:
-        return render_template('basic_stats/basic_stats.html',
+    """
+    return render_template('basic_stats/basic_stats.html',
                                numeric_tab=True,
                                name=name,
                                block=block,
@@ -143,10 +149,11 @@ def get_basic_stats():
                                    )
 
         result = df.to_dict()
-        data.basic_stats_numeric_entities = numeric_entities
-        data.basic_stats_measurement_n = measurement1
-        data.basic_stats_instance_n = instance
-        data.basic_stats_numeric_results_n = result
+
+        #data.basic_stats_numeric_entities = numeric_entities
+        #data.basic_stats_measurement_n = measurement1
+        #data.basic_stats_instance_n = instance
+        #data.basic_stats_numeric_results_n = result
 
         if any(df.keys()):
 
@@ -209,11 +216,11 @@ def get_basic_stats():
         categorical_df=categorical_df.set_index(['Key', 'measurement','number'])
         basic_stats_c=categorical_df.to_dict()
 
-        data.csv = categorical_df.to_csv()
-        data.basic_stats_categorical_entities = categorical_entities
-        data.basic_stats_measurement_c = measurement
-        data.basic_stats_instance_c = instance
-        data.basic_stats_numeric_results_c = basic_stats_c
+        #data.csv = categorical_df.to_csv()
+        #data.basic_stats_categorical_entities = categorical_entities
+        #data.basic_stats_measurement_c = measurement
+        #data.basic_stats_instance_c = instance
+        #data.basic_stats_numeric_results_c = basic_stats_c
 
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,

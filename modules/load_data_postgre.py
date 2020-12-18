@@ -229,20 +229,22 @@ def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement, r):
         y_entity, y_measurement)
 
     # load data with Gene symbol remove in case of Patient data
-    sql3 = """SELECT en."Name_ID",min(fc."Value") as "Gene.Symbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
-            WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='Gene.Symbol' Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """.format(
+    sql3 = """SELECT en."Name_ID",min(fc."Value") as "GeneSymbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
+            WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='GeneSymbol' Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """.format(
         x_entity,x_measurement)
-    sql4 = """SELECT en."Name_ID",min(fc."Value") as "Gene.Symbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
-            WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='Gene.Symbol' Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """.format(
+    sql4 = """SELECT en."Name_ID",min(fc."Value") as "GeneSymbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
+            WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='GeneSymbol' Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """.format(
         y_entity, y_measurement)
 
 
 
     try:
         df1 = pd.read_sql(sql, r)
+
         df2 = pd.read_sql(sql2, r)
         df3 = pd.read_sql(sql3, r)
         df4 = pd.read_sql(sql4, r)
+
         if len(df1) == 0:
             error = "Category {} is empty".format(x_entity)
             return None, error
@@ -251,7 +253,7 @@ def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement, r):
             return None, error
         else:
             df = df1.merge(df2, on="Name_ID")
-            df = df3.merge(df4, on=["Name_ID", "Gene.Symbol"])
+            df = df3.merge(df4, on=["Name_ID", "GeneSymbol"])
             return df, None
     except Exception:
         return None, "Problem with load data from database"

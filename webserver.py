@@ -62,6 +62,7 @@ size_numeric = 'the size of the numeric table: ' + str(size_n) + ' rows'
 len_categorical = 'number of categorical entities: ' + str(len(all_categorical_entities))
 size_categorical = 'the size of the categorical table: ' + str(size_c)+' rows'
 
+"""
 numeric_df, error = ps.get_values_scatter_plot('Pod.R231Q_A286V.4h.FDR', 'Pod.R231Q_A286V.12h.FDR', '0', '0', rdb)
 numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
 numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["Gene.Symbol"]
@@ -76,6 +77,7 @@ fig.update_layout(
         'xanchor': 'center',
         'yanchor': 'top'})
 fig = fig.to_html()
+"""
 
 dictOfcolumn = []
 table_schema = []
@@ -83,6 +85,7 @@ entities = entity['Key'].tolist()
 what_table = 'long'
 df, error = ps.get_data(entities, what_table, rdb)
 df = df.drop(columns=['measurement'])
+df = df.rename(columns={"Name_ID": "{}".format(name2)})
 column = df.columns.tolist()
 [dictOfcolumn.append({'data': column[i]}) for i in range(0, len(column))]
 [table_schema.append({'data_name': column[i],'column_name': column[i],"default": "","order": 1,"searchable": True}) for i in range(0, len(column))]
@@ -113,17 +116,17 @@ class DataStore():
 
 
     # Scatter plot
-    scatter_plot_x_axis = "Pod.R231Q_a286V.4h.FDR"
-    scatter_plot_y_axis = "Pod.R231Q_a286V.1h.FDR"
-    scatter_plot_x_measurement = '0'
-    scatter_plot_y_measurement = '0'
-    scatter_plot_categorical_entities = ""
-    scatter_plot_subcategory_entities = []
-    scatter_plot_how_to_plot = 'linear'
+    scatter_plot_x_axis = None
+    scatter_plot_y_axis = None
+    scatter_plot_x_measurement = None
+    scatter_plot_y_measurement = None
+    scatter_plot_categorical_entities = None
+    scatter_plot_subcategory_entities = None
+    scatter_plot_how_to_plot = None
     scatter_plot_log_x = None
     scatter_plot_log_y = None
     scatter_plot_add_group_by = False
-    scatter_plot_fig = fig
+    scatter_plot_fig = None
 
     # Barchart
     barchart_measurement = None
@@ -182,10 +185,12 @@ from url_handlers.heatmap import heatmap_plot_page
 from url_handlers.clustering_pl import clustering_plot_page
 from url_handlers.coplots_pl import coplots_plot_page
 from url_handlers.logout import logout_page
+from url_handlers.tutorial import tutorial_page
 
 # register blueprints here:
 app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
+app.register_blueprint(tutorial_page)
 app.register_blueprint(basic_stats_page)
 app.register_blueprint(histogram_page)
 app.register_blueprint(boxplot_page)

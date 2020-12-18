@@ -96,7 +96,7 @@ def post_statistics():
                                 error=error)
 
     if block == 'none':
-        fig =px.histogram(data, x=numeric_entities, color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
+        fig = px.histogram(data, x=numeric_entities, color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
     else:
         fig = px.histogram(data, x=numeric_entities, facet_row=name, color=categorical_entities, barmode='overlay',
                            nbins=bin_numbers, opacity=0.7, template="plotly_white")

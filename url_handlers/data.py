@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request,jsonify
 import modules.load_data_postgre as ps
 from serverside.serverside_table import ServerSideTable
 from serverside import table_schemas
-from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data,name,name2,block,table_builder
+from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data, name, name2,block,table_builder
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -19,7 +19,6 @@ def get_data():
 def get_data2():
 
     if not data.table_browser_entites:
-        print('not')
         return render_template('data.html',
                                all_entities=all_entities,
                                database=database,
@@ -53,7 +52,8 @@ def post_data2():
     # get selected entities
 
     entities = request.form.getlist('entities')
-    data.table_browser_entites =entities
+    if 'Select all' in entities: entities.remove('Select all')
+    data.table_browser_entites = entities
     what_table = request.form.get('what_table')
 
     if len(entities) == 0:
@@ -69,6 +69,7 @@ def post_data2():
 
     if block == 'none':
         df=df.drop(columns=['measurement'])
+        df = df.rename(columns={"Name_ID": "{}".format(name2)})
     else:
         df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
 

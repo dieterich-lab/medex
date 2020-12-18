@@ -20,7 +20,6 @@
                 crossorigin="anonymous">
         </script>
 
-
         <div class="w3-bar w3-border w3-light-blue">
           <div class="w3-bar-item">{{ database }}</div>
           <div class="w3-bar-item">{{ len_numeric }}</div>
@@ -29,11 +28,9 @@
           <div class="w3-bar-item">{{ size_categorical }}</div>
         </div>
 
+      <nav class="navbar navbar-light bg-light  ">
 
-
-
-      <nav class="navbar navbar-light bg-light justify-content-center">
-        <ul class="nav">
+          <ul class="nav mx-auto">
           <li class="nav-item">
             <a class="nav-link" href="/data">Table browser</a>
           </li>
@@ -55,7 +52,8 @@
           <li class="nav-item">
             <a class="nav-link" href="/heatmap">Heatmap</a>
           </li>
-          <li class="nav-item">
+
+          <!-- <li class="nav-item">
             <a class="nav-link" href="/clustering">Clustering</a>
           </li>
           <li class="nav-item">
@@ -63,8 +61,10 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/logout">Logout</a>
-          </li>
-        </ul>
+          </li> -->
+          </ul>
+          <a class="navbar-brand" href="/tutorial">Tutorial</a>
+
         </nav>
         {% block body %}
         {% endblock %}

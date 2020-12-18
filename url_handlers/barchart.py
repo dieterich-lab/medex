@@ -10,7 +10,6 @@ barchart_page = Blueprint('barchart', __name__,
 @barchart_page.route('/barchart', methods=['GET'])
 def get_statistics():
 
-
     return render_template('barchart.html',
                            numeric_tab=True,
                            block=block,
@@ -37,7 +36,7 @@ def post_statistics():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
-    data.data_x_axis=categorical_entities
+
     # handling errors and load data from database
     error = None
     if not measurement:
