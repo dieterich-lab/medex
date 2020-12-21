@@ -18,14 +18,15 @@ def get_data():
 @data_page.route('/data', methods=['GET'])
 def get_data2():
 
-    if not data.table_browser_entites:
-        return render_template('data.html',
+    #if not data.table_browser_entites:
+    return render_template('data.html',
                                all_entities=all_entities,
                                database=database,
                                size_categorical=size_categorical,
                                size_numeric=size_numeric,
                                len_numeric=len_numeric,
                                len_categorical=len_categorical)
+    """
     else:
 
         entities = data.table_browser_entites
@@ -45,7 +46,7 @@ def get_data2():
                                what_table=what_table,
                                column=dictOfcolumn
                                )
-
+        """
 
 @data_page.route('/data', methods=['POST'])
 def post_data2():

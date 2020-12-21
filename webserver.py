@@ -202,9 +202,112 @@ app.register_blueprint(coplots_plot_page)
 
 
 # Direct to Data browser website during opening the program.
+# Direct to Data browser website during opening the program.
 @app.route('/', methods=['GET'])
 def login():
-    return redirect('/data')
+    # get selected entities
+    entities = entity['Key'].tolist()
+    what_table = 'long'
+
+    if len(entities) == 0:
+        error = "Please select entities"
+    else:
+       df, error = ps.get_data(entities, what_table, rdb)
+
+    if error:
+        return render_template('data.html',
+                               error=error,
+                               all_entities=all_entities,
+                               entities=entities)
+
+    if block == 'none':
+        df=df.drop(columns=['measurement'])
+        df = df.rename(columns={"Name_ID": "{}".format(name2)})
+    else:
+        df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+
+    data.csv = df.to_csv(index=False)
+    column = df.columns.tolist()
+
+    column_change_name=[]
+    [column_change_name.append(i.replace('.','_')) for i in column]
+    df.columns = column_change_name
+
+    data.dict = df.to_dict("records")
+    dictOfcolumn = []
+    table_schema = []
+    [dictOfcolumn.append({'data': column_change_name[i]}) for i in range(0, len(column_change_name))]
+    [table_schema.append({'data_name': column_change_name[i],'column_name': column_change_name[i],"default": "","order": 1,"searchable": True}) for i in range(0, len(column_change_name))]
+    data.table_schema = table_schema
+
+    data.table_browser_column = column
+    data.table_browser_what_table = what_table
+    data.table_browser_column2 = dictOfcolumn
+
+    return render_template('data.html',
+                           error=error,
+                           all_entities=all_entities,
+                           entities=entities,
+                           name=column,
+                           what_table=what_table,
+                           column=dictOfcolumn
+                           )
+
+
+@app.route('/', methods=['POST'])
+def login2():
+    # get selected entities
+
+    entities = request.form.getlist('entities')
+    if 'Select all' in entities: entities.remove('Select all')
+    data.table_browser_entites = entities
+    what_table = request.form.get('what_table')
+
+    if len(entities) == 0:
+        error = "Please select entities"
+    else:
+        df, error = ps.get_data(entities, what_table, rdb)
+
+    if error:
+        return render_template('data.html',
+                               error=error,
+                               all_entities=all_entities,
+                               entities=entities)
+
+    if block == 'none':
+        df = df.drop(columns=['measurement'])
+        df = df.rename(columns={"Name_ID": "{}".format(name2)})
+    else:
+        df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+
+    data.csv = df.to_csv(index=False)
+    column = df.columns.tolist()
+
+    column_change_name = []
+    [column_change_name.append(i.replace('.', '_')) for i in column]
+    df.columns = column_change_name
+
+    data.dict = df.to_dict("records")
+    dictOfcolumn = []
+    table_schema = []
+    [dictOfcolumn.append({'data': column_change_name[i]}) for i in range(0, len(column_change_name))]
+    [table_schema.append(
+        {'data_name': column_change_name[i], 'column_name': column_change_name[i], "default": "", "order": 1,
+         "searchable": True}) for i in range(0, len(column_change_name))]
+    data.table_schema = table_schema
+
+    data.table_browser_column = column
+    data.table_browser_what_table = what_table
+    data.table_browser_column2 = dictOfcolumn
+
+    return render_template('data.html',
+                           error=error,
+                           all_entities=all_entities,
+                           entities=entities,
+                           name=column,
+                           what_table=what_table,
+                           column=dictOfcolumn
+                           )
 
 @app.route("/download", methods=['GET', 'POST'])
 def download():
