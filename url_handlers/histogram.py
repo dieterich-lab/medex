@@ -5,7 +5,7 @@ from webserver import rdb, all_numeric_entities, all_categorical_entities,all_me
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
 
-block = 'none'
+
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
     number_of_bins = 20

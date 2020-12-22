@@ -132,11 +132,12 @@ def get_data(entity,what_table,r):
      UNION
             SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})""".format(entity_fin)
 
-    sql2 = """SELECT * FROM crosstab('SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})
+    sql2 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
         UNION
-            SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})',
-            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type desc , "Key" asc') 
+            SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
+            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type,"Key"') 
             as ct ("Name_ID" text,"measurement" text,{1})""".format(entity_fin,entity_fin2)
+
 
 
     try:
@@ -146,6 +147,12 @@ def get_data(entity,what_table,r):
 
         else:
             df = pd.read_sql(sql2, r)
+
+            #print(df1)
+            #df2 = pd.read_sql(sql3, r)
+            #df = df1.merge(df2, on=["Name_ID","measurement"])
+
+            # df = df3.merge(df4, on=["Name_ID", "GeneSymbol"])
 
         return df, None
     except Exception:
@@ -242,8 +249,8 @@ def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement, r):
         df1 = pd.read_sql(sql, r)
 
         df2 = pd.read_sql(sql2, r)
-        df3 = pd.read_sql(sql3, r)
-        df4 = pd.read_sql(sql4, r)
+        #df3 = pd.read_sql(sql3, r)
+        #df4 = pd.read_sql(sql4, r)
 
         if len(df1) == 0:
             error = "Category {} is empty".format(x_entity)
@@ -253,7 +260,7 @@ def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement, r):
             return None, error
         else:
             df = df1.merge(df2, on="Name_ID")
-            df = df3.merge(df4, on=["Name_ID", "GeneSymbol"])
+            #df = df3.merge(df4, on=["Name_ID", "GeneSymbol"])
             return df, None
     except Exception:
         return None, "Problem with load data from database"

@@ -67,11 +67,13 @@ def get_plots():
 def post_plots():
 
     if 'example1' in request.form:
-        y_axis = 'Pod.R231Q_A286V.4wks.log2FC'
-        x_axis = 'Pod.R231Q_A286V.12wks.log2FC'
+        y_axis = 'ekg_frequenz'
+        x_axis = 'gehtest_freq'
+
     elif 'example2' in request.form:
-        y_axis = 'Wt1.het.2Factor.log2FC'
-        x_axis = 'Wt1.het.2Factor.FDR'
+        y_axis = 'bmi'
+        x_axis = 'basis_diastol'
+
     else:
         # list selected data
         y_axis = request.form.get('y_axis')
@@ -165,42 +167,42 @@ def post_plots():
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
         if add_group_by :
-            categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
+            categorical_df['hover_mouse'] = categorical_df[name2] #+ '<br />' + categorical_df["GeneSymbol"]
             fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols")
         else:
-            numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
+            numeric_df['hover_mouse'] = numeric_df[name2] #+ '<br />' + numeric_df["GeneSymbol"]
             fig = px.scatter(numeric_df,x=x_axis_v, y=y_axis_v,hover_name ='hover_mouse', template = "plotly_white",trendline="ols")
 
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if add_group_by:
-                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
+                categorical_df['hover_mouse'] = categorical_df[name2] #+ '<br />' + categorical_df["GeneSymbol"]
                 fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white",trendline="ols",log_x=True, log_y=True)
 
             else:
-                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
+                numeric_df['hover_mouse'] = numeric_df[name2] #+ '<br />' + numeric_df["GeneSymbol"]
                 fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols",log_x=True, log_y=True)
         elif log_x == 'log_x':
             if add_group_by:
-                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
+                categorical_df['hover_mouse'] = categorical_df[name2] #+ '<br />' + categorical_df["GeneSymbol"]
                 fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols", log_x=True)
 
             else:
-                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
+                numeric_df['hover_mouse'] = numeric_df[name2] #+ '<br />' + numeric_df["GeneSymbol"]
                 fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_x=True)
         elif log_y == 'log_y':
             if add_group_by:
-                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
+                categorical_df['hover_mouse'] = categorical_df[name2] #+ '<br />' + categorical_df["GeneSymbol"]
                 fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols",  log_y=True)
 
             else:
-                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
+                numeric_df['hover_mouse'] = numeric_df[name2] #+ '<br />' + numeric_df["GeneSymbol"]
                 fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_y=True)
 

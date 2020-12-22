@@ -54,7 +54,7 @@
                             <tr>
                                 <th>Entity</th>
                                 {% if block != 'none' %}<th>{{ measurement_name }}</th>{% endif %}
-                                {% if block != 'none' %}<th>Instances number</th>{% endif %}
+                                <!-- {% if block != 'none' %}<th>Instances number</th>{% endif %} -->
                                 <th>Count</th>
                                 <th>Count NaN</th>
                             </tr>
@@ -67,7 +67,7 @@
                                 {% if basic_stats_c['count'][entity,v,i] is defined %}
                                 <td>{{ entity }}</td>
                                 {% if block != 'none' %}<td>{{ v }}</td>{% endif %}
-                                {% if block != 'none' %}<td>{{ i }}</td>{% endif %}
+                                <!-- {% if block != 'none' %}<td>{{ i }}</td>{% endif %} -->
                                 <td>{{ basic_stats_c['count'][entity,v,i]}}</td>
                                 <td>{{ basic_stats_c['count NaN'][entity,v,i] }}</td>
                                 {% endif %}

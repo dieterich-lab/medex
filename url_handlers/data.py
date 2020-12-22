@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request,jsonify
 import modules.load_data_postgre as ps
 from serverside.serverside_table import ServerSideTable
 from serverside import table_schemas
-from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data, name, name2,block,table_builder
+from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data, name, name2,block,table_builder,all_numeric_entities,all_categorical_entities
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 

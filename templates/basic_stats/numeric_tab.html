@@ -98,7 +98,7 @@
                                 <tr>
                                     <th>Entity</th>
                                     {% if block != 'none' %}<th>{{ measurement_name }}</th>{% endif %}
-                                    {% if block != 'none' %}<th>Instance</th>{% endif %}
+                                    <!-- {% if block != 'none' %}<th>Instance</th>{% endif %} -->
                                     {% if 'count' in basic_stats %}<th>Counts</th>{% endif %}
                                     {% if 'count NaN' in basic_stats %}<th title="Number of patients with missing entity value" >Counts NaN </th>{% endif %}
                                     {% if 'min' in basic_stats %}<th>Min</th>{% endif %}
@@ -117,7 +117,7 @@
                                     {% if basic_stats[first_value][entity,v,i] is defined %}
                                     <td>{{ entity }}</a></td>
                                     {% if block != 'none' %}<td>{{ v }}</td>{% endif %}
-                                    {% if block != 'none' %}<td>{{ i }}</td>{% endif %}
+                                    <!-- {% if block != 'none' %}<td>{{ i }}</td>{% endif %} -->
                                         {% if 'count' in basic_stats %}<td>{{ basic_stats['count'][entity,v,i] }}</td>{% endif %}
                                         {% if 'count NaN' in basic_stats %}<td>{{ basic_stats['count NaN'][entity,v,i] }}</td>{% endif %}
                                         {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity,v,i] }}</td>{% endif %}
