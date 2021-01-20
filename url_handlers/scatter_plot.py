@@ -10,9 +10,10 @@ scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlat
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-
-    #if data.scatter_plot_x_axis == None:
-
+    filter = data.filter_store
+    cat = data.cat
+    if filter != None:
+        filter = zip(cat, filter)
     return render_template('scatter_plot.html',
                                name='{} number'.format(name),
                                block=block,
@@ -26,21 +27,19 @@ def get_plots():
                                size_numeric=size_numeric,
                                len_numeric=len_numeric,
                                len_categorical=len_categorical,
+                           filter=filter
                                )
-    """
-    else:
-        x_axis = data.scatter_plot_x_axis
-        y_axis = data.scatter_plot_y_axis
-        x_measurement = data.scatter_plot_x_measurement
-        y_measurement = data.scatter_plot_y_measurement
-        categorical_entities = data.scatter_plot_categorical_entities
-        subcategory_entities = data.scatter_plot_subcategory_entities
-        how_to_plot = data.scatter_plot_how_to_plot
-        log_x = data.scatter_plot_log_x
-        log_y = data.scatter_plot_log_y
-        add_group_by = data.scatter_plot_add_group_by
-        fig = data.scatter_plot_fig
 
+
+@scatter_plot_page.route('/scatter_plot', methods=['POST'])
+def post_plots():
+    if 'filter_c' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        if filter != None:
+            filter = zip(cat, filter)
         return render_template('scatter_plot.html',
                                name='{} number'.format(name),
                                block=block,
@@ -49,23 +48,8 @@ def get_plots():
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_measurement=all_measurement,
-                               subcategory_entities=subcategory_entities,
-                               categorical_entities=categorical_entities,
-                               add_group_by=add_group_by,
-                               x_axis=x_axis,
-                               y_axis=y_axis,
-                               log_x=log_x,
-                               log_y=log_y,
-                               how_to_plot=how_to_plot,
-                               x_measurement=x_measurement,
-                               y_measurement=y_measurement,
-                               plot=fig
+                               filter=filter
                                )
-    """
-
-@scatter_plot_page.route('/scatter_plot', methods=['POST'])
-def post_plots():
-
     if 'example1' in request.form:
         y_axis = 'ekg_frequenz'
         x_axis = 'gehtest_freq'
@@ -93,6 +77,8 @@ def post_plots():
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
     add_group_by = request.form.get('add_group_by') is not None
+    filter = data.filter_store
+    cat = data.cat
 
     # handling errors and load data from database
     error = None
@@ -109,7 +95,7 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     elif add_group_by and categorical_entities:
-        numerical_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement, rdb)
+        numerical_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement,filter,cat, rdb)
         if x_axis == y_axis:
             x_axis_v = x_axis+'_x'
             y_axis_v = y_axis + '_y'
@@ -117,7 +103,7 @@ def post_plots():
             x_axis_v = x_axis
             y_axis_v = y_axis
         if not error:
-            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement], rdb)
+            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],filter,cat, rdb)
             if not error:
                 categorical_df = numerical_df.merge(df, on="Name_ID").dropna()
                 categorical_df = categorical_df.sort_values(by=[categorical_entities])
@@ -126,7 +112,7 @@ def post_plots():
                 if len(categorical_df[categorical_entities]) == 0:
                     error = "Category {} is empty".format(categorical_entities)
     else:
-        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement, rdb)
+        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement,filter,cat, rdb)
         numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
         if x_axis == y_axis:
             x_axis_v = x_axis+'_x'
@@ -142,7 +128,8 @@ def post_plots():
                 error = "Category {} is empty".format(y_axis)
             elif len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
-
+    if filter != None:
+        filter = zip(cat, filter)
     if error:
         return render_template('scatter_plot.html',
                                name='{} number'.format(name),
@@ -159,6 +146,7 @@ def post_plots():
                                y_axis=y_axis,
                                x_measurement=x_measurement,
                                y_measurement=y_measurement,
+                               filter=filter,
                                error=error,
                                )
 
@@ -228,19 +216,7 @@ def post_plots():
                 'yanchor': 'top'})
 
     fig = fig.to_html()
-    """
-    data.scatter_plot_x_axis = x_axis
-    data.scatter_plot_y_axis = y_axis
-    data.scatter_plot_x_measurement = x_measurement
-    data.scatter_plot_y_measurement = y_measurement
-    data.scatter_plot_categorical_entities = categorical_entities
-    data.scatter_plot_subcategory_entities = subcategory_entities
-    data.scatter_plot_how_to_plot = how_to_plot
-    data.scatter_plot_log_x = log_x
-    data.scatter_plot_log_y = log_y
-    data.scatter_plot_add_group_by = add_group_by
-    data.scatter_plot_fig = fig
-    """
+
     return render_template('scatter_plot.html',
                            name='{} number'.format(name),
                            block=block,
@@ -259,6 +235,7 @@ def post_plots():
                            how_to_plot=how_to_plot,
                            x_measurement=x_measurement,
                            y_measurement=y_measurement,
+                           filter=filter,
                            plot=fig
                            )
 

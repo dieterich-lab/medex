@@ -8,7 +8,6 @@ import pandas as pd
 import os
 import io
 
-import plotly.express as px
 
 # create the application object
 app = Flask(__name__)
@@ -56,119 +55,28 @@ else:
 
 
 database_name = os.environ['POSTGRES_DB']
-database='{} data'.format(database_name)
+database = '{} data'.format(database_name)
 len_numeric = 'number of numerical entities: ' + str(len(all_numeric_entities))
 size_numeric = 'the size of the numeric table: ' + str(size_n) + ' rows'
 len_categorical = 'number of categorical entities: ' + str(len(all_categorical_entities))
 size_categorical = 'the size of the categorical table: ' + str(size_c)+' rows'
 
-"""
-numeric_df, error = ps.get_values_scatter_plot('Pod.R231Q_A286V.4h.FDR', 'Pod.R231Q_A286V.12h.FDR', '0', '0', rdb)
-numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
-numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["Gene.Symbol"]
-fig = px.scatter(numeric_df, x='Pod.R231Q_A286V.4h.FDR', y='Pod.R231Q_A286V.12h.FDR', hover_name='hover_mouse',
-                 template="plotly_white", trendline="ols")
-fig.update_layout(
-    font=dict(size=16),
-    title={
-        'text': "Compare values of <b>" + 'Pod.R231Q_A286V.4h.FDR' + "</b> and <b>" + 'Pod.R231Q_A286V.12h.FDR',
-        'y': 0.9,
-        'x': 0.5,
-        'xanchor': 'center',
-        'yanchor': 'top'})
-fig = fig.to_html()
-"""
-
-dictOfcolumn = []
-table_schema = []
-entities = entity['Key'].tolist()
-what_table = 'long'
-df, error = ps.get_data(entities, what_table, rdb)
-df = df.drop(columns=['measurement'])
-df = df.rename(columns={"Name_ID": "{}".format(name2)})
-column = df.columns.tolist()
-[dictOfcolumn.append({'data': column[i]}) for i in range(0, len(column))]
-[table_schema.append({'data_name': column[i],'column_name': column[i],"default": "","order": 1,"searchable": True}) for i in range(0, len(column))]
 
 # data store for download and so I need work on this and check !!!
 class DataStore():
 
+    filter_store = None
+    cat= None
+
     # table browser
-    table_browser_entites = entity['Key'].tolist()
-    table_browser_what_table = 'long'
-    csv = df.to_csv(index=False)
-    dict = df.to_dict("records")
-    table_schema = table_schema
-    table_browser_column = column
-    table_browser_column2 = dictOfcolumn
+    table_browser_entites = None
+    table_browser_what_table = None
+    csv = None
+    dict = None
+    table_schema = None
+    table_browser_column = None
+    table_browser_column2 = None
 
-
-    # Basic Stats
-    basic_stats_numeric_entities = None
-    basic_stats_measurement_n = None
-    basic_stats_instance_n = None
-    basic_stats_numeric_results_n = None
-
-    basic_stats_categorical_entities = None
-    basic_stats_measurement_c = None
-    basic_stats_instance_c = None
-    basic_stats_numeric_results_c = None
-
-
-    # Scatter plot
-    scatter_plot_x_axis = None
-    scatter_plot_y_axis = None
-    scatter_plot_x_measurement = None
-    scatter_plot_y_measurement = None
-    scatter_plot_categorical_entities = None
-    scatter_plot_subcategory_entities = None
-    scatter_plot_how_to_plot = None
-    scatter_plot_log_x = None
-    scatter_plot_log_y = None
-    scatter_plot_add_group_by = False
-    scatter_plot_fig = None
-
-    # Barchart
-    barchart_measurement = None
-    barchart_all_measurement = None
-    barchart_categorical_entities = None
-    barchart_subcategory_entities = None
-    barchart_fig = None
-
-    # Histogram
-    histogram_number_of_bins = None
-    histogram_numeric_entities = None
-    histogram_categorical_entities = None
-    histogram_subcategory_entities = None
-    histogram_measurement = None
-    histogram_fig = None
-
-    # Boxplot
-
-    # Heatmap
-    heatmap_numeric_entities = None
-    heatmap_measurement = None
-    heatmap_plot_series = None
-
-    # Clustering
-    clustering_entities = None
-    clustering_cluster_info = None
-    clustering_all_present = None
-    clustering_any_present = None
-    clustering_fig = None
-
-    # Coplots
-    coplots_how_to_plot = None
-    coplots_select_scale = None
-    coplots_category11 = None
-    coplots_category22 = None
-    coplots_category1 = None
-    coplots_category2 = None
-    coplots_x_axis = None
-    coplots_y_axis = None
-    coplots_x_measurement = None
-    coplots_y_measurement = None
-    coplots_fig = None
 
 table_builder = TableBuilder()
 data = DataStore()
@@ -202,26 +110,29 @@ app.register_blueprint(coplots_plot_page)
 
 
 # Direct to Data browser website during opening the program.
-# Direct to Data browser website during opening the program.
 @app.route('/', methods=['GET'])
 def login():
     # get selected entities
     entities = entity['Key'].tolist()
     what_table = 'long'
+    filter = None
+    cat = None
 
     if len(entities) == 0:
         error = "Please select entities"
     else:
-       df, error = ps.get_data(entities, what_table, rdb)
+       df, error = ps.get_data(entities, what_table, filter, cat, rdb)
 
     if error:
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
+                               all_categorical_entities=all_categorical_entities,
+                               all_subcategory_entities=all_subcategory_entities,
                                entities=entities)
 
     if block == 'none':
-        df=df.drop(columns=['measurement'])
+        df = df.drop(columns=['measurement'])
         df = df.rename(columns={"Name_ID": "{}".format(name2)})
     else:
         df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
@@ -247,6 +158,8 @@ def login():
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
+                           all_categorical_entities=all_categorical_entities,
+                           all_subcategory_entities=all_subcategory_entities,
                            entities=entities,
                            name=column,
                            what_table=what_table,
@@ -257,22 +170,44 @@ def login():
 @app.route('/', methods=['POST'])
 def login2():
     # get selected entities
+    if 'filter_c' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        if filter != None:
+            filter = zip(cat, filter)
+        return render_template('data.html',
+                                all_entities=all_entities,
+                                all_subcategory_entities=all_subcategory_entities,
+                                all_categorical_entities=all_categorical_entities,
+                                filter=filter,)
 
     entities = request.form.getlist('entities')
+    categorical_entities = request.form.get('categorical_entities')
     if 'Select all' in entities: entities.remove('Select all')
     data.table_browser_entites = entities
     what_table = request.form.get('what_table')
 
+    filter = data.filter_store
+    cat = data.cat
+
     if len(entities) == 0:
         error = "Please select entities"
     else:
-        df, error = ps.get_data(entities, what_table, rdb)
+        df, error = ps.get_data(entities, what_table,filter, cat, rdb)
 
+    if filter != None:
+        filter = zip(cat, filter)
     if error:
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
-                               entities=entities)
+                               all_categorical_entities=all_categorical_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               categorical_entities=categorical_entities,
+                               entities=entities,
+                               filter=filter)
 
     if block == 'none':
         df = df.drop(columns=['measurement'])
@@ -303,10 +238,14 @@ def login2():
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
+                           all_categorical_entities=all_categorical_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           categorical_entities=categorical_entities,
                            entities=entities,
                            name=column,
                            what_table=what_table,
-                           column=dictOfcolumn
+                           column=dictOfcolumn,
+                           filter=filter
                            )
 
 @app.route("/download", methods=['GET', 'POST'])
@@ -328,5 +267,4 @@ def download():
 
 
 def main():
-
     return app

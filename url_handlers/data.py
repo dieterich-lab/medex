@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request,jsonify
 import modules.load_data_postgre as ps
 from serverside.serverside_table import ServerSideTable
 from serverside import table_schemas
-from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data, name, name2,block,table_builder,all_numeric_entities,all_categorical_entities
+from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data, name, name2,block,table_builder,all_numeric_entities,all_categorical_entities,all_subcategory_entities
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -17,59 +17,63 @@ def get_data():
 
 @data_page.route('/data', methods=['GET'])
 def get_data2():
-
-    #if not data.table_browser_entites:
+    filter = data.filter_store
+    cat = data.cat
+    if filter != None:
+        filter = zip(cat, filter)
     return render_template('data.html',
-                               all_entities=all_entities,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical)
-    """
-    else:
+                           all_entities=all_entities,
+                           all_categorical_entities=all_categorical_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical,
+                           filter=filter,)
 
-        entities = data.table_browser_entites
-        column = data.table_browser_column
-        dictOfcolumn = data.table_browser_column2
-        what_table = data.table_browser_what_table
-
-        return render_template('data.html',
-                               all_entities=all_entities,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
-                               entities=entities,
-                               name=column,
-                               what_table=what_table,
-                               column=dictOfcolumn
-                               )
-        """
 
 @data_page.route('/data', methods=['POST'])
 def post_data2():
     # get selected entities
+    if 'filter_c' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        if filter != None:
+            filter = zip(cat, filter)
+        return render_template('data.html',
+                                all_entities=all_entities,
+                                all_subcategory_entities=all_subcategory_entities,
+                                all_categorical_entities=all_categorical_entities,
+                                filter=filter,)
 
     entities = request.form.getlist('entities')
     if 'Select all' in entities: entities.remove('Select all')
     data.table_browser_entites = entities
     what_table = request.form.get('what_table')
 
+    filter = data.filter_store
+    cat = data.cat
+
     if len(entities) == 0:
         error = "Please select entities"
     else:
-       df, error = ps.get_data(entities, what_table, rdb)
-
+       df, error = ps.get_data(entities, what_table,filter,cat, rdb)
+    if filter != None:
+        filter = zip(cat, filter)
     if error:
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
-                               entities=entities)
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_categorical_entities=all_categorical_entities,
+                               entities=entities,
+                               filter=filter,)
 
     if block == 'none':
-        df=df.drop(columns=['measurement'])
+        df = df.drop(columns=['measurement'])
         df = df.rename(columns={"Name_ID": "{}".format(name2)})
     else:
         df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
@@ -95,10 +99,13 @@ def post_data2():
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_categorical_entities=all_categorical_entities,
                            entities=entities,
                            name=column,
                            what_table=what_table,
-                           column=dictOfcolumn
+                           column=dictOfcolumn,
+                           filter=filter,
                            )
 
 

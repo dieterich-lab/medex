@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
+from webserver import data, rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
 
@@ -9,6 +9,10 @@ histogram_page = Blueprint('histogram', __name__,
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
     number_of_bins = 20
+    filter = data.filter_store
+    cat = data.cat
+    if filter != None:
+        filter = zip(cat, filter)
     return render_template('histogram.html',
                            name='{} number'.format(name),
                            block=block,
@@ -21,18 +25,43 @@ def get_statistics():
                            size_categorical=size_categorical,
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
-                           len_categorical=len_categorical
+                           len_categorical=len_categorical,
+                           filter=filter
                            )
 
 
 @histogram_page.route('/histogram', methods=['POST'])
 def post_statistics():
-
+    if 'filter_c' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        if filter != None:
+            filter = zip(cat, filter)
+        return render_template('histogram.html',
+                               name='{} number'.format(name),
+                               block=block,
+                               number_of_bins=number_of_bins,
+                               all_categorical_entities=all_categorical_entities,
+                               all_numeric_entities=all_numeric_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               numeric_entities=numeric_entities,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
+                               measurement=measurement,
+                               all_measurement=all_measurement,
+                               filter=filter,
+                               error=error)
     # get selected entities
     numeric_entities = request.form.get('numeric_entities')
     categorical_entities = request.form.get('categorical_entities')
+
     subcategory_entities = request.form.getlist('subcategory_entities')
     number_of_bins = request.form.get('number_of_bins')
+
+    filter = data.filter_store
+    cat = data.cat
 
     if block == 'none':
         measurement = all_measurement.values
@@ -48,14 +77,15 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
-        data, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,measurement,rdb)
-        data = data.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+        datu, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,measurement,filter,cat, rdb)
+        datu = datu.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
         if not error:
-            data = data.dropna()
-            if len(data.index) == 0:
+            datu = datu.dropna()
+            if len(datu.index) == 0:
                 error = "This two entities don't have common values"
         else: (None, error)
-
+    if filter != None:
+        filter = zip(cat, filter)
     if error:
         return render_template('histogram.html',
                                name='{} number'.format(name),
@@ -69,9 +99,8 @@ def post_statistics():
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
+                               filter=filter,
                                error=error)
-
-
 
 
     # handling errors if number of bins is less then 2
@@ -93,12 +122,13 @@ def post_statistics():
                                 categorical_entities=categorical_entities,
                                 subcategory_entities=subcategory_entities,
                                 measurement=measurement,
+                               filter=filter,
                                 error=error)
 
     if block == 'none':
-        fig = px.histogram(data, x=numeric_entities, color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
+        fig = px.histogram(datu, x=numeric_entities, color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
     else:
-        fig = px.histogram(data, x=numeric_entities, facet_row=name, color=categorical_entities, barmode='overlay',
+        fig = px.histogram(datu, x=numeric_entities, facet_row=name, color=categorical_entities, barmode='overlay',
                            nbins=bin_numbers, opacity=0.7, template="plotly_white")
 
     fig.update_layout(
@@ -123,5 +153,6 @@ def post_statistics():
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
+                           filter=filter,
                            plot=fig,
                            )

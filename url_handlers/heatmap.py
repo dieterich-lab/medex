@@ -3,34 +3,54 @@ import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,database,name, block
+from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,database,name, block,all_subcategory_entities,data
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,
                        template_folder='tepmlates')
 
-block = 'none'
+
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
-
+    filter = data.filter_store
+    cat = data.cat
+    if filter != None:
+        filter = zip(cat, filter)
     return render_template('heatmap.html',
                            name='{} number'.format(name),
                            block=block,
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_categorical_entities=all_categorical_entities,
                            all_measurement=all_measurement,
                            database=database,
                            size_categorical=size_categorical,
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
-                           len_categorical=len_categorical
+                           len_categorical=len_categorical,
+                           filter=filter
                            )
 
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
 def post_plots():
+    if 'filter_c' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        if filter != None:
+            filter = zip(cat, filter)
+        return render_template('data.html',
+                               all_entities=all_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_categorical_entities=all_categorical_entities,
+                               filter=filter,)
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
+    filter = data.filter_store
+    cat = data.cat
 
     if block == 'none':
         measurement = all_measurement.values[0]
@@ -42,7 +62,7 @@ def post_plots():
     if measurement == "Search entity":
         error = "Please select number of {}".format(name)
     elif len(numeric_entities) > 1:
-        numeric_df, error = ps.get_values_heatmap(numeric_entities,measurement, rdb)
+        numeric_df, error = ps.get_values_heatmap(numeric_entities,measurement,filter,cat, rdb)
 
         if not error:
             if len(numeric_df.index) == 0:
@@ -53,15 +73,20 @@ def post_plots():
         error = "Please select more then one category"
     else:
         error = "Please select numeric entities"
+    if filter != None:
+        filter = zip(cat, filter)
     if error:
         return render_template('heatmap.html',
                                name='{} number'.format(name),
                                block=block,
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_categorical_entities=all_categorical_entities,
                                numeric_entities=numeric_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
+                               filter=filter,
                                error=error)
     error=None
     # calculate person correlation
@@ -119,10 +144,13 @@ def post_plots():
                            block=block,
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_categorical_entities=all_categorical_entities,
                            all_measurement=all_measurement,
                            numeric_entities=numeric_entities,
                            measurement=measurement,
                            plot_series=plot_series,
+                           filter=filter,
                            error=error
                            )
 

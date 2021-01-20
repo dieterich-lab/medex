@@ -41,6 +41,8 @@
             {{ m.show_error(error) }}
             {% endif %}
         <form action="" method="POST">
+
+
             {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement2,d=name,block=block) }}
             {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities,select=categorical_entities,value=entity,d="Group by:") }}
 

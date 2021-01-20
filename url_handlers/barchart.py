@@ -9,7 +9,10 @@ barchart_page = Blueprint('barchart', __name__,
 
 @barchart_page.route('/barchart', methods=['GET'])
 def get_statistics():
-
+    filter = data.filter_store
+    cat = data.cat
+    if filter != None:
+        filter = zip(cat, filter)
     return render_template('barchart.html',
                            numeric_tab=True,
                            block=block,
@@ -22,12 +25,31 @@ def get_statistics():
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
+                           filter=filter
                            )
 
 
 @barchart_page.route('/barchart', methods=['POST'])
 def post_statistics():
-
+    if 'filter_c' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        if filter != None:
+            filter = zip(cat, filter)
+        return render_template('barchart.html',
+                               name='{} number'.format(name),
+                               block=block,
+                               all_categorical_entities=all_categorical_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_measurement=all_measurement,
+                               measurement2=measurement,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
+                               filter=filter,
+                               error=error
+                               )
     # list selected entities
     if block == 'none':
         measurement = all_measurement.values
@@ -36,6 +58,9 @@ def post_statistics():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
+
+    filter = data.filter_store
+    cat = data.cat
 
     # handling errors and load data from database
     error = None
@@ -46,12 +71,13 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     else:
-        categorical_df, error = ps.get_cat_values_barchart(categorical_entities,subcategory_entities,measurement,rdb)
+        categorical_df, error = ps.get_cat_values_barchart(categorical_entities,subcategory_entities,measurement,filter, cat, rdb)
         categorical_df = categorical_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
         if not error :
             categorical_df.dropna()
         else: (None, error)
-
+    if filter != None:
+        filter = zip(cat, filter)
     if error:
         return render_template('barchart.html',
                                name='{} number'.format(name),
@@ -62,6 +88,7 @@ def post_statistics():
                                measurement2=measurement,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
+                               filter=filter,
                                error=error
                                )
 
@@ -93,5 +120,6 @@ def post_statistics():
                            all_measurement=all_measurement,
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
+                           filter=filter,
                            plot=fig
                            )
