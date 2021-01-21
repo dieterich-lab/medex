@@ -14,7 +14,9 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 def get_statistics():
     filter = data.filter_store
     cat = data.cat
+    number_filter = 0
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     return render_template('basic_stats/basic_stats.html',
                             numeric_tab=True,
@@ -30,7 +32,8 @@ def get_statistics():
                             size_numeric=size_numeric,
                             len_numeric=len_numeric,
                             len_categorical=len_categorical,
-                            filter = filter
+                            filter = filter,
+                           number_filter=number_filter
                                )
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
@@ -40,7 +43,9 @@ def get_basic_stats():
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
+        number_filter = 0
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
@@ -51,7 +56,8 @@ def get_basic_stats():
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
-                                   filter=filter)
+                                   filter=filter,
+                               number_filter = number_filter)
 
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
@@ -60,6 +66,7 @@ def get_basic_stats():
         numeric_entities = request.form.getlist('numeric_entities')
         filter = data.filter_store
         cat = data.cat
+        number_filter = 0
         if block == 'none':
             measurement1 = all_measurement.values
         else:
@@ -80,6 +87,7 @@ def get_basic_stats():
             #    if len(numeric_df.index) == 0:
             #       error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. "
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -94,6 +102,7 @@ def get_basic_stats():
                                    numeric_entities=numeric_entities,
                                    measurement1=measurement1,
                                    filter=filter,
+                                   number_filter=number_filter,
                                    error=error)
 
 
@@ -129,6 +138,7 @@ def get_basic_stats():
                                    measurement1=measurement1,
                                    instance=instance,
                                    filter=filter,
+                                   number_filter=number_filter,
                                    error=error_message,
                                    )
 
@@ -150,7 +160,8 @@ def get_basic_stats():
                                    measurement1=measurement1,
                                    instance=instance,
                                    first_value=list(result.keys())[0],
-                                   filter=filter
+                                   filter=filter,
+                                   number_filter=number_filter
                                    )
 
     if 'basic_stats_c' in request.form:
@@ -160,6 +171,7 @@ def get_basic_stats():
         categorical_entities = request.form.getlist('categorical_entities')
         filter = data.filter_store
         cat = data.cat
+        number_filter = 0
         if block == 'none':
             measurement = all_measurement.values
         else:
@@ -178,6 +190,7 @@ def get_basic_stats():
                 if len(categorical_df.index) == 0:
                     error = "The selected entities (" + ", ".join(categorical_entities) + ") do not contain any values. "
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -192,6 +205,7 @@ def get_basic_stats():
                                    categorical_entities=categorical_entities,
                                    measurement2=measurement,
                                    filter=filter,
+                                   number_filter=number_filter,
                                    error=error)
 
 
@@ -214,7 +228,8 @@ def get_basic_stats():
                                measurement2=measurement,
                                instance=instance,
                                basic_stats_c=basic_stats_c,
-                               filter=filter)
+                               filter=filter,
+                               number_filter = number_filter)
 
 
 

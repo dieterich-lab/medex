@@ -11,7 +11,9 @@ boxplot_page = Blueprint('boxplot', __name__,
 def get_boxplots():
     filter = data.filter_store
     cat = data.cat
+    number_filter = 0
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     return render_template('boxplot.html',
                            name='{} number'.format(name),
@@ -26,6 +28,7 @@ def get_boxplots():
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
                            filter=filter,
+                           number_filter=number_filter,
                            )
 
 
@@ -36,21 +39,19 @@ def post_boxplots():
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
+        number_filter = 0
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         return render_template('boxplot.html',
                                name='{} number'.format(name),
                                block=block,
-                               error=error,
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               numeric_entities=numeric_entities,
-                               categorical_entities=categorical_entities,
-                               subcategory_entities=subcategory_entities,
-                               measurement1=measurement,
                                all_measurement=all_measurement,
-                               filter=filter)
+                               filter=filter,
+                               number_filter=number_filter)
 
 
     # get selected entities
@@ -60,7 +61,7 @@ def post_boxplots():
     how_to_plot = request.form.get('how_to_plot')
     filter = data.filter_store
     cat = data.cat
-
+    number_filter = 0
     if block == 'none':
         measurement = all_measurement.values
     else:
@@ -83,6 +84,7 @@ def post_boxplots():
                 error = "This two entities don't have common values"
         else: (None, error)
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     if error:
         return render_template('boxplot.html',
@@ -97,7 +99,8 @@ def post_boxplots():
                                subcategory_entities=subcategory_entities,
                                measurement1=measurement,
                                all_measurement=all_measurement,
-                               filter=filter)
+                               filter=filter,
+                               number_filter=number_filter)
 
     numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
     # Plot figure and convert to an HTML string representation
@@ -127,4 +130,5 @@ def post_boxplots():
                            subcategory_entities=subcategory_entities,
                            measurement1=measurement,
                            filter=filter,
+                           number_filter=number_filter,
                            plot=fig)

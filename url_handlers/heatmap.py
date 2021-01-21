@@ -14,7 +14,9 @@ heatmap_plot_page = Blueprint('heatmap', __name__,
 def get_plots():
     filter = data.filter_store
     cat = data.cat
+    number_filter = 0
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     return render_template('heatmap.html',
                            name='{} number'.format(name),
@@ -29,6 +31,7 @@ def get_plots():
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
+                           number_filter=number_filter,
                            filter=filter
                            )
 
@@ -40,18 +43,21 @@ def post_plots():
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
+        number_filter = 0
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         return render_template('data.html',
                                all_entities=all_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_categorical_entities=all_categorical_entities,
+                               number_filter=number_filter,
                                filter=filter,)
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities')
     filter = data.filter_store
     cat = data.cat
-
+    number_filter = 0
     if block == 'none':
         measurement = all_measurement.values[0]
     else:
@@ -74,6 +80,7 @@ def post_plots():
     else:
         error = "Please select numeric entities"
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     if error:
         return render_template('heatmap.html',
@@ -86,6 +93,7 @@ def post_plots():
                                numeric_entities=numeric_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
+                               number_filter=number_filter,
                                filter=filter,
                                error=error)
     error=None
@@ -150,6 +158,7 @@ def post_plots():
                            numeric_entities=numeric_entities,
                            measurement=measurement,
                            plot_series=plot_series,
+                           number_filter=number_filter,
                            filter=filter,
                            error=error
                            )

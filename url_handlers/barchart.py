@@ -11,7 +11,9 @@ barchart_page = Blueprint('barchart', __name__,
 def get_statistics():
     filter = data.filter_store
     cat = data.cat
+    number_filter = 0
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     return render_template('barchart.html',
                            numeric_tab=True,
@@ -25,7 +27,8 @@ def get_statistics():
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
-                           filter=filter
+                           filter=filter,
+                           number_filter=number_filter,
                            )
 
 
@@ -36,7 +39,9 @@ def post_statistics():
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
+        number_filter = 0
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         return render_template('barchart.html',
                                name='{} number'.format(name),
@@ -44,11 +49,8 @@ def post_statistics():
                                all_categorical_entities=all_categorical_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_measurement=all_measurement,
-                               measurement2=measurement,
-                               categorical_entities=categorical_entities,
-                               subcategory_entities=subcategory_entities,
                                filter=filter,
-                               error=error
+                               number_filter=number_filter
                                )
     # list selected entities
     if block == 'none':
@@ -61,7 +63,7 @@ def post_statistics():
 
     filter = data.filter_store
     cat = data.cat
-
+    number_filter = 0
     # handling errors and load data from database
     error = None
     if not measurement:
@@ -77,6 +79,7 @@ def post_statistics():
             categorical_df.dropna()
         else: (None, error)
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     if error:
         return render_template('barchart.html',
@@ -89,6 +92,7 @@ def post_statistics():
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                filter=filter,
+                               number_filter=number_filter,
                                error=error
                                )
 
@@ -121,5 +125,6 @@ def post_statistics():
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            filter=filter,
+                           number_filter=number_filter,
                            plot=fig
                            )

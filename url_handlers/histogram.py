@@ -11,7 +11,9 @@ def get_statistics():
     number_of_bins = 20
     filter = data.filter_store
     cat = data.cat
+    number_filter = 0
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     return render_template('histogram.html',
                            name='{} number'.format(name),
@@ -26,18 +28,22 @@ def get_statistics():
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
-                           filter=filter
+                           filter=filter,
+                           number_filter=number_filter
                            )
 
 
 @histogram_page.route('/histogram', methods=['POST'])
 def post_statistics():
     if 'filter_c' in request.form:
+        number_of_bins = 20
         filter = request.form.getlist('filter')
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
+        number_filter = 0
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         return render_template('histogram.html',
                                name='{} number'.format(name),
@@ -46,13 +52,9 @@ def post_statistics():
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               numeric_entities=numeric_entities,
-                               categorical_entities=categorical_entities,
-                               subcategory_entities=subcategory_entities,
-                               measurement=measurement,
                                all_measurement=all_measurement,
                                filter=filter,
-                               error=error)
+                               number_filter=number_filter)
     # get selected entities
     numeric_entities = request.form.get('numeric_entities')
     categorical_entities = request.form.get('categorical_entities')
@@ -62,6 +64,7 @@ def post_statistics():
 
     filter = data.filter_store
     cat = data.cat
+    number_filter = 0
 
     if block == 'none':
         measurement = all_measurement.values
@@ -85,6 +88,7 @@ def post_statistics():
                 error = "This two entities don't have common values"
         else: (None, error)
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     if error:
         return render_template('histogram.html',
@@ -100,6 +104,7 @@ def post_statistics():
                                measurement=measurement,
                                all_measurement=all_measurement,
                                filter=filter,
+                               number_filter=number_filter,
                                error=error)
 
 
@@ -123,6 +128,7 @@ def post_statistics():
                                 subcategory_entities=subcategory_entities,
                                 measurement=measurement,
                                filter=filter,
+                               number_filter=number_filter,
                                 error=error)
 
     if block == 'none':
@@ -154,5 +160,6 @@ def post_statistics():
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
                            filter=filter,
+                           number_filter=number_filter,
                            plot=fig,
                            )

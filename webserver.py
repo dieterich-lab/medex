@@ -163,7 +163,8 @@ def login():
                            entities=entities,
                            name=column,
                            what_table=what_table,
-                           column=dictOfcolumn
+                           column=dictOfcolumn,
+                           number_filter = 0
                            )
 
 
@@ -175,13 +176,16 @@ def login2():
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
+        number_filter = 0
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         return render_template('data.html',
                                 all_entities=all_entities,
                                 all_subcategory_entities=all_subcategory_entities,
                                 all_categorical_entities=all_categorical_entities,
-                                filter=filter,)
+                                filter=filter,
+                                number_filter = number_filter)
 
     entities = request.form.getlist('entities')
     categorical_entities = request.form.get('categorical_entities')
@@ -191,14 +195,16 @@ def login2():
 
     filter = data.filter_store
     cat = data.cat
-
+    number_filter = 0
     if len(entities) == 0:
         error = "Please select entities"
     else:
         df, error = ps.get_data(entities, what_table,filter, cat, rdb)
 
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
+
     if error:
         return render_template('data.html',
                                error=error,
@@ -207,7 +213,8 @@ def login2():
                                all_subcategory_entities=all_subcategory_entities,
                                categorical_entities=categorical_entities,
                                entities=entities,
-                               filter=filter)
+                               filter=filter,
+                               number_filter = 0)
 
     if block == 'none':
         df = df.drop(columns=['measurement'])
@@ -245,7 +252,8 @@ def login2():
                            name=column,
                            what_table=what_table,
                            column=dictOfcolumn,
-                           filter=filter
+                           filter=filter,
+                           number_filter=0
                            )
 
 @app.route("/download", methods=['GET', 'POST'])

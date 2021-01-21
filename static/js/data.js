@@ -16,27 +16,18 @@ $(function () {
     $("#numeric_entities").select2({
     placeholder:"Search entity"
     });
-    $('#categorical_entities').select2({
-    placeholder:"Search entity"
-    });
     $('#entities').select2({
     placeholder:"Search entity"
     });
 
-   // $('#entities').on("select2:select", function (evt) {
-   //   var element = evt.params.data.element;
-   //   var $element = $(element);
 
-   //   $element.detach();
-   //   $(this).append($element);
-   //   $(this).trigger("change");
-   // });
 
-        // handling select all choice
+    // handling select all choice
     $('#entities').on("select2:select", function (e) {
            var data = e.params.data.text;
            if(data=='Select all'){
             $("#entities> option").prop("selected","selected");
+            $('#entities> option[value="Select all"]').prop("selected", false);
             $("#entities ").trigger("change");
            }
       });

@@ -127,10 +127,20 @@ def get_data(entity,what_table,filter,cat,r):
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
     entity_fin2 = '"'+'" text,"'.join(entity) + '" text'
-    print(filter)
-    if filter != None:
-        fil = [x.replace(" is "," in ('").replace(",","','") for x in filter]
-        fil = "') and ".join(fil) + "')"
+    if not filter:
+        sql = """SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0}) 
+         UNION
+                SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})
+                """.format(entity_fin, entity_fin2)
+
+        sql3 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
+            UNION
+                SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
+                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type,"Key"') 
+                as ct ("Name_ID" text,"measurement" text,{1}) """.format(entity_fin, entity_fin2)
+    else:
+        fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
+        fil = '"'+"') and \"".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
 
@@ -151,26 +161,10 @@ def get_data(entity,what_table,filter,cat,r):
                 as ct ("Name_ID" text,"measurement" text,{1}) where "Name_ID" in (""".format(entity_fin, entity_fin2) + text + """) """
 
 
-
-    else:
-        sql = """SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0}) 
-         UNION
-                SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",';') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})
-                """.format(entity_fin, entity_fin2)
-
-        sql3 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
-            UNION
-                SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
-                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type,"Key"') 
-                as ct ("Name_ID" text,"measurement" text,{1}) """.format(entity_fin, entity_fin2)
-
-
+    df = pd.read_sql(sql, r)
     try:
-
         if what_table == 'long':
             df = pd.read_sql(sql, r)
-
-
         else:
             df = pd.read_sql(sql3, r)
 
@@ -198,10 +192,14 @@ def get_num_values_basic_stats(entity,measurement,filter,cat, r):
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-
-    if filter:
-        fil = [x.replace(" is "," in ('").replace(",","','") for x in filter]
-        fil = "') and ".join(fil) + "')"
+    if not filter:
+        sql = """SELECT "Key","measurement","instance",count(f."Value"),min(f."Value"),max(f."Value"),AVG(f."Value") as "mean",
+        stddev(f."Value"),(stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",(percentile_disc(0.5) within group (order by f."Value")) as median FROM examination_numerical,unnest("Value") WITH ordinality as f ("Value", instance)  
+                WHERE "Key" IN ({0}) and "measurement" IN ({1}) group by "Key","measurement","instance" order by "Key","measurement","instance" """.format(
+            entity_fin, measurement)
+    else:
+        fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
+        fil = '"'+"') and ".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -212,11 +210,7 @@ def get_num_values_basic_stats(entity,measurement,filter,cat, r):
         stddev(f."Value"),(stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",(percentile_disc(0.5) within group (order by f."Value")) as median FROM examination_numerical,unnest("Value") WITH ordinality as f ("Value", instance)  
                 WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Name_ID" in (""".format(entity_fin, measurement) + text + """)  group by "Key","measurement","instance" order by "Key","measurement","instance" """
 
-    else:
-        sql = """SELECT "Key","measurement","instance",count(f."Value"),min(f."Value"),max(f."Value"),AVG(f."Value") as "mean",
-        stddev(f."Value"),(stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",(percentile_disc(0.5) within group (order by f."Value")) as median FROM examination_numerical,unnest("Value") WITH ordinality as f ("Value", instance)  
-                WHERE "Key" IN ({0}) and "measurement" IN ({1}) group by "Key","measurement","instance" order by "Key","measurement","instance" """.format(
-            entity_fin, measurement)
+
 
     try:
         df = pd.read_sql(sql, r)
@@ -240,9 +234,13 @@ def get_cat_values_basic_stats(entity,measurement,filter,cat, r):
     """
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if filter:
-        fil = [x.replace(" is "," in ('").replace(",","','") for x in filter]
-        fil = "') and ".join(fil) + "')"
+
+    if not filter:
+        sql = """SELECT "Key","measurement",number,count("Key") FROM examination_categorical,array_length("Value",1) as f (number) WHERE "Key" IN ({0}) and "measurement" IN ({1})
+                group by "measurement","Key",number """.format(entity_fin, measurement)
+    else:
+        fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
+        fil = '"'+"') and ".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -251,9 +249,7 @@ def get_cat_values_basic_stats(entity,measurement,filter,cat, r):
 
         sql = """SELECT "Key","measurement",number,count("Key") FROM examination_categorical,array_length("Value",1) as f (number) WHERE "Key" IN ({0}) and "measurement" IN ({1})
                 and "Name_ID" in (""".format(entity_fin, measurement) + text + """)  group by "measurement","Key",number """
-    else:
-        sql = """SELECT "Key","measurement",number,count("Key") FROM examination_categorical,array_length("Value",1) as f (number) WHERE "Key" IN ({0}) and "measurement" IN ({1})
-                group by "measurement","Key",number """.format(entity_fin, measurement)
+
 
     try:
         df = pd.read_sql(sql, r)
@@ -275,28 +271,7 @@ def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement,filter
     df: DataFrame with columns Name_ID,entity1,entity2,...
 
     """
-    if filter:
-        fil = [x.replace(" is "," in ('").replace(",","','") for x in filter]
-        fil = "') and ".join(fil) + "')"
-        catu = "$$" + "$$,$$".join(cat) + "$$"
-        catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
-        text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
-                    AS CT ("Name_ID" text,{1}) where {2}""".format(catu, catu_fin2, fil)
-
-
-        sql = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Name_ID" in (""".format(x_entity, x_measurement) + text + """) Group by "Name_ID","measurement","Key" order by "measurement"  """
-        sql2 = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Name_ID" in (""".format(y_entity, y_measurement) + text + """) Group by "Name_ID","measurement","Key" order by "measurement" """
-
-        # load data with Gene symbol remove in case of Patient data
-        sql3 = """SELECT en."Name_ID",min(fc."Value") as "GeneSymbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
-                WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='GeneSymbol' and "Name_ID" in (""".format(y_entity, y_measurement) + text + """)
-                 Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """
-        sql4 = """SELECT en."Name_ID",min(fc."Value") as "GeneSymbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
-                WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='GeneSymbol' and "Name_ID" in (""".format(y_entity, y_measurement) + text + """)
-                 Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """
-    else:
+    if not filter:
         sql = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
                 WHERE "Key" IN ('{0}') and "measurement"= '{1}' Group by "Name_ID","measurement","Key" order by "measurement"  """.format(
             x_entity,x_measurement)
@@ -311,7 +286,29 @@ def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement,filter
         sql4 = """SELECT en."Name_ID",min(fc."Value") as "GeneSymbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
                 WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='GeneSymbol' Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """.format(
             y_entity, y_measurement)
+    else:
+        fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
+        fil = '"'+"') and ".join(fil) + "')"
+        catu = "$$" + "$$,$$".join(cat) + "$$"
+        catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
+        text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
+                    AS CT ("Name_ID" text,{1}) where {2}""".format(catu, catu_fin2, fil)
 
+
+        sql = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
+                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Name_ID" in (""".format(x_entity, x_measurement) + text + """) 
+                Group by "Name_ID","measurement","Key" order by "measurement"  """
+        sql2 = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
+                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Name_ID" in (""".format(y_entity, y_measurement) + text + """) 
+                Group by "Name_ID","measurement","Key" order by "measurement" """
+
+        # load data with Gene symbol remove in case of Patient data
+        sql3 = """SELECT en."Name_ID",min(fc."Value") as "GeneSymbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
+                WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='GeneSymbol' and en."Name_ID" in (""".format(x_entity, x_measurement) + text + """)
+                 Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """
+        sql4 = """SELECT en."Name_ID",min(fc."Value") as "GeneSymbol",AVG(f."Value") as "{0}" FROM examination_numerical as en left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as f ("Value"),unnest(ec."Value") as fc ("Value")  
+                WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' and ec."Key" ='GeneSymbol' and en."Name_ID" in (""".format(y_entity, y_measurement) + text + """)
+                 Group by en."Name_ID",ec."Key",en."measurement",en."Key" order by en."measurement"  """
 
 
     try:
@@ -320,14 +317,15 @@ def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement,filter
         df3 = pd.read_sql(sql3, r)
         df4 = pd.read_sql(sql4, r)
 
-        if len(df1) == 0:
+
+        if len(df3) == 0:
             error = "Category {} is empty".format(x_entity)
             return None, error
-        elif len(df2) == 0:
+        elif len(df4) == 0:
             error = "Category {} is empty".format(y_entity)
             return None, error
         else:
-            df = df1.merge(df2, on="Name_ID")
+            #df = df1.merge(df2, on="Name_ID")
             df = df3.merge(df4, on=["Name_ID", "GeneSymbol"])
             return df, None
     except Exception:
@@ -349,9 +347,13 @@ def get_cat_values(entity, subcategory,measurement,filter,cat, r):
 
     subcategory_fin = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if filter:
-        fil = [x.replace(" is "," in ('").replace(",","','") for x in filter]
-        fil = "') and ".join(fil) + "')"
+    if not filter:
+        sql = """SELECT "Name_ID",string_agg(distinct f."Value",',') FROM examination_categorical,unnest("Value") as f ("Value") WHERE "Key"= '{0}' 
+        and f."Value" IN ({1})  and "measurement" IN ({2}) Group by "Name_ID" order by string_agg(distinct f."Value",',')""".format(entity, subcategory_fin,measurement)
+
+    else:
+        fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
+        fil = '"'+"') and ".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -360,10 +362,6 @@ def get_cat_values(entity, subcategory,measurement,filter,cat, r):
         sql = """SELECT "Name_ID",string_agg(distinct f."Value",',') FROM examination_categorical,unnest("Value") as f ("Value") WHERE "Key"= '{0}' 
         and f."Value" IN ({1})  and "measurement" IN ({2} )and "Name_ID" in (""".format(entity, subcategory_fin,measurement) + text + """)
          Group by "Name_ID" order by string_agg(distinct f."Value",',')"""
-
-    else:
-        sql = """SELECT "Name_ID",string_agg(distinct f."Value",',') FROM examination_categorical,unnest("Value") as f ("Value") WHERE "Key"= '{0}' 
-        and f."Value" IN ({1})  and "measurement" IN ({2}) Group by "Name_ID" order by string_agg(distinct f."Value",',')""".format(entity, subcategory_fin,measurement)
 
     try:
         df = pd.read_sql(sql, r)
@@ -389,11 +387,13 @@ def get_cat_values_barchart(entity, subcategory,measurement,filter,cat, r):
 
     """
 
-
     measurement = "'" + "','".join(measurement) + "'"
-    if filter:
-        fil = [x.replace(" is "," in ('").replace(",","','") for x in filter]
-        fil = "') and ".join(fil) + "')"
+    if not filter:
+        sql = """SELECT "Value","measurement",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "measurement" IN ({2})
+                and ARRAY{1} && "Value"  group by "Value","measurement" """.format(entity, subcategory, measurement)
+    else:
+        fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
+        fil = '"'+"') and ".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -401,10 +401,6 @@ def get_cat_values_barchart(entity, subcategory,measurement,filter,cat, r):
 
         sql = """SELECT "Value","measurement",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "measurement" IN ({2})
                 and ARRAY{1} && "Value" and "Name_ID" in (""".format(entity, subcategory, measurement) + text + """)  group by "Value","measurement" """
-
-    else:
-        sql = """SELECT "Value","measurement",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "measurement" IN ({2})
-                and ARRAY{1} && "Value"  group by "Value","measurement" """.format(entity, subcategory, measurement)
 
     try:
         df = pd.read_sql(sql, r)
@@ -432,9 +428,15 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, filter, 
      """
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if filter:
-        fil = [x.replace(" is "," in ('").replace(",","','") for x in filter]
-        fil = "') and ".join(fil) + "')"
+    if not filter:
+        sql = """SELECT en."Name_ID",en."measurement",AVG(a."Value") as "{0}",STRING_AGG(distinct f."Value", ',') as "{1}" FROM examination_numerical as en
+                        left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as a ("Value"),unnest(ec."Value") as f ("Value") 
+                        where en."Key" = '{0}' and ec."Key" = '{1}' and en."measurement" IN ({3}) and ec."measurement" IN ({3})
+                        and f."Value" IN ({2}) group by en."Name_ID",en."measurement" order by en."Name_ID",en."measurement" """.format(
+            entity_num, entity_cat, subcategory, measurement)
+    else:
+        fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
+        fil = '"'+"') and ".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -446,13 +448,6 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, filter, 
                         where en."Key" = '{0}' and ec."Key" = '{1}' and en."measurement" IN ({3}) and ec."measurement" IN ({3}) 
                         and f."Value" IN ({2}) and en."Name_ID" in (""".format(
             entity_num, entity_cat, subcategory, measurement)+ text +""") and ec."Name_ID" in ("""+ text +""") group by en."Name_ID",en."measurement" order by en."Name_ID",en."measurement" """
-    else:
-        sql = """SELECT en."Name_ID",en."measurement",AVG(a."Value") as "{0}",STRING_AGG(distinct f."Value", ',') as "{1}" FROM examination_numerical as en
-                        left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as a ("Value"),unnest(ec."Value") as f ("Value") 
-                        where en."Key" = '{0}' and ec."Key" = '{1}' and en."measurement" IN ({3}) and ec."measurement" IN ({3})
-                        and f."Value" IN ({2}) group by en."Name_ID",en."measurement" order by en."Name_ID",en."measurement" """.format(
-            entity_num, entity_cat, subcategory, measurement)
-
 
     try:
         df = pd.read_sql(sql, r)
@@ -479,9 +474,12 @@ def get_values_heatmap(entity,measurement,filter,cat, r):
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
-    if filter != None:
-        fil = [x.replace(" is "," in ('").replace(",","','") for x in filter]
-        fil = "') and ".join(fil) + "')"
+    if not filter:
+        sql = """SELECT "Name_ID","measurement","Key",AVG(f."Value") as "Value" FROM examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "measurement" in ('{1}') 
+                Group by "Name_ID","measurement","Key" """.format(entity_fin,measurement)
+    else:
+        fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
+        fil = '"'+"') and ".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
 
@@ -490,11 +488,8 @@ def get_values_heatmap(entity,measurement,filter,cat, r):
 
         sql = """SELECT "Name_ID","measurement","Key",AVG(f."Value") as "Value" FROM examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "measurement" in ('{1}') and "Name_ID" in (""".format(entity_fin,measurement)+text+""")
                 Group by "Name_ID","measurement","Key" """
-    else:
-        sql = """SELECT "Name_ID","measurement","Key",AVG(f."Value") as "Value" FROM examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "measurement" in ('{1}') 
-                Group by "Name_ID","measurement","Key" """.format(entity_fin,measurement)
 
-    df = pd.read_sql(sql, r)
+
     try:
         df = pd.read_sql(sql, r)
         df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()

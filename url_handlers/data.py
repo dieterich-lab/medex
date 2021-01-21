@@ -19,10 +19,13 @@ def get_data():
 def get_data2():
     filter = data.filter_store
     cat = data.cat
+    number_filter = 0
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     return render_template('data.html',
                            all_entities=all_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            database=database,
@@ -30,7 +33,8 @@ def get_data2():
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
-                           filter=filter,)
+                           filter=filter,
+                           number_filter = number_filter)
 
 
 @data_page.route('/data', methods=['POST'])
@@ -41,36 +45,43 @@ def post_data2():
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
+        number_filter = 0
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         return render_template('data.html',
-                                all_entities=all_entities,
-                                all_subcategory_entities=all_subcategory_entities,
-                                all_categorical_entities=all_categorical_entities,
-                                filter=filter,)
+                               all_entities=all_entities,
+                               all_numeric_entities=all_numeric_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_categorical_entities=all_categorical_entities,
+                               filter=filter,
+                               number_filter=number_filter)
 
     entities = request.form.getlist('entities')
-    if 'Select all' in entities: entities.remove('Select all')
     data.table_browser_entites = entities
     what_table = request.form.get('what_table')
 
     filter = data.filter_store
     cat = data.cat
-
+    number_filter = 0
     if len(entities) == 0:
         error = "Please select entities"
     else:
        df, error = ps.get_data(entities, what_table,filter,cat, rdb)
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     if error:
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
+                               all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_categorical_entities=all_categorical_entities,
                                entities=entities,
-                               filter=filter,)
+                               filter=filter,
+                               number_filter=number_filter,
+                               )
 
     if block == 'none':
         df = df.drop(columns=['measurement'])
@@ -99,6 +110,7 @@ def post_data2():
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_categorical_entities=all_categorical_entities,
                            entities=entities,
@@ -106,6 +118,7 @@ def post_data2():
                            what_table=what_table,
                            column=dictOfcolumn,
                            filter=filter,
+                           number_filter=number_filter,
                            )
 
 

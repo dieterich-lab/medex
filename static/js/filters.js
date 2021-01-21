@@ -1,14 +1,18 @@
 $(function () {
+    // initiate value for subcategory selector
+    var $catu = $('#subcategory_filter').select2({
+    placeholder:"Search entity"
+    });
+    $('#subsubcategory_filter').select2({
+    placeholder:"Search entity"
+    });
 
     $('#categorical_filter').select2({
     placeholder:"Search entity"
     });
 
 
-    // initiate value for subcategory selector
-    var $cat = $('#subcategory_filter').select2({
-    placeholder:"Search entity"
-    });
+
 
     // handling select all choice
     $('#subcategory_filter').on("select2:select", function (e) {
@@ -23,12 +27,16 @@ $(function () {
 
     //change subcategories if category change
     $('#categorical_filter').change(function () {
-        var entity =$(this).val(), values = cat[entity] || [];
+        var entity =$(this).val(), values = catu[entity] || [];
 
         var html = $.map(values, function(value){
             return '<option value="' + value + '">' + value + '</option>'
         }).join('');
-        $cat.html('<option value="Select all">Select all</option>'+html)
+        $catu.html('<option value="Select all">Select all</option>'+html)
+    });
+
+    $("#clean").click(function(){
+        $( "#demo" ).empty();
     });
 
 });

@@ -12,22 +12,25 @@ scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlat
 def get_plots():
     filter = data.filter_store
     cat = data.cat
+    number_filter = 0
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     return render_template('scatter_plot.html',
-                               name='{} number'.format(name),
-                               block=block,
-                               numeric_tab=True,
-                               all_categorical_entities=all_categorical_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_measurement=all_measurement,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
-                           filter=filter
+                            name='{} number'.format(name),
+                            block=block,
+                            numeric_tab=True,
+                            all_categorical_entities=all_categorical_entities,
+                            all_numeric_entities=all_numeric_entities,
+                            all_subcategory_entities=all_subcategory_entities,
+                            all_measurement=all_measurement,
+                            database=database,
+                            size_categorical=size_categorical,
+                            size_numeric=size_numeric,
+                            len_numeric=len_numeric,
+                            len_categorical=len_categorical,
+                           filter=filter,
+                           number_filter=number_filter
                                )
 
 
@@ -38,7 +41,9 @@ def post_plots():
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
+        number_filter = 0
         if filter != None:
+            number_filter = len(filter)
             filter = zip(cat, filter)
         return render_template('scatter_plot.html',
                                name='{} number'.format(name),
@@ -48,15 +53,16 @@ def post_plots():
                                all_categorical_entities=all_categorical_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_measurement=all_measurement,
-                               filter=filter
+                               filter=filter,
+                               number_filter=number_filter
                                )
     if 'example1' in request.form:
-        y_axis = 'ekg_frequenz'
-        x_axis = 'gehtest_freq'
+        y_axis = 'Pod.R231Q_A286V.4wks.log2FC'
+        x_axis = 'Pod.R231Q_A286V.12wks.log2FC'
 
     elif 'example2' in request.form:
-        y_axis = 'bmi'
-        x_axis = 'basis_diastol'
+        y_axis = 'Wt1.het.2Factor.log2FC'
+        x_axis = 'Wt1.het.2Factor.FDR'
 
     else:
         # list selected data
@@ -79,6 +85,7 @@ def post_plots():
     add_group_by = request.form.get('add_group_by') is not None
     filter = data.filter_store
     cat = data.cat
+    number_filter = 0
 
     # handling errors and load data from database
     error = None
@@ -113,6 +120,7 @@ def post_plots():
                     error = "Category {} is empty".format(categorical_entities)
     else:
         numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement,filter,cat, rdb)
+        print(numeric_df)
         numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
         if x_axis == y_axis:
             x_axis_v = x_axis+'_x'
@@ -129,6 +137,7 @@ def post_plots():
             elif len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
     if filter != None:
+        number_filter = len(filter)
         filter = zip(cat, filter)
     if error:
         return render_template('scatter_plot.html',
@@ -147,6 +156,7 @@ def post_plots():
                                x_measurement=x_measurement,
                                y_measurement=y_measurement,
                                filter=filter,
+                               number_filter=number_filter,
                                error=error,
                                )
 
@@ -236,6 +246,7 @@ def post_plots():
                            x_measurement=x_measurement,
                            y_measurement=y_measurement,
                            filter=filter,
+                           number_filter=number_filter,
                            plot=fig
                            )
 

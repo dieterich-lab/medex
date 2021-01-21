@@ -20,7 +20,7 @@
                 integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
                 crossorigin="anonymous">
         </script>
-        <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+
 
 
         <div class="w3-bar w3-border w3-light-blue">
@@ -30,73 +30,68 @@
             <div class="w3-bar-item">{{ len_categorical }}</div>
           <div class="w3-bar-item">{{ size_categorical }}</div>
         </div>
-
+        <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
         <div class="card-header" id="filters_header">
         <h5 class="mb-0">
             <button class="btn btn-link" data-toggle="collapse" data-target="#filters" aria-expanded="true" aria-controls="filters">
-                Add filters (1)
+                Add filters ({{number_filter}})
             </button>
         </h5>
         </div>
     <form action=""  method="POST" >
-
+                <!-- Send dictionary with subcategory data to javascript -->
+                <script >
+                     var catu = {{all_subcategory_entities|safe}};
+                </script>
     <div id="filters" class="collapse" aria-labelledby="filters_header" data-parent="#accordion">
         <div class="card-body">
-            {% import 'macro_template.html' as m %}
 
+            <!-- Send dictionary with subcategory data to javascript -->
              <div class="form-group">
                 <select   name="all_categorical_filter" id="categorical_filter"  style="width: 20%"  class="js-example-basic-single" >
-                    <option {% if not categorical_entities %} selected {% endif %}>Search entity</option>
+                    <option {% if not categorical_filter %} selected {% endif %}>Search entity</option>
                     {% for entity in all_categorical_entities %}
-                        <option title="{{ all_categorical_entities[entity].description }}" value="{{ all_categorical_entities[entity].Key }}" {% if all_categorical_entities[entity].Key == categorical_entities %}selected{% endif %}>{{ all_categorical_entities[entity].Key }}</option>
+                        <option title="{{ all_categorical_entities[entity].description }}" value="{{ all_categorical_entities[entity].Key }}">{{ all_categorical_entities[entity].Key }}</option>
                     {% endfor %}
                 </select>
-
-                <!-- Send dictionary with subcategory data to javascript -->
-                <script type="text/javascript">
-                     var cat = {{all_subcategory_entities|safe}};
-                </script>
-            <!-- Send dictionary with subcategory data to javascript -->
             is
                 <select id="subcategory_filter" multiple style="width: 20%" name="subcategory_filter" class="form-control" >
-                    {% for entity in all_subcategory_entities[categorical_entities] %}
-                    <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
-                    {% endfor %}
+
                 </select>
 
-                <button type="button" onclick="myFunction()">Save</button>
-                <br>
-                <div>
-                    <span>Filters</span>
+                 <script>
 
-                    <div id="demo"   ></div>
-                    {% if filter %}
-                    {% for cat,filter in filter %}
-                    <button  class='btn btn-outline-primary' ><span class='close'> x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
-                    {% endfor %}
-                    {% endif %}
+                function remove(el) {
+                  $(el).parent('button').remove();
+                }
 
-                </div>
-                        <script>
                 function myFunction() {
                   var e =document.getElementById("categorical_filter");
                   var mag = e.options[e.selectedIndex].value;
                   var e2 =$('#subcategory_filter').val();
                   var m1 = mag
                   var mm = mag + " is " +e2
-                  document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  class='btn btn-outline-primary' ><span class='close'> x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + m1+"'>" + mm + "</button>";
+                  document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  class='btn btn-outline-primary' ><span class='close'  onclick='remove(this)'> x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + m1+"'>" + mm + "</button>";
 
-                  var closebtns = document.getElementsByClassName('close');
-                    var i;
-
-                    for (i = 0; i < closebtns.length; i++) {
-                      closebtns[i].addEventListener("click", function() {
-                        $(this).parent().remove();
-                      });
-                    }
                 }
 
+
+
                 </script>
+                <button type="button" onclick="myFunction()">Save</button>
+                <br>
+                <div>
+                    <span>Filters</span>
+                    <button type="button" id ="clean" onclick="Clear()">Clear All</button>
+                    <div id="demo"  >
+                    {% if filter %}
+                    {% for cat,filter in filter %}
+                    <button  class='btn btn-outline-primary' ><span class='close' onclick="remove(this)">x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
+                    {% endfor %}
+                    {% endif %}
+                    </div>
+                </div>
+
             </div>
             <button id="filter_b" name="filter_c" type="submit" class="btn btn-outline-info">Apply filters</button>
             </div>
