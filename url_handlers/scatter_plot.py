@@ -120,7 +120,6 @@ def post_plots():
                     error = "Category {} is empty".format(categorical_entities)
     else:
         numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement,filter,cat, rdb)
-        print(numeric_df)
         numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
         if x_axis == y_axis:
             x_axis_v = x_axis+'_x'
