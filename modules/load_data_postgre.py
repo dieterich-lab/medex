@@ -447,7 +447,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, filter, 
                         left join examination_categorical as ec on en."Name_ID" = ec."Name_ID",unnest(en."Value") as a ("Value"),unnest(ec."Value") as f ("Value") 
                         where en."Key" = '{0}' and ec."Key" = '{1}' and en."measurement" IN ({3}) and ec."measurement" IN ({3}) 
                         and f."Value" IN ({2}) and en."Name_ID" in (""".format(
-            entity_num, entity_cat, subcategory, measurement)+ text +""") and ec."Name_ID" in ("""+ text +""") group by en."Name_ID",en."measurement" order by en."Name_ID",en."measurement" """
+            entity_num, entity_cat, subcategory, measurement)+ text +""") group by en."Name_ID",en."measurement" order by en."Name_ID",en."measurement" """
 
     try:
         df = pd.read_sql(sql, r)
