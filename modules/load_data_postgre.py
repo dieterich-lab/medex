@@ -199,7 +199,7 @@ def get_num_values_basic_stats(entity,measurement,filter,cat, r):
             entity_fin, measurement)
     else:
         fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
-        fil = '"'+"') and ".join(fil) + "')"
+        fil = '"'+"') and \"".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -240,7 +240,7 @@ def get_cat_values_basic_stats(entity,measurement,filter,cat, r):
                 group by "measurement","Key",number """.format(entity_fin, measurement)
     else:
         fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
-        fil = '"'+"') and ".join(fil) + "')"
+        fil = '"'+"') and \"".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -288,7 +288,7 @@ def get_values_scatter_plot(x_entity,y_entity,x_measurement,y_measurement,filter
             y_entity, y_measurement)
     else:
         fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
-        fil = '"'+"') and ".join(fil) + "')"
+        fil = '"'+"') and \"".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -353,7 +353,7 @@ def get_cat_values(entity, subcategory,measurement,filter,cat, r):
 
     else:
         fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
-        fil = '"'+"') and ".join(fil) + "')"
+        fil = '"'+"') and \"".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -393,7 +393,7 @@ def get_cat_values_barchart(entity, subcategory,measurement,filter,cat, r):
                 and ARRAY{1} && "Value"  group by "Value","measurement" """.format(entity, subcategory, measurement)
     else:
         fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
-        fil = '"'+"') and ".join(fil) + "')"
+        fil = '"'+"') and \"".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -436,7 +436,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, filter, 
             entity_num, entity_cat, subcategory, measurement)
     else:
         fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
-        fil = '"'+"') and ".join(fil) + "')"
+        fil = '"'+"') and \"".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
         text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" FROM examination_categorical WHERE "Key" IN ({0})')
@@ -479,7 +479,7 @@ def get_values_heatmap(entity,measurement,filter,cat, r):
                 Group by "Name_ID","measurement","Key" """.format(entity_fin,measurement)
     else:
         fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
-        fil = '"'+"') and ".join(fil) + "')"
+        fil = '"'+"') and \"".join(fil) + "')"
         catu = "$$" + "$$,$$".join(cat) + "$$"
         catu_fin2 = '"' + '" text,"'.join(cat) + '" text'
 
