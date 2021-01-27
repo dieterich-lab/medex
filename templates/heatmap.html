@@ -37,12 +37,12 @@
             {% if error %}
             {{ m.show_error(error) }}
             {% endif %}
-            <form id="form2" action="" method="POST">
+
                 {{ m.entity_form4(id4= "measurement",name =all_measurement,value=entity,select=measurement,d=name,block=block) }}
                 {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities ,value=entity,select=numeric_entities,d="Numeric entities:") }}
 
                 <button id="Plot"  name="heatmap" class="btn btn-outline-info">Plot</button>
-            </form>
+
         </div>
     </div>
 </div>

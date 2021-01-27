@@ -46,7 +46,7 @@
             {{ m.show_error(error) }}
             {% endif %}
 
-            <form id="form2" action="" method="POST">
+
 
 
                 {{ m.entity_form22(id22= "entities",name =all_entities,value=entity,select=entities,d="Entities:") }}
@@ -61,8 +61,9 @@
                            {% if what_table =="short"  %} checked {% endif %}>
                             <label class="custom-control-label" for="short">entities as columns</label>
                 </div>
-                <button id="Plot"  name="Result" class="btn btn-outline-info">Result</button>
-            </form>
+                <button id="Plot"  onclick="submitForm()" name="Result" class="btn btn-outline-info">Result</button>
+
+
         </div>
     </div>
 </div>

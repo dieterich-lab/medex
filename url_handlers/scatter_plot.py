@@ -36,6 +36,7 @@ def get_plots():
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
+    """
     if 'filter_c' in request.form:
         filter = request.form.getlist('filter')
         cat = request.form.getlist('cat')
@@ -58,6 +59,7 @@ def post_plots():
                                len_numeric=len_numeric,
                                len_categorical=len_categorical,
                                )
+    """
     if 'example1' in request.form:
         y_axis = 'Pod.R231Q_A286V.4wks.log2FC'
         x_axis = 'Pod.R231Q_A286V.12wks.log2FC'
@@ -84,12 +86,12 @@ def post_plots():
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
     add_group_by = request.form.get('add_group_by') is not None
-    #if 'filter' in request.form or 'all_categorical_filter' in request.form:
-    #    filter = request.form.getlist('filter')
-    #    cat = request.form.getlist('cat')
-    #    data.filter_store = filter
-    #    data.cat = cat
-    #    number_filter = 0
+    if 'filter' in request.form or 'all_categorical_filter' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        number_filter = 0
     filter = data.filter_store
     cat = data.cat
     number_filter = 0

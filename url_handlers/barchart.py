@@ -35,6 +35,7 @@ def get_statistics():
 @barchart_page.route('/barchart', methods=['POST'])
 def post_statistics():
     # list selected entities
+    """
     if 'filter_c' in request.form:
         filter = request.form.getlist('filter')
         cat = request.form.getlist('cat')
@@ -57,6 +58,7 @@ def post_statistics():
                                len_numeric=len_numeric,
                                len_categorical=len_categorical,
                                )
+    """
     if block == 'none':
         measurement = all_measurement.values
     else:
@@ -64,12 +66,12 @@ def post_statistics():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
-    #if 'filter' in request.form or 'all_categorical_filter' in request.form:
-    #    filter = request.form.getlist('filter')
-    #    cat = request.form.getlist('cat')
-    #    data.filter_store = filter
-    #    data.cat = cat
-    #    number_filter = 0
+    if 'filter' in request.form or 'all_categorical_filter' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        number_filter = 0
     filter = data.filter_store
     cat = data.cat
     number_filter = 0

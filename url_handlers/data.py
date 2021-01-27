@@ -40,6 +40,8 @@ def get_data2():
 @data_page.route('/data', methods=['POST'])
 def post_data2():
     # get selected entities
+
+    """
     if 'filter_c' in request.form:
         filter = request.form.getlist('filter')
         cat = request.form.getlist('cat')
@@ -62,16 +64,17 @@ def post_data2():
                                len_numeric=len_numeric,
                                len_categorical=len_categorical,
                                )
+    """
     entities = request.form.getlist('entities')
     if 'Select all' in entities: entities.remove('Select all')
     data.table_browser_entites = entities
     what_table = request.form.get('what_table')
-    #if 'filter' in request.form or 'all_categorical_filter' in request.form:
-    #    filter = request.form.getlist('filter')
-    #    cat = request.form.getlist('cat')
-    #    data.filter_store = filter
-    #    data.cat = cat
-    #    number_filter = 0
+    if 'filter' in request.form or 'all_categorical_filter' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        number_filter = 0
     filter = data.filter_store
     cat = data.cat
     number_filter = 0

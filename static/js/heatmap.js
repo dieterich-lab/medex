@@ -45,8 +45,8 @@ $(function () {
           ]},);
             }
 
-    $("#Plot").click(function(){
-        $("#second").click();
-        document.getElementById("form2").submit();
-    });
+    //$("#Plot").click(function(){
+    //    $("#second").click();
+    //    document.getElementById("form2").submit();
+    //});
 });

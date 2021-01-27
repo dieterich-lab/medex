@@ -38,6 +38,7 @@ def get_statistics():
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
+    """
     if 'filter_c' in request.form:
         filter = request.form.getlist('filter')
         cat = request.form.getlist('cat')
@@ -60,11 +61,17 @@ def get_basic_stats():
                                len_numeric=len_numeric,
                                len_categorical=len_categorical,
                                )
+    """
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
-
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities')
+        if 'filter' in request.form or 'all_categorical_filter' in request.form:
+            filter = request.form.getlist('filter')
+            cat = request.form.getlist('cat')
+            data.filter_store = filter
+            data.cat = cat
+            number_filter = 0
         filter = data.filter_store
         cat = data.cat
         number_filter = 0
@@ -186,12 +193,12 @@ def get_basic_stats():
         # list selected data by client
         categorical_entities = request.form.getlist('categorical_entities')
 
-        #if 'filter' in request.form or 'all_categorical_filter' in request.form:
-        #    filter = request.form.getlist('filter')
-        #    cat = request.form.getlist('cat')
-        #    data.filter_store = filter
-        #    data.cat = cat
-        #    number_filter = 0
+        if 'filter' in request.form or 'all_categorical_filter' in request.form:
+            filter = request.form.getlist('filter')
+            cat = request.form.getlist('cat')
+            data.filter_store = filter
+            data.cat = cat
+            number_filter = 0
         filter = data.filter_store
         cat = data.cat
         number_filter = 0

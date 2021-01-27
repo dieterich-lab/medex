@@ -39,6 +39,8 @@ $(function () {
     $("#clean").click(function(){
         $( "#demo" ).empty();
     });
+
+
                    // function remove(el) {
                  // $( "#demo" ).empty();
                 //}
