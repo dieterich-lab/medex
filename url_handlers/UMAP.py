@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import pandas as pd
 #UMAP
-import umap
+import umap.umap_ as umap
 
 def plot_2d(component1, component2,y):
     fig = go.Figure(data=go.Scatter(

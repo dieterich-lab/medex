@@ -41,7 +41,7 @@ def get_categorical_entities(r):
         df3 = pd.read_sql(sql3, r)
 
         array = []
-
+        df1 = df1[~df1.Key.isin(['XLOCid'])]
         # create dictionary with categories and subcategories
         for value in df1['Key']:
             dfr2 = {}
@@ -49,6 +49,7 @@ def get_categorical_entities(r):
             del df2['Key']
             dfr2[value] = list(df2['Value'])
             array.append(dfr2)
+
         df = dict(ChainMap(*array))
 
         return df1,df,df0,df3

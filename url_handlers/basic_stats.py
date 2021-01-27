@@ -38,27 +38,12 @@ def get_statistics():
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
-    if 'filter_c' in request.form:
+    if 'filter' in request.form or 'all_categorical_filter' in request.form:
         filter = request.form.getlist('filter')
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
         number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('basic_stats/basic_stats.html',
-                                   numeric_tab=True,
-                                   name=name,
-                                   block=block,
-                                   measurement_name=name,
-                                   all_categorical_entities=all_categorical_entities,
-                                   all_subcategory_entities=all_subcategory_entities,
-                                   all_numeric_entities=all_numeric_entities,
-                                   all_measurement=all_measurement,
-                                   filter=filter,
-                               number_filter = number_filter)
-
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
 
@@ -103,6 +88,11 @@ def get_basic_stats():
                                    measurement1=measurement1,
                                    filter=filter,
                                    number_filter=number_filter,
+                                   database=database,
+                                   size_categorical=size_categorical,
+                                   size_numeric=size_numeric,
+                                   len_numeric=len_numeric,
+                                   len_categorical=len_categorical,
                                    error=error)
 
 
@@ -135,6 +125,11 @@ def get_basic_stats():
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
                                    numeric_entities=numeric_entities,
+                                   database=database,
+                                   size_categorical=size_categorical,
+                                   size_numeric=size_numeric,
+                                   len_numeric=len_numeric,
+                                   len_categorical=len_categorical,
                                    measurement1=measurement1,
                                    instance=instance,
                                    filter=filter,
@@ -155,6 +150,11 @@ def get_basic_stats():
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
+                                   database=database,
+                                   size_categorical=size_categorical,
+                                   size_numeric=size_numeric,
+                                   len_numeric=len_numeric,
+                                   len_categorical=len_categorical,
                                    numeric_entities=numeric_entities,
                                    basic_stats=result,
                                    measurement1=measurement1,
@@ -169,6 +169,13 @@ def get_basic_stats():
 
         # list selected data by client
         categorical_entities = request.form.getlist('categorical_entities')
+
+        if 'filter' in request.form or 'all_categorical_filter' in request.form:
+            filter = request.form.getlist('filter')
+            cat = request.form.getlist('cat')
+            data.filter_store = filter
+            data.cat = cat
+            number_filter = 0
         filter = data.filter_store
         cat = data.cat
         number_filter = 0
@@ -202,6 +209,11 @@ def get_basic_stats():
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
+                                   database=database,
+                                   size_categorical=size_categorical,
+                                   size_numeric=size_numeric,
+                                   len_numeric=len_numeric,
+                                   len_categorical=len_categorical,
                                    categorical_entities=categorical_entities,
                                    measurement2=measurement,
                                    filter=filter,
@@ -224,6 +236,11 @@ def get_basic_stats():
                                all_subcategory_entities=all_subcategory_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_measurement=all_measurement,
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical,
                                categorical_entities=categorical_entities,
                                measurement2=measurement,
                                instance=instance,

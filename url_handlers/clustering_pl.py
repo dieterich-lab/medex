@@ -9,10 +9,15 @@ from webserver import rdb, all_numeric_entities, all_categorical_entities,all_me
 clustering_plot_page = Blueprint('clustering_pl', __name__,
                             template_folder='clustering_pl')
 
-block = 'none'
+
 @clustering_plot_page.route('/clustering', methods=['GET'])
 def cluster():
-
+    filter = data.filter_store
+    cat = data.cat
+    number_filter = 0
+    if filter != None:
+        number_filter = len(filter)
+        filter = zip(cat, filter)
     return render_template('clustering/clustering.html',
                            name=name,
                            block=block,
@@ -26,12 +31,30 @@ def cluster():
                            size_categorical=size_categorical,
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
-                           len_categorical=len_categorical
+                           len_categorical=len_categorical,
+                           number_filter=number_filter,
+                           filter=filter
                            )
 
 
 @clustering_plot_page.route('/clustering', methods=['POST'])
 def post_clustering():
+    if 'filter_c' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        number_filter = 0
+        if filter != None:
+            number_filter = len(filter)
+            filter = zip(cat, filter)
+        return render_template('data.html',
+                               all_entities=all_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_categorical_entities=all_categorical_entities,
+                               number_filter=number_filter,
+                               filter=filter,)
+
     if 'cluster_numeric' in request.form:
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities')
@@ -39,13 +62,16 @@ def post_clustering():
             measurement = all_measurement.values[0]
         else:
             measurement = request.form.get('measurement')
+        filter = data.filter_store
+        cat = data.cat
+        number_filter = 0
 
         # handling errors and load data from database
         error = None
         if measurement == "Search entity":
             error = "Please select number of {}".format(name)
         elif len(numeric_entities) > 1:
-            df, error = ps.get_values_heatmap(numeric_entities,measurement, rdb)
+            df, error = ps.get_values_heatmap(numeric_entities,measurement,filter,cat, rdb)
             for i in numeric_entities:
                 if not i in df.columns:
                     numeric_entities.remove(i)
@@ -59,6 +85,9 @@ def post_clustering():
             error = "Please select more then one category"
         else:
             error = "Please select numeric entities"
+        if filter != None:
+            number_filter = len(filter)
+            filter = zip(cat, filter)
         if error:
             return render_template('clustering/clustering.html',
                                    name=name,
@@ -70,13 +99,14 @@ def post_clustering():
                                    numeric_entities=numeric_entities,
                                    all_measurement=all_measurement,
                                    measurement=measurement,
+                                   number_filter=number_filter,
+                                   filter=filter,
                                    error=error)
 
 
         cluster_data, cluster_labels, df, error = dwu.cluster_numeric_fields(numeric_entities, df)
 
-
-        table_data = { }
+        table_data = {}
         plot_data = []
 
         for cluster in sorted(cluster_labels.keys()):
@@ -94,7 +124,7 @@ def post_clustering():
         df = df.sort_values(by=['cluster'])
 
         any_present = df.shape[0]
-        all_present =  df.dropna().shape[0]
+        all_present = df.dropna().shape[0]
 
         df_c = df[numeric_entities]
         df_label = df['cluster'].values
@@ -134,8 +164,8 @@ def post_clustering():
 
         categorical_entities = request.form.getlist('categorical_entities')
         measurement = request.form.get('measurement1')
-        data2,error =ps.get_values_cat_heatmap(categorical_entities,measurement,rdb)
-
+        data2, error = ps.get_values_cat_heatmap(categorical_entities, measurement, rdb)
+        print(data2)
         if not categorical_entities:
             error = "Please select entities"
             return render_template('clustering/clustering.html',

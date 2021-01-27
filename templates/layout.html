@@ -11,6 +11,7 @@
 
         <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
         <script src="{{ url_for('static', filename='popper.min.js') }}"
                 integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
@@ -22,7 +23,6 @@
         </script>
 
 
-
         <div class="w3-bar w3-border w3-light-blue">
           <div class="w3-bar-item">{{ database }}</div>
           <div class="w3-bar-item">{{ len_numeric }}</div>
@@ -31,17 +31,17 @@
           <div class="w3-bar-item">{{ size_categorical }}</div>
         </div>
         <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
-        <div class="card-header" id="filters_header">
+        <div class="card-header" id="filters_header" style="background-color: bisque"}>
         <h5 class="mb-0">
             <button class="btn btn-link" data-toggle="collapse" data-target="#filters" aria-expanded="true" aria-controls="filters">
-                Add filters ({{number_filter}})
+                <i class="fa fa-filter" style="font-size:24px"></i>Filters ({{number_filter}})
             </button>
         </h5>
         </div>
-    <form action=""  method="POST" >
+    <form id="form1" action=""  method="POST" >
                 <!-- Send dictionary with subcategory data to javascript -->
                 <script >
-                     var catu = {{all_subcategory_entities|safe}};
+                     var cat = {{all_subcategory_entities|safe}};
                 </script>
     <div id="filters" class="collapse" aria-labelledby="filters_header" data-parent="#accordion">
         <div class="card-body">
@@ -59,10 +59,25 @@
 
                 </select>
 
-                 <script>
+
+                <button type="button" onclick="myFunction()">Add</button>
+                <br>
+                    <span>Filters</span>
+                    <button type="button" name='clean' id ="clean" >Clear All</button>
+                    <div id="demo"  >
+                    {% if filter %}
+                    {% for cat,filter in filter %}
+                        <button  class='btn btn-outline-primary' ><span class='close' onclick="remove(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+                 <button id="second"  type="submit" style="display: none" class="btn btn-outline-info">Plot </button>
+            </div>
+            </div>
+                         <script>
 
                 function remove(el) {
-                  $(el).parent('button').remove();
+                    $(el).parent('button').remove();
                 }
 
                 function myFunction() {
@@ -71,30 +86,11 @@
                   var e2 =$('#subcategory_filter').val();
                   var m1 = mag
                   var mm = mag + " is " +e2
-                  document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  class='btn btn-outline-primary' ><span class='close'  onclick='remove(this)'> x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + m1+"'>" + mm + "</button>";
+                  document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  class='btn btn-outline-primary'  ><span onclick='remove(this)'  class='close' > x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + m1+"'>" + mm + "</button>";
 
                 }
 
-
-
                 </script>
-                <button type="button" onclick="myFunction()">Save</button>
-                <br>
-                <div>
-                    <span>Filters</span>
-                    <button type="button" id ="clean" onclick="Clear()">Clear All</button>
-                    <div id="demo"  >
-                    {% if filter %}
-                    {% for cat,filter in filter %}
-                    <button  class='btn btn-outline-primary' ><span class='close' onclick="remove(this)">x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
-                    {% endfor %}
-                    {% endif %}
-                    </div>
-                </div>
-
-            </div>
-            <button id="filter_b" name="filter_c" type="submit" class="btn btn-outline-info">Apply filters</button>
-            </div>
 
 
 </div>
@@ -103,7 +99,7 @@
 
 
       <nav class="navbar navbar-light bg-light  ">
-
+          <a class="navbar-brand" href="/tutorial">Tutorial</a>
           <ul class="nav mx-auto">
           <li class="nav-item">
             <a class="nav-link" href="/data">Table browser</a>
@@ -126,8 +122,7 @@
           <li class="nav-item">
             <a class="nav-link" href="/heatmap">Heatmap</a>
           </li>
-
-          <!-- <li class="nav-item">
+          <!--<li class="nav-item">
             <a class="nav-link" href="/clustering">Clustering</a>
           </li>
           <li class="nav-item">
@@ -137,7 +132,7 @@
             <a class="nav-link" href="/logout">Logout</a>
           </li> -->
           </ul>
-          <a class="navbar-brand" href="/tutorial">Tutorial</a>
+
 
         </nav>
         {% block body %}

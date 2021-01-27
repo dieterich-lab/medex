@@ -17,7 +17,6 @@
     {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='material.min.js') }}"></script>
 
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.css"/>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script>
@@ -47,7 +46,7 @@
             {{ m.show_error(error) }}
             {% endif %}
 
-            <form action="" method="POST">
+            <form id="form2" action="" method="POST">
 
 
                 {{ m.entity_form2(id2= "entities",name =all_entities,value=entity,select=entities,d="Entities:") }}
@@ -62,7 +61,7 @@
                            {% if what_table =="short"  %} checked {% endif %}>
                             <label class="custom-control-label" for="short">entities as columns</label>
                 </div>
-                <button id="Plot" type="submit" name="Result" class="btn btn-outline-info">Result</button>
+                <button id="Plot"  name="Result" class="btn btn-outline-info">Result</button>
             </form>
         </div>
     </div>

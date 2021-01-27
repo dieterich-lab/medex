@@ -80,7 +80,10 @@ $(function () {
         $cat.html('<option value="Select all">Select all</option>'+html)
     });
 
-
+    $("#Plot").click(function(){
+        $("#second").click();
+        document.getElementById("form2").submit();
+    });
 
 });
 

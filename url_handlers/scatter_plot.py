@@ -36,26 +36,7 @@ def get_plots():
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
-    if 'filter_c' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('scatter_plot.html',
-                               name='{} number'.format(name),
-                               block=block,
-                               numeric_tab=True,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_measurement=all_measurement,
-                               filter=filter,
-                               number_filter=number_filter
-                               )
+
     if 'example1' in request.form:
         y_axis = 'Pod.R231Q_A286V.4wks.log2FC'
         x_axis = 'Pod.R231Q_A286V.12wks.log2FC'
@@ -68,7 +49,6 @@ def post_plots():
         # list selected data
         y_axis = request.form.get('y_axis')
         x_axis = request.form.get('x_axis')
-
 
     if block == 'none':
         x_measurement = all_measurement.values[0]
@@ -83,6 +63,12 @@ def post_plots():
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
     add_group_by = request.form.get('add_group_by') is not None
+    if 'filter' in request.form or 'all_categorical_filter' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        number_filter = 0
     filter = data.filter_store
     cat = data.cat
     number_filter = 0
@@ -149,6 +135,11 @@ def post_plots():
                                all_measurement=all_measurement,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical,
                                add_group_by=add_group_by,
                                x_axis=x_axis,
                                y_axis=y_axis,
@@ -164,42 +155,42 @@ def post_plots():
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
         if add_group_by :
-            categorical_df['hover_mouse'] = categorical_df[name2] #+ '<br />' + categorical_df["GeneSymbol"]
+            categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
             fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols")
         else:
-            numeric_df['hover_mouse'] = numeric_df[name2] #+ '<br />' + numeric_df["GeneSymbol"]
+            numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
             fig = px.scatter(numeric_df,x=x_axis_v, y=y_axis_v,hover_name ='hover_mouse', template = "plotly_white",trendline="ols")
 
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if add_group_by:
-                categorical_df['hover_mouse'] = categorical_df[name2] #+ '<br />' + categorical_df["GeneSymbol"]
+                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
                 fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white",trendline="ols",log_x=True, log_y=True)
 
             else:
-                numeric_df['hover_mouse'] = numeric_df[name2] #+ '<br />' + numeric_df["GeneSymbol"]
+                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
                 fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols",log_x=True, log_y=True)
         elif log_x == 'log_x':
             if add_group_by:
-                categorical_df['hover_mouse'] = categorical_df[name2] #+ '<br />' + categorical_df["GeneSymbol"]
+                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
                 fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols", log_x=True)
 
             else:
-                numeric_df['hover_mouse'] = numeric_df[name2] #+ '<br />' + numeric_df["GeneSymbol"]
+                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
                 fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_x=True)
         elif log_y == 'log_y':
             if add_group_by:
-                categorical_df['hover_mouse'] = categorical_df[name2] #+ '<br />' + categorical_df["GeneSymbol"]
+                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
                 fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols",  log_y=True)
 
             else:
-                numeric_df['hover_mouse'] = numeric_df[name2] #+ '<br />' + numeric_df["GeneSymbol"]
+                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
                 fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_y=True)
 
@@ -236,6 +227,11 @@ def post_plots():
                            all_measurement=all_measurement,
                            subcategory_entities=subcategory_entities,
                            categorical_entities=categorical_entities,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical,
                            add_group_by=add_group_by,
                            x_axis=x_axis,
                            y_axis=y_axis,

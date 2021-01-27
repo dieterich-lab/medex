@@ -101,9 +101,9 @@ def _get_patient_categorical_rep(row, categorical_entities):
         #if not utils.is_sequence(vals):
         #    continue
 
-        for val in vals:
-            key = "{}.{}".format(categorical_entity, val)
-            ret[key] = 1
+
+        key = "{}.{}".format(categorical_entity, vals)
+        ret[key] = 1
 
     return ret
 
@@ -154,6 +154,8 @@ def cluster_categorical_entities(entities,cat_df, eps=0.1, min_samples=5, seed=8
     cat_rep_df = pd.DataFrame(cat_rep)
     category_values = sorted(cat_rep_df.columns)
     cat_rep_np = cat_rep_df.fillna(0).values
+    cat_rep_np=np.array(cat_rep_np, dtype=bool)
+
 
     # calculate the jaccard distances between all patients
     distance = sklearn.metrics.pairwise.pairwise_distances(

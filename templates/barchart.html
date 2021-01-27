@@ -4,6 +4,7 @@
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/barchart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
 
     {# plotly and jquery #}
     <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
@@ -40,7 +41,7 @@
             {% if error %}
             {{ m.show_error(error) }}
             {% endif %}
-        <form action="" method="POST">
+        <form id="form2" action="" method="POST">
 
 
             {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement2,d=name,block=block) }}
@@ -82,9 +83,10 @@
                 </table>
             </div>
 
-                <button id="Plot" type="submit" name="barchart" class="btn btn-outline-info">Plot barchart</button>
 
+        <button id="Plot"  name="barchart" class="btn btn-outline-info">Plot barchart</button>
         </form>
+
         </div>
     </div>
 </div>

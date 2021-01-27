@@ -1,6 +1,6 @@
 $(function () {
     // initiate value for subcategory selector
-    var $catu = $('#subcategory_filter').select2({
+    var $cat = $('#subcategory_filter').select2({
     placeholder:"Search entity"
     });
     $('#subsubcategory_filter').select2({
@@ -25,18 +25,30 @@ $(function () {
       });
 
 
+
     //change subcategories if category change
     $('#categorical_filter').change(function () {
-        var entity =$(this).val(), values = catu[entity] || [];
+        var entity =$(this).val(), values = cat[entity] || [];
 
         var html = $.map(values, function(value){
             return '<option value="' + value + '">' + value + '</option>'
         }).join('');
-        $catu.html('<option value="Select all">Select all</option>'+html)
+        $cat.html('<option value="Select all">Select all</option>'+html)
     });
 
     $("#clean").click(function(){
         $( "#demo" ).empty();
     });
+                   // function remove(el) {
+                 // $( "#demo" ).empty();
+                //}
+    //$("#close").click(function() {
+    //     $( "#demo" ).empty();
+    //     document.getElementById("demo").submit();
+    //});
+
+    //$("#close").click(function(){
+    //    $(this).parent('button').remove();
+    //});
 
 });

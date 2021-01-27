@@ -129,7 +129,13 @@ def login():
                                all_entities=all_entities,
                                all_categorical_entities=all_categorical_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               entities=entities)
+                               entities=entities,
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical,
+                               )
 
     if block == 'none':
         df = df.drop(columns=['measurement'])
@@ -161,6 +167,11 @@ def login():
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            entities=entities,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical,
                            name=column,
                            what_table=what_table,
                            column=dictOfcolumn,
@@ -171,28 +182,17 @@ def login():
 @app.route('/', methods=['POST'])
 def login2():
     # get selected entities
-    if 'filter_c' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('data.html',
-                                all_entities=all_entities,
-                                all_subcategory_entities=all_subcategory_entities,
-                                all_categorical_entities=all_categorical_entities,
-                                filter=filter,
-                                number_filter = number_filter)
-
     entities = request.form.getlist('entities')
     categorical_entities = request.form.get('categorical_entities')
     if 'Select all' in entities: entities.remove('Select all')
     data.table_browser_entites = entities
     what_table = request.form.get('what_table')
-
+    if 'filter' in request.form or 'all_categorical_filter' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        number_filter = 0
     filter = data.filter_store
     cat = data.cat
     number_filter = 0
@@ -214,7 +214,12 @@ def login2():
                                categorical_entities=categorical_entities,
                                entities=entities,
                                filter=filter,
-                               number_filter = 0)
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical,
+                               number_filter = number_filter)
 
     if block == 'none':
         df = df.drop(columns=['measurement'])
@@ -249,11 +254,16 @@ def login2():
                            all_subcategory_entities=all_subcategory_entities,
                            categorical_entities=categorical_entities,
                            entities=entities,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical,
                            name=column,
                            what_table=what_table,
                            column=dictOfcolumn,
                            filter=filter,
-                           number_filter=0
+                           number_filter=number_filter
                            )
 
 @app.route("/download", methods=['GET', 'POST'])

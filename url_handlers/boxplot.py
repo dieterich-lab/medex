@@ -34,31 +34,18 @@ def get_boxplots():
 
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
-    if 'filter_c' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('boxplot.html',
-                               name='{} number'.format(name),
-                               block=block,
-                               all_categorical_entities=all_categorical_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_measurement=all_measurement,
-                               filter=filter,
-                               number_filter=number_filter)
-
 
     # get selected entities
     numeric_entities = request.form.get('numeric_entities')
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
+    if 'filter' in request.form or 'all_categorical_filter' in request.form:
+        filter = request.form.getlist('filter')
+        cat = request.form.getlist('cat')
+        data.filter_store = filter
+        data.cat = cat
+        number_filter = 0
     filter = data.filter_store
     cat = data.cat
     number_filter = 0
@@ -100,7 +87,13 @@ def post_boxplots():
                                measurement1=measurement,
                                all_measurement=all_measurement,
                                filter=filter,
-                               number_filter=number_filter)
+                               number_filter=number_filter,
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical,
+                               )
 
     numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
     # Plot figure and convert to an HTML string representation
@@ -131,4 +124,9 @@ def post_boxplots():
                            measurement1=measurement,
                            filter=filter,
                            number_filter=number_filter,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical,
                            plot=fig)

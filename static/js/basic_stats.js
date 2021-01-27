@@ -16,11 +16,15 @@ $(function () {
     $('#Plot').click(function(){
         // disable button
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
+        $("#second").click();
+        document.getElementById("form2").submit();
 
     });
     $('#Plot2').click(function(){
         // disable button
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
+                $("#second").click();
+        document.getElementById("form3").submit();
 
     });
 
@@ -59,6 +63,18 @@ $(function () {
     placeholder:"Search entity"
     });
 
+    //$("#Plot").click(function(){
+    //    $("#second").click();
+    //    document.getElementById("form2").submit();
+    //});
 
+    //    $("#Plot2").click(function(){
+    //    $("#second").click();
+    //    document.getElementById("form2").submit();
+    //});
+    submitForms = function(){
+        document.getElementById("form1").submit();
+        document.getElementById("form2").submit();
+    }
 });
 

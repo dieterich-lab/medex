@@ -38,23 +38,15 @@ def get_plots():
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
 def post_plots():
-    if 'filter_c' in request.form:
+
+    # get selected entities
+    numeric_entities = request.form.getlist('numeric_entities')
+    if 'filter' in request.form or 'all_categorical_filter' in request.form:
         filter = request.form.getlist('filter')
         cat = request.form.getlist('cat')
         data.filter_store = filter
         data.cat = cat
         number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('data.html',
-                               all_entities=all_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
-                               number_filter=number_filter,
-                               filter=filter,)
-    # get selected entities
-    numeric_entities = request.form.getlist('numeric_entities')
     filter = data.filter_store
     cat = data.cat
     number_filter = 0
@@ -90,13 +82,18 @@ def post_plots():
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_categorical_entities=all_categorical_entities,
+                               database=database,
+                               size_categorical=size_categorical,
+                               size_numeric=size_numeric,
+                               len_numeric=len_numeric,
+                               len_categorical=len_categorical,
                                numeric_entities=numeric_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
                                number_filter=number_filter,
                                filter=filter,
                                error=error)
-    error=None
+    error = None
     # calculate person correlation
 
     numeric_df = numeric_df.drop(columns=['Name_ID'])
@@ -155,6 +152,11 @@ def post_plots():
                            all_subcategory_entities=all_subcategory_entities,
                            all_categorical_entities=all_categorical_entities,
                            all_measurement=all_measurement,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical,
                            numeric_entities=numeric_entities,
                            measurement=measurement,
                            plot_series=plot_series,
