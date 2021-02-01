@@ -289,22 +289,23 @@ def login2():
                            number_filter=number_filter
                            )
 
-@app.route("/download", methods=['GET', 'POST'])
-def download():
+@app.route("/download/<path:filename>", methods=['GET', 'POST'])
+def download(filename):
+    if filename=='data.csv':
+        csv=data.csv
 
-    csv=data.csv
+        # Create a string buffer
+        buf_str = io.StringIO(csv)
 
-    # Create a string buffer
-    buf_str = io.StringIO(csv)
-
-    # Create a bytes buffer from the string buffer
-    buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
-
-    # Return the CSV data as an attachment
-    return send_file(buf_byt,
-                     mimetype="text/csv",
-                     as_attachment=True,
-                     attachment_filename="data.csv")
+        # Create a bytes buffer from the string buffer
+        buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
+        # Return the CSV data as an attachment
+        return send_file(buf_byt,
+                         mimetype="text/csv",
+                         as_attachment=True,
+                         attachment_filename=filename)
+    else:
+        return send_file("import/entities_description.csv",as_attachment=True,attachment_filename=filename)
 
 
 def main():

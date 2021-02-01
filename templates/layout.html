@@ -25,13 +25,15 @@
 
         <div class="w3-bar w3-border w3-light-blue">
           <div class="w3-bar-item">{{ database }}</div>
+            <a href="{{url_for('download', filename = 'entities_description.csv')}}" id="download" style="background-color: Tomato; color: black" class="btn btn-outline-info">Download entities list</a>
+
           <div class="w3-bar-item">{{ len_numeric }}</div>
           <div class="w3-bar-item">{{ size_numeric }}</div>
             <div class="w3-bar-item">{{ len_categorical }}</div>
           <div class="w3-bar-item">{{ size_categorical }}</div>
         </div>
         <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
-        <div class="card-header" id="filters_header" style="background-color: bisque"}>
+        <div class="card-header" id="filters_header" style="background-color: bisque">
         <h5 class="mb-0">
             <button class="btn btn-link" data-toggle="collapse" data-target="#filters" aria-expanded="true" aria-controls="filters">
                 <i class="fa fa-filter" style="font-size:24px"></i>Filters ({{number_filter}})
