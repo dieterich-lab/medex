@@ -109,6 +109,7 @@ def post_statistics():
                                size_numeric=size_numeric,
                                len_numeric=len_numeric,
                                len_categorical=len_categorical,
+                               how_to_plot=how_to_plot,
                                error=error
                                )
 
@@ -147,5 +148,6 @@ def post_statistics():
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
+                           how_to_plot=how_to_plot,
                            plot=fig
                            )

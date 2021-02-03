@@ -117,6 +117,7 @@ def post_boxplots():
                                size_numeric=size_numeric,
                                len_numeric=len_numeric,
                                len_categorical=len_categorical,
+                               how_to_plot=how_to_plot
                                )
 
     numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
@@ -153,4 +154,5 @@ def post_boxplots():
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
+                           how_to_plot=how_to_plot,
                            plot=fig)

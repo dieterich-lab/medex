@@ -60,14 +60,14 @@
                     <td>
                         <div class="custom-control custom-radio" >
                             <input type="radio" class="custom-control-input" id="linear" name="how_to_plot" value="linear"
-                                    {% if how_to_plot=="linear" or not how_to_plot %}checked{% endif %}>
+                                    {% if how_to_plot=="linear"  %}checked{% endif %}>
                             <label class="custom-control-label" for="linear">linear</label>
                         </div>
                     </td>
                     <td>
                         <div class="custom-control custom-radio">
                             <input type="radio" class="custom-control-input" id="log" name="how_to_plot" value="log"
-                                {% if how_to_plot=="log"  %}checked{% endif %}>
+                                {% if how_to_plot=="log"  or not how_to_plot %}checked{% endif %}>
                             <label class="custom-control-label" for="log">log</label>
                         </div>
                     </td>

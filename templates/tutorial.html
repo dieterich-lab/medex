@@ -17,6 +17,22 @@
                          width="90%" class="img-responsive">
                 </div>
                 <br />
+                The bar also contains a button that can be used to download a file with names of all entities and their descriptions.
+                <br />
+                <div class="thumbnail">
+                    <img src="{{ url_for('static', filename='images/button_description.png') }}"
+                         width="40%" class="img-responsive">
+                </div>
+                <br />
+                Description of each entity is also visible as a tooltip when you move the mouse over the entity.
+                <br />
+                <div class="thumbnail">
+                    <img src="{{ url_for('static', filename='images/mouse_over.png') }}"
+                         width="90%" class="img-responsive">
+                </div>
+                <br />
+
+
                 The numerical and categorical tables in the database look like in the picture below. They contain only three columns: Transcript_ID, Key and Value. <br />
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/table_browser_long_format.png') }}"
@@ -25,6 +41,32 @@
                     </div>
                 </div>
                <br />
+                <h5>Data filtering</h5>
+                It is possible to filter the data. When you select a filter, it will be applied to every tab.
+                For example If we select filters like the following:
+                <br />
+                <div class="thumbnail">
+                    <img src="{{ url_for('static', filename='images/filtering.png') }}"
+                         width="70%" class="img-responsive">
+                </div>
+                <br />
+                Then only those Transcript_ID where 'Boerries_et_al_2013.enriched is yes' and Conservation by.GenderOrder is no' will be taken into account in subsequent actions.<br />
+                Example result for barchart
+                                <br />
+                <div class="thumbnail">
+                    <img src="{{ url_for('static', filename='images/filtered_barchat.png') }}"
+                         width="90%" class="img-responsive">
+                </div>
+                <br />
+                In parentheses it is also visible how many filters have been applied.
+                                <br />
+                <div class="thumbnail">
+                    <img src="{{ url_for('static', filename='images/parentheses.png') }}"
+                         width="90%" class="img-responsive">
+                </div>
+                <br />
+
+
                 <h5>Explanation of the tabs:</h5>
                 Table browser,Basic Stats, Scatter Plot, Barchart, Histogram, Boxplot, Heatmap
                 <br />

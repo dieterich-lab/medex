@@ -12,7 +12,8 @@ def create_table(rdb):
     statment_header = """CREATE TABLE header ("Name_ID" text Primary key,
                                                     "measurement" text)"""
 
-    statment_entities = """CREATE TABLE name_type ("Key" text Primary key,
+    statment_entities = """CREATE TABLE name_type ( "order" numeric,
+                                                    "Key" text Primary key,
                                                     "type" text,
                                                     "description" text,
                                                     "show" text)"""
@@ -52,6 +53,8 @@ def load_data(entities, dataset,header,rdb):
                 cur.execute("INSERT INTO name_type VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", row)
             elif len(row) == 4:
                 cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING",row)
+            elif len(row) == 5:
+                cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
             else:
                 print("This line doesn't have appropriate format:", row)
     rdb.commit()

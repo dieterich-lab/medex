@@ -67,17 +67,17 @@
                     <td>
                         <div class="custom-control custom-radio">
                             <input type="radio" class="custom-control-input" id="log" name="how_to_plot" value="log"
-                                {% if log  %} checked {% endif %}>
+                                {% if how_to_plot=="log"  %} checked {% endif %}>
                                 <label class="custom-control-label" for="log">log</label>
                         </div>
                     </td>
                     <td>
                         <div class="form-check mt-4" id="log2">
                             <input class="form-check-input" type="checkbox" name="log_x" value="log_x" id="log_x"
-                                {% if og_x %} checked {% endif %} >
+                                {% if how_to_plot=="log_x" %} checked {% endif %} >
                                 <label class="form-check-label" for="log_x">log x</label><br />
                             <input class="form-check-input" type="checkbox"  name="log_y" value="log_y" id="log_y"
-                                {% if log_y %} checked {% endif %}>
+                                {% if how_to_plot=="log_y" %} checked {% endif %}>
                                 <label class="form-check-label" for="log_y">log y</label>
                         </div>
                         </td>

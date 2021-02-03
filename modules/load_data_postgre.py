@@ -10,6 +10,15 @@ def get_header(r):
 
     return df
 
+def get_entities(r):
+    sql = """SELECT "Key","description" FROM name_type order by "order" """
+
+    try:
+        df = pd.read_sql(sql, r)
+        return df
+    except Exception:
+        return ["No data"]
+
 
 def get_categorical_entities(r):
     """ Retrieve  categorical entities and their subcategories from PostrgreSQL
@@ -128,6 +137,7 @@ def get_data(entity,what_table,filter,cat,r):
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
     entity_fin2 = '"'+'" text,"'.join(entity) + '" text'
+
     if not filter:
         sql = """SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",';') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0}) 
          UNION
@@ -137,7 +147,7 @@ def get_data(entity,what_table,filter,cat,r):
         sql3 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
             UNION
                 SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
-                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type desc,"Key" asc ') 
+                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
                 as ct ("Name_ID" text,"measurement" text,{1}) """.format(entity_fin, entity_fin2)
     else:
         fil = [x.replace(" is ","\" in ('").replace(",","','") for x in filter]
@@ -158,7 +168,7 @@ def get_data(entity,what_table,filter,cat,r):
         sql3 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0})
             UNION
                 SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
-                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type desc,"Key" asc') 
+                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
                 as ct ("Name_ID" text,"measurement" text,{1}) where "Name_ID" in (""".format(entity_fin, entity_fin2) + text + """) """
 
 

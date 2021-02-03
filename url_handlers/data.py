@@ -78,6 +78,7 @@ def post_data2():
     filter = data.filter_store
     cat = data.cat
     number_filter = 0
+
     if len(entities) == 0:
         error = "Please select entities"
     else:
@@ -118,6 +119,7 @@ def post_data2():
     data.dict = df.to_dict("records")
     dictOfcolumn = []
     table_schema = []
+
     [dictOfcolumn.append({'data': column_change_name[i]}) for i in range(0, len(column_change_name))]
     [table_schema.append({'data_name': column_change_name[i],'column_name': column_change_name[i],"default": "","order": 1,"searchable": True}) for i in range(0, len(column_change_name))]
     data.table_schema = table_schema

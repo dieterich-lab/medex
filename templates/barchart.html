@@ -67,14 +67,14 @@
                         <td>
                             <div class="custom-control custom-radio" >
                                 <input type="radio" class="custom-control-input" id="count" name="how_to_plot" value="count"
-                                       {% if how_to_plot=="count" or not how_to_plot %}checked{% endif %}>
+                                       {% if how_to_plot=="count"  %}checked{% endif %}>
                                 <label class="custom-control-label" for="count">count</label>
                             </div>
                         </td>
                         <td>
                             <div class="custom-control custom-radio">
                                 <input type="radio" class="custom-control-input" id="%" name="how_to_plot" value="%"
-                                       {% if how_to_plot=="%"  %}checked{% endif %}>
+                                       {% if how_to_plot=="%"  or not how_to_plot %}checked{% endif %}>
                                 <label class="custom-control-label" for="%">%</label>
                             </div>
                         </td>
@@ -84,7 +84,6 @@
 
 
         <button id="Plot"  name="barchart" class="btn btn-outline-info">Plot barchart</button>
-
 
         </div>
     </div>

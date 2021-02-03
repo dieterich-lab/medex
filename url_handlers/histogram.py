@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
+import numpy as np
+import pandas as pd
 from webserver import data, rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
@@ -166,6 +168,17 @@ def post_statistics():
             'yanchor': 'top'})
     fig = fig.to_html()
 
+    #datu=datu[datu[categorical_entities] == 'no']
+    #counts, bins = np.histogram(datu[numeric_entities], bins=21)
+    #bins = 0.5 * (bins[:-1] + bins[1:])
+    #df = pd.DataFrame({"bins": bins[1:], "counts": counts})
+    #df=pd.cut(df['bins'], bins=bins, labels=bins[1:])
+    #print(df)
+    #df = pd.cut(df['visitors'],bins=bins)
+    #agg=
+    #figu = px.bar(df,x='bins', y='counts', labels={'x': 'total_bill', 'y': 'count'},hover_data={'bins':True})
+    #figu.show()
+    #print(counts,bins)
     return render_template('histogram.html',
                            name='{} number'.format(name),
                            block=block,
