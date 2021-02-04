@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block, data
+from webserver import rdb, all_numeric_entities_hs, all_categorical_entities_sc,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block, data
 
 boxplot_page = Blueprint('boxplot', __name__,
                          template_folder='templates')
@@ -18,8 +18,8 @@ def get_boxplots():
     return render_template('boxplot.html',
                            name='{} number'.format(name),
                            block=block,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
+                           all_numeric_entities=all_numeric_entities_hs,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            database=database,
@@ -59,9 +59,23 @@ def post_boxplots():
                                )
     """
     # get selected entities
-    numeric_entities = request.form.get('numeric_entities')
-    categorical_entities = request.form.get('categorical_entities')
-    subcategory_entities = request.form.getlist('subcategory_entities')
+    if 'example1' in request.form:
+        numeric_entities = 'Adriamycin.FDR'
+        categorical_entities = 'Podocyte.Enriched.Transcript'
+        subcategory_entities = all_subcategory_entities[categorical_entities]
+    elif 'example2' in request.form:
+        numeric_entities = 'Wt1.het.2Factor.FDR'
+        categorical_entities = 'Podocyte.Enriched.Transcript'
+        subcategory_entities = all_subcategory_entities[categorical_entities]
+    elif 'example3' in request.form:
+        numeric_entities = 'Pod.R231Q_A286V.2Factor.FDR'
+        categorical_entities = 'Podocyte.Enriched.Transcript'
+        subcategory_entities = all_subcategory_entities[categorical_entities]
+    else:
+        numeric_entities = request.form.get('numeric_entities')
+        categorical_entities = request.form.get('categorical_entities')
+        subcategory_entities = request.form.getlist('subcategory_entities')
+
     how_to_plot = request.form.get('how_to_plot')
     if 'filter' in request.form or 'all_categorical_filter' in request.form:
         filter = request.form.getlist('filter')
@@ -102,8 +116,8 @@ def post_boxplots():
                                name='{} number'.format(name),
                                block=block,
                                error=error,
-                               all_categorical_entities=all_categorical_entities,
-                               all_numeric_entities=all_numeric_entities,
+                               all_categorical_entities=all_categorical_entities_sc,
+                               all_numeric_entities=all_numeric_entities_hs,
                                all_subcategory_entities=all_subcategory_entities,
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
@@ -139,8 +153,8 @@ def post_boxplots():
     return render_template('boxplot.html',
                            name='{} number'.format(name),
                            block=block,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
+                           all_numeric_entities=all_numeric_entities_hs,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            numeric_entities=numeric_entities,

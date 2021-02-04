@@ -19,6 +19,71 @@ def get_entities(r):
     except Exception:
         return ["No data"]
 
+def get_numerical_entities_scatter_plot(r):
+    """ Retrieve numerical entities from PostgreSQL
+
+    get_numeric_entities use in webserver
+
+    r: connection with database
+
+    Returns
+    -------
+    df["Key"]: list of all numerical entities
+    """
+    try:
+        sql = """Select "Key","description" from name_type where type = 'Double' order by "Key" """
+        df = pd.read_sql(sql, r)
+        df = df[~df.Key.isin(['Tau.Measure','Chung.control1.pValue','Chung.control2.pValue','Chung.control3.pValue',
+                              'Distance','DistanceMus','Expression.FPKM.Podocytes','Expression.FPKM.Glomerulus','Expression.FPKM.WholeKidney',
+                              'Podocyte.Enrichment.Boerries_et_al_2013.log2FC','Podocyte.Enrichment.Boerries_et_al_2013.FDR'])]
+        return df
+    except Exception:
+        return ["No data"]
+
+def get_numerical_entities_histogram(r):
+    """ Retrieve numerical entities from PostgreSQL
+
+    get_numeric_entities use in webserver
+
+    r: connection with database
+
+    Returns
+    -------
+    df["Key"]: list of all numerical entities
+    """
+    try:
+        sql = """Select "Key","description" from name_type where type = 'Double' order by "Key" """
+        df = pd.read_sql(sql, r)
+        df = df[~df.Key.isin(['Tau.Measure','Transcript.Length','Number.of.Exons','Chung.control1.pValue','Chung.control2.pValue','Chung.control3.pValue',
+                              'Distance','DistanceMus','Expression.FPKM.Podocytes','Expression.FPKM.Glomerulus','Expression.FPKM.WholeKidney'
+                                 ,'Podocyte.Enrichment.Boerries_et_al_2013.FDR'])]
+        return df
+    except Exception:
+        return ["No data"]
+
+
+def get_categorical_entities_scatter_plot(r):
+    """ Retrieve numerical entities from PostgreSQL
+
+    get_numeric_entities use in webserver
+
+    r: connection with database
+
+    Returns
+    -------
+    df["Key"]: list of all numerical entities
+    """
+
+
+    try:
+        sql = """Select "Key","description" from name_type where "type" = 'String' order by "Key" """
+        df = pd.read_sql(sql, r)
+        df = df[~df.Key.isin(['ClosestNcTx','GeneID.EnsemblHSA.ProteinCoding','GeneID.EnsemblMMU.ProteinCoding','NcRNA.GeneID.HSA',
+                              'GenomicCoordinates','GeneSymbol','GeneSymbol.HSA','NcRNASymbol','Conservation.by.Sequence','XLOCid'
+                                 ,'ConservedBySequenceToHumanTX'])]
+        return df
+    except Exception:
+        return ["No data"]
 
 def get_categorical_entities(r):
     """ Retrieve  categorical entities and their subcategories from PostrgreSQL
@@ -50,7 +115,6 @@ def get_categorical_entities(r):
         df3 = pd.read_sql(sql3, r)
 
         array = []
-        df1 = df1[~df1.Key.isin(['XLOCid'])]
         # create dictionary with categories and subcategories
         for value in df1['Key']:
             dfr2 = {}

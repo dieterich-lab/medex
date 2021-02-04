@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block,data
+from webserver import rdb, all_numeric_entities, all_categorical_entities_sc,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block,data
 
 barchart_page = Blueprint('barchart', __name__,
                            template_folder='templates')
@@ -19,7 +19,7 @@ def get_statistics():
                            numeric_tab=True,
                            block=block,
                            name='{} number'.format(name),
-                           all_categorical_entities=all_categorical_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            database=database,
@@ -35,36 +35,16 @@ def get_statistics():
 @barchart_page.route('/barchart', methods=['POST'])
 def post_statistics():
     # list selected entities
-    """
-    if 'filter_c' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('data.html',
-                               all_entities=all_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
-                               filter=filter,
-                               number_filter=number_filter,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
-                               )
-    """
     if block == 'none':
         measurement = all_measurement.values
     else:
         measurement = request.form.getlist('measurement')
-    categorical_entities = request.form.get('categorical_entities')
-    subcategory_entities = request.form.getlist('subcategory_entities')
+    if 'example1' in request.form:
+        categorical_entities = 'Podocyte.Enriched.Transcript'
+        subcategory_entities = all_subcategory_entities[categorical_entities]
+    else:
+        categorical_entities = request.form.get('categorical_entities')
+        subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
     if 'filter' in request.form or 'all_categorical_filter' in request.form:
         filter = request.form.getlist('filter')
@@ -96,7 +76,7 @@ def post_statistics():
         return render_template('barchart.html',
                                name='{} number'.format(name),
                                 block=block,
-                               all_categorical_entities=all_categorical_entities,
+                               all_categorical_entities=all_categorical_entities_sc,
                                all_subcategory_entities=all_subcategory_entities,
                                all_measurement=all_measurement,
                                measurement2=measurement,
@@ -135,7 +115,7 @@ def post_statistics():
     return render_template('barchart.html',
                            name='{} number'.format(name),
                            block=block,
-                           all_categorical_entities=all_categorical_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
                            all_subcategory_entities=all_subcategory_entities,
                            measurement2=measurement,
                            all_measurement=all_measurement,

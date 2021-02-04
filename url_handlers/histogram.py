@@ -3,7 +3,7 @@ import modules.load_data_postgre as ps
 import plotly.express as px
 import numpy as np
 import pandas as pd
-from webserver import data, rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
+from webserver import data, rdb, all_numeric_entities_hs, all_categorical_entities_sc,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block
 histogram_page = Blueprint('histogram', __name__,
                            template_folder='templates')
 
@@ -21,8 +21,8 @@ def get_statistics():
                            name='{} number'.format(name),
                            block=block,
                            number_of_bins=number_of_bins,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
+                           all_numeric_entities=all_numeric_entities_hs,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            database=database,
@@ -62,10 +62,26 @@ def post_statistics():
                                )
     """
     # get selected entities
-    numeric_entities = request.form.get('numeric_entities')
-    categorical_entities = request.form.get('categorical_entities')
-
-    subcategory_entities = request.form.getlist('subcategory_entities')
+    if 'example3' in request.form:
+        numeric_entities = 'Adriamycin.FDR'
+        categorical_entities = 'Podocyte.Enriched.Transcript'
+        subcategory_entities = all_subcategory_entities[categorical_entities]
+    elif 'example4' in request.form:
+        numeric_entities = 'Wt1.het.2Factor.FDR'
+        categorical_entities = 'Podocyte.Enriched.Transcript'
+        subcategory_entities = all_subcategory_entities[categorical_entities]
+    elif 'example1' in request.form:
+        numeric_entities = 'Adriamycin.log2FC'
+        categorical_entities = 'Podocyte.Enriched.Transcript'
+        subcategory_entities = all_subcategory_entities[categorical_entities]
+    elif 'example2' in request.form:
+        numeric_entities = 'Wt1.het.2Factor.log2FC'
+        categorical_entities = 'Podocyte.Enriched.Transcript'
+        subcategory_entities = all_subcategory_entities[categorical_entities]
+    else:
+        numeric_entities = request.form.get('numeric_entities')
+        categorical_entities = request.form.get('categorical_entities')
+        subcategory_entities = request.form.getlist('subcategory_entities')
     number_of_bins = request.form.get('number_of_bins')
     if 'filter' in request.form or 'all_categorical_filter' in request.form:
         filter = request.form.getlist('filter')
@@ -106,8 +122,8 @@ def post_statistics():
                                name='{} number'.format(name),
                                block=block,
                                number_of_bins=number_of_bins,
-                               all_categorical_entities=all_categorical_entities,
-                               all_numeric_entities=all_numeric_entities,
+                               all_categorical_entities=all_categorical_entities_sc,
+                               all_numeric_entities=all_numeric_entities_hs,
                                all_subcategory_entities=all_subcategory_entities,
                                database=database,
                                size_categorical=size_categorical,
@@ -134,9 +150,9 @@ def post_statistics():
         return render_template('histogram.html',
                                name='{} number'.format(name),
                                block=block,
-                                all_categorical_entities=all_categorical_entities,
+                                all_categorical_entities=all_categorical_entities_sc,
                                number_of_bins=number_of_bins,
-                                all_numeric_entities=all_numeric_entities,
+                                all_numeric_entities=all_numeric_entities_hs,
                                 all_subcategory_entities=all_subcategory_entities,
                                 all_measurement=all_measurement,
                                database=database,
@@ -182,8 +198,8 @@ def post_statistics():
     return render_template('histogram.html',
                            name='{} number'.format(name),
                            block=block,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
+                           all_numeric_entities=all_numeric_entities_hs,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            database=database,

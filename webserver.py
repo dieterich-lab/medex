@@ -43,6 +43,12 @@ if os.environ.get('IMPORT_DISABLED') is None:
 name2, name = ps.get_header(rdb)['Name_ID'][0], ps.get_header(rdb)['measurement'][0]
 all_numeric_entities, size_n = ps.get_numeric_entities(rdb)
 all_categorical_entities, all_subcategory_entities, size_c, entity = ps.get_categorical_entities(rdb)
+all_numeric_entities_sc = ps.get_numerical_entities_scatter_plot(rdb)
+all_numeric_entities_hs = ps.get_numerical_entities_histogram(rdb)
+all_categorical_entities_sc = ps.get_categorical_entities_scatter_plot(rdb)
+all_numeric_entities_sc = all_numeric_entities_sc.to_dict('index')
+all_categorical_entities_sc = all_categorical_entities_sc.to_dict('index')
+all_numeric_entities_hs = all_numeric_entities_hs.to_dict('index')
 
 #all_entities = all_categorical_entities.append(all_numeric_entities, ignore_index=True, sort=False)
 all_entities = ps.get_entities(rdb)

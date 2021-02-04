@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import plotly.express as px
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,\
+from webserver import rdb, all_numeric_entities_sc, all_categorical_entities_sc,all_measurement,all_entities,len_numeric,\
     size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block,data
 
 
@@ -20,8 +20,8 @@ def get_plots():
                             name='{} number'.format(name),
                             block=block,
                             numeric_tab=True,
-                            all_categorical_entities=all_categorical_entities,
-                            all_numeric_entities=all_numeric_entities,
+                            all_categorical_entities=all_categorical_entities_sc,
+                            all_numeric_entities=all_numeric_entities_sc,
                             all_subcategory_entities=all_subcategory_entities,
                             all_measurement=all_measurement,
                             database=database,
@@ -153,8 +153,8 @@ def post_plots():
                                block=block,
                                numeric_tab=True,
                                all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
-                               all_numeric_entities=all_numeric_entities,
+                               all_categorical_entities=all_categorical_entities_sc,
+                               all_numeric_entities=all_numeric_entities_sc,
                                all_measurement=all_measurement,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
@@ -245,8 +245,8 @@ def post_plots():
                            block=block,
                            numeric_tab=True,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
+                           all_numeric_entities=all_numeric_entities_sc,
                            all_measurement=all_measurement,
                            subcategory_entities=subcategory_entities,
                            categorical_entities=categorical_entities,
