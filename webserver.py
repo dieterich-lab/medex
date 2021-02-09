@@ -99,7 +99,7 @@ from url_handlers.boxplot import boxplot_page
 from url_handlers.scatter_plot import scatter_plot_page
 from url_handlers.barchart import barchart_page
 from url_handlers.heatmap import heatmap_plot_page
-from url_handlers.clustering_pl import clustering_plot_page
+#from url_handlers.clustering_pl import clustering_plot_page
 from url_handlers.coplots_pl import coplots_plot_page
 from url_handlers.logout import logout_page
 from url_handlers.tutorial import tutorial_page
@@ -114,7 +114,7 @@ app.register_blueprint(boxplot_page)
 app.register_blueprint(scatter_plot_page)
 app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
-app.register_blueprint(clustering_plot_page)
+#app.register_blueprint(clustering_plot_page)
 app.register_blueprint(coplots_plot_page)
 
 
@@ -299,7 +299,7 @@ def login2():
 
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])
 def download(filename):
-    if filename=='data.csv':
+    if filename == 'data.csv':
         csv=data.csv
 
         # Create a string buffer
@@ -312,8 +312,10 @@ def download(filename):
                          mimetype="text/csv",
                          as_attachment=True,
                          attachment_filename=filename)
-    else:
-        return send_file("import/entities_description.csv",as_attachment=True,attachment_filename=filename)
+    elif filename == 'entities_description.docx':
+        return send_file("import/entities_description.docx", as_attachment=True, attachment_filename=filename)
+    elif filename == 'Flow Chart Calinca_final.pdf':
+        return send_file("import/Flow Chart Calinca_final.pdf",as_attachment=True,attachment_filename=filename)
 
 
 def main():

@@ -25,8 +25,8 @@
 
         <div class="w3-bar w3-border w3-light-blue">
           <div class="w3-bar-item">{{ database }}</div>
-            <a href="{{url_for('download', filename = 'entities_description.docx')}}" id="download" style="background-color: Tomato; color: black" class="btn btn-outline-info">Download entities list</a>
-
+            <a href="{{url_for('download', filename = 'Flow Chart Calinca_final.pdf')}}" id="download" style="background-color: Tomato; color: black" class="btn btn-outline-info">Calinca flowchart</a>
+            <a href="{{url_for('download', filename = 'entities_description.docx')}}" id="download1" style="background-color: Tomato; color: black" class="btn btn-outline-info">Download entities list</a>
           <div class="w3-bar-item">{{ len_numeric }}</div>
           <div class="w3-bar-item">{{ size_numeric }}</div>
             <div class="w3-bar-item">{{ len_categorical }}</div>
@@ -124,10 +124,10 @@
           <li class="nav-item">
             <a class="nav-link" href="/heatmap">Heatmap</a>
           </li>
-          <!-- <li class="nav-item">
+          <<!-- li class="nav-item">
             <a class="nav-link" href="/clustering">Clustering</a>
            </li>
-          <li class="nav-item">
+           <li class="nav-item">
             <a class="nav-link" href="/coplots_pl">Coplots</a>
           </li>
           <li class="nav-item">
