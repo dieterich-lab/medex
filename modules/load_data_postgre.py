@@ -33,9 +33,9 @@ def get_numerical_entities_scatter_plot(r):
     try:
         sql = """Select "Key","description" from name_type where type = 'Double' order by "Key" """
         df = pd.read_sql(sql, r)
-        df = df[~df.Key.isin(['Tau.Measure','Chung.control1.pValue','Chung.control2.pValue','Chung.control3.pValue',
-                              'Distance','DistanceMus','Expression.FPKM.Podocytes','Expression.FPKM.Glomerulus','Expression.FPKM.WholeKidney',
-                              'Podocyte.Enrichment.Boerries_et_al_2013.log2FC','Podocyte.Enrichment.Boerries_et_al_2013.FDR'])]
+        df = df[~df.Key.isin(['TauMeasure','Chung.control1.pValue','Chung.control2.pValue','Chung.control3.pValue',
+                              'Distance.MMU','Distance.HSA','Podocytes.FPKM','Glomerulus.FPKM','WholeKidney.FPKM',
+                              'Podocyte.Enrichment.Boerries.log2FC','Podocyte.Enriched.Boerries.FDR'])]
         return df
     except Exception:
         return ["No data"]
@@ -54,9 +54,9 @@ def get_numerical_entities_histogram(r):
     try:
         sql = """Select "Key","description" from name_type where type = 'Double' order by "Key" """
         df = pd.read_sql(sql, r)
-        df = df[~df.Key.isin(['Tau.Measure','Transcript.Length','Number.of.Exons','Chung.control1.pValue','Chung.control2.pValue','Chung.control3.pValue',
-                              'Distance','DistanceMus','Expression.FPKM.Podocytes','Expression.FPKM.Glomerulus','Expression.FPKM.WholeKidney'
-                                 ,'Podocyte.Enrichment.Boerries_et_al_2013.FDR'])]
+        df = df[~df.Key.isin(['TauMeasure','TranscriptLength','ExonNumber','Chung.control1.pValue','Chung.control2.pValue','Chung.control3.pValue',
+                              'Distance.MMU','Distance.HSA','Podocytes.FPKM','Glomerulus.FPKM','WholeKidney.FPKM',
+                              'Podocyte.Enriched.Boerries.FDR'])]
         return df
     except Exception:
         return ["No data"]
@@ -79,8 +79,8 @@ def get_categorical_entities_scatter_plot(r):
         sql = """Select "Key","description" from name_type where "type" = 'String' order by "Key" """
         df = pd.read_sql(sql, r)
         df = df[~df.Key.isin(['ClosestNcTx','GeneID.EnsemblHSA.ProteinCoding','GeneID.EnsemblMMU.ProteinCoding','NcRNA.GeneID.HSA',
-                              'GenomicCoordinates','GeneSymbol','GeneSymbol.HSA','NcRNASymbol','Conservation.by.Sequence','XLOCid'
-                                 ,'ConservedBySequenceToHumanTX'])]
+                              'GenomicCoordinates','GeneSymbol','GeneSymbol.HSA','NcRNASymbol','SequenceConservation','XLOCid'
+                                 ,'ConservedHumanTX'])]
         return df
     except Exception:
         return ["No data"]
@@ -620,12 +620,13 @@ def get_values_clustering(entity, r):
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
     entity_fin2 = '"'+'" text,"'.join(entity) + '" text'
 
-    sql2 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",'';'') 
+    sql2 = """SELECT * FROM crosstab('SELECT en."Name_ID",en."Key",array_to_string(en."Value",'';'') 
                 as "Value" FROM examination_numerical as en WHERE en."Key" IN ({0}) 
         UNION
-            SELECT ec."Name_ID",ec."measurement",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
-            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by type,"Key"') 
-            as ct ("Name_ID" text,"measurement" text,{1})""".format(entity_fin,entity_fin2)
+            SELECT ec."Name_ID",ec."Key",array_to_string(ec."Value",'';'') as "Value" FROM examination_categorical as ec WHERE ec."Key" IN ({0})',
+            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
+            as ct ("Name_ID" text,{1})""".format(entity_fin,entity_fin2)
+    df = pd.read_sql(sql2, r)
     try:
         df = pd.read_sql(sql2, r)
 

@@ -61,12 +61,12 @@ def post_plots():
                                )
     """
     if 'example1' in request.form:
-        y_axis = 'Pod.R231Q_A286V.4wks.log2FC'
-        x_axis = 'Pod.R231Q_A286V.12wks.log2FC'
+        y_axis = 'Pod.R231Q_A286V.4.log2FC'
+        x_axis = 'Pod.R231Q_A286V.12.logFC'
 
     elif 'example2' in request.form:
-        y_axis = 'Wt1.het.2Factor.log2FC'
-        x_axis = 'Wt1.het.2Factor.FDR'
+        y_axis = 'Wt1.2factor.log2FC'
+        x_axis = 'Wt1.2factor.FDR'
 
     else:
         # list selected data

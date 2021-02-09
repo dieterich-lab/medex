@@ -67,7 +67,7 @@ def post_statistics():
         categorical_entities = 'Podocyte.Enriched.Transcript'
         subcategory_entities = all_subcategory_entities[categorical_entities]
     elif 'example4' in request.form:
-        numeric_entities = 'Wt1.het.2Factor.FDR'
+        numeric_entities = 'Wt1.2factor.FDR'
         categorical_entities = 'Podocyte.Enriched.Transcript'
         subcategory_entities = all_subcategory_entities[categorical_entities]
     elif 'example1' in request.form:
@@ -75,7 +75,7 @@ def post_statistics():
         categorical_entities = 'Podocyte.Enriched.Transcript'
         subcategory_entities = all_subcategory_entities[categorical_entities]
     elif 'example2' in request.form:
-        numeric_entities = 'Wt1.het.2Factor.log2FC'
+        numeric_entities = 'Wt1.2factor.log2FC'
         categorical_entities = 'Podocyte.Enriched.Transcript'
         subcategory_entities = all_subcategory_entities[categorical_entities]
     else:

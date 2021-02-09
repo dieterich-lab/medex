@@ -63,20 +63,22 @@ def post_boxplots():
         numeric_entities = 'Adriamycin.FDR'
         categorical_entities = 'Podocyte.Enriched.Transcript'
         subcategory_entities = all_subcategory_entities[categorical_entities]
+        how_to_plot='linear'
     elif 'example2' in request.form:
-        numeric_entities = 'Wt1.het.2Factor.FDR'
+        numeric_entities = 'Wt1.2factor.FDR'
         categorical_entities = 'Podocyte.Enriched.Transcript'
         subcategory_entities = all_subcategory_entities[categorical_entities]
+        how_to_plot='linear'
     elif 'example3' in request.form:
-        numeric_entities = 'Pod.R231Q_A286V.2Factor.FDR'
+        numeric_entities = 'Pod.R231Q_A286V.2factor.FDR'
         categorical_entities = 'Podocyte.Enriched.Transcript'
         subcategory_entities = all_subcategory_entities[categorical_entities]
+        how_to_plot = 'linear'
     else:
         numeric_entities = request.form.get('numeric_entities')
         categorical_entities = request.form.get('categorical_entities')
         subcategory_entities = request.form.getlist('subcategory_entities')
-
-    how_to_plot = request.form.get('how_to_plot')
+        how_to_plot = request.form.get('how_to_plot')
     if 'filter' in request.form or 'all_categorical_filter' in request.form:
         filter = request.form.getlist('filter')
         cat = request.form.getlist('cat')
