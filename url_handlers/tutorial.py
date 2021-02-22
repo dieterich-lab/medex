@@ -1,18 +1,21 @@
 from flask import Blueprint, render_template
-from webserver import all_subcategory_entities,all_categorical_entities,all_subcategory_entities,name,block,all_numeric_entities,all_measurement,database,size_numeric,len_numeric,len_categorical,data,size_categorical
+from webserver import all_categorical_entities, all_subcategory_entities, measurement_name,\
+    block, all_numeric_entities, all_measurement, database, size_numeric, len_numeric, len_categorical, data,\
+    size_categorical
 
 tutorial_page = Blueprint('tutorial', __name__, template_folder='tepmlates')
 
+
 @tutorial_page.route('/tutorial', methods=['GET', 'POST'])
 def logout():
-    filter = data.filter_store
-    cat = data.cat
+    categorical_filter = data.categorical_filter
+    categorical_names = data.categorical_names
     number_filter = 0
-    if filter != None:
-        number_filter = len(filter)
-        filter = zip(cat, filter)
+    if categorical_filter != None:
+        number_filter = len(categorical_filter)
+        categorical_filter = zip(categorical_names, categorical_filter)
     return render_template('tutorial.html',
-                           name='{} number'.format(name),
+                           name='{} number'.format(measurement_name),
                            block=block,
                            all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
@@ -23,5 +26,5 @@ def logout():
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
-                           filter=filter,
+                           filter=categorical_filter,
                            number_filter=number_filter)

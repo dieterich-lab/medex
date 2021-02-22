@@ -1,9 +1,8 @@
-from flask import Blueprint, render_template, request, session, send_file
+from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,data,name,block
-import pandas as pd
-import io
-import time
+from webserver import rdb, all_numeric_entities, all_categorical_entities_sc, all_measurement,\
+    len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,data,measurement_name,block
+
 
 basic_stats_page = Blueprint('basic_stats', __name__,
                              template_folder='basic_stats')
@@ -12,68 +11,43 @@ basic_stats_page = Blueprint('basic_stats', __name__,
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
-    filter = data.filter_store
-    cat = data.cat
+    categorical_filter = data.categorical_filter
+    categorical_names = data.categorical_names
     number_filter = 0
-    if filter != None:
-        number_filter = len(filter)
-        filter = zip(cat, filter)
+    if categorical_filter is not None:
+        number_filter = len(categorical_filter)
+        categorical_filter = zip(categorical_names, categorical_filter)
     return render_template('basic_stats/basic_stats.html',
-                            numeric_tab=True,
-                            name=name,
-                            block=block,
-                            measurement_name=name,
-                            all_categorical_entities=all_categorical_entities,
+                           numeric_tab=True,
+                           name=measurement_name,
+                           block=block,
+                           measurement_name=measurement_name,
+                           all_categorical_entities=all_categorical_entities_sc,
                            all_subcategory_entities=all_subcategory_entities,
-                            all_numeric_entities=all_numeric_entities,
-                            all_measurement=all_measurement,
-                            database=database,
-                            size_categorical=size_categorical,
-                            size_numeric=size_numeric,
-                            len_numeric=len_numeric,
-                            len_categorical=len_categorical,
-                            filter = filter,
-                           number_filter=number_filter
-                               )
+                           all_numeric_entities=all_numeric_entities,
+                           all_measurement=all_measurement,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical,
+                           filter=categorical_filter,
+                           number_filter=number_filter)
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
-    """
-    if 'filter_c' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('data.html',
-                               all_entities=all_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
-                               filter=filter,
-                               number_filter=number_filter,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
-                               )
-    """
+    id_filter = data.id_filter
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities')
         if 'filter' in request.form or 'all_categorical_filter' in request.form:
-            filter = request.form.getlist('filter')
-            cat = request.form.getlist('cat')
-            data.filter_store = filter
-            data.cat = cat
-            number_filter = 0
-        filter = data.filter_store
-        cat = data.cat
+            categorical_filter = request.form.getlist('filter')
+            categorical_names = request.form.getlist('cat')
+            data.categorical_filter = categorical_filter
+            data.categorical_names = categorical_names
+        categorical_filter = data.categorical_filter
+        categorical_names = data.categorical_names
         number_filter = 0
         if block == 'none':
             measurement1 = all_measurement.values
@@ -85,31 +59,30 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if not measurement1:
-            error = "Please select number of {}".format(name)
+            error = "Please select number of {}".format(measurement_name)
         elif len(numeric_entities) == 0:
             error = "Please select numeric entities"
         elif numeric_entities:
             n, error = ps.number(rdb) if not error else (None, error)
-            df,error = ps.get_num_values_basic_stats(numeric_entities,measurement1,filter,cat, rdb)
-            #if not error:
-            #    if len(numeric_df.index) == 0:
-            #       error = "The selected entities (" + ", ".join(numeric_entities) + ") do not contain any values. "
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
+            df,error = ps.get_num_values_basic_stats(numeric_entities,measurement1,categorical_filter,categorical_names,
+                                                     id_filter, rdb)
+
+        if categorical_filter is not None:
+            number_filter = len(categorical_filter)
+            categorical_filter = zip(categorical_names, categorical_filter)
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
-                                   name=name,
+                                   name=measurement_name,
                                    block=block,
-                                   measurement_name=name,
-                                   all_categorical_entities=all_categorical_entities,
+                                   measurement_name=measurement_name,
+                                   all_categorical_entities=all_categorical_entities_sc,
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
                                    numeric_entities=numeric_entities,
                                    measurement1=measurement1,
-                                   filter=filter,
+                                   filter=categorical_filter,
                                    number_filter=number_filter,
                                    database=database,
                                    size_categorical=size_categorical,
@@ -140,10 +113,10 @@ def get_basic_stats():
             error_message = "You must select at least some statistics"
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
-                                   name=name,
+                                   name=measurement_name,
                                    block=block,
-                                   measurement_name=name,
-                                   all_categorical_entities=all_categorical_entities,
+                                   measurement_name=measurement_name,
+                                   all_categorical_entities=all_categorical_entities_sc,
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
@@ -155,7 +128,7 @@ def get_basic_stats():
                                    len_categorical=len_categorical,
                                    measurement1=measurement1,
                                    instance=instance,
-                                   filter=filter,
+                                   filter=categorical_filter,
                                    number_filter=number_filter,
                                    error=error_message,
                                    )
@@ -166,10 +139,10 @@ def get_basic_stats():
 
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
-                                   name=name,
+                                   name=measurement_name,
                                    block=block,
-                                   measurement_name=name,
-                                   all_categorical_entities=all_categorical_entities,
+                                   measurement_name=measurement_name,
+                                   all_categorical_entities=all_categorical_entities_sc,
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
@@ -183,7 +156,7 @@ def get_basic_stats():
                                    measurement1=measurement1,
                                    instance=instance,
                                    first_value=list(result.keys())[0],
-                                   filter=filter,
+                                   filter=categorical_filter,
                                    number_filter=number_filter
                                    )
 
@@ -194,13 +167,13 @@ def get_basic_stats():
         categorical_entities = request.form.getlist('categorical_entities')
 
         if 'filter' in request.form or 'all_categorical_filter' in request.form:
-            filter = request.form.getlist('filter')
-            cat = request.form.getlist('cat')
-            data.filter_store = filter
-            data.cat = cat
-            number_filter = 0
-        filter = data.filter_store
-        cat = data.cat
+            categorical_filter = request.form.getlist('filter')
+            categorical_names = request.form.getlist('cat')
+            data.categorical_filter = categorical_filter
+            data.categorical_names = categorical_names
+
+        categorical_filter = data.categorical_filter
+        categorical_names = data.categorical_names
         number_filter = 0
         if block == 'none':
             measurement = all_measurement.values
@@ -210,25 +183,26 @@ def get_basic_stats():
         # handling errors and load data from database
         error = None
         if len(measurement) == 0:
-            error = "Please select number of {}".format(name)
+            error = "Please select number of {}".format(measurement_name)
         elif len(categorical_entities) == 0:
             error = "Please select entities"
         else:
             n, error = ps.number(rdb) if not error else (None, error)
-            categorical_df,error = ps.get_cat_values_basic_stats(categorical_entities,measurement,filter,cat, rdb)
+            categorical_df,error = ps.get_cat_values_basic_stats(categorical_entities,measurement,categorical_filter,
+                                                                 categorical_names,id_filter, rdb)
             if not error:
                 if len(categorical_df.index) == 0:
                     error = "The selected entities (" + ", ".join(categorical_entities) + ") do not contain any values. "
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
+        if categorical_filter is not None:
+            number_filter = len(categorical_filter)
+            categorical_filter = zip(categorical_names, categorical_filter)
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    categorical_tab=True,
-                                   name=name,
+                                   name=measurement_name,
                                    block=block,
-                                   measurement_name=name,
-                                   all_categorical_entities=all_categorical_entities,
+                                   measurement_name=measurement_name,
+                                   all_categorical_entities=all_categorical_entities_sc,
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
@@ -239,7 +213,7 @@ def get_basic_stats():
                                    len_categorical=len_categorical,
                                    categorical_entities=categorical_entities,
                                    measurement2=measurement,
-                                   filter=filter,
+                                   filter=categorical_filter,
                                    number_filter=number_filter,
                                    error=error)
 
@@ -252,10 +226,10 @@ def get_basic_stats():
 
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,
-                               name=name,
+                               name=measurement_name,
                                block=block,
-                               measurement_name=name,
-                               all_categorical_entities=all_categorical_entities,
+                               measurement_name=measurement_name,
+                               all_categorical_entities=all_categorical_entities_sc,
                                all_subcategory_entities=all_subcategory_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_measurement=all_measurement,
@@ -268,8 +242,8 @@ def get_basic_stats():
                                measurement2=measurement,
                                instance=instance,
                                basic_stats_c=basic_stats_c,
-                               filter=filter,
-                               number_filter = number_filter)
+                               filter=categorical_filter,
+                               number_filter=number_filter)
 
 
 

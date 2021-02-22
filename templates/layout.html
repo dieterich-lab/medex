@@ -25,8 +25,8 @@
 
         <div class="w3-bar w3-border w3-light-blue">
           <div class="w3-bar-item">{{ database }}</div>
-            <a href="{{url_for('download', filename = 'Flow Chart Calinca_final.pdf')}}" id="download" style="background-color: Tomato; color: black" class="btn btn-outline-info">Calinca flowchart</a>
-            <a href="{{url_for('download', filename = 'entities_description.docx')}}" id="download1" style="background-color: Tomato; color: black" class="btn btn-outline-info">Download entities list</a>
+           <!-- <a href="{{url_for('download', filename = 'Flow Chart Calinca_final.pdf')}}" id="download" style="background-color: Tomato; color: black" class="btn btn-outline-info">Calinca flowchart</a>
+            <a href="{{url_for('download', filename = 'entities_description.docx')}}" id="download1" style="background-color: Tomato; color: black" class="btn btn-outline-info">Download entities list</a> -->
           <div class="w3-bar-item">{{ len_numeric }}</div>
           <div class="w3-bar-item">{{ size_numeric }}</div>
             <div class="w3-bar-item">{{ len_categorical }}</div>
@@ -41,13 +41,15 @@
         </h5>
         </div>
     <form id="form1" action=""  method="POST" >
+
                 <!-- Send dictionary with subcategory data to javascript -->
                 <script >
                      var cat = {{all_subcategory_entities|safe}};
                 </script>
     <div id="filters" class="collapse" aria-labelledby="filters_header" data-parent="#accordion">
         <div class="card-body">
-
+            <span>Patient ID filtered by Medusa</span>
+            <a href="{{url_for('download', filename = 'patient_id.csv')}}" id="download0" class="btn btn-outline-info">Download</a>
             <!-- Send dictionary with subcategory data to javascript -->
              <div class="form-group">
                 <select   name="all_categorical_filter" id="categorical_filter"  style="width: 20%"  class="js-example-basic-single" >
@@ -123,6 +125,9 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/heatmap">Heatmap</a>
+          </li>
+                        <li class="nav-item">
+            <a class="nav-link" href="/logout">Logout</a>
           </li>
           <!-- li class="nav-item">
             <a class="nav-link" href="/clustering">Clustering</a>

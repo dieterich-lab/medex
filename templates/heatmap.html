@@ -57,9 +57,9 @@
 </div>
 <div id="numeric_results" class="collapse {% if measurement %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
-        {% if plot_series %}
-        <div id="heatmap"  data-plot-series="{{ plot_series }}"></div>
-        {% endif %}
+        <div id="scatter_plot" >
+            {{plot | safe}}
+        </div>
     </div>
 </div>
 

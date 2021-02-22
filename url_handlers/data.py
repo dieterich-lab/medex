@@ -1,100 +1,75 @@
 from flask import Blueprint, render_template, request,jsonify
 import modules.load_data_postgre as ps
-from serverside.serverside_table import ServerSideTable
-from serverside import table_schemas
-from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data, name, name2,block,table_builder,all_numeric_entities,all_categorical_entities,all_subcategory_entities
+from webserver import rdb, all_entities, len_numeric, size_categorical, size_numeric, len_categorical, database, data,\
+    Name_ID, measurement_name, block, table_builder, all_numeric_entities, all_categorical_entities_sc,\
+    all_subcategory_entities
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
 
-@data_page.route('/data/data1', methods=['GET', 'POST'])
+@data_page.route('/data/data1', methods=['GET','POST'])
 def get_data():
-    datu = data.dict
-    table_schema=data.table_schema
-    dat = table_builder.collect_data_serverside(request,datu,table_schema)
+    df = data.dict
+    table_schema = data.table_schema
+    dat = table_builder.collect_data_serverside(request, df, table_schema)
     return jsonify(dat)
 
 
 @data_page.route('/data', methods=['GET'])
 def get_data2():
-    filter = data.filter_store
-    cat = data.cat
+    categorical_filter = data.categorical_filter
+    categorical_names = data.categorical_names
     number_filter = 0
-    if filter != None:
-        number_filter = len(filter)
-        filter = zip(cat, filter)
+    if categorical_filter:
+        number_filter = len(categorical_filter)
+        categorical_filter = zip(categorical_names, categorical_filter)
     return render_template('data.html',
                            all_entities=all_entities,
                            all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
                            all_subcategory_entities=all_subcategory_entities,
                            database=database,
                            size_categorical=size_categorical,
                            size_numeric=size_numeric,
                            len_numeric=len_numeric,
                            len_categorical=len_categorical,
-                           filter=filter,
-                           number_filter = number_filter)
+                           filter=categorical_filter,
+                           number_filter=number_filter)
 
 
 @data_page.route('/data', methods=['POST'])
 def post_data2():
     # get selected entities
-
-    """
-    if 'filter_c' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('data.html',
-                               all_entities=all_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
-                               filter=filter,
-                               number_filter=number_filter,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
-                               )
-    """
+    id_filter = data.id_filter
     entities = request.form.getlist('entities')
-    if 'Select all' in entities: entities.remove('Select all')
-    data.table_browser_entites = entities
+
+    data.table_browser_entities = entities
     what_table = request.form.get('what_table')
     if 'filter' in request.form or 'all_categorical_filter' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-    filter = data.filter_store
-    cat = data.cat
+        categorical_filter = request.form.getlist('filter')
+        categorical_names = request.form.getlist('cat')
+        data.categorical_filter = categorical_filter
+        data.categorical_names = categorical_names
+    categorical_filter = data.categorical_filter
+    categorical_names = data.categorical_names
     number_filter = 0
 
     if len(entities) == 0:
         error = "Please select entities"
     else:
-       df, error = ps.get_data(entities, what_table,filter,cat, rdb)
-    if filter != None:
-        number_filter = len(filter)
-        filter = zip(cat, filter)
+       df, error = ps.get_data(entities, what_table, categorical_filter,categorical_names,id_filter,rdb)
+    if categorical_filter is not None:
+        number_filter = len(categorical_filter)
+        categorical_filter = zip(categorical_names, categorical_filter)
     if error:
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
+                               all_categorical_entities=all_categorical_entities_sc,
                                entities=entities,
-                               filter=filter,
+                               filter=categorical_filter,
                                number_filter=number_filter,
                                database=database,
                                size_categorical=size_categorical,
@@ -105,9 +80,9 @@ def post_data2():
 
     if block == 'none':
         df = df.drop(columns=['measurement'])
-        df = df.rename(columns={"Name_ID": "{}".format(name2)})
+        df = df.rename(columns={"Name_ID": "{}".format(Name_ID)})
     else:
-        df = df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+        df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
 
     data.csv = df.to_csv(index=False)
     column = df.columns.tolist()
@@ -133,12 +108,12 @@ def post_data2():
                            all_entities=all_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
                            entities=entities,
                            name=column,
                            what_table=what_table,
                            column=dictOfcolumn,
-                           filter=filter,
+                           filter=categorical_filter,
                            number_filter=number_filter,
                            database=database,
                            size_categorical=size_categorical,

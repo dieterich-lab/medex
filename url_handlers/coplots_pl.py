@@ -1,19 +1,17 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
-
-
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities,all_measurement,all_entities,len_numeric,size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name, block
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement, len_numeric,\
+    size_categorical, size_numeric, len_categorical, all_subcategory_entities, database, measurement_name, block
 
-coplots_plot_page = Blueprint('coplots_pl', __name__,
-                         template_folder='templates')
+coplots_plot_page = Blueprint('coplots_pl', __name__, template_folder='templates')
 
-block = 'none'
+
 @coplots_plot_page.route('/coplots_pl', methods=['GET'])
 def get_coplots():
 
     return render_template('coplots_pl.html',
-                           name='{} number'.format(name),
+                           name='{} number'.format(measurement_name),
                            block=block,
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
@@ -57,7 +55,7 @@ def post_coplots():
     # handling errors and load data from database
     error = None
     if x_measurement == "Search entity" or y_measurement == "Search entity":
-        error = "Please select number of {}".format(name)
+        error = "Please select number of {}".format(measurement_name)
     elif category1 is None or category1 == 'Search entity':
         error = 'Please select category1'
     elif category2 is None or category2 == 'Search entity':
@@ -98,7 +96,7 @@ def post_coplots():
                 else: (None, error)
     if error:
         return render_template('coplots_pl.html',
-                               name='{} number'.format(name),
+                               name='{} number'.format(measurement_name),
                                block=block,
                                all_subcategory_entities=all_subcategory_entities,
                                all_numeric_entities=all_numeric_entities,
@@ -209,7 +207,7 @@ def post_coplots():
 
     fig = fig.to_html()
     return render_template('coplots_pl.html',
-                           name='{} number'.format(name),
+                           name='{} number'.format(measurement_name),
                            block=block,
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,

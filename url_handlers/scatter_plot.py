@@ -1,65 +1,41 @@
 from flask import Blueprint, render_template, request
 import plotly.express as px
 import modules.load_data_postgre as ps
-from webserver import rdb, all_numeric_entities_sc, all_categorical_entities_sc,all_measurement,all_entities,len_numeric,\
-    size_categorical,size_numeric,len_categorical,all_subcategory_entities,database,name,name2,block,data
-
+from webserver import rdb, all_numeric_entities_sc, all_categorical_entities_sc, all_measurement, len_numeric,\
+    size_categorical, size_numeric, len_categorical, all_subcategory_entities, database, Name_ID, measurement_name,\
+    block, data
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-    filter = data.filter_store
-    cat = data.cat
+    categorical_filter = data.categorical_filter
+    categorical_names = data.categorical_names
     number_filter = 0
-    if filter != None:
-        number_filter = len(filter)
-        filter = zip(cat, filter)
+    if categorical_filter:
+        number_filter = len(categorical_filter)
+        categorical_filter = zip(categorical_names, categorical_filter)
     return render_template('scatter_plot.html',
-                            name='{} number'.format(name),
-                            block=block,
-                            numeric_tab=True,
-                            all_categorical_entities=all_categorical_entities_sc,
-                            all_numeric_entities=all_numeric_entities_sc,
-                            all_subcategory_entities=all_subcategory_entities,
-                            all_measurement=all_measurement,
-                            database=database,
-                            size_categorical=size_categorical,
-                            size_numeric=size_numeric,
-                            len_numeric=len_numeric,
-                            len_categorical=len_categorical,
-                           filter=filter,
-                           number_filter=number_filter
-                               )
+                           name='{}'.format(measurement_name),
+                           block=block,
+                           numeric_tab=True,
+                           all_categorical_entities=all_categorical_entities_sc,
+                           all_numeric_entities=all_numeric_entities_sc,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_measurement=all_measurement,
+                           database=database,
+                           size_categorical=size_categorical,
+                           size_numeric=size_numeric,
+                           len_numeric=len_numeric,
+                           len_categorical=len_categorical,
+                           filter=categorical_filter,
+                           number_filter=number_filter)
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
-    """
-    if 'filter_c' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('data.html',
-                               all_entities=all_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
-                               filter=filter,
-                               number_filter=number_filter,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
-                               )
-    """
+
     if 'example1' in request.form:
         y_axis = 'Pod.R231Q_A286V.4.log2FC'
         x_axis = 'Pod.R231Q_A286V.12.logFC'
@@ -80,6 +56,7 @@ def post_plots():
         x_measurement = request.form.get('x_measurement')
         y_measurement = request.form.get('y_measurement')
 
+    id_filter = data.id_filter
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
@@ -87,19 +64,17 @@ def post_plots():
     log_y = request.form.get('log_y')
     add_group_by = request.form.get('add_group_by') is not None
     if 'filter' in request.form or 'all_categorical_filter' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-    filter = data.filter_store
-    cat = data.cat
+        categorical_filter = request.form.getlist('filter')
+        categorical_names = request.form.getlist('cat')
+        data.categorical_filter = categorical_filter
+        data.categorical_names = categorical_names
+    categorical_filter = data.categorical_filter
+    categorical_names = data.categorical_names
     number_filter = 0
 
     # handling errors and load data from database
-    error = None
     if x_measurement == "Search entity" or y_axis == "Search entity":
-        error = "Please select number of {}".format(name)
+        error = "Please select number of {}".format(measurement_name)
     elif x_axis == "Search entity" or y_axis == "Search entity":
         error = "Please select x_axis and y_axis"
     elif x_axis == y_axis and x_measurement == y_measurement:
@@ -111,7 +86,8 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     elif add_group_by and categorical_entities:
-        numerical_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement,filter,cat, rdb)
+        numerical_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement,
+                                                         categorical_filter, categorical_names, id_filter, rdb)
         if x_axis == y_axis:
             x_axis_v = x_axis+'_x'
             y_axis_v = y_axis + '_y'
@@ -119,17 +95,19 @@ def post_plots():
             x_axis_v = x_axis
             y_axis_v = y_axis
         if not error:
-            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],filter,cat, rdb)
+            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
+                                        categorical_filter, categorical_names, id_filter, rdb)
             if not error:
                 categorical_df = numerical_df.merge(df, on="Name_ID").dropna()
                 categorical_df = categorical_df.sort_values(by=[categorical_entities])
                 categorical_df = categorical_df.rename(
-                    columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+                    columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
                 if len(categorical_df[categorical_entities]) == 0:
                     error = "Category {} is empty".format(categorical_entities)
     else:
-        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement,filter,cat, rdb)
-        numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(name2), "measurement": "{}".format(name)})
+        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement,categorical_filter,
+                                                       categorical_names,id_filter, rdb)
+        numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
         if x_axis == y_axis:
             x_axis_v = x_axis+'_x'
             y_axis_v = y_axis + '_y'
@@ -144,12 +122,12 @@ def post_plots():
                 error = "Category {} is empty".format(y_axis)
             elif len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
-    if filter != None:
-        number_filter = len(filter)
-        filter = zip(cat, filter)
+    if categorical_filter != None:
+        number_filter = len(categorical_filter)
+        categorical_filter = zip(categorical_names, categorical_filter)
     if error:
         return render_template('scatter_plot.html',
-                               name='{} number'.format(name),
+                               name='{}'.format(measurement_name),
                                block=block,
                                numeric_tab=True,
                                all_subcategory_entities=all_subcategory_entities,
@@ -168,7 +146,7 @@ def post_plots():
                                y_axis=y_axis,
                                x_measurement=x_measurement,
                                y_measurement=y_measurement,
-                               filter=filter,
+                               filter=categorical_filter,
                                number_filter=number_filter,
                                error=error,
                                )
@@ -178,42 +156,44 @@ def post_plots():
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
         if add_group_by :
-            categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
-            fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse', template="plotly_white",
-                                 trendline="ols")
+            categorical_df['hover_mouse'] = categorical_df[Name_ID]
+            fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities,
+                             hover_name='hover_mouse', template="plotly_white",trendline="ols")
         else:
-            numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
-            fig = px.scatter(numeric_df,x=x_axis_v, y=y_axis_v,hover_name ='hover_mouse', template = "plotly_white",trendline="ols")
+            numeric_df['hover_mouse'] = numeric_df[Name_ID]
+            fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v,hover_name ='hover_mouse', template="plotly_white",
+                             trendline="ols")
 
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if add_group_by:
-                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
-                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
-                                 template="plotly_white",trendline="ols",log_x=True, log_y=True)
+                categorical_df['hover_mouse'] = categorical_df[Name_ID]
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities,
+                                 hover_name='hover_mouse', template="plotly_white", trendline="ols", log_x=True,
+                                 log_y=True)
 
             else:
-                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
+                numeric_df['hover_mouse'] = numeric_df[Name_ID]
                 fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
-                                 trendline="ols",log_x=True, log_y=True)
+                                 trendline="ols", log_x=True, log_y=True)
         elif log_x == 'log_x':
             if add_group_by:
-                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
+                categorical_df['hover_mouse'] = categorical_df[Name_ID]
                 fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols", log_x=True)
 
             else:
-                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
+                numeric_df['hover_mouse'] = numeric_df[Name_ID]
                 fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_x=True)
         elif log_y == 'log_y':
             if add_group_by:
-                categorical_df['hover_mouse'] = categorical_df[name2] + '<br />' + categorical_df["GeneSymbol"]
+                categorical_df['hover_mouse'] = categorical_df[Name_ID]
                 fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols",  log_y=True)
 
             else:
-                numeric_df['hover_mouse'] = numeric_df[name2] + '<br />' + numeric_df["GeneSymbol"]
+                numeric_df['hover_mouse'] = numeric_df[Name_ID]
                 fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_y=True)
 
@@ -222,7 +202,7 @@ def post_plots():
         fig.update_layout(
             font=dict(size=16),
             title={
-                'text': "Compare values of <b>" + x_axis +  "</b> and <b>" + y_axis,
+                'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis,
                 'y': 0.9,
                 'x': 0.5,
                 'xanchor': 'center',
@@ -232,7 +212,8 @@ def post_plots():
         fig.update_layout(
             font=dict(size=16),
             title={
-                'text': "Compare values of <b>" + x_axis + "</b> : "+ name +" <b>" + x_measurement + "</b> and <b>" + y_axis + "</b> : " + name + " <b>" + y_measurement + "</b> ",
+                'text': "Compare values of <b>" + x_axis + "</b> : " + measurement_name + "<b>" + x_measurement +
+                        "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" + y_measurement + "</b> ",
                 'y': 0.9,
                 'x': 0.5,
                 'xanchor': 'center',
@@ -241,7 +222,7 @@ def post_plots():
     fig = fig.to_html()
 
     return render_template('scatter_plot.html',
-                           name='{} number'.format(name),
+                           name='{}'.format(measurement_name),
                            block=block,
                            numeric_tab=True,
                            all_subcategory_entities=all_subcategory_entities,
@@ -263,7 +244,7 @@ def post_plots():
                            how_to_plot=how_to_plot,
                            x_measurement=x_measurement,
                            y_measurement=y_measurement,
-                           filter=filter,
+                           filter=categorical_filter,
                            number_filter=number_filter,
                            plot=fig
                            )
