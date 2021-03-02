@@ -75,9 +75,9 @@ def get_categorical_entities(r):
         # create dictionary with categories and subcategories
         for value in df2['Key']:
             df = {}
-            df2 = df3[df3["Key"] == value]
-            del df2['Key']
-            df[value] = list(df2['Value'])
+            df4 = df3[df3["Key"] == value]
+            del df4['Key']
+            df[value] = list(df4['Value'])
             array.append(df)
 
         df = dict(ChainMap(*array))
