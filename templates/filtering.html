@@ -1,0 +1,66 @@
+<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+        <div class="card-header" id="filters_header" style="background-color: bisque">
+        <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#filters" aria-expanded="true" aria-controls="filters">
+                <i class="fa fa-filter" style="font-size:24px"></i>Filters ({{number_filter}})
+            </button>
+        </h5>
+        </div>
+    <form id="form1" action=""  method="POST" >
+
+                <!-- Send dictionary with subcategory data to javascript -->
+                <script >
+                     var cat = {{all_subcategory_entities|safe}};
+                </script>
+    <div id="filters" class="collapse" aria-labelledby="filters_header" data-parent="#accordion">
+        <div class="card-body">
+            <span>Patient ID filtered by Medusa</span>
+            <a href="{{url_for('download', filename = 'patient_id.csv')}}" id="download0" class="btn btn-outline-info">Download</a>
+            <!-- Send dictionary with subcategory data to javascript -->
+             <div class="form-group">
+                <select   name="all_categorical_filter" id="categorical_filter"  style="width: 20%"  class="js-example-basic-single" >
+                    <option {% if not categorical_filter %} selected {% endif %}>Search entity</option>
+                    {% for entity in all_categorical_entities %}
+                        <option title="{{ all_categorical_entities[entity].description }}" value="{{ all_categorical_entities[entity].Key }}">{{ all_categorical_entities[entity].Key }}</option>
+                    {% endfor %}
+                </select>
+            is
+                <select id="subcategory_filter" multiple style="width: 20%" name="subcategory_filter" class="form-control" >
+
+                </select>
+
+
+                <button type="button" onclick="myFunction()">Add</button>
+                <br>
+                    <span>Filters</span>
+                    <button type="button" name='clean' id ="clean" >Clear All</button>
+                    <div id="demo"  >
+                    {% if filter %}
+                    {% for cat,filter in filter %}
+                        <button  class='btn btn-outline-primary' ><span class='close' onclick="remove(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+            </div>
+            </div>
+                         <script>
+
+                function remove(el) {
+                    $(el).parent('button').remove();
+                }
+
+                function myFunction() {
+                  var e =document.getElementById("categorical_filter");
+                  var mag = e.options[e.selectedIndex].value;
+                  var e2 =$('#subcategory_filter').val();
+                  var m1 = mag
+                  var mm = mag + " is " +e2
+                  document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  class='btn btn-outline-primary'  ><span onclick='remove(this)'  class='close' > x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + m1+"'>" + mm + "</button>";
+
+                }
+
+                </script>
+
+
+</div>

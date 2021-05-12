@@ -1,10 +1,15 @@
 {% extends "layout.html" %}
 {% block body %}
-
+<form action="" method="POST">
+    <div id="menu">
+    {% include 'sidebar.html' %}
+    </div>
 {# imports #}
     {# our own js #}
+    <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
     <script src="{{ url_for('static', filename='js/heatmap.js') }}"></script>
 
+    {# pretty multiselect inputs #}
     {# plotly and jquery #}
     <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
@@ -12,7 +17,6 @@
     {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
@@ -20,7 +24,7 @@
 
 {# end of imports #}
 
-
+<div id="content">
 <div class="card">
     <div class="card-header" id="settings_header">
         <h5 class="mb-0">
@@ -38,11 +42,9 @@
             {{ m.show_error(error) }}
             {% endif %}
 
-                {{ m.entity_form4(id4= "measurement",name =all_measurement,value=entity,select=measurement,d=name,block=block) }}
-                {{ m.entity_form2(id2= "numeric_entities",name =all_numeric_entities ,value=entity,select=numeric_entities,d="Numeric entities:") }}
-
-                <button id="Plot"  name="heatmap" class="btn btn-outline-info">Plot</button>
-
+            {{ m.entity_form_single_measurement(id_single_measurement="measurement",name =all_measurement,value=entity,select=measurement,d=name,block=block) }}
+            {{ m.entity_form_multiple(id_multiple="numeric_entities",class="numeric_entities",name=all_numeric_entities ,value=entity,select=numeric_entities,d="Numeric entities:") }}
+            <button id="Plot"  name="heatmap" class="btn btn-outline-info">Plot</button>
         </div>
     </div>
 </div>
@@ -62,7 +64,7 @@
         </div>
     </div>
 </div>
-
-
+</div>
+</form>
 {% endblock %}
 

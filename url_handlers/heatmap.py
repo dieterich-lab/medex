@@ -3,8 +3,9 @@ import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.graph_objects as go
-from webserver import rdb, all_numeric_entities, all_categorical_entities_sc, all_measurement, len_numeric, \
-    size_categorical, size_numeric, len_categorical, database, measurement_name, block, all_subcategory_entities, data
+import url_handlers.filtering as filtering
+from webserver import rdb, all_numeric_entities, all_categorical_entities_sc, all_measurement,measurement_name, block, \
+    all_subcategory_entities, data
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
@@ -12,12 +13,7 @@ heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
 
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
-    categorical_filter = data.categorical_filter
-    categorical_names = data.categorical_names
-    number_filter = 0
-    if categorical_filter is not None:
-        number_filter = len(categorical_filter)
-        categorical_filter = zip(categorical_names, categorical_filter)
+    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
     return render_template('heatmap.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -26,33 +22,23 @@ def get_plots():
                            all_subcategory_entities=all_subcategory_entities,
                            all_categorical_entities=all_categorical_entities_sc,
                            all_measurement=all_measurement,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical,
-                           number_filter=number_filter,
                            filter=categorical_filter
                            )
 
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
 def post_plots():
+
     # get selected entities
-    id_filter = data.id_filter
     numeric_entities = request.form.getlist('numeric_entities')
-    if 'filter' in request.form or 'all_categorical_filter' in request.form:
-        categorical_filter = request.form.getlist('filter')
-        categorical_names = request.form.getlist('cat')
-        data.categorical_filter = categorical_filter
-        data.categorical_names = categorical_names
-    categorical_filter = data.categorical_filter
-    categorical_names = data.categorical_names
-    number_filter = 0
     if block == 'none':
         measurement = all_measurement.values[0]
     else:
         measurement = request.form.get('measurement')
+
+    # get filter
+    id_filter = data.id_filter
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
 
     # handling errors and load data from database
     if measurement == "Search entity":
@@ -68,9 +54,7 @@ def post_plots():
         error = "Please select more then one category"
     else:
         error = "Please select numeric entities"
-    if categorical_filter is not None:
-        number_filter = len(categorical_filter)
-        categorical_filter = zip(categorical_names, categorical_filter)
+
     if error:
         return render_template('heatmap.html',
                                name='{}'.format(measurement_name),
@@ -79,16 +63,10 @@ def post_plots():
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_categorical_entities=all_categorical_entities_sc,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
                                numeric_entities=numeric_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
-                               number_filter=number_filter,
-                               filter=categorical_filter,
+                               filter=categorical_filter_zip,
                                error=error)
 
     # calculate person correlation
@@ -143,15 +121,9 @@ def post_plots():
                            all_subcategory_entities=all_subcategory_entities,
                            all_categorical_entities=all_categorical_entities_sc,
                            all_measurement=all_measurement,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical,
                            numeric_entities=numeric_entities,
                            measurement=measurement,
                            plot_series=plot_series,
                            plot=fig,
-                           number_filter=number_filter,
-                           filter=categorical_filter
+                           filter=categorical_filter_zip
                            )

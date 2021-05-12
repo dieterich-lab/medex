@@ -77,7 +77,7 @@ def load_data(entities, dataset,header,rdb):
     rdb.commit()
     in_file.close()
 
-    with open(dataset, 'r') as in_file:
+    with open(dataset, 'r',encoding="utf8", errors='ignore') as in_file:
         i = 0
         for row in in_file:
             i += 1
@@ -85,11 +85,14 @@ def load_data(entities, dataset,header,rdb):
             row = row.replace('"', "")
             row = row.replace("\n", "").split(",")
             # insert data from dataset.csv to table examination
-            line = [i] + row[0:5] + [";".join([str(x) for x in row[5:]])]
+            line = [i] + row[0:1] + [1] + row[2:5] + [";".join([str(x) for x in row[5:]])]
             if len(row) < 6:
                 print("This line doesn't have appropriate format:", row)
             else:
-                cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)", line)
+                try:
+                    cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)", line)
+                except:
+                    print(line)
 
     rdb.commit()
     in_file.close()

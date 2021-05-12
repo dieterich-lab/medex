@@ -1,16 +1,17 @@
 version: '3'
 services:
-  medex_calinca:
+  medex:
+    image: aljoschak1/medex
     build: .
     ports:
-      - "800:800"
+      - "80:80"
     depends_on: # other containers it needs in order to run
       - database
     environment:
       - PYTHONUNBUFFERED=1
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=calinca
+      - POSTGRES_DB=example
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=database
     volumes:
@@ -24,7 +25,7 @@ services:
     environment:
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=calinca
+      - POSTGRES_DB=example
     restart: always
 
 

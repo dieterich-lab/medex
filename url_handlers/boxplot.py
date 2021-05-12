@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
+import url_handlers.filtering as filtering
 from webserver import rdb, all_numeric_entities_sc, all_categorical_entities_sc, all_measurement,\
-    len_numeric, size_categorical, size_numeric, len_categorical, all_subcategory_entities, database, measurement_name,\
-    Name_ID, block, data
+    all_subcategory_entities, measurement_name,Name_ID, block, data
 
 boxplot_page = Blueprint('boxplot', __name__,
                          template_folder='templates')
@@ -11,12 +11,7 @@ boxplot_page = Blueprint('boxplot', __name__,
 
 @boxplot_page.route('/boxplot', methods=['GET'])
 def get_boxplots():
-    categorical_filter = data.categorical_filter
-    categorical_names = data.categorical_names
-    number_filter = 0
-    if categorical_filter:
-        number_filter = len(categorical_filter)
-        categorical_filter = zip(categorical_filter, categorical_names)
+    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
     return render_template('boxplot.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -24,49 +19,25 @@ def get_boxplots():
                            all_numeric_entities=all_numeric_entities_sc,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical,
                            filter=categorical_filter,
-                           number_filter=number_filter,
                            )
 
 
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
-    id_filter = data.id_filter
 
-    if 'example1' in request.form:
-        numeric_entities = 'Adriamycin.FDR'
-        categorical_entities = 'Podocyte.Enriched.Transcript'
-        subcategory_entities = all_subcategory_entities[categorical_entities]
-        how_to_plot='linear'
-    elif 'example2' in request.form:
-        numeric_entities = 'Wt1.2factor.FDR'
-        categorical_entities = 'Podocyte.Enriched.Transcript'
-        subcategory_entities = all_subcategory_entities[categorical_entities]
-        how_to_plot='linear'
-    else:
-        numeric_entities = request.form.get('numeric_entities')
-        categorical_entities = request.form.get('categorical_entities')
-        subcategory_entities = request.form.getlist('subcategory_entities')
-        how_to_plot = request.form.get('how_to_plot')
-        
-    if 'filter' in request.form or 'all_categorical_filter' in request.form:
-        categorical_filter = request.form.getlist('filter')
-        categorical_names = request.form.getlist('cat')
-        data.categorical_filter = categorical_filter
-        data.categorical_names = categorical_names
-
-    categorical_filter = data.categorical_filter
-    categorical_names = data.categorical_names
-    number_filter = 0
     if block == 'none':
         measurement = all_measurement.values
     else:
         measurement = request.form.getlist('measurement')
+
+    numeric_entities = request.form.get('numeric_entities')
+    categorical_entities = request.form.get('categorical_entities')
+    subcategory_entities = request.form.getlist('subcategory_entities')
+    how_to_plot = request.form.get('how_to_plot')
+
+    id_filter = data.id_filter
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
 
     # handling errors and load data from database
     error = None
@@ -79,13 +50,12 @@ def post_boxplots():
     if not error:
         df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement,
                                           categorical_filter, categorical_names, id_filter, rdb)
+        df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
         if not error:
             df = df.dropna()
             if len(df.index) == 0:
                 error = "This two entities don't have common values"
-    if categorical_filter is not None:
-        number_filter = len(categorical_filter)
-        categorical_filter = zip(categorical_names, categorical_filter)
+
     if error:
         return render_template('boxplot.html',
                                name='{}'.format(measurement_name),
@@ -99,17 +69,10 @@ def post_boxplots():
                                subcategory_entities=subcategory_entities,
                                measurement1=measurement,
                                all_measurement=all_measurement,
-                               filter=categorical_filter,
-                               number_filter=number_filter,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
+                               filter=categorical_filter_zip,
                                how_to_plot=how_to_plot
                                )
 
-    df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
     # Plot figure and convert to an HTML string representation
     if block == 'none':
         if how_to_plot == 'linear':
@@ -124,7 +87,6 @@ def post_boxplots():
     fig.update_layout(font=dict(size=16))
     fig = fig.to_html()
 
-
     return render_template('boxplot.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -136,12 +98,6 @@ def post_boxplots():
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            measurement1=measurement,
-                           filter=categorical_filter,
-                           number_filter=number_filter,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical,
+                           filter=categorical_filter_zip,
                            how_to_plot=how_to_plot,
                            plot=fig)

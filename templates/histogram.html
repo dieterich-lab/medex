@@ -1,9 +1,13 @@
 {% extends "layout.html" %}
 {% block body %}
-
+<form action="" method="POST">
+    <div id="menu">
+    {% include 'sidebar.html' %}
+    </div>
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/histogram.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
 
     {# plotly and jquery #}
     <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
@@ -20,7 +24,7 @@
 
 {# end of imports #}
 
-
+<div id="content">
 <div class="card">
         <div id="page" class="mx-4"></div>
 
@@ -29,10 +33,6 @@
             <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
                 Settings
             </button>
-            <!-- <button id="Example1" style="color:black;" type="submit" name="example1" class="btn btn-link">Example 1</button>
-            <button id="Example2" style="color:black;" type="submit" name="example2" class="btn btn-link">Example 2</button>
-            <button id="Example3" style="color:black;" type="submit" name="example3" class="btn btn-link">Example 3</button>
-            <button id="Example4" style="color:black;" type="submit" name="example4" class="btn btn-link">Example 4</button> -->
         </h5>
     </div>
     <div id="settings" class="collapse show "
@@ -44,9 +44,9 @@
             {{ m.show_error(error) }}
             {% endif %}
 
-                {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement,d=name,block=block) }}
-                {{ m.entity_form(id= "numeric_entities",name =all_numeric_entities,value=entity,select=numeric_entities,d="Numeric entities:") }}
-                {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities,value=entity,select=categorical_entities,d="Group by:") }}
+                {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name=all_measurement,value=entity,select=measurement,d=name,block=block) }}
+                {{ m.entity_form_single(id_single="numeric_entities",class="axis",name=all_numeric_entities,value=entity,select=numeric_entities,d="Numeric entities:") }}
+                {{ m.entity_form_single(id_single= "categorical_entities",class="categorical_entities",name =all_categorical_entities,select=categorical_entities,value=entity,d="Group by:") }}
 
 
                 <!-- Send dictionary with subcategory data to javascript -->
@@ -55,7 +55,7 @@
                 </script>
                 <div class="tooltips" title="Please select category and next subcategory" >
                     <label>Subcategory: </label>
-                    <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control" >
+                    <select style="width: 100%" multiple class="subcategory_entities" name="subcategory_entities" class="form-control" >
                             <option value="Select all">Select all</option>
                             {% for entity in all_subcategory_entities[categorical_entities] %}
                             <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
@@ -90,4 +90,6 @@
         {% endif %}
     </div>
 </div>
+</div>
+</form>
 {% endblock %}

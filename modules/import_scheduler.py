@@ -63,7 +63,7 @@ def start_import(rdb):
     settings = ImportSettings()
     print('starting import', datetime.now().strftime('%H:%M:%S'))
     dataset = './import/dataset.csv'
-    entities ='./import/entities.csv'
+    entities = './import/entities.csv'
     header = './import/header.csv'
 
 

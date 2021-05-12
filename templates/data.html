@@ -1,18 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
+<form action="" method="POST">
+    <div id="menu">
+    {% include 'sidebar.html' %}
+    </div>
+
 
 {# imports #}
     {# our own js #}
+    <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
     <script src="{{ url_for('static', filename='js/data.js') }}"></script>
-
 
     {# plotly and jquery #}
     <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery-3.5.1.js') }}"></script>
-
-    {# export tables #}
-    <script type="text/javascript" src="{{ url_for('static', filename='table2excel.js') }}" ></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='tabletoCSV.js') }}" ></script>
 
     {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
@@ -22,13 +23,11 @@
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
 
-
-
-
 {# end of imports #}
+
+<div id="content">
 <div class="card">
     <div class="card-header" id="settings_header">
         <h5 class="mb-0">
@@ -46,24 +45,19 @@
             {{ m.show_error(error) }}
             {% endif %}
 
-
-
-
-                {{ m.entity_form2(id2= "entities",name =all_entities,value=entity,select=entities,d="Entities:") }}
-                <label >Table: </label>
-                <div class="custom-control custom-radio" >
-                    <input type="radio" class="custom-control-input" id="long" name="what_table" value="long"
-                           {% if what_table =="long" or not what_table %}checked{% endif %}>
-                            <label class="custom-control-label" for="long">long format</label>
-                </div>
-                <div class="custom-control custom-radio">
-                    <input type="radio" class="custom-control-input" id="short" name="what_table" value="short"
-                           {% if what_table =="short"  %} checked {% endif %}>
-                            <label class="custom-control-label" for="short">entities as columns</label>
-                </div>
-                <button id="Plot"  name="Result" class="btn btn-outline-info">Result</button>
-
-
+            {{ m.entity_form_multiple(id_multiple="entities",name =all_entities,value=entity,select=entities,d="Entities:") }}
+            <label >Table: </label>
+            <div class="custom-control custom-radio" >
+                <input type="radio" class="custom-control-input" id="long" name="what_table" value="long"
+                       {% if what_table =="long" or not what_table %}checked{% endif %}>
+                <label class="custom-control-label" for="long">long format</label>
+            </div>
+            <div class="custom-control custom-radio">
+                <input type="radio" class="custom-control-input" id="short" name="what_table" value="short"
+                       {% if what_table =="short"  %} checked {% endif %}>
+                <label class="custom-control-label" for="short">entities as columns</label>
+            </div>
+            <button id="Plot" name="Result" class="btn btn-outline-info">Result</button>
         </div>
     </div>
 </div>
@@ -82,8 +76,7 @@
     <div class="card-body">
         {% if name %}
         <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
-        <br>
-        <br>
+        <br><br>
         <div id="tab"  column="{{ column }}"></div>
         <table id="serverside_table" class="display" width="100%">
             <thead>
@@ -92,15 +85,12 @@
                 <th>{{ i }}</th>
                 {% endfor %}
             </tr>
-        </thead>
+            </thead>
         </table>
-
-
-
         {% endif %}
-
         </div>
     </div>
 </div>
-
+</div>
+</form>
 {% endblock %}

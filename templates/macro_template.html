@@ -1,3 +1,5 @@
+
+<!-- error -->
 {% macro show_error(error) %}
   <div class="alert alert-danger mt-2" role="alert">
     <div class="row">
@@ -7,11 +9,23 @@
   </div>
 {%- endmacro %}
 
-<!-- single selector -->
-{%- macro entity_form(id,name,value,select,d) %}
+<!-- multiple selector entity -->
+{%- macro entity_form_multiple(id_multiple,class,name,value,select,d) %}
     <div class="form-group">
-        <label for="{{ id }}">{{ d }}</label>
-        <select  name="{{ id }}" id="{{ id }}" style="width: 100%" class="js-example-basic-single" >
+        <label for="{{ id_multiple }}">{{ d }}</label>
+        <select multiple class="{{class}}" name="{{ id_multiple }}" id="{{ id_multiple }}" class="form-control" style="width: 100%">
+        {% for entity in name %}
+            <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key in select %}selected{% endif %}>{{ name[entity].Key }}</option>
+        {% endfor %}
+        </select>
+    </div>
+{%- endmacro %}
+
+<!-- single selector entity -->
+{%- macro entity_form_single(id_single,name,class,value,select,d) %}
+    <div class="form-group">
+        <label for="{{ id_single }}">{{ d }}</label>
+        <select class="{{ class }}" name="{{ id_single }}" id="{{ id_single }}" class="js-example-basic-single" style="width: 100%">
             <option {% if not select %} selected {% endif %}>Search entity</option>
             {% for entity in name %}
                 <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key == select %}selected{% endif %}>{{ name[entity].Key }}</option>
@@ -22,40 +36,11 @@
 
 
 
-<!-- multiple selector -->
-{%- macro entity_form2(id2,name,value,select,d) %}
-    <div class="form-group">
-        <label for="{{ id2 }}">{{ d }}</label>
-        <select multiple name="{{ id2 }}" id="{{ id2 }}" class="form-control" style="width: 100%">
-        {% for entity in name %}
-            <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key in select %}selected{% endif %}>{{ name[entity].Key }}</option>
-        {% endfor %}
-        </select>
-    </div>
-{%- endmacro %}
-
-
-<!-- multiple selector + Select All-->
-{%- macro entity_form22(id22,name,value,select,d) %}
-    <div class="form-group">
-        <label for="{{ id22 }}">{{ d }}</label>
-        <select multiple name="{{ id22 }}" id="{{ id22 }}" class="form-control" style="width: 100%">
-        <option value="Select all">Select all</option>
-        {% for entity in name %}
-            <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key in select %}selected{% endif %}>{{ name[entity].Key }}</option>
-        {% endfor %}
-        </select>
-    </div>
-{%- endmacro %}
-
-
-<!-- <a href="url">link text</a> and title -->
-
-<!-- multiple selector -->
-{%- macro entity_form3(id3,name,value,select,d,block) %}
+<!-- multiple selector measurement -->
+{%- macro entity_form_measurement_multiple(id_multi_measurement,name,value,select,d,block) %}
     <div class="form-group" style="display: {{ block }}">
-        <label for="{{ id3 }}">{{ d }}</label>
-        <select multiple name="{{ id3 }}" id="{{ id3 }}" class="form-control" style="width: 100%">
+        <label for="{{ id_multi_measurement }}">{{ d }}</label>
+        <select multiple name="{{ id_multi_measurement }}" id="{{ id_multi_measurement }}" class="form-control" style="width: 100%">
         <option value="Select all">Select all</option>
         {% for entity in name %}
             <option value="{{ entity }}" {% if entity in select %}selected{% endif %}>{{ entity }}</option>
@@ -64,10 +49,11 @@
     </div>
 {%- endmacro %}
 
-{%- macro entity_form4(id4,name,value,select,d,block) %}
+<!-- single selector measurement -->
+{%- macro entity_form_single_measurement(id_single_measurement,name,value,select,d,block) %}
     <div class="form-group" style="display: {{ block }}">
-        <label for="{{ id4 }}">{{ d }}</label>
-        <select  name="{{ id4 }}" id="{{ id4 }}" style="width: 100%" class="js-example-basic-single" >
+        <label for="{{ id_single_measurement }}">{{ d }}</label>
+        <select  name="{{ id_single_measurement }}" id="{{ id_single_measurement }}" class="js-example-basic-single" style="width: 100%" >
             <option {% if not select %} selected {% endif %}>Search entity</option>
             {% for entity in name %}
             <option  value="{{ entity }}" {% if entity == select %}selected{% endif %}>{{ entity }}</option>

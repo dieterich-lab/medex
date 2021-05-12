@@ -14,18 +14,6 @@ $(function() {
     });
 
 
-    // close error message
-    $(document).on('click', 'span.close', function() {
-        $(this).closest('div.alert').addClass('d-none');
-    });
-
-    $('#Plot').click(function(){
-        // disable button
-        $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
-
-        });
-
-
 
     // pretify the select input for numerical and categorical entities
     $("#measurement").select2();

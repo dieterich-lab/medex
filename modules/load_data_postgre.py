@@ -115,6 +115,19 @@ def number(r):
         return None, "Problem with load data from database"
 
 
+def patient(r):
+    """ Get number of all patients
+
+     number use only for basic_stats
+     """
+    try:
+        sql = """SELECT * FROM Patient"""
+        df = pd.read_sql(sql, r)
+        return df['Name_ID'], None
+    except Exception:
+        return None, "Problem with load data from database"
+
+
 def get_numerical_entities_scatter_plot(r):
     """
 
@@ -150,6 +163,47 @@ def get_categorical_entities_scatter_plot(r):
         return ["No data"]
 
 
+def get_data2(entity, what_table, categorical_filter, categorical, id_filter, r):
+    """
+    Get data for tab Table browser
+    get_numerical_values_basic_stats use in basic_stats
+
+    r: connection with database
+
+    Returns
+    -------
+    df: DataFrame with columns Name_ID,measurement,Key,instance,Value
+
+    """
+
+    entity_final = "$$" + "$$,$$".join(entity) + "$$"
+    entity_column = '"'+'" text,"'.join(entity) + '" text'
+
+    sql = """SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value" 
+            FROM examination_numerical WHERE "Key" IN ({0}) limit 100
+            """.format(entity_final, entity_column)
+
+    sql3 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS 
+            row_name,"Name_ID","measurement","Key",array_to_string("Value",'';'') as "Value" 
+            FROM examination_numerical WHERE "Key" IN ({0}) 
+                        UNION
+            SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,"Name_ID","measurement",
+            "Key",array_to_string("Value",'';'') as "Value" 
+            FROM examination_categorical WHERE "Key" IN ({0}) order by row_name',
+            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
+            as ct (row_name text,"Name_ID" text,"measurement" text,{1}) limit 100""".format(entity_final, entity_column)
+
+    try:
+        if what_table == 'long':
+            df = pd.read_sql(sql, r)
+        else:
+            df = pd.read_sql(sql3, r)
+            df = df.drop(['row_name'], axis=1)
+        return df, None
+    except Exception:
+        return None, "Problem with load data from database"
+
+
 def get_data(entity, what_table, categorical_filter, categorical, id_filter, r):
     """
     Get data for tab Table browser
@@ -171,7 +225,7 @@ def get_data(entity, what_table, categorical_filter, categorical, id_filter, r):
                 FROM examination_numerical WHERE "Key" IN ({0}) 
                 UNION
                 SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value"
-                FROM examination_categorical WHERE "Key" IN ({0}) order by "Name_ID"
+                FROM examination_categorical WHERE "Key" IN ({0})
                 """.format(entity_final, entity_column)
 
         sql3 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS 
@@ -209,7 +263,7 @@ def get_data(entity, what_table, categorical_filter, categorical, id_filter, r):
                 UNION
                 SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value" 
                 FROM examination_categorical WHERE "Key" IN ({0}) and "Name_ID" 
-                IN (""".format(entity_final,entity_column) + text + """) order by "Name_ID" """\
+                IN (""".format(entity_final,entity_column) + text + """) """\
                 .format(entity_final, entity_column)
 
         sql3 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,
@@ -525,7 +579,6 @@ def get_cat_values_barchart(entity, subcategory,measurement,categorical_filter,c
 
     try:
         df = pd.read_sql(sql, r)
-
     except Exception:
         return None, "Problem with load data from database"
     if df.empty or len(df) == 0:

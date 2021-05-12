@@ -22,3 +22,23 @@ h2              { font-size: 1.2em; }
 .login-form {
     min-width: 250px;
 }
+
+div#menu {
+  width:400px;
+  float:left;
+  margin:10px 10px 10px 5px;
+  height:350px;
+}
+div#content {
+
+  margin:10px 0 10px 435px;
+  min-height:500px;
+  _height:500px
+
+}
+
+a {
+    margin: 0px 0px 20px 0px;
+}
+
+

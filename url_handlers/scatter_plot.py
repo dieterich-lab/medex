@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request
 import plotly.express as px
 import modules.load_data_postgre as ps
+import url_handlers.filtering as filtering
 from webserver import rdb, all_numeric_entities_sc, all_categorical_entities_sc, all_measurement, len_numeric,\
     size_categorical, size_numeric, len_categorical, all_subcategory_entities, database, Name_ID, measurement_name,\
     block, data
@@ -10,12 +11,7 @@ scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlat
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-    categorical_filter = data.categorical_filter
-    categorical_names = data.categorical_names
-    number_filter = 0
-    if categorical_filter:
-        number_filter = len(categorical_filter)
-        categorical_filter = zip(categorical_names, categorical_filter)
+    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
     return render_template('scatter_plot.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -24,30 +20,15 @@ def get_plots():
                            all_numeric_entities=all_numeric_entities_sc,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical,
-                           filter=categorical_filter,
-                           number_filter=number_filter)
+                           filter=categorical_filter)
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
 
-    if 'example1' in request.form:
-        y_axis = 'Pod.R231Q_A286V.4.log2FC'
-        x_axis = 'Pod.R231Q_A286V.12.logFC'
-
-    elif 'example2' in request.form:
-        y_axis = 'Wt1.2factor.log2FC'
-        x_axis = 'Wt1.2factor.FDR'
-
-    else:
-        # list selected data
-        y_axis = request.form.get('y_axis')
-        x_axis = request.form.get('x_axis')
+    # list selected data
+    y_axis = request.form.get('y_axis')
+    x_axis = request.form.get('x_axis')
 
     if block == 'none':
         x_measurement = all_measurement.values[0]
@@ -62,15 +43,9 @@ def post_plots():
     how_to_plot = request.form.get('how_to_plot')
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
+
     add_group_by = request.form.get('add_group_by') is not None
-    if 'filter' in request.form or 'all_categorical_filter' in request.form:
-        categorical_filter = request.form.getlist('filter')
-        categorical_names = request.form.getlist('cat')
-        data.categorical_filter = categorical_filter
-        data.categorical_names = categorical_names
-    categorical_filter = data.categorical_filter
-    categorical_names = data.categorical_names
-    number_filter = 0
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
 
     # handling errors and load data from database
     if x_measurement == "Search entity" or y_axis == "Search entity":
@@ -122,9 +97,7 @@ def post_plots():
                 error = "Category {} is empty".format(y_axis)
             elif len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
-    if categorical_filter != None:
-        number_filter = len(categorical_filter)
-        categorical_filter = zip(categorical_names, categorical_filter)
+
     if error:
         return render_template('scatter_plot.html',
                                name='{}'.format(measurement_name),
@@ -136,22 +109,14 @@ def post_plots():
                                all_measurement=all_measurement,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
                                add_group_by=add_group_by,
                                x_axis=x_axis,
                                y_axis=y_axis,
                                x_measurement=x_measurement,
                                y_measurement=y_measurement,
-                               filter=categorical_filter,
-                               number_filter=number_filter,
+                               filter=categorical_filter_zip,
                                error=error,
                                )
-
-
 
     # Plot figure and convert to an HTML string representation
     if how_to_plot == 'linear':
@@ -231,11 +196,6 @@ def post_plots():
                            all_measurement=all_measurement,
                            subcategory_entities=subcategory_entities,
                            categorical_entities=categorical_entities,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical,
                            add_group_by=add_group_by,
                            x_axis=x_axis,
                            y_axis=y_axis,
@@ -244,8 +204,7 @@ def post_plots():
                            how_to_plot=how_to_plot,
                            x_measurement=x_measurement,
                            y_measurement=y_measurement,
-                           filter=categorical_filter,
-                           number_filter=number_filter,
+                           filter=categorical_filter_zip,
                            plot=fig
                            )
 

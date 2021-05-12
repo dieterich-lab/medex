@@ -1,23 +1,17 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
+import url_handlers.filtering as filtering
 from webserver import data, rdb, all_numeric_entities_sc, all_categorical_entities_sc, all_measurement,\
-    len_numeric, size_categorical, size_numeric, len_categorical, all_subcategory_entities, database, Name_ID,\
-    measurement_name, block
+    all_subcategory_entities, Name_ID, measurement_name, block
 
-histogram_page = Blueprint('histogram', __name__,
-                           template_folder='templates')
+histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 
 
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
     number_of_bins = 20
-    categorical_filter = data.categorical_filter
-    categorical_names = data.categorical_names
-    number_filter = 0
-    if categorical_filter:
-        number_filter = len(categorical_filter)
-        categorical_filter = zip(categorical_names, categorical_filter)
+    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
     return render_template('histogram.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -26,54 +20,26 @@ def get_statistics():
                            all_numeric_entities=all_numeric_entities_sc,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical,
-                           filter=categorical_filter,
-                           number_filter=number_filter
+                           filter=categorical_filter
                            )
 
 
 @histogram_page.route('/histogram', methods=['POST'])
 def post_statistics():
-    id_filter = data.id_filter
-    # get selected entities
-    if 'example3' in request.form:
-        numeric_entities = 'Adriamycin.FDR'
-        categorical_entities = 'Podocyte.Enriched.Transcript'
-        subcategory_entities = all_subcategory_entities[categorical_entities]
-    elif 'example4' in request.form:
-        numeric_entities = 'Wt1.2factor.FDR'
-        categorical_entities = 'Podocyte.Enriched.Transcript'
-        subcategory_entities = all_subcategory_entities[categorical_entities]
-    elif 'example1' in request.form:
-        numeric_entities = 'Adriamycin.log2FC'
-        categorical_entities = 'Podocyte.Enriched.Transcript'
-        subcategory_entities = all_subcategory_entities[categorical_entities]
-    elif 'example2' in request.form:
-        numeric_entities = 'Wt1.2factor.log2FC'
-        categorical_entities = 'Podocyte.Enriched.Transcript'
-        subcategory_entities = all_subcategory_entities[categorical_entities]
-    else:
-        numeric_entities = request.form.get('numeric_entities')
-        categorical_entities = request.form.get('categorical_entities')
-        subcategory_entities = request.form.getlist('subcategory_entities')
-    number_of_bins = request.form.get('number_of_bins')
-    if 'filter' in request.form or 'all_categorical_filter' in request.form:
-        categorical_filter = request.form.getlist('filter')
-        categorical_names = request.form.getlist('cat')
-        data.categorical_filter = categorical_filter
-        data.categorical_names = categorical_names
-    categorical_filter = data.categorical_filter
-    categorical_names = data.categorical_names
-    number_filter = 0
 
+    # get selected entities
     if block == 'none':
         measurement = all_measurement.values
     else:
         measurement = request.form.getlist('measurement')
+    numeric_entities = request.form.get('numeric_entities')
+    categorical_entities = request.form.get('categorical_entities')
+    subcategory_entities = request.form.getlist('subcategory_entities')
+    number_of_bins = request.form.get('number_of_bins')
+
+    # get filters
+    id_filter = data.id_filter
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
 
     # handling errors and load data from database
     error = None
@@ -91,9 +57,6 @@ def post_statistics():
             if len(df.index) == 0:
                 error = "This two entities don't have common values"
 
-    if categorical_filter:
-        number_filter = len(categorical_filter)
-        categorical_filter = zip(categorical_names, categorical_filter)
     if error:
         return render_template('histogram.html',
                                name='{}'.format(measurement_name),
@@ -102,18 +65,12 @@ def post_statistics():
                                all_categorical_entities=all_categorical_entities_sc,
                                all_numeric_entities=all_numeric_entities_sc,
                                all_subcategory_entities=all_subcategory_entities,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
-                               filter=categorical_filter,
-                               number_filter=number_filter,
+                               filter=categorical_filter_zip,
                                error=error)
 
 
@@ -132,17 +89,11 @@ def post_statistics():
                                all_numeric_entities=all_numeric_entities_sc,
                                all_subcategory_entities=all_subcategory_entities,
                                all_measurement=all_measurement,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
-                               filter=categorical_filter,
-                               number_filter=number_filter,
+                               filter=categorical_filter_zip,
                                error=error)
 
     if block == 'none':
@@ -179,17 +130,11 @@ def post_statistics():
                            all_numeric_entities=all_numeric_entities_sc,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical,
                            number_of_bins=number_of_bins,
                            numeric_entities=numeric_entities,
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
-                           filter=categorical_filter,
-                           number_filter=number_filter,
+                           filter=categorical_filter_zip,
                            plot=fig,
                            )

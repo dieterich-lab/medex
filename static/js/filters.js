@@ -1,56 +1,18 @@
 $(function () {
-    // initiate value for subcategory selector
-    var $cat = $('#subcategory_filter').select2({
-    placeholder:"Search entity"
-    });
-    $('#subsubcategory_filter').select2({
-    placeholder:"Search entity"
-    });
 
-    $('#categorical_filter').select2({
-    placeholder:"Search entity"
-    });
-
-
-
-
-    // handling select all choice
-    $('#subcategory_filter').on("select2:select", function (e) {
-           var data = e.params.data.text;
-           if(data=='Select all'){
-            $("#subcategory_filter> option").prop("selected","selected");
-            $('#subcategory_filter> option[value="Select all"]').prop("selected", false);
-            $("#subcategory_filter").trigger("change");
-           }
-      });
-
-
-
-    //change subcategories if category change
-    $('#categorical_filter').change(function () {
-        var entity =$(this).val(), values = cat[entity] || [];
-
-        var html = $.map(values, function(value){
-            return '<option value="' + value + '">' + value + '</option>'
-        }).join('');
-        $cat.html('<option value="Select all">Select all</option>'+html)
-    });
 
     $("#clean").click(function(){
-        $( "#demo" ).empty();
+        $("#demo").empty();
     });
 
+    $("#Add").click(function() {
+        var e =document.getElementById("categorical_filter");
+        var mag = e.options[e.selectedIndex].value;
+        var e2 =$('#subcategory_filter').val();
+        var m1 = mag
+        var mm = mag + " is " +e2
+        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  class='btn btn-outline-primary'  ><span onclick='remove(this)'  class='close' > x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + m1+"'>" + mm + "</button>";
 
-                   // function remove(el) {
-                 // $( "#demo" ).empty();
-                //}
-    //$("#close").click(function() {
-    //     $( "#demo" ).empty();
-    //     document.getElementById("demo").submit();
-    //});
-
-    //$("#close").click(function(){
-    //    $(this).parent('button').remove();
-    //});
+    });
 
 });

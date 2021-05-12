@@ -1,35 +1,11 @@
 $(document).ready(function() {
 
-    // close error message
-    $(document).on('click', 'span.close', function() {
-        $(this).closest('div.alert').addClass('d-none');
-    });
-
     // use plugin select2 for selector
-    $("#x_axis").select2({
-    placeholder:"Search entity"
-    });
-    $("#y_axis").select2({
-    placeholder:"Search entity"
-    });
-    $("#category1").select2({
-    placeholder:"Search entity"
-    });
-    $("#category2").select2({
-    placeholder:"Search entity"
-    });
-    $("#x_measurement").select2({
-    placeholder:"Search entity"
-    });
-    $("#y_measurement").select2({
+    $(".selector").select2({
     placeholder:"Search entity"
     });
 
-    $('#Plot').click(function(){
-        // disable button
-        $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
 
-        });
 
     // apply filters for Single and multiple plot
     $(document).on('change', '#select_scale', function() {

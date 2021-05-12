@@ -1,10 +1,7 @@
 {# Categorical tab. Using bootstrap classes. The tab container (div#statistics) and navigation links (ul#statistics_tab)
             are defined in basic_stats.html #}
-<div class="tab-pane fade {% if categorical_tab %}show active{% endif %}" id="categorical_tab"
-     role="tabpanel" aria-labelledby="c_settings_header">
+<div class="tab-pane fade {% if categorical_tab %}show active{% endif %}" id="categorical_tab" role="tabpanel" aria-labelledby="c_settings_header">
     <div id="categorical_accordion">
-
-        <!-- maybe macro for that -->
         <div class="card">
             <div class="card-header" id="c_settings_header">
                 <h5 class="mb-0">
@@ -14,9 +11,7 @@
                     </button>
                 </h5>
             </div>
-            <div id="categorical_settings" class="collapse show "
-                 aria-labelledby="c_settings_header" data-parent="#categorical_accordion">
-
+            <div id="categorical_settings" class="collapse show" aria-labelledby="c_settings_header" data-parent="#categorical_accordion">
                 <div class="card-body">
                     {% import 'macro_template.html' as m %}
 
@@ -24,17 +19,13 @@
                     {{ m.show_error(error) }}
                     {% endif %}
 
-                        {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement2,d=name,block=block) }}
-                        {{ m.entity_form2(id2= "categorical_entities",name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
-
-                        <button id="Plot2" name="basic_stats_c" class="btn btn-outline-info">Basic Stats</button>
-
+                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name =all_measurement,value=entity,select=measurement_categorical,d=name,block=block) }}
+                    {{ m.entity_form_multiple(id_multiple= "categorical_entities",class="selector", name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
+                    <button id="result_categorical" name="basic_stats_c" class="btn btn-outline-info" class="Plot">Basic Stats</button>
                 </div>
             </div>
         </div>
 
-
-        <!-- maybe macro for that -->
         <div class="card">
             <div class="card-header" id="results_header">
                   <h5 class="mb-0">
@@ -54,22 +45,20 @@
                             <tr>
                                 <th>Entity</th>
                                 {% if block != 'none' %}<th>{{ measurement_name }}</th>{% endif %}
-                                <!-- {% if block != 'none' %}<th>Instances number</th>{% endif %} -->
                                 <th>Count</th>
                                 <th>Count NaN</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for entity in categorical_entities %}
-                            {% for v in measurement2 %}
+                            {% for m in measurement_categorical %}
                             {% for i in instance %}
                             <tr>
-                                {% if basic_stats_c['count'][entity,v,i] is defined %}
+                                {% if basic_stats_c['count'][entity,m,i] is defined %}
                                 <td>{{ entity }}</td>
-                                {% if block != 'none' %}<td>{{ v }}</td>{% endif %}
-                                <!-- {% if block != 'none' %}<td>{{ i }}</td>{% endif %} -->
-                                <td>{{ basic_stats_c['count'][entity,v,i]}}</td>
-                                <td>{{ basic_stats_c['count NaN'][entity,v,i] }}</td>
+                                {% if block != 'none' %}<td>{{ m }}</td>{% endif %}
+                                <td>{{ basic_stats_c['count'][entity,m,i]}}</td>
+                                <td>{{ basic_stats_c['count NaN'][entity,m,i] }}</td>
                                 {% endif %}
                             </tr>
                             {% endfor %}
@@ -81,7 +70,5 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 </div>

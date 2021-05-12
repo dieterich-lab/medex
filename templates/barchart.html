@@ -1,10 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
-
+<form action="" method="POST">
+    <div id="menu">
+    {% include 'sidebar.html' %}
+    </div>
 {# imports #}
     {# our own js #}
-    <script src="{{ url_for('static', filename='js/barchart.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
 
     {# plotly and jquery #}
     <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
@@ -15,24 +17,18 @@
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
 
-    {# export tables #}
-    <script type="text/javascript" src="{{ url_for('static', filename='table2excel.js') }}" ></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='tabletoCSV.js') }}" ></script>
-
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 
 {# end of imports #}
-
+<div id="content">
 <div class="card">
     <div class="card-header" id="settings_header">
         <h5 class="mb-0">
             <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
                 Settings
             </button>
-            <!-- <button id="Example1" style="color:black;" type="submit" name="example1" class="btn btn-link">Example 1</button> -->
         </h5>
     </div>
     <div id="settings" class="collapse show" aria-labelledby="c_settings_header" data-parent="#accordion">
@@ -43,9 +39,8 @@
             {{ m.show_error(error) }}
             {% endif %}
 
-
-            {{ m.entity_form3(id3= "measurement",name =all_measurement,value=entity,select=measurement2,d=name,block=block) }}
-            {{ m.entity_form(id= "categorical_entities",name =all_categorical_entities,select=categorical_entities,value=entity,d="Group by:") }}
+            {{ m.entity_form_measurement_multiple(id_multi_measurement= "measurement",name =all_measurement,value=entity,select=measurement,d=name,block=block) }}
+            {{ m.entity_form_single(id_single= "categorical_entities",class="categorical_entities",name =all_categorical_entities,select=categorical_entities,value=entity,d="Group by:") }}
 
             <!-- Send dictionary with subcategory data to javascript -->
             <script type="text/javascript">
@@ -54,7 +49,7 @@
 
             <div class="tooltips" title="Please select category and next subcategory">
                 <label>Subcategory: </label>
-                <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control" >
+                <select multiple id="subcategory_entities" class="subcategory_entities" name="subcategory_entities" class="form-control" style="width: 100%" >
                     <option value="Select all">Select all</option>
                     {% for entity in all_subcategory_entities[categorical_entities] %}
                     <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
@@ -82,22 +77,20 @@
                     </tr>
                 </table>
             </div>
-
-
-        <button id="Plot"  name="barchart" class="btn btn-outline-info">Plot barchart</button>
-
+        <button id="Plot"  name="barchart" class="btn btn-outline-info" class="Plot">Plot</button>
         </div>
     </div>
 </div>
+
 <div class="card-header" id="results_header">
     <h5 class="mb-0">
         <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-            {% if measurement2 %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            {% if measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
             Results
         </button>
     </h5>
 </div>
-<div id="numeric_results" class="collapse {% if measurement2 %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+<div id="numeric_results" class="collapse {% if measurement %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
         {% if plot %}
         <div class="chart" id="barchart">
@@ -106,4 +99,6 @@
         {% endif %}
     </div>
 </div>
+</div>
+</form>
 {% endblock %}

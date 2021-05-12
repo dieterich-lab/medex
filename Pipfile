@@ -37,11 +37,11 @@ psycopg2 = "*"
 statsmodels = "*"
 gower = "*"
 umap = "*"
-
+flask_cors="*"
+requests = "*"
 
 [dev-packages]
 pylint = "*"
 
 [requires]
 python_version = "3.7"
-
