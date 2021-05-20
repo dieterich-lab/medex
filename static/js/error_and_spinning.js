@@ -6,9 +6,11 @@ $(function () {
     });
 
     // use plugin select2 for selector
-    $(".selector").select2({
+    $(".numeric_entities").select2({
     placeholder:"Search entity"
     });
+
+
 
     $('.Plot').click(function(){
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');

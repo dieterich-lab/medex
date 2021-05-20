@@ -131,12 +131,13 @@ app.register_blueprint(coplots_plot_page)
 def login_get():
     return redirect('/data')
 
+url = os.environ['url']
 
-@app.route('/session', methods=['GET'])
+@app.route('/_session', methods=['GET'])
 def get_cases():
     session_id = request.args.get('sessionid')
     session_id_json = {"session_id": "{}".format(session_id)}
-    cases_get = requests.post('http://localhost:3500/result/cases/get', json=session_id_json)
+    cases_get = requests.post(url, json=session_id_json)
     cases_ids = cases_get.json()
     case = cases_ids['cases_ids']
     data.id_filter = case

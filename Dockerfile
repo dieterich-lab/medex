@@ -13,11 +13,10 @@ RUN apt-get update && \
 WORKDIR /app
 
 ENV FLASK_ENV production
-# not really needed as waitress ignores this option
 ENV TZ=Europe/Berlin
 
 EXPOSE 5428
 EXPOSE 80
 
 
-CMD [ "waitress-serve","--port","80","--call", "webserver:main"  ]
+CMD [ "waitress-serve","--port","80","--call", "webserver:main" ]

@@ -10,13 +10,15 @@
 {%- endmacro %}
 
 <!-- multiple selector entity -->
-{%- macro entity_form_multiple(id_multiple,class,name,value,select,d) %}
+{%- macro entity_form_multiple(id_multiple,name,class,value,select,d) %}
     <div class="form-group">
         <label for="{{ id_multiple }}">{{ d }}</label>
-        <select multiple class="{{class}}" name="{{ id_multiple }}" id="{{ id_multiple }}" class="form-control" style="width: 100%">
+        <select multiple name="{{ id_multiple }}" id="{{ id_multiple }}" class="{{ class }}" class="form-control" style="width: 100%">
+
         {% for entity in name %}
-            <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key in select %}selected{% endif %}>{{ name[entity].Key }}</option>
+            <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if select and name[entity].Key in select %} selected {% endif %}>{{ name[entity].Key }}</option>
         {% endfor %}
+
         </select>
     </div>
 {%- endmacro %}
@@ -37,13 +39,12 @@
 
 
 <!-- multiple selector measurement -->
-{%- macro entity_form_measurement_multiple(id_multi_measurement,name,value,select,d,block) %}
+{%- macro entity_form_measurement_multiple(id_multi_measurement,name,class,value,select,d,block) %}
     <div class="form-group" style="display: {{ block }}">
         <label for="{{ id_multi_measurement }}">{{ d }}</label>
         <select multiple name="{{ id_multi_measurement }}" id="{{ id_multi_measurement }}" class="form-control" style="width: 100%">
-        <option value="Select all">Select all</option>
         {% for entity in name %}
-            <option value="{{ entity }}" {% if entity in select %}selected{% endif %}>{{ entity }}</option>
+            <option value="{{ entity }}" {% if select and entity in select %}selected{% endif %}>{{ entity }}</option>
          {% endfor %}
         </select>
     </div>

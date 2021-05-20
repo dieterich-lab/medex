@@ -49,7 +49,7 @@
         <div id="demo" >
             {% if filter %}
             {% for cat,filter in filter %}
-                <button  class='btn btn-outline-primary' ><span class='close' onclick="remove(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
+                <button  style="display: block; width: 100%" class='btn btn-outline-primary' ><span class='close' onclick="remove(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
             {% endfor %}
             {% endif %}
         </div>
