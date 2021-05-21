@@ -10,8 +10,25 @@ $(function () {
     placeholder:"Search entity"
     });
 
+    $(".categorical_entities").select2({
+    placeholder:"Search entity"
+    });
 
-
+    $("#measurement").select2({
+    placeholder:"Search entity"
+    });
+    $("#measurement_categorical").select2({
+    placeholder:"Search entity"
+    });
+    $("#measurement_numeric").select2({
+    placeholder:"Search entity"
+    });
+    $("#x_measurement").select2({
+    placeholder:"Search entity"
+    });
+    $("#y_measurement").select2({
+    placeholder:"Search entity"
+    });
     $('.Plot').click(function(){
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
     });

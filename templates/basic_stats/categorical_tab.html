@@ -20,7 +20,7 @@
                     {% endif %}
 
                     {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_categorical",name =all_measurement,value=entity,select=measurement_categorical,d=name,block=block) }}
-                    {{ m.entity_form_multiple(id_multiple= "categorical_entities",class="selector", name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
+                    {{ m.entity_form_multiple(id_multiple= "categorical_entities",class="categorical_entities", name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
                     <button id="result_categorical" name="basic_stats_c" class="btn btn-outline-info" class="Plot">Basic Stats</button>
                 </div>
             </div>

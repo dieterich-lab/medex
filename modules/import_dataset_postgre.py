@@ -85,7 +85,7 @@ def load_data(entities, dataset,header,rdb):
             row = row.replace('"', "")
             row = row.replace("\n", "").split(",")
             # insert data from dataset.csv to table examination
-            line = [i] + row[0:1] + [1] + row[2:5] + [";".join([str(x) for x in row[5:]])]
+            line = [i] + row[0:5] + [";".join([str(x) for x in row[5:]])]
             if len(row) < 6:
                 print("This line doesn't have appropriate format:", row)
             else:

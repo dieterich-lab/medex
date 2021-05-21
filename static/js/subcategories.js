@@ -12,6 +12,9 @@ $(function () {
             $(".subcategory_entities").trigger("change");
            }
       });
+    $("#categorical_filter").select2({
+    placeholder:"Search entity"
+    });
 
     //change subcategories if category change
     $('.categorical_entities').change(function () {
