@@ -52,6 +52,12 @@ def post_statistics():
     elif not error:
         df, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,measurement,categorical_filter,categorical_names,id_filter, rdb)
         df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
+        numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
+        if numeric_entities_unit:
+            numeric_entities_unit = numeric_entities + ' (' + numeric_entities_unit + ')'
+            df.columns = [Name_ID,measurement_name, numeric_entities_unit,categorical_entities]
+        else:
+            numeric_entities_unit = numeric_entities
         if not error:
             df = df.dropna()
             if len(df.index) == 0:
@@ -97,9 +103,9 @@ def post_statistics():
                                error=error)
 
     if block == 'none':
-        fig = px.histogram(df, x=numeric_entities, color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
+        fig = px.histogram(df, x=numeric_entities_unit, color=categorical_entities,barmode='overlay',nbins=bin_numbers,opacity=0.7,template="plotly_white")
     else:
-        fig = px.histogram(df, x=numeric_entities, facet_row=measurement_name, color=categorical_entities, barmode='overlay',
+        fig = px.histogram(df, x=numeric_entities_unit, facet_row=measurement_name, color=categorical_entities, barmode='overlay',
                            nbins=bin_numbers, opacity=0.7, template="plotly_white")
 
     fig.update_layout(

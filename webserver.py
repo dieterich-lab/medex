@@ -11,6 +11,7 @@ import url_handlers.filtering as filtering
 import pandas as pd
 import os
 import io
+import socket
 
 # create the application object
 app = Flask(__name__)
@@ -46,7 +47,7 @@ if os.environ.get('IMPORT_DISABLED') is None:
 # get all numeric and categorical entities from database
 Name_ID, measurement_name = ps.get_header(rdb)['Name_ID'][0], ps.get_header(rdb)['measurement'][0]
 all_entities, show = ps.get_entities(rdb)
-all_patient, show = ps.patient(rdb)
+all_patient = ps.patient(rdb)
 size_numerical_table, all_numeric_entities,  = ps.get_numeric_entities(rdb)
 size_categorical_table, all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
 all_entities = all_entities.to_dict('index')
@@ -66,13 +67,16 @@ else:
     block = 'block'
 
 # information about database
-database_name = os.environ['POSTGRES_DB']
-database = '{} data'.format(database_name)
-len_numeric = 'number of numerical entities: ' + str(len(all_numeric_entities))
-size_numeric = 'the size of the numeric table: ' + str(size_numerical_table) + ' rows'
-len_categorical = 'number of categorical entities: ' + str(len(all_categorical_entities))
-size_categorical = 'the size of the categorical table: ' + str(size_categorical_table)+' rows'
-
+@app.context_processor
+def message_count():
+    database_name = os.environ['POSTGRES_DB']
+    database = '{} data'.format(database_name)
+    len_numeric = 'number of numerical entities: ' + str(len(all_numeric_entities))
+    size_numeric = 'the size of the numeric table: ' + str(size_numerical_table) + ' rows'
+    len_categorical = 'number of categorical entities: ' + str(len(all_categorical_entities))
+    size_categorical = 'the size of the categorical table: ' + str(size_categorical_table) + ' rows'
+    return dict(database=database,len_numeric=len_numeric,size_numeric=size_numeric,len_categorical=len_categorical,
+                size_categorical=size_categorical)
 
 # data store for filters and download
 class DataStore():
@@ -129,15 +133,128 @@ app.register_blueprint(coplots_plot_page)
 # Direct to Data browser website during opening the program.
 @app.route('/', methods=['GET'])
 def login_get():
-    return redirect('/data')
+    # get selected entities
 
-url = os.environ['url']
+    entities = show['Key'].tolist()
+    what_table = 'long'
+    categorical_filter = []
+    categorical_names = []
+    id_filter = data.id_filter
+    df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter, rdb)
+    if block == 'none':
+        df = df.drop(columns=['measurement'])
+        df = df.rename(columns={"Name_ID": "{}".format(measurement_name)})
+    else:
+        df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
+
+    data.csv = df.to_csv(index=False)
+
+    column = df.columns.tolist()
+    column_change_name = []
+    column_dict = []
+    table_schema = []
+
+    [column_change_name.append(i.replace('.', '_')) for i in column]
+    df.columns = column_change_name
+
+    data.dict = df.to_dict("records")
+    [column_dict.append({'data': column_change_name[i]}) for i in range(0, len(column_change_name))]
+    [table_schema.append({'data_name': column_change_name[i], 'column_name': column_change_name[i], "default": "",
+                          "order": 1, "searchable": True}) for i in range(0, len(column_change_name))]
+    data.table_schema = table_schema
+    data.table_browser_column = column
+    data.table_browser_what_table = what_table
+    data.table_browser_column2 = column_dict
+
+    return render_template('data.html',
+                           error=error,
+                           all_entities=all_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
+                           all_subcategory_entities=all_subcategory_entities,
+                           entities=entities,
+                           name=column,
+                           what_table=what_table,
+                           column=column_dict,
+                           )
+
+
+
+@app.route('/', methods=['POST'])
+def login_post():
+
+    # get selected entities
+    entities = request.form.getlist('entities')
+    what_table = request.form.get('what_table')
+
+    # get filter
+    id_filter = data.id_filter
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
+
+    # errors
+    if len(entities) == 0:
+        error = "Please select entities"
+    else:
+       df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter, rdb)
+
+    if error:
+        return render_template('data.html',
+                               error=error,
+                               all_entities=all_entities,
+                               all_numeric_entities=all_numeric_entities,
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_categorical_entities=all_categorical_entities_sc,
+                               entities=entities,
+                               filter=categorical_filter_zip,
+                               )
+
+    df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
+
+    data.table_browser_entities = entities
+    data.csv = df.to_csv(index=False)
+    column = df.columns.tolist()
+
+    column_change_name = []
+    [column_change_name.append(i.replace('.','_')) for i in column]
+    df.columns = column_change_name
+
+    data.dict = df.to_dict("records")
+    dict_of_column = []
+    table_schema = []
+
+    [dict_of_column.append({'data': column_change_name[i]}) for i in range(0, len(column_change_name))]
+    [table_schema.append({'data_name': column_change_name[i], 'column_name': column_change_name[i], "default": "",
+                          "order": 1, "searchable": True}) for i in range(0, len(column_change_name))]
+
+    data.table_schema = table_schema
+    data.table_browser_column = column
+    data.table_browser_what_table = what_table
+    data.table_browser_column2 = dict_of_column
+
+    return render_template('data.html',
+                           error=error,
+                           all_entities=all_entities,
+                           all_numeric_entities=all_numeric_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_categorical_entities=all_categorical_entities_sc,
+                           entities=entities,
+                           name=column,
+                           what_table=what_table,
+                           column=dict_of_column,
+                           filter=categorical_filter_zip
+                           )
+
+
+try:
+    EXPRESS_MEDEX_MEDDUSA_URL = os.environ['EXPRESS_MEDEX_MEDDUSA_URL']
+except Exception:
+    EXPRESS_MEDEX_MEDDUSA_URL='http://localhost:3500/result/cases/get'
+
 
 @app.route('/_session', methods=['GET'])
 def get_cases():
     session_id = request.args.get('sessionid')
     session_id_json = {"session_id": "{}".format(session_id)}
-    cases_get = requests.post(url, json=session_id_json)
+    cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL, json=session_id_json)
     cases_ids = cases_get.json()
     case = cases_ids['cases_ids']
     data.id_filter = case

@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
-from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement, len_numeric,\
-    size_categorical, size_numeric, len_categorical, all_subcategory_entities, database, measurement_name, block
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,all_subcategory_entities,\
+ measurement_name, block
 
 coplots_plot_page = Blueprint('coplots_pl', __name__, template_folder='templates')
 
@@ -17,11 +17,6 @@ def get_coplots():
                            categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
-                           database=database,
-                           size_categorical=size_categorical,
-                           size_numeric=size_numeric,
-                           len_numeric=len_numeric,
-                           len_categorical=len_categorical
                            )
 
 

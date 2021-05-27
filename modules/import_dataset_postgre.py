@@ -15,6 +15,7 @@ def create_table(rdb):
     statement_entities = """CREATE TABLE name_type ("order" numeric,
                                                     "Key" text Primary key,
                                                     "type" text,
+                                                    "unit" text,
                                                     "description" text,
                                                     "show" text)"""
 
@@ -58,6 +59,8 @@ def load_data(entities, dataset,header,rdb):
                     cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING",row)
                 elif len(row) == 5:
                     cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
+                elif len(row) == 6:
+                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
                 else:
                     print("This line doesn't have appropriate format:", row)
         else:
@@ -72,6 +75,8 @@ def load_data(entities, dataset,header,rdb):
                     cur.execute("INSERT INTO name_type VALUES (%s,%s,%s,%s) ON CONFLICT DO NOTHING", line)
                 elif len(line) == 5:
                     cur.execute("INSERT INTO name_type VALUES (%s,%s,%s, %s,%s) ON CONFLICT DO NOTHING", line)
+                elif len(line) == 6:
+                    cur.execute("INSERT INTO name_type VALUES (%s,%s,%s,%s, %s,%s) ON CONFLICT DO NOTHING", line)
                 else:
                     print("This line doesn't have appropriate format:", row)
     rdb.commit()
@@ -85,7 +90,7 @@ def load_data(entities, dataset,header,rdb):
             row = row.replace('"', "")
             row = row.replace("\n", "").split(",")
             # insert data from dataset.csv to table examination
-            line = [i] + row[0:5] + [";".join([str(x) for x in row[5:]])]
+            line = [i] + row[0:1]+ [1] +row[2:5] + [";".join([str(x) for x in row[5:]])]
             if len(row) < 6:
                 print("This line doesn't have appropriate format:", row)
             else:

@@ -31,11 +31,11 @@ def get_basic_stats():
         """ calculation for numeric values"""
 
         # get selected entities
-        numeric_entities = request.form.getlist('numeric_entities')
+        numeric_entities = request.form.getlist('numeric_entities_multiple')
         if block == 'none':
             measurement1 = all_measurement.values
         else:
-            measurement1 = request.form.getlist('measurement1')
+            measurement1 = request.form.getlist('measurement_numeric')
         if 'Select all' in measurement1: measurement1.remove('Select all')
 
         # handling errors and load data from database
@@ -123,7 +123,7 @@ def get_basic_stats():
         if block == 'none':
             measurement = all_measurement.values
         else:
-            measurement = request.form.getlist('measurement')
+            measurement = request.form.getlist('measurement_categorical')
         if 'Select all' in measurement: measurement.remove('Select all')
         # handling errors and load data from database
         error = None

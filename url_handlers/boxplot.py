@@ -51,6 +51,12 @@ def post_boxplots():
         df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement,
                                           categorical_filter, categorical_names, id_filter, rdb)
         df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
+        numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
+        if numeric_entities_unit:
+            numeric_entities_unit = numeric_entities + ' (' + numeric_entities_unit + ')'
+            df.columns = [Name_ID, numeric_entities_unit,categorical_entities]
+        else:
+            numeric_entities_unit = numeric_entities
         if not error:
             df = df.dropna()
             if len(df.index) == 0:
@@ -76,14 +82,14 @@ def post_boxplots():
     # Plot figure and convert to an HTML string representation
     if block == 'none':
         if how_to_plot == 'linear':
-            fig = px.box(df, x=categorical_entities, y=numeric_entities, color=categorical_entities, template="plotly_white")
+            fig = px.box(df, x=categorical_entities, y=numeric_entities_unit, color=categorical_entities, template="plotly_white")
         else:
-            fig = px.box(df, x=categorical_entities, y=numeric_entities, color=categorical_entities, template="plotly_white", log_y=True)
+            fig = px.box(df, x=categorical_entities, y=numeric_entities_unit, color=categorical_entities, template="plotly_white", log_y=True)
     else:
         if how_to_plot == 'linear':
-            fig = px.box(df, x=measurement_name, y=numeric_entities, color=categorical_entities, template="plotly_white")
+            fig = px.box(df, x=measurement_name, y=numeric_entities_unit, color=categorical_entities, template="plotly_white")
         else:
-            fig = px.box(df, x=measurement_name, y=numeric_entities, color=categorical_entities, template="plotly_white", log_y=True)
+            fig = px.box(df, x=measurement_name, y=numeric_entities_unit, color=categorical_entities, template="plotly_white", log_y=True)
     fig.update_layout(font=dict(size=16))
     fig = fig.to_html()
 

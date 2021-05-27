@@ -128,6 +128,19 @@ def patient(r):
         return None, "Problem with load data from database"
 
 
+def get_unit(name,r):
+    """ Get number of all patients
+
+     number use only for basic_stats
+     """
+    try:
+        sql = """SELECT "Key","unit" FROM name_type where "Key"='{}' """.format(name)
+        df = pd.read_sql(sql, r)
+        return df['unit'][0], None
+    except Exception:
+        return None, "Problem with load data from database"
+
+
 def get_numerical_entities_scatter_plot(r):
     """
 

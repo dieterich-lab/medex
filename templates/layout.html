@@ -19,7 +19,13 @@
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"
                 integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
                 crossorigin="anonymous"></script>
-
+        <div class="w3-bar w3-border w3-light-blue">
+          <div class="w3-bar-item">{{ database }}</div>
+          <div class="w3-bar-item">{{ len_numeric }}</div>
+          <div class="w3-bar-item">{{ size_numeric }}</div>
+            <div class="w3-bar-item">{{ len_categorical }}</div>
+          <div class="w3-bar-item">{{ size_categorical }}</div>
+        </div>
 <div id="page" class="mx-4">
       <nav class="navbar navbar-light bg-light  ">
           <a class="navbar-brand" href="/tutorial">Tutorial</a>

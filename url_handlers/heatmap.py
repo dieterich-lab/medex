@@ -30,7 +30,7 @@ def get_plots():
 def post_plots():
 
     # get selected entities
-    numeric_entities = request.form.getlist('numeric_entities')
+    numeric_entities = request.form.getlist('numeric_entities_multiple')
     if block == 'none':
         measurement = all_measurement.values[0]
     else:

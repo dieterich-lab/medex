@@ -46,6 +46,14 @@ $(function () {
 		multiple:true,
 		dataAdapter: $.fn.select2.amd.require('select2/data/CustomData')
 	});
+		$("#numeric_entities_multiple").select2({
+		ajax:{},
+		allowClear:true,
+		width:"element",
+		multiple:true,
+		dataAdapter:$.fn.select2.amd.require('select2/data/CustomData')
+	});
+
 	$(".axis").select2({
 		ajax:{},
 		allowClear:true,
@@ -53,13 +61,7 @@ $(function () {
 		dataAdapter: $.fn.select2.amd.require('select2/data/CustomData')
 	});
 
-	$(".numeric_entities").select2({
-		ajax:{},
-		allowClear:true,
-		width:"element",
-		multiple:true,
-		dataAdapter:$.fn.select2.amd.require('select2/data/CustomData')
-	});
+
 
 
 });
