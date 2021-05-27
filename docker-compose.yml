@@ -8,13 +8,13 @@ services:
     depends_on: # other containers it needs in order to run
       - database
     environment:
+      - EXPRESS_MEDEX_MEDDUSA_URL=http://192.168.2.XXX:3500/result/cases/get
       - PYTHONUNBUFFERED=1
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
       - POSTGRES_DB=example
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=database
-    env_file: .env
     volumes:
       - ./import:/app/import
     restart: always
