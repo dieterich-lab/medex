@@ -44,3 +44,5 @@ a {
 button {
   overflow-x: hidden !important;
 }
+
+.foo { color: #808080; text-size: smaller; }

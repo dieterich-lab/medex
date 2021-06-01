@@ -14,6 +14,7 @@ def create_table(rdb):
 
     statement_entities = """CREATE TABLE name_type ("order" numeric,
                                                     "Key" text Primary key,
+                                                    "synonym" text,
                                                     "type" text,
                                                     "unit" text,
                                                     "description" text,
@@ -61,6 +62,8 @@ def load_data(entities, dataset,header,rdb):
                     cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
                 elif len(row) == 6:
                     cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
+                elif len(row) == 7:
+                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
                 else:
                     print("This line doesn't have appropriate format:", row)
         else:
@@ -77,12 +80,14 @@ def load_data(entities, dataset,header,rdb):
                     cur.execute("INSERT INTO name_type VALUES (%s,%s,%s, %s,%s) ON CONFLICT DO NOTHING", line)
                 elif len(line) == 6:
                     cur.execute("INSERT INTO name_type VALUES (%s,%s,%s,%s, %s,%s) ON CONFLICT DO NOTHING", line)
+                elif len(line) == 7:
+                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", line)
                 else:
                     print("This line doesn't have appropriate format:", row)
     rdb.commit()
     in_file.close()
 
-    with open(dataset, 'r',encoding="utf8", errors='ignore') as in_file:
+    with open(dataset, 'r', encoding="utf8", errors='ignore') as in_file:
         i = 0
         for row in in_file:
             i += 1

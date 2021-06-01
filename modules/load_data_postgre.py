@@ -20,7 +20,7 @@ def get_entities(r):
     :return: DataFrame with entities names and their description
             DataFrame with entities which should be showed on fisrst page
     """
-    all_entities = """SELECT "Key","description" FROM name_type order by "order" """
+    all_entities = """SELECT "Key","description","synonym" FROM name_type order by "order" """
     show_on_first_page = """Select "Key" from name_type where "show" = '+' """
 
     try:
@@ -38,7 +38,7 @@ def get_numeric_entities(r):
     :return:
     """
     size = """SELECT count(*) FROM examination_numerical"""
-    all_numerical_entities = """Select "Key","description" from name_type where type = 'Double' order by "Key" """
+    all_numerical_entities = """Select "Key","description","synonym" from name_type where type = 'Double' order by "Key" """
 
     try:
 

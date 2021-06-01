@@ -103,7 +103,7 @@ def post_plots():
     corr_values = corr_values.T.values.tolist()
 
     fig = go.Figure(data=go.Heatmap(z=corr_values, x=numeric_entities, y=numeric_entities, colorscale='Viridis'))
-    fig.update_layout(height=900)
+    fig.update_layout(height=600)
     fig = fig.to_html()
     plot_series = []
     plot_series.append({'z': corr_values,

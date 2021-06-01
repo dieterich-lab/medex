@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import rdb, all_numeric_entities_sc, all_categorical_entities_sc, all_measurement,\
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,\
     all_subcategory_entities, measurement_name,Name_ID, block, data
 
 boxplot_page = Blueprint('boxplot', __name__,
@@ -15,8 +15,8 @@ def get_boxplots():
     return render_template('boxplot.html',
                            name='{}'.format(measurement_name),
                            block=block,
-                           all_categorical_entities=all_categorical_entities_sc,
-                           all_numeric_entities=all_numeric_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            filter=categorical_filter,
@@ -67,8 +67,8 @@ def post_boxplots():
                                name='{}'.format(measurement_name),
                                block=block,
                                error=error,
-                               all_categorical_entities=all_categorical_entities_sc,
-                               all_numeric_entities=all_numeric_entities_sc,
+                               all_categorical_entities=all_categorical_entities,
+                               all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
@@ -96,8 +96,8 @@ def post_boxplots():
     return render_template('boxplot.html',
                            name='{}'.format(measurement_name),
                            block=block,
-                           all_categorical_entities=all_categorical_entities_sc,
-                           all_numeric_entities=all_numeric_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            numeric_entities=numeric_entities,

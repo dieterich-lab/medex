@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request
 import plotly.express as px
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import rdb, all_numeric_entities_sc, all_categorical_entities_sc, all_measurement,\
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,\
     all_subcategory_entities, Name_ID, measurement_name,\
     block, data
 
@@ -16,8 +16,8 @@ def get_plots():
                            name='{}'.format(measurement_name),
                            block=block,
                            numeric_tab=True,
-                           all_categorical_entities=all_categorical_entities_sc,
-                           all_numeric_entities=all_numeric_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            filter=categorical_filter)
@@ -111,8 +111,8 @@ def post_plots():
                                block=block,
                                numeric_tab=True,
                                all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities_sc,
-                               all_numeric_entities=all_numeric_entities_sc,
+                               all_categorical_entities=all_categorical_entities,
+                               all_numeric_entities=all_numeric_entities,
                                all_measurement=all_measurement,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
@@ -198,8 +198,8 @@ def post_plots():
                            block=block,
                            numeric_tab=True,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities_sc,
-                           all_numeric_entities=all_numeric_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_measurement=all_measurement,
                            subcategory_entities=subcategory_entities,
                            categorical_entities=categorical_entities,

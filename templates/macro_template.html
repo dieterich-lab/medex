@@ -14,9 +14,8 @@
     <div class="form-group">
         <label for="{{ id_multiple }}">{{ d }}</label>
         <select multiple name="{{ id_multiple }}" id="{{ id_multiple }}" class="{{ class }}" class="form-control" style="width: 100%">
-
         {% for entity in name %}
-            <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if select and name[entity].Key in select %} selected {% endif %}>{{ name[entity].Key }}</option>
+            <option title="{{ name[entity].description }}" data ="{{ name[entity].synonym }}" value="{{ name[entity].Key }}"  {% if select and name[entity].Key in select %} selected {% endif %}>{{ name[entity].Key }}</option>
         {% endfor %}
 
         </select>
@@ -27,10 +26,10 @@
 {%- macro entity_form_single(id_single,name,class,value,select,d) %}
     <div class="form-group">
         <label for="{{ id_single }}">{{ d }}</label>
-        <select class="{{ class }}" name="{{ id_single }}" id="{{ id_single }}" class="js-example-basic-single" style="width: 100%">
-            <option {% if not select %} selected {% endif %}>Search entity</option>
+        <select name="{{ id_single }}" id="{{ id_single }}" class="{{ class }}" class="js-example-basic-single" style="width: 100%">
+            <option data="" {% if not select %} selected {% endif %}>Search entity</option>
             {% for entity in name %}
-                <option title="{{ name[entity].description }}" value="{{ name[entity].Key }}" {% if name[entity].Key == select %}selected{% endif %}>{{ name[entity].Key }}</option>
+                <option title="{{ name[entity].description }}" data ="{{ name[entity].synonym }}" value="{{ name[entity].Key }}" {% if name[entity].Key == select %}selected{% endif %}>{{ name[entity].Key }}</option>
             {% endfor %}
         </select>
     </div>
