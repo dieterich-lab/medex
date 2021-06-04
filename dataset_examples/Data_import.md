@@ -29,11 +29,15 @@ Jitter_rel,Double
 ```
 If your data have entities with a different data type (ex.date), you can complete the columns with this data type, but the entity will not be taken into account in the subsequent analysis.
 
-It is also possible to add two more columns(description,show ) to the entities.csv file.
+It is also possible to add four more columns(synonym,unit,description,show ) to the entities.csv file.
 ```
-Gender,String,Gender,+
-Jitter_rel,Double,relative jitter,+
+Gender,String,Sex,,,Gender,+
+Jitter_rel,Double,jitter_rel,%,relative jitter,+
 ```
+
+The synonym column should contain a synonym for the variable. A variable that has a synonym can be searched by variable name or synonym.
+
+Adding the unit column allows units to be displayed in the graphs.. 
 
 The Description column should contain a description of the entity.The description is displayed as a tooltip after hovering the cursor over the selected entity.
 
