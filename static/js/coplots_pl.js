@@ -1,11 +1,13 @@
 $(document).ready(function() {
 
-    // close error message
-    $(document).on('click', 'span.close', function() {
-        $(this).closest('div.alert').addClass('d-none');
+    // use plugin select2 for selector
+    $(".selector").select2({
+    placeholder:"Search entity"
     });
 
-    // apply filters
+
+
+    // apply filters for Single and multiple plot
     $(document).on('change', '#select_scale', function() {
         if(this.checked) {
           $('#scale_values').removeClass('d-none');
@@ -15,42 +17,79 @@ $(document).ready(function() {
     });
 
 
-    var how_to_plot = $('#coplot').attr('data-how-to-plot');
-    $('#coplot').removeAttr('data-how-to-plot');
-    // for single_plot
+    // hide choice scale for x and y axis
+    $("#log2").hide();
 
-    if (how_to_plot == "single_plot") {
-        // initializing constants and removing attributes from html elements
-        var x_axis = $('#coplot').attr('data-plot-x');
-        var y_axis = $('#coplot').attr('data-plot-y');
-        var PLOT_SERIES = $('#coplot').attr('data-plot-series2').replace(/'/g, '"'); //");
-        if (PLOT_SERIES.length != 0) {
-            PLOT_SERIES = JSON.parse(PLOT_SERIES);
-            // removing attributes
-            Plotly.newPlot('coplot',
-            PLOT_SERIES,
-            {
-            title: 'Compare values',
-                    'xaxis': {
-                        'title': {
-                                'text': x_axis,
-                                }
-                            },
-                    'yaxis': {
-                        'title': {
-                            'text': y_axis,
-                                }
-                        },
-            },);
-            }
-    } else { // for multiple plots
-        var PLOT_SERIES = $('#coplot').attr('data-plot-series').replace(/'/g, '"'); //");
-        var layout = $('#coplot').attr('data-layout').replace(/'/g, '"'); //");
-        if (PLOT_SERIES.length != 0) {
-            PLOT_SERIES = JSON.parse(PLOT_SERIES);
-            layout = JSON.parse(layout);
-            Plotly.newPlot('coplot',
-            PLOT_SERIES,layout);
-            }
+    // show choice for log scale for x and y axis if we choose log
+    $(document).on('change', '#log', function() {
+        if(this.checked == false) {
+          $("#log2").hide();
+        } else {
+            $("#log2").show();
         }
+    });
+
+    // hide choice scale for x and y axis if we choose linear
+    $(document).on('change', '#linear', function() {
+        if(this.checked == false) {
+          $("#log2").show();
+        } else {
+            $("#log2").hide();
+        }
+    });
+
+
+
+    // initiate value for subcategory selector
+    var $cat1 = $('#category11').select2({
+    placeholder:"Search entity"
+    });
+
+    // handling select all choice
+    $('#category11').on("select2:select", function (e) {
+           var data = e.params.data.text;
+           if(data=='Select all'){
+            $("#category11> option").prop("selected","selected");
+            $("#category11").trigger("change");
+           }
+      });
+
+    //change subcategories if category change
+    $('#category1').change(function () {
+        var entity =$(this).val(), values = cat[entity] || [];
+
+        var html = $.map(values, function(value){
+            return '<option value="' + value + '">' + value + '</option>'
+        }).join('');
+        $cat1.html('<option value="Select all">Select all</option>'+html)
+    });
+
+
+
+
+    // initiate value for subcategory selector
+    var $cat = $('#category22').select2({
+    placeholder:"Search entity"
+    });
+
+    // handling select all choice
+    $('#category22').on("select2:select", function (e) {
+           var data = e.params.data.text;
+           if(data=='Select all'){
+            $("#category22> option").prop("selected","selected");
+            $("#category22").trigger("change");
+           }
+      });
+
+    //change subcategories if category change
+    $('#category2').change(function () {
+        var entity =$(this).val(), values = cat[entity] || [];
+
+        var html = $.map(values, function(value){
+            return '<option value="' + value + '">' + value + '</option>'
+        }).join('');
+        $cat.html('<option value="Select all">Select all</option>'+html)
+    });
+
+
 });

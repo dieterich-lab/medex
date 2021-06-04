@@ -11,4 +11,4 @@ For creating elements on the page, I use `bootstrap` library. Bootstrap has all 
 It has some dependencies (e.g. jquery), which are added to the `layout.html` file and are stored locally in the `static` directory.
 
 ## Plots
-For plots there is a library `highcharts.js`.  More details: https://www.highcharts.com/docs
+For plots there is a library `plotly-latest.min.js`.  More details: https://plotly.com/

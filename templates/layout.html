@@ -8,21 +8,34 @@
     {# custom style #}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
     {# requirements for bootstrap #}
-        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-        <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='popper.min.js') }}"
-                integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-                crossorigin="anonymous">
-        </script>
-        <script src="{{ url_for('static', filename='bootstrap.min.js') }}"
-                integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-                crossorigin="anonymous">
-        </script>
-    {# end of requirements for bootstrap #}
 
-    <div id="page" class="mx-4">
-      <nav class="navbar navbar-light bg-light justify-content-center">
-        <ul class="nav">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='popper.min.js') }}"
+                integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+                crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"
+                integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+                crossorigin="anonymous"></script>
+        <div class="w3-bar w3-border w3-light-blue">
+          <div class="w3-bar-item">{{ database }}</div>
+          <div class="w3-bar-item">{{ len_numeric }}</div>
+          <div class="w3-bar-item">{{ size_numeric }}</div>
+            <div class="w3-bar-item">{{ len_categorical }}</div>
+          <div class="w3-bar-item">{{ size_categorical }}</div>
+        </div>
+<div id="page" class="mx-4">
+      <nav class="navbar navbar-light bg-light  ">
+          <a class="navbar-brand" href="/tutorial">Tutorial</a>
+          <ul class="nav mx-auto">
+          <!-- <li class="nav-item">
+            <a class="nav-link" href="/data">Welcome</a>
+          </li> -->
+          <li class="nav-item">
+            <a class="nav-link" href="/data">Table browser</a>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="/basic_stats">Basic Stats</a>
           </li>
@@ -42,17 +55,13 @@
             <a class="nav-link" href="/heatmap">Heatmap</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/clustering_pl">Clustering</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/coplots_pl">Coplots</a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link" href="/logout">Logout</a>
           </li>
-        </ul>
+          </ul>
         </nav>
-        {% block body %}{% endblock %}
+    {% block body %}
+    {% endblock %}
     </div>
+
 </body>
 </html>

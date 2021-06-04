@@ -1,49 +1,105 @@
 {% extends "layout.html" %}
 {% block body %}
-
+<form action="" method="POST">
+    <div id="menu">
+    {% include 'sidebar.html' %}
+    </div>
 {# imports #}
     {# our own js #}
-    <script src="{{ url_for('static', filename='js/boxplot.js') }}"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
+
+    {# plotly and jquery #}
+    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+
+    {# pretty multiselect inputs #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
+    <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 {# end of imports #}
 
-{% if error %}
-  <div class="alert alert-danger mt-2" role="alert">
-    <div class="row">
-      <div class="col col-xs-10">{{ error }}</div>
-      <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
-    </div>
-  </div>
-{% endif %}
 
-<form action="" method="POST">
-    <div class="form-group">
-        <label for="entity">Entity:</label>
-        <select class="custom-select" name="entity" id="entity">
-            <option {% if not selected_entity %} selected {% endif %}>Choose entity</option>
-            {% for entity in numeric_entities %}
-            <option value="{{ entity }}" {% if entity == selected_entity %}selected{% endif %}>{{ entity }}</option>
-            {% endfor %}
-        </select>
+<div id="content">
+<div class="card">
+    <div class="card-header" id="settings_header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+                Settings
+            </button>
+        </h5>
     </div>
-    <div class="form-group">
-        <label for="group_by">Group by:</label>
-        <select class="custom-select" name="group_by" id="group_by">
-            <option {% if not group_by %} selected {% endif %}>Choose entity</option>
-            {% for entity in categorical_entities %}
-            <option value="{{ entity }}" {% if entity == group_by %}selected{% endif %}>{{ entity }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <button type="submit" name="plot_boxplot" class="btn btn-outline-info">Plot</button>
-</form>
+    <div id="settings" class="collapse show" aria-labelledby="c_settings_header" data-parent="#accordion">
+        <div class="card-body">
+            {% import 'macro_template.html' as m %}
 
-{% if plot_series %}
-<div class="chart" id="bargraph">
-    <script>
-        var graphs = {{plot | safe}};
-        Plotly.plot('bargraph',graphs,{});
-    </script>
+            {% if error %}
+            {{ m.show_error(error) }}
+            {% endif %}
+
+                {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name=all_measurement,value=entity,select=measurement,d=name,block=block) }}
+                {{ m.entity_form_single(id_single="numeric_entities",class="axis",name=all_numeric_entities,value=entity,select=numeric_entities,d="Numeric entities:") }}
+                {{ m.entity_form_single(id_single= "categorical_entities",class="categorical_entities",name =all_categorical_entities,select=categorical_entities,value=entity,d="Group by:") }}
+
+                <!-- Send dictionary with subcategory data to javascript -->
+                <script type="text/javascript">
+                     var cat = {{all_subcategory_entities|safe}};
+                </script>
+                <div class="tooltips" title="Please select category and next subcategory" >
+                    <label>Subcategory: </label>
+                    <select style="width: 100%"  multiple id="subcategory_entities" class="subcategory_entities" name="subcategory_entities" class="form-control" >
+                        {% for entity in all_subcategory_entities[categorical_entities] %}
+                        <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <label >Scale</label>
+                 <table >
+                    <tr>
+                    <td>
+                        <div class="custom-control custom-radio" >
+                            <input type="radio" class="custom-control-input" id="linear" name="how_to_plot" value="linear"
+                                    {% if how_to_plot=="linear"  or not how_to_plot %}checked{% endif %}>
+                            <label class="custom-control-label" for="linear">linear</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="custom-control custom-radio">
+                            <input type="radio" class="custom-control-input" id="log" name="how_to_plot" value="log"
+                                {% if how_to_plot=="log"  %}checked{% endif %}>
+                            <label class="custom-control-label" for="log">log</label>
+                        </div>
+                    </td>
+                    </tr>
+                </table>
+
+                <button id="Plot"  name="plot_boxplot" class="btn btn-outline-info">Plot</button>
+
+        </div>
+    </div>
 </div>
-{% endif %}
+
+<div class="card-header" id="results_header">
+    <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+            {% if measurement1 %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            Results
+        </button>
+    </h5>
+</div>
+<div id="numeric_results" class="collapse {% if measurement1 %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+    <div class="card-body">
+        {% if plot %}
+        <div id="scatter_plot" >
+            {{plot | safe}}
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+</form>
 {% endblock %}

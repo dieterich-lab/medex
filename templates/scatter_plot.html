@@ -1,73 +1,136 @@
 {% extends "layout.html" %}
 {% block body %}
-
+<form action="" method="POST">
+    <div id="menu">
+    {% include 'sidebar.html' %}
+    </div>
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/plots_plotly.js') }}"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="{{ url_for('static', filename='js/jquery-1.11.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
+
+    {# plotly and jquery #}
+    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
 
     {# pretty multiselect inputs #}
-    <link rel="stylesheet" href="{{ url_for('static', filename='choices.min.css') }}">
-    <script src="{{ url_for('static', filename='choices.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
+    <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
-    {# export tables #}
-    <script type="text/javascript" src="{{ url_for('static', filename='table2excel.js') }}" ></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='tabletoCSV.js') }}" ></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
-    {# slider #}
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-slider.min.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap-slider.min.js') }}" ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+
+
 {# end of imports #}
+<div id="content">
+<div class="card">
+    <div class="card-header" id="settings_header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+                Settings
+            </button>
 
-{% if error %}
-  <div class="alert alert-danger mt-2" role="alert">
-    <div class="row">
-      <div class="col col-xs-10">{{ error }}</div>
-      <div class="col col-sm-2"><span class="close" aria-label="Close"> &times;</span></div>
+        </h5>
     </div>
-  </div>
-{% endif %}
+    <div id="settings" class="collapse show "
+         aria-labelledby="c_settings_header" data-parent="#accordion">
+        <div class="card-body">
+            {% import 'macro_template.html' as m %}
 
-<form action="" method="POST">
-    <div class="form-group">
-       <label for="x_axis">x axis:</label>
-        <select class="custom-select" name="x_axis" id="x_axis" placeholder="Search entity">
-            <option {% if not x_axis %} selected {% endif %}>Choose entity</option>
-        {% for entity in all_numeric_entities %}
-            <option value="{{ entity }}" {% if entity == x_axis %}selected{% endif %}>{{ entity }}</option>
-        {% endfor %}
-        </select>
-        <label for="y_axis">y axis:</label>
-        <select class="custom-select" name="y_axis" id="y_axis" placeholder="Search entity">
-            <option {% if not y_axis %} selected {% endif %}>Choose entity</option>
-         {% for entity in all_numeric_entities %}
-            <option value="{{ entity }}" {% if entity == y_axis %}selected{% endif %}>{{ entity }}</option>
-         {% endfor %}
-        </select>
-        <div class="form-check mt-4">
-            <input class="form-check-input" type="checkbox" value="true" id="add_group_by" name="add_group_by"
-                   {% if add_group_by %} checked {% endif %}>
-            <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
-        </div>
-        <br>
-        <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox" value="true">
-            <br>
-            <label for="category">Group by</label>
-            <select class="custom-select" name="category" id="category">
-                <option {% if not category %} selected {% endif %}>Choose entity</option>
-                {% for entity in all_categorical_entities %}
-                <option value="{{ entity }}" {% if entity == category %}selected{% endif %}>{{ entity }}</option>
-                {% endfor %}
-            </select>
+            {% if error %}
+            {{ m.show_error(error) }}
+            {% endif %}
+
+            {{ m.entity_form_single_measurement(id_single_measurement= "x_measurement",name =all_measurement,value=entity,select=x_measurement,d=name,block=block) }}
+            {{ m.entity_form_single(id_single= "x_axis",class="axis",name =all_numeric_entities,value=entity,select=x_axis,d="x axis:") }}
+            {{ m.entity_form_single_measurement(id_single_measurement= "y_measurement",name =all_measurement,value=entity,select=y_measurement,d=name,block=block) }}
+            {{ m.entity_form_single(id_single= "y_axis",class="axis",name =all_numeric_entities,value=entity,select=y_axis,d="y axis:") }}
+
+                <label >Scale</label>
+                    <table >
+                    <tr>
+                    <td>
+                        <div class="custom-control custom-radio" >
+                            <input type="radio" class="custom-control-input" id="linear" name="how_to_plot" value="linear"
+                                {% if how_to_plot =="linear" or not how_to_plot %}checked{% endif %}>
+                                <label class="custom-control-label" for="linear">linear</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="custom-control custom-radio">
+                            <input type="radio" class="custom-control-input" id="log" name="how_to_plot" value="log"
+                                {% if how_to_plot=="log"  %} checked {% endif %}>
+                                <label class="custom-control-label" for="log">log</label>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-check mt-4" id="log2">
+                            <input class="form-check-input" type="checkbox" name="log_x" value="log_x" id="log_x"
+                                {% if how_to_plot=="log_x" %} checked {% endif %} >
+                                <label class="form-check-label" for="log_x">log x</label><br />
+                            <input class="form-check-input" type="checkbox"  name="log_y" value="log_y" id="log_y"
+                                {% if how_to_plot=="log_y" %} checked {% endif %}>
+                                <label class="form-check-label" for="log_y">log y</label>
+                        </div>
+                        </td>
+                    </tr>
+                    </table>
+
+                <div class="form-check mt-4">
+                    <input class="form-check-input" type="checkbox" value="true" id="add_group_by" name="add_group_by"
+                        {% if add_group_by %} checked {% endif %}>
+                        <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
+                </div>
+                <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox" value="true">
+                    {{ m.entity_form_single(id_single="categorical_entities",class="categorical_entities",name=all_categorical_entities ,value=entity,select=categorical_entities,d="Group by:") }}
+
+                     <!-- Send dictionary with subcategory data to javascript -->
+                     <script type="text/javascript">
+                        var cat = {{all_subcategory_entities|safe}};
+                     </script>
+
+                     <div class="tooltips" title="Please select category and next subcategory">
+                         <label>Subcategory: </label>
+                        <select style="width: 100%" multiple id="subcategory_entities" class="subcategory_entities" name="subcategory_entities" class="form-control" >
+                            <option value="Select all">Select all</option>
+                            {% for entity in all_subcategory_entities[categorical_entities] %}
+                            <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+                            {% endfor %}
+                        </select>
+                     </div>
+
+                </div>
+
+
+                   <button id="Plot"  name="scatter_plot" class="btn btn-outline-info">Plot</button>
+
+
         </div>
     </div>
-    <button type="submit" name="scatter_plot" class="btn btn-outline-info">Plot data</button>
-</form>
 
-{% if plot_series %}
-<div id="scatter_plot" data-plot-x="{{ x_axis }}" data-plot-y="{{ y_axis }}"
-                data-plot-category="{{ cat_values }}"
-                     data-plot-series="{{ plot_series }}"></div>
-{% endif %}
+</div>
+
+<div class="card-header" id="results_header">
+    <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+            {% if x_measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            Results
+        </button>
+    </h5>
+</div>
+<div id="numeric_results" class="collapse {% if x_measurement %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+    <div class="card-body">
+        {% if plot %}
+        <div id="scatter_plot" >
+            {{plot | safe}}
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+    </form>
 {% endblock %}

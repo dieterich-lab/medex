@@ -1,12 +1,34 @@
-version: '3'
+version: '3.6'
 services:
-  frontend:
+  medex:
+    image: aljoschak1/medex
     build: .
     ports:
       - "80:80"
+    depends_on: # other containers it needs in order to run
+      - database
     environment:
-     - REDIS_URL=redis://redis:6379/0
+      - EXPRESS_MEDEX_MEDDUSA_URL=http://192.168.2.XXX:3500/result/cases/get
+      - PYTHONUNBUFFERED=1
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=example
+      - POSTGRES_PORT=5432
+      - POSTGRES_HOST=database
     volumes:
       - ./import:/app/import
-  redis:
-    image: redis:5-alpine
+    restart: always
+
+  database:
+    image: postgres
+    ports:
+      - "5428:5432"
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=example
+    restart: always
+
+
+
+

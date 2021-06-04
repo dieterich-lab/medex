@@ -1,4 +1,4 @@
-from modules import import_dataset as id
+from modules import import_dataset_postgre as idp
 from configparser import ConfigParser
 import os
 import sys
@@ -44,7 +44,6 @@ class ImportSettings():
         return os.popen(f"sha512sum {path}").read() \
             .split(' ')[0]
 
-    # Check that data in enities and dataset was changed
     def is_entity_changed(self, path):
         hash = self.get_hash(path)
         return self.config['hashes']['entity'] != hash
@@ -58,26 +57,39 @@ class ImportSettings():
             return False
         return True
 
-
-def start_import():
+def start_import(rdb):
     """ Import data from entities and dataset files"""
 
     settings = ImportSettings()
     print('starting import', datetime.now().strftime('%H:%M:%S'))
     dataset = './import/dataset.csv'
     entities = './import/entities.csv'
+    header = './import/header.csv'
+
 
     if not os.path.isfile(dataset) or not os.path.isfile(entities):
-        return print("Could not import to database either or both entities and dataset is missing", file=sys.stderr)
-
-    if not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
+        return print("Could not import to database either or entities.csv and dataset.csv is missing", file=sys.stderr)
+    elif not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
         return print("Data set not changed", file=sys.stderr)
+    else:
+        if not os.path.isfile(header):
+            header = ['Name_ID','measurement']
+        else:
+            with open(header, 'r') as in_file:
+                for row in in_file:
+                    header = row.replace("\n", "").split(",")
+            header=header[0:2]
+        # use function from import_dataset_postgre.py to create tables in database
+        print("Start create tables")
+        idp.create_table(rdb)
+        print("Start load data ")
+        idp.load_data(entities,dataset,header,rdb)
+        print("Start alter table ")
+        idp.alter_table(rdb)
 
-    numeric_entities, categorical_entities = id.import_entity_types(entities)
-
-    id.import_dataset(os.environ['REDIS_URL'], dataset, numeric_entities, categorical_entities)
-    settings.update(dataset_path=dataset, entities_path=entities)
-    settings.save()
+        settings.update(dataset_path=dataset, entities_path=entities)
+        settings.save()
+        print("End load data")
 
 
 class Scheduler():
@@ -85,10 +97,11 @@ class Scheduler():
     BackgroundScheduler runs in a thread inside existing application.
     Importing data check the data. Import data every day at 05.05 if the program see any changes.
     """
-    def __init__(self, day_of_week, hour, minute):
+
+    def __init__(self,rdb, day_of_week, hour, minute):
         self.bgs = BackgroundScheduler()
-        start_import()
-        self.bgs.add_job(start_import, 'cron', day_of_week=day_of_week, hour=hour, minute=minute)
+        start_import(rdb)
+        self.bgs.add_job(start_import,'cron',[rdb], day_of_week=day_of_week, hour=hour, minute=minute)
 
     def start(self):
         self.bgs.start()

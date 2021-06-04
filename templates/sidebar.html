@@ -1,0 +1,64 @@
+{% block content %}
+
+<script src="{{ url_for('static', filename='js/subcategories.js') }}"></script>
+<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
+{# pretty multiselect inputs #}
+<link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
+<script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+
+
+<div class="card" style="display: none">
+    <div class="card-body">
+        <label>Patient ID selection</label>
+        <a  href="{{url_for('download', filename = 'patient_id.csv')}}" id="download" class="btn btn-outline-info">Download Patient ID</a>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="card-body">
+        <label>Categorical filter selection:</label>
+        <select id="categorical_filter"  name="categorical_filter" style="width: 100%" class="js-example-basic-single" >
+            <option>Search entity</option>
+            {% for entity in all_categorical_entities %}
+                <option title="{{ all_categorical_entities[entity].description }}" value="{{ all_categorical_entities[entity].Key }}">{{ all_categorical_entities[entity].Key }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label>is</label>
+        <script type="text/javascript">
+            var filter = {{all_subcategory_entities|safe}};
+        </script>
+        <select multiple id="subcategory_filter"  name="subcategory_entities" style="width: 100%" class="form-control" >
+            <option value="Select all">Select all</option>
+            {% for entity in all_subcategory_entities[categorical_filter] %}
+            <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+            {% endfor %}
+        </select>
+                <br><br>
+        <button id="Add" type="button" class="btn btn-outline-info" >Add Filter</button>
+    </div>
+</div>
+
+
+<div id='id_filter_results' class="card">
+    <div class="card-body">
+        <label>Filters </label>
+        <button id ="clean" name='clean' type="button" class="btn btn-outline-info">Clear All</button>
+        <div id="demo" >
+            {% if filter %}
+            {% for cat,filter in filter %}
+                <button  style="display: block; width: 100%" class='btn btn-outline-primary' ><span class='close' onclick="remove(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function remove(el) {
+        $(el).parent('button').remove();
+    }
+
+
+</script>
+{% endblock %}

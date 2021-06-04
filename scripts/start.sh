@@ -2,8 +2,15 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# enviroment variables
 export FLASK_ENV=development
 export FLASK_APP=webserver.py
 
-export REDIS_URL=redis://localhost:6379/0
-flask run --host=0.0.0.0
+export POSTGRES_USER=test
+export POSTGRES_PASSWORD=test
+export POSTGRES_DB=example
+export POSTGRES_PORT=5428
+export POSTGRES_HOST=localhost
+
+# run flask
+flask run

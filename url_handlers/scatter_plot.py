@@ -1,157 +1,219 @@
-from flask import Blueprint, render_template, request, jsonify
-import numpy as np
-import pandas as pd
-import json
+from flask import Blueprint, render_template, request
+import plotly.express as px
+import modules.load_data_postgre as ps
+import url_handlers.filtering as filtering
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,\
+    all_subcategory_entities, Name_ID, measurement_name,\
+    block, data
 
-
-import data_warehouse.redis_rwh as rwh
-
-scatter_plot_page = Blueprint('scatter_plot', __name__,
-                       template_folder='tepmlates')
+scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-    # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
-    all_categorical_only_entities = sorted(set(all_categorical_entities) - set(all_numeric_entities))
-
+    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
     return render_template('scatter_plot.html',
+                           name='{}'.format(measurement_name),
+                           block=block,
                            numeric_tab=True,
+                           all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_only_entities)
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_measurement=all_measurement,
+                           filter=categorical_filter)
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
-    # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
-    all_categorical_only_entities = sorted(set(all_categorical_entities) - set(all_numeric_entities))
 
-
+    # list selected data
     y_axis = request.form.get('y_axis')
     x_axis = request.form.get('x_axis')
-    category = request.form.get('category')
+
+    if block == 'none':
+        x_measurement = all_measurement.values[0]
+        y_measurement = all_measurement.values[0]
+    else:
+        x_measurement = request.form.get('x_measurement')
+        y_measurement = request.form.get('y_measurement')
+
+    id_filter = data.id_filter
+    categorical_entities = request.form.get('categorical_entities')
+    subcategory_entities = request.form.getlist('subcategory_entities')
+    how_to_plot = request.form.get('how_to_plot')
+    log_x = request.form.get('log_x')
+    log_y = request.form.get('log_y')
+
     add_group_by = request.form.get('add_group_by') is not None
-    add_separate_regression = request.form.get('add_separate_regression') is not None
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
 
-
-    error = None
-    if not x_axis or not y_axis or x_axis == "Choose entity" or y_axis == "Choose entity":
+    # handling errors and load data from database
+    if x_measurement == "Search entity" or y_axis == "Search entity":
+        error = "Please select number of {}".format(measurement_name)
+    elif x_axis == "Search entity" or y_axis == "Search entity":
         error = "Please select x_axis and y_axis"
-    elif x_axis == y_axis:
+    elif x_axis == y_axis and x_measurement == y_measurement:
         error = "You can't compare the same entity"
-    elif add_group_by and category == "Choose entity":
+    elif how_to_plot == 'log' and not log_x and not log_y:
+        error = "Please select type of log"
+    elif add_group_by and categorical_entities == "Search entity":
         error = "Please select a categorical value to group by"
-    elif add_group_by and category:
-        categorical_df, error = rwh.get_joined_categorical_values([category], rdb)
-        error = "No data based on the selected entities ( " + ", ".join([category]) + " ) " if error else None
+    elif not subcategory_entities and add_group_by:
+        error = "Please select subcategory"
+    else:
+        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, categorical_filter,
+                                                       categorical_names, id_filter, rdb)
+        numeric_df = numeric_df.rename(
+            columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
 
-    numeric_df, error = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error else (None, error)
+        x_unit, error = ps.get_unit(x_axis, rdb)
+        y_unit, error = ps.get_unit(y_axis, rdb)
+        if x_unit and y_unit:
+            x_axis_unit = x_axis + ' (' + x_unit + ')'
+            y_axis_unit = y_axis + ' (' + y_unit + ')'
+            numeric_df.columns = [Name_ID, x_axis_unit, y_axis_unit]
+            if x_axis == y_axis:
+                x_axis_v = x_axis + '_x' + ' (' + x_unit + ')'
+                y_axis_v = y_axis + '_y' + ' (' + y_unit + ')'
+            else:
+                x_axis_v = x_axis + ' (' + x_unit + ')'
+                y_axis_v = y_axis + ' (' + y_unit + ')'
+        else:
+            if x_axis == y_axis:
+                x_axis_v = x_axis + '_x'
+                y_axis_v = y_axis + '_y'
+            else:
+                x_axis_v = x_axis
+                y_axis_v = y_axis
+        if not error:
+            numeric_df = numeric_df.dropna()
+            if len(numeric_df[x_axis_v]) == 0:
+                error = "Category {} is empty".format(x_axis)
+            elif len(numeric_df[y_axis_v]) == 0:
+                error = "Category {} is empty".format(y_axis)
+            elif len(numeric_df.index) == 0:
+                error = "This two entities don't have common values"
+
+    if add_group_by and categorical_entities:
+        df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
+                                        categorical_filter, categorical_names, id_filter, rdb)
+        if not error:
+            categorical_df = numeric_df.merge(df, on="Name_ID").dropna()
+            categorical_df = categorical_df.sort_values(by=[categorical_entities])
+            categorical_df = categorical_df.rename(
+                columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
+            if len(categorical_df[categorical_entities]) == 0:
+                    error = "Category {} is empty".format(categorical_entities)
 
     if error:
         return render_template('scatter_plot.html',
-                                error=error,
-                                numeric_tab=True,
-                                x_axis=x_axis,
-                                y_axis=y_axis,
-                                category=category,
-                                all_numeric_entities=all_numeric_entities,
-                                all_categorical_entities=all_categorical_only_entities,
-                                add_group_by=add_group_by,
-                                add_separate_regression=add_separate_regression)
+                               name='{}'.format(measurement_name),
+                               block=block,
+                               numeric_tab=True,
+                               all_subcategory_entities=all_subcategory_entities,
+                               all_categorical_entities=all_categorical_entities,
+                               all_numeric_entities=all_numeric_entities,
+                               all_measurement=all_measurement,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
+                               add_group_by=add_group_by,
+                               x_axis=x_axis,
+                               y_axis=y_axis,
+                               x_measurement=x_measurement,
+                               y_measurement=y_measurement,
+                               filter=categorical_filter_zip,
+                               error=error,
+                               )
 
+    # Plot figure and convert to an HTML string representation
+    if how_to_plot == 'linear':
+        if add_group_by :
+            categorical_df['hover_mouse'] = categorical_df[Name_ID]
+            fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities,
+                             hover_name='hover_mouse', template="plotly_white",trendline="ols")
+        else:
+            numeric_df['hover_mouse'] = numeric_df[Name_ID]
+            fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v,hover_name ='hover_mouse', template="plotly_white",
+                             trendline="ols")
 
-    i=0
-    if not add_group_by:
-        i+=1
-        plot_series = []
-        # change columns order and drop NaN values (this will show only the patients with both values)
-        numeric_df = numeric_df.dropna()[[x_axis, y_axis, 'patient_id']]
-        # rename columns
-        numeric_df.columns = ['x', 'y', 'patient_id']
-        # data_to_plot = list(numeric_df.T.to_dict().values())
-        # fit lin to data to plot
-        m, b = np.polyfit(np.array(numeric_df['x']), np.array(numeric_df['y']), 1)
-        bestfit_y = (np.array(numeric_df['x']) * m + b)
-
-        plot_series.append({
-            'x': list(numeric_df['x']),
-            'y': list(numeric_df['y']),
-            'mode': 'markers',
-            'type': 'scatter',
-            'name' : 'Patients',
-            'text': list(numeric_df['patient_id']),
-        })
-
-
-
-        plot_series.append({
-            'x': list(numeric_df['x']),
-            'y': list(bestfit_y),
-            'type': 'scatter',
-            'name' : 'Linear regression: <br /> (y={0:.2f}x + {1:.2f})'.format(m, b)
-        })
     else:
-        numeric_df = numeric_df.dropna()
-        categorical_df = categorical_df.dropna()
-        merged_df = pd.merge(numeric_df, categorical_df, how='inner', on='patient_id')
+        if log_x == 'log_x' and log_y == 'log_y':
+            if add_group_by:
+                categorical_df['hover_mouse'] = categorical_df[Name_ID]
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities,
+                                 hover_name='hover_mouse', template="plotly_white", trendline="ols", log_x=True,
+                                 log_y=True)
 
-        category_values = merged_df[category].unique()
+            else:
+                numeric_df['hover_mouse'] = numeric_df[Name_ID]
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
+                                 trendline="ols", log_x=True, log_y=True)
+        elif log_x == 'log_x':
+            if add_group_by:
+                categorical_df['hover_mouse'] = categorical_df[Name_ID]
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
+                                 template="plotly_white", trendline="ols", log_x=True)
 
-        plot_series = []
-        for cat_value in category_values:
+            else:
+                numeric_df['hover_mouse'] = numeric_df[Name_ID]
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
+                                 trendline="ols", log_x=True)
+        elif log_y == 'log_y':
+            if add_group_by:
+                categorical_df['hover_mouse'] = categorical_df[Name_ID]
+                fig = px.scatter(categorical_df, x=x_axis_v, y=y_axis_v, color=categorical_entities, hover_name='hover_mouse',
+                                 template="plotly_white", trendline="ols",  log_y=True)
 
-            colorGen = [ 'rgb(31, 119, 180)', 'rgb(255, 127, 14)',
-                       'rgb(44, 160, 44)', 'rgb(214, 39, 40)',
-                       'rgb(148, 103, 189)', 'rgb(140, 86, 75)',
-                       'rgb(227, 119, 194)', 'rgb(127, 127, 127)',
-                       'rgb(188, 189, 34)', 'rgb(23, 190, 207)']
+            else:
+                numeric_df['hover_mouse'] = numeric_df[Name_ID]
+                fig = px.scatter(numeric_df, x=x_axis_v, y=y_axis_v, hover_name='hover_mouse', template="plotly_white",
+                                 trendline="ols", log_y=True)
 
-            df = merged_df.loc[(merged_df[category] == cat_value)].dropna()
-            df.columns = ['patient_id', 'x', 'y', 'cat']
-            # fit lin to data to plot
-            m, b = np.polyfit(np.array(df['x']), np.array(df['y']), 1)
-            bestfit_y = (np.array(df['x']) * m + b)
-            i += 1
+#    results = px.get_trendline_results(fig)
+    if block == 'none':
+        fig.update_layout(
+            font=dict(size=16),
+            title={
+                'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis,
+                'y': 0.9,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'})
+    else:
 
-            plot_series.append({
-                'x': list(df['x']),
-                'y': list(df['y']),
-                'mode': 'markers',
-                'type': 'scatter',
-                'name': cat_value,
-                'text': list(df['patient_id']),
-                'marker' : {'color': colorGen[i]}
-            })
+        fig.update_layout(
+            font=dict(size=16),
+            title={
+                'text': "Compare values of <b>" + x_axis + "</b> : " + measurement_name + "<b>" + x_measurement +
+                        "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" + y_measurement + "</b> ",
+                'y': 0.9,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'})
 
-
-            plot_series.append({
-                'x': list(df['x']),
-                'y': list(bestfit_y),
-                'type': 'scatter',
-                'name' : 'Linear regression {0}: <br /> (y={1:.2f}x + {2:.2f})'.format(cat_value, m, b),
-                'mode' : 'lines',
-                'line' : {'color' : colorGen[i]}
-            })
-
-
+    fig = fig.to_html()
 
     return render_template('scatter_plot.html',
+                           name='{}'.format(measurement_name),
+                           block=block,
                            numeric_tab=True,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_categorical_entities=all_categorical_entities,
                            all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_only_entities,
+                           all_measurement=all_measurement,
+                           subcategory_entities=subcategory_entities,
+                           categorical_entities=categorical_entities,
+                           add_group_by=add_group_by,
                            x_axis=x_axis,
                            y_axis=y_axis,
-                           add_group_by=add_group_by,
-                           add_separate_regression=add_separate_regression,
-                           plot_series=plot_series)
+                           log_x=log_x,
+                           log_y=log_y,
+                           how_to_plot=how_to_plot,
+                           x_measurement=x_measurement,
+                           y_measurement=y_measurement,
+                           filter=categorical_filter_zip,
+                           plot=fig
+                           )
 
 
 

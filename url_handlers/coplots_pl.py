@@ -1,159 +1,222 @@
 from flask import Blueprint, render_template, request
-import pandas as pd
+import modules.load_data_postgre as ps
+import plotly.express as px
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,all_subcategory_entities,\
+ measurement_name, block
 
-import data_warehouse.redis_rwh as rwh
-
-coplots_plot_page = Blueprint('coplots_pl', __name__,
-                         template_folder='templates')
+coplots_plot_page = Blueprint('coplots_pl', __name__, template_folder='templates')
 
 
 @coplots_plot_page.route('/coplots_pl', methods=['GET'])
 def get_coplots():
-    # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
-    all_categorical_only_entities = sorted(set(all_categorical_entities) - set(all_numeric_entities))
 
     return render_template('coplots_pl.html',
+                           name='{} number'.format(measurement_name),
+                           block=block,
                            all_numeric_entities=all_numeric_entities,
-                           categorical_entities=all_categorical_only_entities)
+                           categorical_entities=all_categorical_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_measurement=all_measurement,
+                           )
 
 
 @coplots_plot_page.route('/coplots_pl', methods=['POST'])
 def post_coplots():
-    # this import has to be here!!
-    from webserver import get_db
-    rdb = get_db()
-    all_numeric_entities = rwh.get_numeric_entities(rdb)
-    all_categorical_entities = rwh.get_categorical_entities(rdb)
-    all_categorical_only_entities = sorted(set(all_categorical_entities) - set(all_numeric_entities))
-
+    # get selected entities
     category1 = request.form.get('category1')
     category2 = request.form.get('category2')
+
+    category11 = request.form.getlist('category11')
+    category22 = request.form.getlist('category22')
+
     x_axis = request.form.get('x_axis')
     y_axis = request.form.get('y_axis')
+
+    if block == 'none':
+        x_measurement = all_measurement.values[0]
+        y_measurement = all_measurement.values[0]
+    else:
+        x_measurement = request.form.get('x_measurement')
+        y_measurement = request.form.get('y_measurement')
+
     how_to_plot = request.form.get('how_to_plot')
-    selected_x_min = request.form.get('x_axis_min')
-    selected_x_max = request.form.get('x_axis_max')
-    selected_y_min = request.form.get('y_axis_min')
-    selected_y_max = request.form.get('y_axis_max')
+    how_to_plot2 = request.form.get('how_to_plot2')
+
+    log_x = request.form.get('log_x')
+    log_y = request.form.get('log_y')
+
     select_scale = request.form.get('select_scale') is not None
 
-    error_message = None
-    if category1 is None or category1 == 'Choose entity':
-        error_message = 'Please select category1'
-    elif category2 is None or category2 == 'Choose entity':
-        error_message = 'Please select category2'
-    elif x_axis is None or x_axis == 'Choose entity':
-        error_message = 'Please select x_axis'
-    elif y_axis is None or y_axis == 'Choose entity':
-        error_message = 'Please select y_axis'
+    # handling errors and load data from database
+    error = None
+    if x_measurement == "Search entity" or y_measurement == "Search entity":
+        error = "Please select number of {}".format(measurement_name)
+    elif category1 is None or category1 == 'Search entity':
+        error = 'Please select category1'
+    elif category2 is None or category2 == 'Search entity':
+        error = 'Please select category2'
+    elif x_axis is None or x_axis == 'Search entity':
+        error = 'Please select x_axis'
+    elif y_axis is None or y_axis == 'Search entity':
+        error = 'Please select y_axis'
     elif x_axis == y_axis and category1 == category2:
-        error_message = "You can't compare the same entities and categories"
-    elif x_axis == y_axis:
-        error_message = "You can't compare the same entities for x and y axis"
+        error = "You can't compare the same entities and categories"
+    elif x_axis == y_axis and x_measurement == y_measurement:
+        error = "You can't compare the same entities for x and y axis"
     elif category1 == category2:
-        error_message = "You can't compare the same category"
-    # get joined categorical values
-    if not error_message:
-        categorical_df, error_message = rwh.get_joined_categorical_values([category1, category2], rdb)
-        numeric_df, error = rwh.get_joined_numeric_values([x_axis, y_axis], rdb) if not error_message else (None, error_message)
-        error_message = "No data based on the selected options" if error_message else None
-
-    if error_message:
+        error = "You can't compare the same category"
+    elif not category22 or not category11:
+        error = "Please select subcategory"
+    elif how_to_plot == 'log' and not log_x and not log_y:
+        error = "Please select type of log"
+    if not error:
+        num_data, error = ps.get_values_scatter_plot(x_axis, y_axis,x_measurement,y_measurement, rdb) if not error else (None, error)
+        if x_axis == y_axis:
+            x_axis=x_axis+'_x'
+            y_axis=y_axis+'_y'
+        if not x_axis in num_data.columns:
+            error = "The entity {} wasn't measured".format(x_axis)
+        elif not y_axis in num_data.columns:
+            error = "The entity {} wasn't measured".format(y_axis)
+        elif not error:
+            cat_data1, error = ps.get_cat_values(category1,category11,[x_measurement,y_measurement], rdb) if not error else (None, error)
+            if not error:
+                cat_data2, error = ps.get_cat_values(category2,category22,[x_measurement,y_measurement], rdb)
+                if not error:
+                    data = num_data.merge(cat_data1, on ="Name_ID")
+                    data = data.merge(cat_data2, on="Name_ID")
+                    data = data.dropna()
+                    if len(data.index) == 0:
+                        error = "No data based on the selected options"
+                else: (None, error)
+    if error:
         return render_template('coplots_pl.html',
+                               name='{} number'.format(measurement_name),
+                               block=block,
+                               all_subcategory_entities=all_subcategory_entities,
                                all_numeric_entities=all_numeric_entities,
-                               categorical_entities=all_categorical_only_entities,
-                               error=error_message,
+                               categorical_entities=all_categorical_entities,
+                               all_measurement=all_measurement,
+                               error=error,
                                category1=category1,
                                category2=category2,
                                x_axis=x_axis,
                                y_axis=y_axis,
+                               x_measurement=x_measurement,
+                               y_measurement=y_measurement,
                                how_to_plot=how_to_plot,
-                               x_min=selected_x_min,
-                               x_max=selected_x_max,
-                               y_min=selected_y_min,
-                               y_max=selected_y_max,
-                               select_scale=select_scale)
+                               select_scale=select_scale,
+                               category11=category11,
+                               category22=category22)
 
-    categorical_df = categorical_df.dropna()
-    numeric_df = numeric_df.dropna()
-    merged_df = pd.merge(numeric_df, categorical_df, how='inner', on='patient_id')
+    # Plot figure and convert to an HTML string representation
+    len1 = len(category11)
+    len2 = len(category22)
+    data[category1+'|'+category2] = data[category1]+ '|'+ data[category2]
+
+    if how_to_plot2 == "linear":
+        if how_to_plot == "single_plot":
+            try:
+                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",  color=category1 + '|' + category2,trendline="ols")
+            except:
+                fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white", color=category1 + '|' + category2)
+        else:
+            try:
+                fig = px.scatter(data,x=x_axis, y=y_axis,facet_row=category2, facet_col=category1,color=category1+'|'+category2,
+                                 template="plotly_white",render_mode="svg",trendline="ols",trendline_color_override="black")
+
+            except:
+                fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category2, facet_col=category1,
+                                 template="plotly_white", color=category1 + '|' + category2)
+            fig.update_layout(
+                height=500 * len2,
+                width=700 * len1)
+    else:
+        if log_x == 'log_x' and log_y == 'log_y':
+            if how_to_plot == "single_plot":
+                try:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+'|'+category2,
+                                     trendline="ols",log_x=True, log_y=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",
+                                     color=category1 + ' ' + category2,log_x=True, log_y=True)
+            else:
+                try:
+                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,color=category1+'|'+category2,
+                                     template="plotly_white",trendline="ols",trendline_color_override="black",log_x=True, log_y=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
+                                     template="plotly_white", color=category1 + '|' + category2,
+                                     log_x=True, log_y=True)
+                fig.update_layout(
+                    height=500 * len2,
+                    width=700 * len1)
+        elif log_x == 'log_x':
+            if how_to_plot == "single_plot":
+                try:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+'|'+category2,
+                                     trendline="ols",log_x=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",
+                                     color=category1 + '|' + category2, log_x=True)
+            else:
+                try:
+                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
+                                     template="plotly_white",color=category1+'|'+category2,trendline="ols",trendline_color_override="black",log_x=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
+                                     template="plotly_white", color=category1 + '|' + category2,
+                                     log_x=True)
+                fig.update_layout(
+                    height=500 * len2,
+                    width=700 * len1)
+        elif log_y == 'log_y':
+            if how_to_plot == "single_plot":
+                try:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",color=category1+'|'+category2,
+                                     trendline="ols", log_y=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, template="plotly_white",
+                                     color=category1 + '|' + category2, log_y=True)
+            else:
+                try:
+                    fig = px.scatter(data,x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,template="plotly_white",color=category1+'|'+category2,trendline="ols",log_y=True)
+                except:
+                    fig = px.scatter(data, x=x_axis, y=y_axis, facet_row=category1, facet_col=category2,
+                                     template="plotly_white", color=category1 + '|' + category2,
+                                     log_y=True)
+                fig.update_layout(
+                    height=500 * len2,
+                    width=700 * len1)
+    fig.for_each_annotation(lambda a: a.update(text=a.text.replace("=",'<br>')))
+
+    fig.update_layout(
+        font=dict(size=16),
+        title={
+            'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "</b>",
+            'y': 1,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'})
 
 
-
-    x_min = merged_df[x_axis].min() if not select_scale else selected_x_min
-    x_max = merged_df[x_axis].max() if not select_scale else selected_x_max
-    y_min = merged_df[y_axis].min() if not select_scale else selected_y_min
-    y_max = merged_df[y_axis].max() if not select_scale else selected_y_max
-
-
-    category1_values = merged_df[category1].unique()
-    category2_values = merged_df[category2].unique()
-
-
-    count=0
-    plot_series=[]
-    plot_series2 = []
-    layout ={}
-    for i,cat1_value in enumerate(category1_values):
-        for j,cat2_value in enumerate(category2_values):
-            count += 1
-            df = merged_df.loc[(merged_df[category1] == cat1_value) & (merged_df[category2] == cat2_value)].dropna()
-            df.columns = ['patient_id', 'x', 'y', 'cat1', 'cat2']
-            plot_series.append({
-                'x': list(df['x']),
-                'y': list(df['y']),
-                'mode': 'markers',
-                'type': 'scatter',
-                'xaxis': 'x{}'.format(count),
-                'yaxis': 'y{}'.format(count),
-                'name': '{}: {} <br /> {}: {}'.format(category1,cat1_value,category2 ,cat2_value),
-                'text': list(df['patient_id'])
-            })
-            plot_series2.append({
-                'x': list(df['x']),
-                'y': list(df['y']),
-                'mode': 'markers',
-                'type': 'scatter',
-                'name': '{}: {} <br /> {}: {}'.format(category1, cat1_value, category2, cat2_value),
-                'text': list(df['patient_id'])
-            }
-            )
-            layout.update({
-                'xaxis{}'.format(count): {
-                    'title': {
-                        'text': x_axis,
-                    }
-                },
-                'yaxis{}'.format(count): {
-                    'title': {
-                        'text': y_axis,
-                    }
-                },})
-
-
-    layout.update(title='Compare values of <b>' + x_axis + '</b> and <b>' + y_axis + '</b>')
-    layout['grid'] = {'rows': len(category1_values), 'columns': len(category2_values), 'pattern': 'independent'}
-
-
+    fig = fig.to_html()
     return render_template('coplots_pl.html',
+                           name='{} number'.format(measurement_name),
+                           block=block,
                            all_numeric_entities=all_numeric_entities,
                            categorical_entities=all_categorical_entities,
+                           all_subcategory_entities=all_subcategory_entities,
+                           all_measurement=all_measurement,
+                           how_to_plot=how_to_plot,
+                           select_scale=select_scale,
+                           category11=category11,
+                           category22=category22,
                            category1=category1,
                            category2=category2,
-                           cat1_values=list(category1_values),
-                           cat2_values=list(category2_values),
                            x_axis=x_axis,
                            y_axis=y_axis,
-                           layout =layout,
-                           how_to_plot=how_to_plot,
-                           plot_series=plot_series,
-                           plot_series2=plot_series2,
-                           select_scale=select_scale,
-                           x_min=x_min,
-                           x_max=x_max,
-                           y_min=y_min,
-                           y_max=y_max)
+                           x_measurement=x_measurement,
+                           y_measurement=y_measurement,
+                           plot=fig
+                           )
