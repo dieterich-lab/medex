@@ -141,11 +141,7 @@ def login_get():
     categorical_names = []
     id_filter = data.id_filter
     df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter, rdb)
-    if block == 'none':
-        df = df.drop(columns=['measurement'])
-        df = df.rename(columns={"Name_ID": "{}".format(measurement_name)})
-    else:
-        df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
+    df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     data.csv = df.to_csv(index=False)
 

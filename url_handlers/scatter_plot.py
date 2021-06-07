@@ -43,7 +43,7 @@ def post_plots():
     how_to_plot = request.form.get('how_to_plot')
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
-
+    print(x_axis,y_axis)
     add_group_by = request.form.get('add_group_by') is not None
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
 
@@ -63,8 +63,7 @@ def post_plots():
     else:
         numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, categorical_filter,
                                                        categorical_names, id_filter, rdb)
-        numeric_df = numeric_df.rename(
-            columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
+        numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
 
         x_unit, error = ps.get_unit(x_axis, rdb)
         y_unit, error = ps.get_unit(y_axis, rdb)
@@ -85,6 +84,16 @@ def post_plots():
             else:
                 x_axis_v = x_axis
                 y_axis_v = y_axis
+        if add_group_by and categorical_entities:
+            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
+                                          categorical_filter, categorical_names, id_filter, rdb)
+            if not error:
+                categorical_df = numeric_df.merge(df, on="Name_ID").dropna()
+                categorical_df = categorical_df.sort_values(by=[categorical_entities])
+                categorical_df = categorical_df.rename(
+                    columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
+                if len(categorical_df[categorical_entities]) == 0:
+                    error = "Category {} is empty".format(categorical_entities)
         if not error:
             numeric_df = numeric_df.dropna()
             if len(numeric_df[x_axis_v]) == 0:
@@ -94,16 +103,7 @@ def post_plots():
             elif len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
 
-    if add_group_by and categorical_entities:
-        df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
-                                        categorical_filter, categorical_names, id_filter, rdb)
-        if not error:
-            categorical_df = numeric_df.merge(df, on="Name_ID").dropna()
-            categorical_df = categorical_df.sort_values(by=[categorical_entities])
-            categorical_df = categorical_df.rename(
-                columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
-            if len(categorical_df[categorical_entities]) == 0:
-                    error = "Category {} is empty".format(categorical_entities)
+
 
     if error:
         return render_template('scatter_plot.html',
@@ -119,6 +119,8 @@ def post_plots():
                                add_group_by=add_group_by,
                                x_axis=x_axis,
                                y_axis=y_axis,
+                               log_x=log_x,
+                               log_y=log_y,
                                x_measurement=x_measurement,
                                y_measurement=y_measurement,
                                filter=categorical_filter_zip,
