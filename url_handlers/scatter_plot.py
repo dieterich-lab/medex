@@ -63,14 +63,16 @@ def post_plots():
     else:
         numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, categorical_filter,
                                                        categorical_names, id_filter, rdb)
-        numeric_df = numeric_df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
 
         x_unit, error = ps.get_unit(x_axis, rdb)
         y_unit, error = ps.get_unit(y_axis, rdb)
         if x_unit and y_unit:
             x_axis_unit = x_axis + ' (' + x_unit + ')'
             y_axis_unit = y_axis + ' (' + y_unit + ')'
-            numeric_df.columns = [Name_ID, x_axis_unit, y_axis_unit]
+            if block == 'none':
+                numeric_df.columns = ["Name_ID", x_axis_unit, y_axis_unit]
+            else:
+                numeric_df.columns = ["Name_ID","measurement", x_axis_unit, y_axis_unit]
             if x_axis == y_axis:
                 x_axis_v = x_axis + '_x' + ' (' + x_unit + ')'
                 y_axis_v = y_axis + '_y' + ' (' + y_unit + ')'
@@ -94,6 +96,9 @@ def post_plots():
                     columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
                 if len(categorical_df[categorical_entities]) == 0:
                     error = "Category {} is empty".format(categorical_entities)
+        else:
+            numeric_df = numeric_df.rename(
+                columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
         if not error:
             numeric_df = numeric_df.dropna()
             if len(numeric_df[x_axis_v]) == 0:
