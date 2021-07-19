@@ -16,7 +16,7 @@ ENV FLASK_ENV production
 ENV TZ=Europe/Berlin
 
 EXPOSE 5428
-EXPOSE 80
+EXPOSE 5000
 
 
-CMD [ "waitress-serve","--port","80","--call", "webserver:main" ]
+CMD [ "waitress-serve","--port","5000","--host","medex","--call", "webserver:main" ]

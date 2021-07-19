@@ -14,8 +14,8 @@ def create_table(rdb):
 
     statement_entities = """CREATE TABLE name_type ("order" numeric,
                                                     "Key" text Primary key,
-                                                    "synonym" text,
                                                     "type" text,
+                                                    "synonym" text,
                                                     "unit" text,
                                                     "description" text,
                                                     "show" text)"""
@@ -95,9 +95,9 @@ def load_data(entities, dataset,header,rdb):
             row = row.replace('"', "")
             row = row.replace("\n", "").split(",")
             # insert data from dataset.csv to table examination
-            line = [i] + row[0:1]+ [1] +row[2:5] + [";".join([str(x) for x in row[5:]])]
-            if len(row) < 6:
-                print("This line doesn't have appropriate format:", row)
+            line = [i] + row[0:5] + [";".join([str(x) for x in row[5:]])]
+            if len(line) < 6:
+                print("This line doesn't have appropriate format:", line)
             else:
                 try:
                     cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)", line)

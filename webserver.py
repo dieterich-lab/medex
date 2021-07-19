@@ -1,5 +1,5 @@
 # import the Flask class from the flask module
-from flask import Flask, send_file, render_template, request,redirect,session
+from flask import Flask, send_file, render_template, request, redirect, session, url_for
 import requests
 from modules.import_scheduler import Scheduler
 from url_handlers.models import TableBuilder
@@ -12,11 +12,12 @@ import pandas as pd
 import os
 import io
 import socket
+from flask import send_from_directory
+
 
 # create the application object
 app = Flask(__name__)
-CORS(app, resources={r"/hardware/control/*": {"origins": "*"}})
-app.config['CORS_HEADERS'] = 'Content-Type'
+CORS(app)
 
 app.secret_key = os.urandom(24)
 with app.app_context():
@@ -65,6 +66,12 @@ if len(all_measurement) < 2:
     block = 'none'
 else:
     block = 'block'
+
+# favicon
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='vnd.microsoft.icon')
 
 # information about database
 @app.context_processor
@@ -256,7 +263,7 @@ def get_cases():
     data.id_filter = case
     df = pd.DataFrame(case, columns=["Patient_ID"])
     data.patient_id = df.to_csv(index=False)
-    return redirect('/data')
+    return redirect('/')
 
 
 

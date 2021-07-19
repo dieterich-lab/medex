@@ -73,7 +73,7 @@ def post_boxplots():
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
-                               measurement1=measurement,
+                               measurement=measurement,
                                all_measurement=all_measurement,
                                filter=categorical_filter_zip,
                                how_to_plot=how_to_plot
@@ -103,7 +103,7 @@ def post_boxplots():
                            numeric_entities=numeric_entities,
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
-                           measurement1=measurement,
+                           measurement=measurement,
                            filter=categorical_filter_zip,
                            how_to_plot=how_to_plot,
                            plot=fig)

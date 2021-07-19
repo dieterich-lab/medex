@@ -43,7 +43,6 @@ def post_plots():
     how_to_plot = request.form.get('how_to_plot')
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
-    print(x_axis,y_axis)
     add_group_by = request.form.get('add_group_by') is not None
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
 
