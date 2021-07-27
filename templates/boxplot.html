@@ -86,12 +86,12 @@
 <div class="card-header" id="results_header">
     <h5 class="mb-0">
         <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-            {% if measurement1 %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            {% if measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
             Results
         </button>
     </h5>
 </div>
-<div id="numeric_results" class="collapse {% if measurement1 %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+<div id="numeric_results" class="collapse {% if measurement %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
         {% if plot %}
         <div id="scatter_plot" >

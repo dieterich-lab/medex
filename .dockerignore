@@ -4,3 +4,10 @@ build
 src
 .env
 import
+dataset_examples
+scripts
+
+# Docker file
+Dockerfile
+docker-compose.yml
+*.md

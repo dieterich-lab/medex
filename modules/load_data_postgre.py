@@ -116,10 +116,7 @@ def number(r):
 
 
 def patient(r):
-    """ Get number of all patients
 
-     number use only for basic_stats
-     """
     try:
         sql = """SELECT * FROM Patient"""
         df = pd.read_sql(sql, r)
@@ -141,42 +138,7 @@ def get_unit(name,r):
         return None, "Problem with load data from database"
 
 
-def get_numerical_entities_scatter_plot(r):
-    """
-
-    :param r:
-    :return: select all numerical entities which are important in further analysis
-    """
-    try:
-        sql = """Select "Key","description" from name_type where type = 'Double' order by "Key" """
-        df = pd.read_sql(sql, r)
-        df = df[~df.Key.isin(['TauMeasure', 'Chung.control1.pValue', 'Chung.control2.pValue', 'Chung.control3.pValue',
-                              'Distance.MMU', 'Distance.HSA', 'Podocytes.FPKM', 'Glomerulus.FPKM', 'WholeKidney.FPKM',
-                              'Podocyte.Enrichment.Boerries.log2FC', 'Podocyte.Enriched.Boerries.FDR'])]
-        return df
-    except Exception:
-        return ["No data"]
-
-
-def get_categorical_entities_scatter_plot(r):
-    """
-
-    :param r:
-    :return: select all categorical entities which are important in further analysis
-    """
-
-    try:
-        sql = """Select "Key","description" from name_type where "type" = 'String' order by "Key" """
-        df = pd.read_sql(sql, r)
-        df = df[~df.Key.isin(['ClosestNcTx', 'GeneID.EnsemblHSA.ProteinCoding', 'GeneID.EnsemblMMU.ProteinCoding',
-                              'NcRNA.GeneID.HSA', 'GenomicCoordinates', 'GeneSymbol', 'GeneSymbol.HSA', 'NcRNASymbol',
-                              'SequenceConservation', 'XLOCid', 'ConservedHumanTX'])]
-        return df
-    except Exception:
-        return ["No data"]
-
-
-def get_data2(entity, what_table, categorical_filter, categorical, id_filter, r):
+def get_data(entity, what_table, categorical_filter, categorical, patient_id, r):
     """
     Get data for tab Table browser
     get_numerical_values_basic_stats use in basic_stats
@@ -192,50 +154,9 @@ def get_data2(entity, what_table, categorical_filter, categorical, id_filter, r)
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     entity_column = '"'+'" text,"'.join(entity) + '" text'
 
-    sql = """SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value" 
-            FROM examination_numerical WHERE "Key" IN ({0}) limit 100
-            """.format(entity_final, entity_column)
-
-    sql3 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS 
-            row_name,"Name_ID","measurement","Key",array_to_string("Value",'';'') as "Value" 
-            FROM examination_numerical WHERE "Key" IN ({0}) 
-                        UNION
-            SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,"Name_ID","measurement",
-            "Key",array_to_string("Value",'';'') as "Value" 
-            FROM examination_categorical WHERE "Key" IN ({0}) order by row_name',
-            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
-            as ct (row_name text,"Name_ID" text,"measurement" text,{1}) limit 100""".format(entity_final, entity_column)
-
-    try:
-        if what_table == 'long':
-            df = pd.read_sql(sql, r)
-        else:
-            df = pd.read_sql(sql3, r)
-            df = df.drop(['row_name'], axis=1)
-        return df, None
-    except Exception:
-        return None, "Problem with load data from database"
-
-
-def get_data(entity, what_table, categorical_filter, categorical, id_filter, r):
-    """
-    Get data for tab Table browser
-    get_numerical_values_basic_stats use in basic_stats
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Name_ID,measurement,Key,instance,Value
-
-    """
-
-    entity_final = "$$" + "$$,$$".join(entity) + "$$"
-    entity_column = '"'+'" text,"'.join(entity) + '" text'
-
-    if not categorical_filter and not id_filter:
+    if not categorical_filter and not patient_id:
         sql = """SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value" 
-                FROM examination_numerical WHERE "Key" IN ({0}) 
+                FROM examination_numerical WHERE "Key" IN ({0})
                 UNION
                 SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value"
                 FROM examination_categorical WHERE "Key" IN ({0})
@@ -255,9 +176,9 @@ def get_data(entity, what_table, categorical_filter, categorical, id_filter, r):
         categorical_filter_str = '"'+"') and \"".join(categorical_filter_str) + "')"
         categorical_names = "$$" + "$$,$$".join(categorical) + "$$"
         categorical_columns = '"' + '" text,"'.join(categorical) + '" text'
-        id_filter_final = "$$"+"$$,$$".join(id_filter) + "$$"
+        id_filter_final = "$$"+"$$,$$".join(patient_id) + "$$"
 
-        if id_filter:
+        if patient_id:
             text = """SELECT "Name_ID" FROM examination WHERE "Name_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
@@ -289,6 +210,7 @@ def get_data(entity, what_table, categorical_filter, categorical, id_filter, r):
                 'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
                 as ct (row_name text,"Name_ID" text,"measurement" text,{1}) where "Name_ID" 
                 in (""".format(entity_final, entity_column) + text + """) """
+
 
     try:
         if what_table == 'long':

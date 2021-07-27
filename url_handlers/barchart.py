@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import rdb, all_categorical_entities_sc, all_measurement, all_subcategory_entities, measurement_name,\
+from webserver import rdb, all_categorical_entities, all_measurement, all_subcategory_entities, measurement_name,\
     Name_ID, block, data
 
 barchart_page = Blueprint('barchart', __name__, template_folder='templates')
@@ -14,7 +14,7 @@ def get_statistics():
     return render_template('barchart.html',
                            block=block,
                            name='{}'.format(measurement_name),
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            filter=categorical_filter
@@ -61,7 +61,7 @@ def post_statistics():
         return render_template('barchart.html',
                                name='{}'.format(measurement_name),
                                block=block,
-                               all_categorical_entities=all_categorical_entities_sc,
+                               all_categorical_entities=all_categorical_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_measurement=all_measurement,
                                filter=categorical_filter_zip,
@@ -95,7 +95,7 @@ def post_statistics():
     return render_template('barchart.html',
                            name='{}'.format(measurement_name),
                            block=block,
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            measurement=measurement,

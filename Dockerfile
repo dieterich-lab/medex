@@ -1,13 +1,14 @@
-FROM python:stretch
+FROM python:slim
 
-ADD . /app
+
+COPY . /app
+COPY Pipfile Pipfile.lock /app/
 
 RUN apt-get update && \
-    apt-get install swig -y && \
+    apt-get install -y && \
     cd /app/ && \
-    pip install pipenv && \
-    pipenv install --ignore-pipfile --deploy --system
-
+    pip install --no-cache-dir pipenv && \
+    pipenv install --ignore-pipfile --deploy --system --clear
 
 
 WORKDIR /app
@@ -19,4 +20,4 @@ EXPOSE 5428
 EXPOSE 80
 
 
-CMD [ "waitress-serve","--port","80","--call", "webserver:main" ]
+CMD [ "waitress-serve","--port","80","--host","medex","--call", "webserver:main" ]

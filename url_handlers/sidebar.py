@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request,session
-from webserver import all_patient, all_categorical_entities_sc, all_subcategory_entities, all_numeric_entities,all_entities
+from webserver import all_patient, all_subcategory_entities, all_numeric_entities,all_entities
 
 sidebar_page = Blueprint('sidebar', __name__, template_folder='templates')
 

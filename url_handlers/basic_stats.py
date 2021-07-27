@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import rdb, all_numeric_entities, all_categorical_entities_sc, all_measurement, all_subcategory_entities,\
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement, all_subcategory_entities,\
     data, measurement_name, block
 
 
@@ -16,7 +16,7 @@ def get_statistics():
                            name=measurement_name,
                            block=block,
                            measurement_name=measurement_name,
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_measurement=all_measurement,
@@ -55,7 +55,7 @@ def get_basic_stats():
                                    name=measurement_name,
                                    block=block,
                                    measurement_name=measurement_name,
-                                   all_categorical_entities=all_categorical_entities_sc,
+                                   all_categorical_entities=all_categorical_entities,
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
@@ -85,7 +85,7 @@ def get_basic_stats():
                                    name=measurement_name,
                                    block=block,
                                    measurement_name=measurement_name,
-                                   all_categorical_entities=all_categorical_entities_sc,
+                                   all_categorical_entities=all_categorical_entities,
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
@@ -103,7 +103,7 @@ def get_basic_stats():
                                    name=measurement_name,
                                    block=block,
                                    measurement_name=measurement_name,
-                                   all_categorical_entities=all_categorical_entities_sc,
+                                   all_categorical_entities=all_categorical_entities,
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
@@ -145,7 +145,7 @@ def get_basic_stats():
                                    name=measurement_name,
                                    block=block,
                                    measurement_name=measurement_name,
-                                   all_categorical_entities=all_categorical_entities_sc,
+                                   all_categorical_entities=all_categorical_entities,
                                    all_subcategory_entities=all_subcategory_entities,
                                    all_numeric_entities=all_numeric_entities,
                                    all_measurement=all_measurement,
@@ -165,7 +165,7 @@ def get_basic_stats():
                                name=measurement_name,
                                block=block,
                                measurement_name=measurement_name,
-                               all_categorical_entities=all_categorical_entities_sc,
+                               all_categorical_entities=all_categorical_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_measurement=all_measurement,

@@ -4,7 +4,7 @@ from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.graph_objects as go
 import url_handlers.filtering as filtering
-from webserver import rdb, all_numeric_entities, all_categorical_entities_sc, all_measurement,measurement_name, block, \
+from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,measurement_name, block, \
     all_subcategory_entities, data
 
 
@@ -20,7 +20,7 @@ def get_plots():
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
                            all_measurement=all_measurement,
                            filter=categorical_filter
                            )
@@ -62,7 +62,7 @@ def post_plots():
                                numeric_tab=True,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities_sc,
+                               all_categorical_entities=all_categorical_entities,
                                numeric_entities=numeric_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
@@ -119,7 +119,7 @@ def post_plots():
                            numeric_tab=True,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
                            all_measurement=all_measurement,
                            numeric_entities=numeric_entities,
                            measurement=measurement,

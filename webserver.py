@@ -6,17 +6,15 @@ from url_handlers.models import TableBuilder
 import modules.load_data_postgre as ps
 from flask_cors import CORS
 from db import connect_db
-import json
 import url_handlers.filtering as filtering
 import pandas as pd
 import os
 import io
-import socket
+from flask import send_from_directory
 
 # create the application object
 app = Flask(__name__)
-CORS(app, resources={r"/hardware/control/*": {"origins": "*"}})
-app.config['CORS_HEADERS'] = 'Content-Type'
+CORS(app)
 
 app.secret_key = os.urandom(24)
 with app.app_context():
@@ -54,10 +52,7 @@ all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
 all_measurement = ps.get_measurement(rdb)
-all_numeric_entities_sc = ps.get_numerical_entities_scatter_plot(rdb)
-all_categorical_entities_sc = ps.get_categorical_entities_scatter_plot(rdb)
-all_numeric_entities_sc = all_numeric_entities_sc.to_dict('index')
-all_categorical_entities_sc = all_categorical_entities_sc.to_dict('index')
+
 
 
 # show all hide measurement selector when was only one measurement for all entities
@@ -65,6 +60,12 @@ if len(all_measurement) < 2:
     block = 'none'
 else:
     block = 'block'
+
+# favicon
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='vnd.microsoft.icon')
 
 # information about database
 @app.context_processor
@@ -169,7 +170,7 @@ def login_get():
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            entities=entities,
                            name=column,
@@ -202,7 +203,7 @@ def login_post():
                                all_entities=all_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities_sc,
+                               all_categorical_entities=all_categorical_entities,
                                entities=entities,
                                filter=categorical_filter_zip,
                                )
@@ -235,7 +236,7 @@ def login_post():
                            all_entities=all_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
                            entities=entities,
                            name=column,
                            what_table=what_table,

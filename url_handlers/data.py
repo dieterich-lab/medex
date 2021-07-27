@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, session
 import modules.load_data_postgre as ps
 import pandas as pd
 import url_handlers.filtering as filtering
-from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_categorical_entities_sc,\
+from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_categorical_entities,\
     all_subcategory_entities, all_numeric_entities,all_entities
 
 data_page = Blueprint('data', __name__, template_folder='templates')
@@ -22,7 +22,7 @@ def get_data():
     return render_template('data.html',
                            all_entities=all_entities,
                            all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            filter=categorical_filter)
 
@@ -50,7 +50,7 @@ def post_data():
                                all_entities=all_entities,
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities_sc,
+                               all_categorical_entities=all_categorical_entities,
                                entities=entities,
                                filter=categorical_filter_zip,
                                )
@@ -83,7 +83,7 @@ def post_data():
                            all_entities=all_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_categorical_entities=all_categorical_entities,
                            entities=entities,
                            name=column,
                            what_table=what_table,
