@@ -26,6 +26,7 @@ def get_entities(r):
     try:
         df = pd.read_sql(all_entities, r)
         df2 = pd.read_sql(show_on_first_page, r)
+        df = df.replace([None], ' ')
         return df, df2
     except Exception:
         return ["No data"], ["No data"]
@@ -44,7 +45,9 @@ def get_numeric_entities(r):
 
         df = pd.read_sql(size, r)
         df = df.iloc[0]['count']
+
         df1 = pd.read_sql(all_numerical_entities, r)
+        df1 = df1.replace([None], ' ')
         return df, df1
     except Exception:
         return ["No data"], ["No data"]
@@ -281,6 +284,7 @@ def get_num_values_basic_stats(entity, measurement, categorical_filter, categori
 
     try:
         df = pd.read_sql(sql, r)
+        df = df.round(2)
     except Exception:
         return None, "Problem with load data from database"
 

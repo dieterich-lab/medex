@@ -63,8 +63,6 @@ def post_plots():
     else:
         numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, categorical_filter,
                                                        categorical_names, id_filter, rdb)
-        numeric_df = numeric_df.rename(
-            columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
 
         x_unit, error = ps.get_unit(x_axis, rdb)
         y_unit, error = ps.get_unit(y_axis, rdb)
@@ -85,6 +83,19 @@ def post_plots():
             else:
                 x_axis_v = x_axis
                 y_axis_v = y_axis
+        if add_group_by and categorical_entities:
+            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
+                                          categorical_filter, categorical_names, id_filter, rdb)
+            if not error:
+                categorical_df = numeric_df.merge(df, on="Name_ID").dropna()
+                categorical_df = categorical_df.sort_values(by=[categorical_entities])
+                categorical_df = categorical_df.rename(
+                    columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
+                if len(categorical_df[categorical_entities]) == 0:
+                    error = "Category {} is empty".format(categorical_entities)
+        else:
+            numeric_df = numeric_df.rename(
+                columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
         if not error:
             numeric_df = numeric_df.dropna()
             if len(numeric_df[x_axis_v]) == 0:
@@ -93,17 +104,6 @@ def post_plots():
                 error = "Category {} is empty".format(y_axis)
             elif len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
-
-    if add_group_by and categorical_entities:
-        df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
-                                        categorical_filter, categorical_names, id_filter, rdb)
-        if not error:
-            categorical_df = numeric_df.merge(df, on="Name_ID").dropna()
-            categorical_df = categorical_df.sort_values(by=[categorical_entities])
-            categorical_df = categorical_df.rename(
-                columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
-            if len(categorical_df[categorical_entities]) == 0:
-                    error = "Category {} is empty".format(categorical_entities)
 
     if error:
         return render_template('scatter_plot.html',

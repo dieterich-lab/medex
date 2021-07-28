@@ -14,8 +14,8 @@ def create_table(rdb):
 
     statement_entities = """CREATE TABLE name_type ("order" numeric,
                                                     "Key" text Primary key,
-                                                    "synonym" text,
                                                     "type" text,
+                                                    "synonym" text,
                                                     "unit" text,
                                                     "description" text,
                                                     "show" text)"""
