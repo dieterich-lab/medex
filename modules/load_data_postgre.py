@@ -141,7 +141,7 @@ def get_unit(name,r):
         return None, "Problem with load data from database"
 
 
-def get_data(entity, what_table, categorical_filter, categorical, patient_id, r):
+def get_data(entity, what_table, categorical_filter, categorical, case_id, r):
     """
     Get data for tab Table browser
     get_numerical_values_basic_stats use in basic_stats
@@ -157,7 +157,7 @@ def get_data(entity, what_table, categorical_filter, categorical, patient_id, r)
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     entity_column = '"'+'" text,"'.join(entity) + '" text'
 
-    if not categorical_filter and not patient_id:
+    if not categorical_filter and not case_id:
         sql = """SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value" 
                 FROM examination_numerical WHERE "Key" IN ({0})
                 UNION
@@ -179,10 +179,10 @@ def get_data(entity, what_table, categorical_filter, categorical, patient_id, r)
         categorical_filter_str = '"'+"') and \"".join(categorical_filter_str) + "')"
         categorical_names = "$$" + "$$,$$".join(categorical) + "$$"
         categorical_columns = '"' + '" text,"'.join(categorical) + '" text'
-        id_filter_final = "$$"+"$$,$$".join(patient_id) + "$$"
+        id_filter_final = "$$"+"$$,$$".join(case_id) + "$$"
 
-        if patient_id:
-            text = """SELECT "Name_ID" FROM examination WHERE "Name_ID" in ({0}) """.format(id_filter_final)
+        if case_id:
+            text = """SELECT "Name_ID" FROM examination WHERE "Billing_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
                     FROM examination_categorical WHERE "Key" IN ({0}) ')
@@ -190,7 +190,7 @@ def get_data(entity, what_table, categorical_filter, categorical, patient_id, r)
                                                                     categorical_filter_str)
         else:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
-                    FROM examination_categorical WHERE "Key" IN ({0})  and "Name_ID" in ({3})')
+                    FROM examination_categorical WHERE "Key" IN ({0})  and "Billing_ID" in ({3})')
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str, id_filter_final)
 
@@ -214,7 +214,6 @@ def get_data(entity, what_table, categorical_filter, categorical, patient_id, r)
                 as ct (row_name text,"Name_ID" text,"measurement" text,{1}) where "Name_ID" 
                 in (""".format(entity_final, entity_column) + text + """) """
 
-
     try:
         if what_table == 'long':
             df = pd.read_sql(sql, r)
@@ -226,7 +225,7 @@ def get_data(entity, what_table, categorical_filter, categorical, patient_id, r)
         return None, "Problem with load data from database"
 
 
-def get_num_values_basic_stats(entity, measurement, categorical_filter, categorical,id_filter, r):
+def get_num_values_basic_stats(entity, measurement, categorical_filter, categorical, id_filter, r):
     """
     Get numerical values from numerical table  from database
 
@@ -243,7 +242,7 @@ def get_num_values_basic_stats(entity, measurement, categorical_filter, categori
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
     if not categorical_filter and not id_filter:
-        if round == 'ynot':
+        if round == 'not':
             sql = """SELECT "Key","measurement","instance",count(f."Value"),min(f."Value"),max(f."Value"),AVG(f."Value") 
                     as "mean",stddev(f."Value"),(stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",(percentile_disc(0.5)
                     within group (order by f."Value")) as median FROM examination_numerical,unnest("Value") WITH ordinality 
@@ -263,7 +262,7 @@ def get_num_values_basic_stats(entity, measurement, categorical_filter, categori
         id_filter_final = "$$"+"$$,$$".join(id_filter) + "$$"
 
         if id_filter:
-            text = """SELECT "Name_ID" FROM examination WHERE "Name_ID" in ({0}) """.format(id_filter_final)
+            text = """SELECT "Name_ID" FROM examination WHERE "Billing_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
                     FROM examination_categorical WHERE "Key" IN ({0}) ')
@@ -271,7 +270,7 @@ def get_num_values_basic_stats(entity, measurement, categorical_filter, categori
                                                                     categorical_filter_str)
         else:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
-                    FROM examination_categorical WHERE "Key" IN ({0})  and "Name_ID" in ({3})')
+                    FROM examination_categorical WHERE "Key" IN ({0})  and "Billing_ID" in ({3})')
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str, id_filter_final)
 
@@ -319,7 +318,7 @@ def get_cat_values_basic_stats(entity,measurement, categorical_filter, categoric
         id_filter_final = "$$"+"$$,$$".join(id_filter) + "$$"
 
         if id_filter:
-            text = """SELECT "Name_ID" FROM examination WHERE "Name_ID" in ({0}) """.format(id_filter_final)
+            text = """SELECT "Name_ID" FROM examination WHERE "Billing_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
                     FROM examination_categorical WHERE "Key" IN ({0}) ')
@@ -327,14 +326,13 @@ def get_cat_values_basic_stats(entity,measurement, categorical_filter, categoric
                                                                     categorical_filter_str)
         else:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
-                    FROM examination_categorical WHERE "Key" IN ({0})  and "Name_ID" in ({3})')
+                    FROM examination_categorical WHERE "Key" IN ({0})  and "Billing_ID" in ({3})')
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str, id_filter_final)
 
         sql = """SELECT "Key","measurement",number,count("Key") FROM examination_categorical,array_length("Value",1) 
             as f (number) WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Name_ID" 
             in (""".format(entity_final, measurement) + text + """)  group by "measurement","Key",number """
-    df = pd.read_sql(sql, r)
 
     try:
         df = pd.read_sql(sql, r)
@@ -372,7 +370,7 @@ def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, cat
         id_filter_final = "$$"+"$$,$$".join(id_filter) + "$$"
 
         if id_filter:
-            text = """SELECT "Name_ID" FROM examination WHERE "Name_ID" in ({0}) """.format(id_filter_final)
+            text = """SELECT "Name_ID" FROM examination WHERE "Billing_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
                     FROM examination_categorical WHERE "Key" IN ({0}) ')
@@ -380,7 +378,7 @@ def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, cat
                                                                     categorical_filter_str)
         else:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
-                    FROM examination_categorical WHERE "Key" IN ({0})  and "Name_ID" in ({3})')
+                    FROM examination_categorical WHERE "Key" IN ({0})  and "Billing_ID" in ({3})')
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str, id_filter_final)
 
@@ -448,7 +446,7 @@ def get_cat_values(entity, subcategory, measurement, categorical_filter, categor
         id_filter_final = "$$"+"$$,$$".join(id_filter) + "$$"
 
         if id_filter:
-            text = """SELECT "Name_ID" FROM examination WHERE "Name_ID" in ({0}) """.format(id_filter_final)
+            text = """SELECT "Name_ID" FROM examination WHERE "Billing_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
                     FROM examination_categorical WHERE "Key" IN ({0}) ')
@@ -456,7 +454,7 @@ def get_cat_values(entity, subcategory, measurement, categorical_filter, categor
                                                                     categorical_filter_str)
         else:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
-                    FROM examination_categorical WHERE "Key" IN ({0})  and "Name_ID" in ({3})')
+                    FROM examination_categorical WHERE "Key" IN ({0})  and "Billing_ID" in ({3})')
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str, id_filter_final)
 
@@ -501,7 +499,7 @@ def get_cat_values_barchart(entity, subcategory,measurement,categorical_filter,c
         id_filter_final = "$$"+"$$,$$".join(id_filter) + "$$"
 
         if id_filter:
-            text = """SELECT "Name_ID" FROM examination WHERE "Name_ID" in ({0}) """.format(id_filter_final)
+            text = """SELECT "Name_ID" FROM examination WHERE "Billing_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
                     FROM examination_categorical WHERE "Key" IN ({0}) ')
@@ -509,7 +507,7 @@ def get_cat_values_barchart(entity, subcategory,measurement,categorical_filter,c
                                                                     categorical_filter_str)
         else:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
-                    FROM examination_categorical WHERE "Key" IN ({0})  and "Name_ID" in ({3})')
+                    FROM examination_categorical WHERE "Key" IN ({0})  and "Billing_ID" in ({3})')
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str, id_filter_final)
 
@@ -529,7 +527,7 @@ def get_cat_values_barchart(entity, subcategory,measurement,categorical_filter,c
         return df,None
 
 
-def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, categorical_filter, categorical,id_filter, r):
+def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, categorical_filter, categorical, id_filter, r):
     """ Retrieve categorical and numerical value
 
     get_num_cat_values use in histogram and boxplot
@@ -557,7 +555,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, categori
         id_filter_final = "$$"+"$$,$$".join(id_filter) + "$$"
 
         if id_filter:
-            text = """SELECT "Name_ID" FROM examination WHERE "Name_ID" in ({0}) """.format(id_filter_final)
+            text = """SELECT "Name_ID" FROM examination WHERE "Billing_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
                     FROM examination_categorical WHERE "Key" IN ({0}) ')
@@ -565,7 +563,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, categori
                                                                     categorical_filter_str)
         else:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
-                    FROM examination_categorical WHERE "Key" IN ({0})  and "Name_ID" in ({3})')
+                    FROM examination_categorical WHERE "Key" IN ({0})  and "Billing_ID" in ({3})')
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str, id_filter_final)
 
@@ -585,7 +583,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, categori
         return df, None
 
 
-def get_values_heatmap(entity,measurement,categorical_filter,categorical,id_filter, r):
+def get_values_heatmap(entity,measurement,categorical_filter, categorical, id_filter, r):
     """ Get numerical values from numerical table  from database
 
     get_values use in heatmap, clustering
@@ -611,7 +609,7 @@ def get_values_heatmap(entity,measurement,categorical_filter,categorical,id_filt
         id_filter_final = "$$"+"$$,$$".join(id_filter) + "$$"
 
         if id_filter:
-            text = """SELECT "Name_ID" FROM examination WHERE "Name_ID" in ({0}) """.format(id_filter_final)
+            text = """SELECT "Name_ID" FROM examination WHERE "Billing_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
                     FROM examination_categorical WHERE "Key" IN ({0}) ')
@@ -619,7 +617,7 @@ def get_values_heatmap(entity,measurement,categorical_filter,categorical,id_filt
                                                                     categorical_filter_str)
         else:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
-                    FROM examination_categorical WHERE "Key" IN ({0})  and "Name_ID" in ({3})')
+                    FROM examination_categorical WHERE "Key" IN ({0})  and "Billing_ID" in ({3})')
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str, id_filter_final)
 

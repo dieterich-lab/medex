@@ -22,7 +22,8 @@ def create_table(rdb):
 
     statement_examination = """CREATE TABLE examination ("ID" numeric PRIMARY KEY,
                                 "Name_ID" text,
-                                "measurement" text,
+                                measurement text,
+                                "Billing_ID" text,
                                 "Date" text,
                                 "Time" text,
                                 "Key" text,
@@ -95,12 +96,12 @@ def load_data(entities, dataset,header,rdb):
             row = row.replace('"', "")
             row = row.replace("\n", "").split(",")
             # insert data from dataset.csv to table examination
-            line = [i] + row[0:1]+ [1] +row[2:5] + [";".join([str(x) for x in row[5:]])]
+            line = [i] + row[0:1]+ [1] +row[1:5] + [";".join([str(x) for x in row[5:]])]
             if len(line) < 6:
                 print("This line doesn't have appropriate format:", line)
             else:
                 try:
-                    cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)", line)
+                    cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                 except:
                     print(line)
 
