@@ -43,14 +43,18 @@ if os.environ.get('IMPORT_DISABLED') is None:
 
 
 # get all numeric and categorical entities from database
-Name_ID, measurement_name = ps.get_header(rdb)['Name_ID'][0], ps.get_header(rdb)['measurement'][0]
+try:
+    Name_ID, measurement_name = ps.get_header(rdb)['Name_ID'][0], ps.get_header(rdb)['measurement'][0]
+except:
+    Name_ID, measurement_name='Name_ID', 'measurement'
 all_entities, show = ps.get_entities(rdb)
 all_patient = ps.patient(rdb)
-size_numerical_table, all_numeric_entities,  = ps.get_numeric_entities(rdb)
+size_numerical_table, all_numeric_entities,df_min_max  = ps.get_numeric_entities(rdb)
 size_categorical_table, all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
 all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
+df_min_max = df_min_max.to_dict('index')
 all_measurement = ps.get_measurement(rdb)
 
 
@@ -67,24 +71,28 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='vnd.microsoft.icon')
 
+
+
 # information about database
 @app.context_processor
 def message_count():
     database_name = os.environ['POSTGRES_DB']
+    start_date, end_date = ps.get_date(rdb)
     database = '{} data'.format(database_name)
     len_numeric = 'number of numerical entities: ' + str(len(all_numeric_entities))
     size_numeric = 'the size of the numeric table: ' + str(size_numerical_table) + ' rows'
     len_categorical = 'number of categorical entities: ' + str(len(all_categorical_entities))
     size_categorical = 'the size of the categorical table: ' + str(size_categorical_table) + ' rows'
+
     return dict(database=database,len_numeric=len_numeric,size_numeric=size_numeric,len_categorical=len_categorical,
-                size_categorical=size_categorical)
+                size_categorical=size_categorical,start_date=start_date,end_date=end_date)
 
 # data store for filters and download
 class DataStore():
 
     # for filter
     id_filter = []
-    categorical_filter = []
+    categorical_filter = ''
     categorical_names = []
 
     # for table browser server side
@@ -138,15 +146,16 @@ def login_get():
 
     entities = show['Key'].tolist()
     what_table = 'long'
-    categorical_filter = []
+    categorical_filter = ''
     categorical_names = []
     id_filter = data.id_filter
     df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter, rdb)
-    if block == 'none':
-        df = df.drop(columns=['measurement'])
-        df = df.rename(columns={"Name_ID": "{}".format(measurement_name)})
-    else:
-        df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
+    if not df.empty:
+        if block == 'none':
+            df = df.drop(columns=['measurement'])
+            df = df.rename(columns={"Name_ID": "{}".format(measurement_name)})
+        else:
+            df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
 
     data.csv = df.to_csv(index=False)
 
@@ -257,44 +266,28 @@ def get_cases():
     session_id_json = {"session_id": "{}".format(session_id)}
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL, json=session_id_json)
     cases_ids = cases_get.json()
-    case = cases_ids['cases_ids']
-    data.id_filter = case
-    df = pd.DataFrame(case, columns=["Patient_ID"])
-    data.patient_id = df.to_csv(index=False)
-    return redirect('/data')
+    data.id_filter = cases_ids['cases_ids']
+    data.patient_id = pd.DataFrame(cases_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
 
+    return redirect('/data')
 
 
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])
 def download(filename):
     if filename == 'data.csv':
         csv = data.csv
-        # Create a string buffer
-        buf_str = io.StringIO(csv)
-
-        # Create a bytes buffer from the string buffer
-        buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
-        # Return the CSV data as an attachment
-        return send_file(buf_byt,
-                         mimetype="text/csv",
-                         as_attachment=True,
-                         attachment_filename=filename)
     elif filename == 'patient_id.csv':
         csv = data.patient_id
-        # Create a string buffer
-        buf_str = io.StringIO(csv)
+    # Create a string buffer
+    buf_str = io.StringIO(csv)
 
-        # Create a bytes buffer from the string buffer
-        buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
-        # Return the CSV data as an attachment
-        return send_file(buf_byt,
-                         mimetype="text/csv",
-                         as_attachment=True,
-                         attachment_filename=filename)
-    elif filename == 'entities_description.docx':
-        return send_file("import/entities_description.docx", as_attachment=True, attachment_filename=filename)
-    elif filename == 'Flow Chart Calinca_final.pdf':
-        return send_file("import/Flow Chart Calinca_final.pdf",as_attachment=True,attachment_filename=filename)
+    # Create a bytes buffer from the string buffer
+    buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
+    # Return the CSV data as an attachment
+    return send_file(buf_byt,
+                     mimetype="text/csv",
+                     as_attachment=True,
+                     attachment_filename=filename)
 
 
 def main():

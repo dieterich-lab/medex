@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, jsonify, session
 import modules.load_data_postgre as ps
 import pandas as pd
+import json
 import url_handlers.filtering as filtering
 from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_categorical_entities,\
-    all_subcategory_entities, all_numeric_entities,all_entities
+    all_subcategory_entities, all_numeric_entities,all_entities,df_min_max
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -24,7 +25,8 @@ def get_data():
                            all_numeric_entities=all_numeric_entities,
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
-                           filter=categorical_filter)
+                           filter=categorical_filter,
+                           df_min_max=df_min_max)
 
 
 @data_page.route('/data', methods=['POST'])

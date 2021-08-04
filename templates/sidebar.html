@@ -6,6 +6,30 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
+<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
+
+
+<div class="card" >
+    <div class="card-body">
+        <label>Date range</label>
+
+        <script type="text/javascript">
+            var start = moment({{start_date|safe}});
+            var end =  moment({{end_date|safe}});
+        </script>
+
+        <div id="Date" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+        <i class="fa fa-calendar"></i>&nbsp;
+        <span></span> <i class="fa fa-caret-down"></i>
+        </div>
+    </div>
+</div>
 
 <div class="card" >
     <div class="card-body">
@@ -37,6 +61,31 @@
         </select>
                 <br><br>
         <button id="Add" type="button" class="btn btn-outline-info" >Add Filter</button>
+
+    </div>
+</div>
+
+<div class="card" >
+    <div class="card-body">
+        <label>Numerical filter selection:</label>
+        {% import 'macro_template.html' as m %}
+        {{ m.entity_form_single(id_single= "numerical_filter",name =all_numeric_entities,value=entity,d="") }}
+
+        <script type="text/javascript">
+        var df = {{df_min_max|safe }};
+        </script>
+
+        <div class="range-slider">
+        <input  type="text" class="js-range-slider" value="" />
+            </div>
+
+        <div class="extra-controls">
+        from    <input id="input1" type="text" class="js-input-from" value="" />
+        to  <input id="input2" type="text" class="js-input-to" value="" />
+        </div>
+
+        <br>
+        <button id="Add2" type="button" class="btn btn-outline-info" >Add Filter</button>
     </div>
 </div>
 
@@ -51,6 +100,8 @@
                 <button  style="display: block; width: 100%" class='btn btn-outline-primary' ><span class='close' onclick="remove(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
             {% endfor %}
             {% endif %}
+        </div>
+        <div id="demo2" >
         </div>
     </div>
 </div>

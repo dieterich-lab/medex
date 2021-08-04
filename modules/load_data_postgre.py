@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from datetime import datetime
 from collections import ChainMap
 
 
@@ -8,10 +9,30 @@ def get_header(r):
     :param r: connection with database
     :return: DataFrame with header for table browser
     """
-    sql = "Select * from header"
-    df = pd.read_sql(sql, r)
+    try:
+        sql = "Select * from header"
+        df = pd.read_sql(sql, r)
+        return df
+    except Exception:
+        return ["No data"]
 
-    return df
+
+def get_date(r):
+    """
+    :param r: connection with database
+    :return: DataFrame with header for table browser
+    """
+    try:
+        sql = """ Select min("Date"),max("Date") from examination_numerical """
+        df = pd.read_sql(sql, r)
+
+        start_date,end_date = datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000,\
+                            datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
+
+        return start_date,end_date
+    except Exception:
+
+        return "No data","No data"
 
 
 def get_entities(r):
@@ -29,7 +50,9 @@ def get_entities(r):
         df = df.replace([None], ' ')
         return df, df2
     except Exception:
-        return ["No data"], ["No data"]
+        df = pd.DataFrame(columns=["Key","description","synonym" ])
+        df2 = pd.DataFrame(columns=['Key'])
+        return df, df2
 
 
 def get_numeric_entities(r):
@@ -40,17 +63,24 @@ def get_numeric_entities(r):
     """
     size = """SELECT count(*) FROM examination_numerical"""
     all_numerical_entities = """Select "Key","description","synonym" from name_type where type = 'Double' order by "Key" """
+    min_max = """Select distinct "Key",max("Value"[1]),min("Value"[1]) from examination_numerical group by "Key" """
 
     try:
-
         df = pd.read_sql(size, r)
         df = df.iloc[0]['count']
 
         df1 = pd.read_sql(all_numerical_entities, r)
         df1 = df1.replace([None], ' ')
-        return df, df1
+
+        df_min_max = pd.read_sql(min_max, r)
+        df_min_max=df_min_max.set_index('Key')
+
+        return df, df1,df_min_max
     except Exception:
-        return ["No data"], ["No data"]
+        df = pd.DataFrame(columns=["Key","description","synonym"] )
+        df2 = pd.DataFrame()
+        df_min_max = pd.DataFrame()
+        return df, df2,df_min_max
 
 
 def get_categorical_entities(r):
@@ -87,7 +117,11 @@ def get_categorical_entities(r):
 
         return df1, df2, df,
     except Exception:
-        return ["No data"], ["No data"], ["No data"]
+        array = []
+        df1= pd.DataFrame()
+        df = pd.DataFrame(columns=["Key","description"])
+        df2 = dict(ChainMap(*array))
+        return df1,df, df2
 
 
 def get_measurement(r):
@@ -222,7 +256,8 @@ def get_data(entity, what_table, categorical_filter, categorical, case_id, r):
             df = df.drop(['row_name'], axis=1)
         return df, None
     except Exception:
-        return None, "Problem with load data from database"
+        df = pd.DataFrame()
+        return df, "Problem with load data from database"
 
 
 def get_num_values_basic_stats(entity, measurement, categorical_filter, categorical, id_filter, r):
@@ -284,10 +319,11 @@ def get_num_values_basic_stats(entity, measurement, categorical_filter, categori
     try:
         df = pd.read_sql(sql, r)
         df = df.round(2)
+        return df, None
     except Exception:
         return None, "Problem with load data from database"
 
-    return df, None
+
 
 
 def get_cat_values_basic_stats(entity,measurement, categorical_filter, categorical, id_filter, r):
@@ -336,10 +372,11 @@ def get_cat_values_basic_stats(entity,measurement, categorical_filter, categoric
 
     try:
         df = pd.read_sql(sql, r)
+        return df, None
     except Exception:
         return None, "Problem with load data from database"
 
-    return df, None
+
 
 
 def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, categorical_filter, categorical, id_filter, r):
