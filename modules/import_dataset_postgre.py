@@ -117,14 +117,14 @@ def alter_table(rdb):
 
     sql_remove_null = """Delete from examination where "Value" is null """
 
-    sql2 = """CREATE TABLE examination_categorical as select min("ID") as "ID","Name_ID","measurement",min("Date") 
-    as "Date","Key",array_agg("Value") as "Value" from (SELECT e.* from examination as e join name_type as n on e."Key" 
-    = n."Key" where n."type" = 'String') as f group by "Name_ID","measurement","Key" order by "Name_ID" """
+    sql2 = """CREATE TABLE examination_categorical as select min("ID") as "ID","Name_ID","measurement","Date" ,"Key",
+    array_agg("Value") as "Value" from (SELECT e.* from examination as e join name_type as n on e."Key" 
+    = n."Key" where n."type" = 'String') as f group by "Name_ID","Date","measurement","Key" order by "Name_ID" """
 
-    sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Name_ID","measurement",min("Date") as 
-    "Date","Key",array_agg("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type
+    sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Name_ID","measurement","Date","Key",
+    array_agg("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type
     as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') 
-    as f group by "Name_ID","measurement","Key" order by "Name_ID" """
+    as f group by "Name_ID","Date","measurement","Key" order by "Name_ID" """
 
     sql4 = """CREATE TABLE Patient AS select distinct "Name_ID" from examination"""
 

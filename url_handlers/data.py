@@ -19,7 +19,7 @@ def table_data():
 
 @data_page.route('/data', methods=['GET'])
 def get_data():
-    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
+    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('data.html',
                            all_entities=all_entities,
                            all_numeric_entities=all_numeric_entities,
@@ -38,8 +38,9 @@ def post_data():
 
     # get filter
     id_filter = data.id_filter
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
-
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
+    datau = filtering.check_for_data_filter()
+    print('oooooooooo',datau)
     # errors
     if len(entities) == 0:
         error = "Please select entities"

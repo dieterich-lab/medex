@@ -25,7 +25,6 @@ def get_date(r):
     try:
         sql = """ Select min("Date"),max("Date") from examination_numerical """
         df = pd.read_sql(sql, r)
-
         start_date,end_date = datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000,\
                             datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
 
@@ -80,7 +79,7 @@ def get_numeric_entities(r):
         df = pd.DataFrame(columns=["Key","description","synonym"] )
         df2 = pd.DataFrame()
         df_min_max = pd.DataFrame()
-        return df, df2,df_min_max
+        return df, df2, df_min_max
 
 
 def get_categorical_entities(r):
