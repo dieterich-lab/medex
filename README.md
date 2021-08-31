@@ -40,5 +40,7 @@ Not recommended for pure deployment.
 * In order to add new data add a new `header.csv`,`entities.csv` and `dataset.csv` to the `./import` folder.
 * The `header.csv`,`entities.csv` and `dataset.csv` files should look like in directory `dataset_examples` [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/time-series/dataset_examples/Data_import.md).
 
+## Citation ##
 
-
+Aljoscha Kindermann, Ekaterina Stepanova, Hauke Hund, Nicolas Geis, Brandon Malone Christoph Dieterich (2019) 
+**MedEx - Data Analytics for Medical Domain Experts in Real-Time**
