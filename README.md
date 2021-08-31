@@ -42,5 +42,5 @@ Not recommended for pure deployment.
 
 ## Citation ##
 
-Aljoscha Kindermann, Ekaterina Stepanova, Hauke Hund, Nicolas Geis, Brandon Malone Christoph Dieterich (2019) 
+Aljoscha Kindermann, Ekaterina Stepanova, Hauke Hund, Nicolas Geis, Brandon Malone, Christoph Dieterich (2019) 
 **MedEx - Data Analytics for Medical Domain Experts in Real-Time**
