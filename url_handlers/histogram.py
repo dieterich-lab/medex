@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
 from webserver import data, rdb, all_numeric_entities, all_categorical_entities, all_measurement,\
-    all_subcategory_entities, Name_ID, measurement_name, block
+    all_subcategory_entities, Name_ID, measurement_name, block, df_min_max
 
 histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 
@@ -11,7 +11,7 @@ histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
     number_of_bins = 20
-    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
+    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('histogram.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -20,7 +20,10 @@ def get_statistics():
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
-                           filter=categorical_filter
+                           start_date=session.get('start_date'),
+                           end_date=session.get('end_date'),
+                           filter=categorical_filter,
+                           df_min_max=df_min_max
                            )
 
 
@@ -38,8 +41,9 @@ def post_statistics():
     number_of_bins = request.form.get('number_of_bins')
 
     # get filters
+    start_date, end_date,date = filtering.check_for_date_filter_post()
     id_filter = data.id_filter
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
 
     # handling errors and load data from database
     error = None
@@ -50,7 +54,8 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
-        df, error = ps.get_num_cat_values(numeric_entities,categorical_entities,subcategory_entities,measurement,categorical_filter,categorical_names,id_filter, rdb)
+        df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement,
+                                          categorical_filter, categorical_names, id_filter, date, rdb)
         df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
@@ -76,7 +81,10 @@ def post_statistics():
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
+                               start_date=start_date,
+                               end_date=end_date,
                                filter=categorical_filter_zip,
+                               df_min_max=df_min_max,
                                error=error)
 
 
@@ -99,7 +107,10 @@ def post_statistics():
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
+                               start_date=start_date,
+                               end_date=end_date,
                                filter=categorical_filter_zip,
+                               df_min_max=df_min_max,
                                error=error)
 
     if block == 'none':
@@ -141,6 +152,9 @@ def post_statistics():
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
+                           start_date=start_date,
+                           end_date=end_date,
                            filter=categorical_filter_zip,
+                           df_min_max=df_min_max,
                            plot=fig,
                            )

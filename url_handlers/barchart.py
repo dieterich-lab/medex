@@ -1,23 +1,26 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
 from webserver import rdb, all_categorical_entities, all_measurement, all_subcategory_entities, measurement_name,\
-    Name_ID, block, data
+    Name_ID, block, data, df_min_max
 
 barchart_page = Blueprint('barchart', __name__, template_folder='templates')
 
 
 @barchart_page.route('/barchart', methods=['GET'])
 def get_statistics():
-    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
+    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('barchart.html',
                            block=block,
                            name='{}'.format(measurement_name),
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
-                           filter=categorical_filter
+                           start_date=session.get('start_date'),
+                           end_date=session.get('end_date'),
+                           filter=categorical_filter,
+                           df_min_max=df_min_max
                            )
 
 
@@ -36,8 +39,10 @@ def post_statistics():
     how_to_plot = request.form.get('how_to_plot')
 
     # get filters
+    start_date, end_date,date = filtering.check_for_date_filter_post()
+
     id_filter = data.id_filter
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
 
     # handling errors and load data from database
     error = None
@@ -50,7 +55,7 @@ def post_statistics():
     else:
         # select data from database
         categorical_df, error = ps.get_cat_values_barchart(categorical_entities, subcategory_entities, measurement,
-                                                           categorical_filter, categorical_names, id_filter, rdb)
+                                                           categorical_filter, categorical_names, id_filter,date, rdb)
 
         # rename columns
         categorical_df = categorical_df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
@@ -64,11 +69,14 @@ def post_statistics():
                                all_categorical_entities=all_categorical_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_measurement=all_measurement,
+                               start_date=start_date,
+                               end_date=end_date,
                                filter=categorical_filter_zip,
                                measurement=measurement,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                how_to_plot=how_to_plot,
+                               df_min_max=df_min_max,
                                error=error
                                )
 
@@ -99,9 +107,12 @@ def post_statistics():
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            measurement=measurement,
+                           start_date=start_date,
+                           end_date=end_date,
                            filter=categorical_filter_zip,
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            how_to_plot=how_to_plot,
-                           plot=fig
+                           plot=fig,
+                           df_min_max=df_min_max
                            )

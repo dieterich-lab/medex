@@ -1,17 +1,17 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request,session
 import plotly.express as px
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
 from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,\
     all_subcategory_entities, Name_ID, measurement_name,\
-    block, data
+    block, data,df_min_max
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
+    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('scatter_plot.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -20,7 +20,10 @@ def get_plots():
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
-                           filter=categorical_filter)
+                           start_date=session.get('start_date'),
+                           end_date=session.get('end_date'),
+                           filter=categorical_filter,
+                           df_min_max=df_min_max)
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
@@ -37,6 +40,7 @@ def post_plots():
         x_measurement = request.form.get('x_measurement')
         y_measurement = request.form.get('y_measurement')
 
+    start_date, end_date,date = filtering.check_for_date_filter_post()
     id_filter = data.id_filter
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
@@ -45,7 +49,7 @@ def post_plots():
     log_y = request.form.get('log_y')
 
     add_group_by = request.form.get('add_group_by') is not None
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
 
     # handling errors and load data from database
     if x_measurement == "Search entity" or y_axis == "Search entity":
@@ -62,7 +66,7 @@ def post_plots():
         error = "Please select subcategory"
     else:
         numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, categorical_filter,
-                                                       categorical_names, id_filter, rdb)
+                                                       categorical_names, id_filter, date, rdb)
 
         x_unit, error = ps.get_unit(x_axis, rdb)
         y_unit, error = ps.get_unit(y_axis, rdb)
@@ -121,7 +125,10 @@ def post_plots():
                                y_axis=y_axis,
                                x_measurement=x_measurement,
                                y_measurement=y_measurement,
+                               start_date=start_date,
+                               end_date=end_date,
                                filter=categorical_filter_zip,
+                               df_min_max=df_min_max,
                                error=error,
                                )
 
@@ -211,7 +218,10 @@ def post_plots():
                            how_to_plot=how_to_plot,
                            x_measurement=x_measurement,
                            y_measurement=y_measurement,
+                           start_date=start_date,
+                           end_date=end_date,
                            filter=categorical_filter_zip,
+                           df_min_max=df_min_max,
                            plot=fig
                            )
 

@@ -56,7 +56,7 @@ all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
 df_min_max = df_min_max.to_dict('index')
 all_measurement = ps.get_measurement(rdb)
-
+start_date, end_date,date = ps.get_date(rdb)
 
 
 # show all hide measurement selector when was only one measurement for all entities
@@ -77,7 +77,6 @@ def favicon():
 @app.context_processor
 def message_count():
     database_name = os.environ['POSTGRES_DB']
-    start_date, end_date = ps.get_date(rdb)
     database = '{} data'.format(database_name)
     len_numeric = 'number of numerical entities: ' + str(len(all_numeric_entities))
     size_numeric = 'the size of the numeric table: ' + str(size_numerical_table) + ' rows'
@@ -144,12 +143,15 @@ app.register_blueprint(coplots_plot_page)
 def login_get():
     # get selected entities
 
+    session['start_date'] = start_date
+    session['end_date'] = end_date
+
     entities = show['Key'].tolist()
     what_table = 'long'
     categorical_filter = ''
     categorical_names = []
     id_filter = data.id_filter
-    df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter, rdb)
+    df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter,date, rdb)
     if not df.empty:
         if block == 'none':
             df = df.drop(columns=['measurement'])
@@ -181,10 +183,14 @@ def login_get():
                            all_entities=all_entities,
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
+                           all_numeric_entities=all_numeric_entities,
+                           start_date=session.get('start_date'),
+                           end_date=session.get('end_date'),
                            entities=entities,
                            name=column,
                            what_table=what_table,
                            column=column_dict,
+                           df_min_max=df_min_max
                            )
 
 
@@ -197,14 +203,16 @@ def login_post():
     what_table = request.form.get('what_table')
 
     # get filter
+
+    start_date,end_date,date = filtering.check_for_date_filter_post()
     id_filter = data.id_filter
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
 
     # errors
     if len(entities) == 0:
         error = "Please select entities"
     else:
-       df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter, rdb)
+       df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter,date, rdb)
 
     if error:
         return render_template('data.html',
@@ -213,8 +221,11 @@ def login_post():
                                all_numeric_entities=all_numeric_entities,
                                all_subcategory_entities=all_subcategory_entities,
                                all_categorical_entities=all_categorical_entities,
+                               start_date=start_date,
+                               end_date=end_date,
                                entities=entities,
                                filter=categorical_filter_zip,
+                               df_min_max=df_min_max
                                )
 
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
@@ -248,9 +259,12 @@ def login_post():
                            all_categorical_entities=all_categorical_entities,
                            entities=entities,
                            name=column,
+                           start_date=start_date,
+                           end_date=end_date,
                            what_table=what_table,
                            column=dict_of_column,
-                           filter=categorical_filter_zip
+                           filter=categorical_filter_zip,
+                           df_min_max=df_min_max
                            )
 
 

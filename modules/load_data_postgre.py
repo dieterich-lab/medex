@@ -27,11 +27,11 @@ def get_date(r):
         df = pd.read_sql(sql, r)
         start_date,end_date = datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000,\
                             datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
-
-        return start_date,end_date
+        date = [df['min'][0],df['max'][0]]
+        return start_date, end_date,date
     except Exception:
 
-        return "No data","No data"
+        return "No data", "No data","No data"
 
 
 def get_entities(r):
@@ -49,7 +49,7 @@ def get_entities(r):
         df = df.replace([None], ' ')
         return df, df2
     except Exception:
-        df = pd.DataFrame(columns=["Key","description","synonym" ])
+        df = pd.DataFrame(columns=["Key", "description", "synonym"])
         df2 = pd.DataFrame(columns=['Key'])
         return df, df2
 
@@ -174,7 +174,7 @@ def get_unit(name,r):
         return None, "Problem with load data from database"
 
 
-def get_data(entity, what_table, categorical_filter, categorical, case_id, r):
+def get_data(entity, what_table, categorical_filter, categorical, case_id, date, r):
     """
     Get data for tab Table browser
     get_numerical_values_basic_stats use in basic_stats
@@ -192,21 +192,22 @@ def get_data(entity, what_table, categorical_filter, categorical, case_id, r):
 
     if not categorical_filter and not case_id:
         sql = """SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value" 
-                FROM examination_numerical WHERE "Key" IN ({0})
+                FROM examination_numerical WHERE "Key" IN ({0})  and "Date" Between '{1}' and '{2}'
                 UNION
                 SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value"
-                FROM examination_categorical WHERE "Key" IN ({0})
-                """.format(entity_final, entity_column)
+                FROM examination_categorical WHERE "Key" IN ({0}) and "Date" Between '{1}' and '{2}'
+                """.format(entity_final,date[0],date[1])
 
         sql3 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS 
-                row_name,"Name_ID","measurement","Key",array_to_string("Value",'';'') as "Value" 
-                FROM examination_numerical WHERE "Key" IN ({0}) 
+                row_name,"Name_ID","measurement","Date","Key",array_to_string("Value",'';'') as "Value" 
+                FROM examination_numerical WHERE  "Key" IN ({0}) 
                             UNION
-                SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,"Name_ID","measurement",
+                SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,"Name_ID","measurement","Date",
                 "Key",array_to_string("Value",'';'') as "Value" 
-                FROM examination_categorical WHERE "Key" IN ({0}) order by row_name',
+                FROM examination_categorical WHERE "Key" IN ({0})  order by row_name',
                 'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
-                as ct (row_name text,"Name_ID" text,"measurement" text,{1}) """.format(entity_final, entity_column)
+                as ct (row_name text,"Name_ID" text,"measurement" text,"Date" text,{1}) where "Date" Between '{2}' and 
+                '{3}' """.format(entity_final, entity_column, date[0], date[1])
     else:
         categorical_filter_str = [x.replace(" is ", "\" in ('").replace(",", "','") for x in categorical_filter]
         categorical_filter_str = '"'+"') and \"".join(categorical_filter_str) + "')"
@@ -218,9 +219,9 @@ def get_data(entity, what_table, categorical_filter, categorical, case_id, r):
             text = """SELECT "Name_ID" FROM examination WHERE "Billing_ID" in ({0}) """.format(id_filter_final)
         elif categorical_filter:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
-                    FROM examination_categorical WHERE "Key" IN ({0}) ')
+                    FROM examination_categorical WHERE "Key" IN ({0})  and "Date" Between '{3}' and '{4}' ')
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
-                                                                    categorical_filter_str)
+                                                                    categorical_filter_str,date[0],date[1])
         else:
             text = """SELECT "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
                     FROM examination_categorical WHERE "Key" IN ({0})  and "Billing_ID" in ({3})')
@@ -228,25 +229,25 @@ def get_data(entity, what_table, categorical_filter, categorical, case_id, r):
                                                                     categorical_filter_str, id_filter_final)
 
         sql = """SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value" 
-                FROM examination_numerical WHERE "Key" IN ({0}) 
-                and "Name_ID" IN (""".format(entity_final, entity_column) + text + """) 
+                FROM examination_numerical WHERE "Key" IN ({0})  and "Date" Between '{1}' and '{2}'
+                and "Name_ID" IN (""".format(entity_final,date[0],date[1]) + text + """) 
                 UNION
                 SELECT "Name_ID","measurement","Key",array_to_string("Value",';') as "Value" 
-                FROM examination_categorical WHERE "Key" IN ({0}) and "Name_ID" 
-                IN (""".format(entity_final,entity_column) + text + """) """\
-                .format(entity_final, entity_column)
+                FROM examination_categorical WHERE "Key" IN ({0}) and "Date" Between '{1}' and '{2}' and "Name_ID" 
+                IN (""".format(entity_final, date[0], date[1]) + text + """) """
 
         sql3 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,
                 "Name_ID","measurement","Key",array_to_string("Value",'';'') as "Value" FROM examination_numerical 
-                WHERE "Key" IN ({0})
+                WHERE "Key" IN ({0}) and "Date" Between '{2}' and '{3}' and "Name_ID"
                 UNION
                 SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,"Name_ID","measurement",
                 "Key",array_to_string("Value",'';'') as "Value" 
-                FROM examination_categorical WHERE "Key" IN ({0}) order by row_name ',
+                FROM examination_categorical WHERE "Key" IN ({0}) and "Date" Between '{2}' and '{3}' and "Name_ID" order by row_name ',
                 'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
                 as ct (row_name text,"Name_ID" text,"measurement" text,{1}) where "Name_ID" 
-                in (""".format(entity_final, entity_column) + text + """) """
+                in (""".format(entity_final, entity_column, date[0], date[1]) + text + """) """
 
+    df = pd.read_sql(sql3, r)
     try:
         if what_table == 'long':
             df = pd.read_sql(sql, r)
@@ -259,7 +260,7 @@ def get_data(entity, what_table, categorical_filter, categorical, case_id, r):
         return df, "Problem with load data from database"
 
 
-def get_num_values_basic_stats(entity, measurement, categorical_filter, categorical, id_filter, r):
+def get_num_values_basic_stats(entity, measurement, categorical_filter, categorical, id_filter,date, r):
     """
     Get numerical values from numerical table  from database
 
@@ -280,14 +281,14 @@ def get_num_values_basic_stats(entity, measurement, categorical_filter, categori
             sql = """SELECT "Key","measurement","instance",count(f."Value"),min(f."Value"),max(f."Value"),AVG(f."Value") 
                     as "mean",stddev(f."Value"),(stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",(percentile_disc(0.5)
                     within group (order by f."Value")) as median FROM examination_numerical,unnest("Value") WITH ordinality 
-                    as f ("Value", instance) WHERE "Key" IN ({0}) and "measurement" IN ({1}) group by "Key","measurement",
-                    "instance" order by "Key","measurement","instance" """.format(entity_final, measurement)
+                    as f ("Value", instance) WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Date" between '{2}' and '{3}' group by "Key","measurement",
+                    "instance" order by "Key","measurement","instance" """.format(entity_final, measurement, date[0], date[1])
         else:
             sql = """SELECT "Key","measurement","instance",count(f."Value"),min(f."Value"),max(f."Value"),ROUND(AVG(f."Value")::numeric,2)
                     as "mean",ROUND(stddev(f."Value")::numeric,2),ROUND((stddev(f."Value")/sqrt(count(f."Value")))::numeric,2) as "stderr",(percentile_disc(0.5)
                     within group (order by f."Value")) as median FROM examination_numerical,unnest("Value") WITH ordinality 
-                    as f ("Value", instance) WHERE "Key" IN ({0}) and "measurement" IN ({1}) group by "Key","measurement",
-                    "instance" order by "Key","measurement","instance" """.format(entity_final, measurement)
+                    as f ("Value", instance) WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Date" between '{2}' and '{3}' group by "Key","measurement",
+                    "instance" order by "Key","measurement","instance" """.format(entity_final, measurement, date[0], date[1])
     else:
         categorical_filter_str = [x.replace(" is ", "\" in ('").replace(",", "','") for x in categorical_filter]
         categorical_filter_str = '"'+"') and \"".join(categorical_filter_str) + "')"
@@ -311,8 +312,8 @@ def get_num_values_basic_stats(entity, measurement, categorical_filter, categori
         sql = """SELECT "Key","measurement","instance",count(f."Value"),min(f."Value"),max(f."Value"),AVG(f."Value") as 
                 "mean",stddev(f."Value"),(stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",(percentile_disc(0.5) 
                 within group (order by f."Value")) as median FROM examination_numerical,unnest("Value") WITH ordinality 
-                as f ("Value", instance) WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Name_ID" in 
-                (""".format(entity_final, measurement) + text + """)  group by "Key","measurement","instance" 
+                as f ("Value", instance) WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Date" between '{2}' and '{3}' and "Name_ID" in 
+                (""".format(entity_final, measurement,date[0],date[1]) + text + """)  group by "Key","measurement","instance" 
                 order by "Key","measurement","instance" """
 
     try:
@@ -321,8 +322,6 @@ def get_num_values_basic_stats(entity, measurement, categorical_filter, categori
         return df, None
     except Exception:
         return None, "Problem with load data from database"
-
-
 
 
 def get_cat_values_basic_stats(entity,measurement, categorical_filter, categorical, id_filter, r):
@@ -376,9 +375,7 @@ def get_cat_values_basic_stats(entity,measurement, categorical_filter, categoric
         return None, "Problem with load data from database"
 
 
-
-
-def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, categorical_filter, categorical, id_filter, r):
+def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, categorical_filter, categorical, id_filter,date, r):
     """ Get numerical values from numerical table  from database
 
     get_values use in scatter plot, coplot
@@ -392,11 +389,11 @@ def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, cat
     """
     if not categorical_filter and not id_filter:
         sql = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "measurement"= '{1}' Group by "Name_ID","measurement","Key" 
-                order by "measurement"  """.format(x_entity,x_measurement)
+                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Date" between '{2}' and '{3}' Group by "Name_ID","measurement","Key" 
+                order by "measurement"  """.format(x_entity, x_measurement, date[0], date[1])
         sql2 = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "measurement"= '{1}' Group by "Name_ID","measurement","Key" 
-                order by "measurement" """.format(y_entity, y_measurement)
+                WHERE "Key" IN ('{0}') and "measurement"= '{1}'  and "Date" between '{2}' and '{3}'Group by "Name_ID","measurement","Key" 
+                order by "measurement" """.format(y_entity, y_measurement, date[0], date[1])
 
     else:
         categorical_filter_str = [x.replace(" is ", "\" in ('").replace(",", "','") for x in categorical_filter]
@@ -419,10 +416,10 @@ def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, cat
                                                                     categorical_filter_str, id_filter_final)
 
         sql = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Name_ID" in (""".format(x_entity, x_measurement) \
+                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Date" between '{2}' and '{3}' and "Name_ID" in (""".format(x_entity, x_measurement,date[0],date[1]) \
               + text + """) Group by "Name_ID","measurement","Key" order by "measurement"  """
         sql2 = """SELECT "Name_ID",AVG(f."Value") as "{0}" FROM examination_numerical,unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Name_ID" in (""".format(y_entity, y_measurement) \
+                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Date" between '{2}' and '{3}' and "Name_ID" in (""".format(y_entity, y_measurement,date[0],date[1]) \
                + text + """) Group by "Name_ID","measurement","Key" order by "measurement" """
 
         # load data with Gene symbol remove in case of Patient data
@@ -510,7 +507,7 @@ def get_cat_values(entity, subcategory, measurement, categorical_filter, categor
         return df, None
 
 
-def get_cat_values_barchart(entity, subcategory,measurement,categorical_filter,categorical,id_filter, r):
+def get_cat_values_barchart(entity, subcategory,measurement,categorical_filter,categorical,id_filter,date, r):
     """ Get number of subcategory values from database
 
     get_cat_values_barchart use only for barchart
@@ -525,8 +522,8 @@ def get_cat_values_barchart(entity, subcategory,measurement,categorical_filter,c
 
     measurement = "'" + "','".join(measurement) + "'"
     if not categorical_filter and not id_filter:
-        sql = """SELECT "Value","measurement",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "measurement" IN ({2})
-                and ARRAY{1} && "Value"  group by "Value","measurement" """.format(entity, subcategory, measurement)
+        sql = """SELECT "Value","measurement",count("Value") FROM examination_categorical WHERE "Key"='{0}' and "Date" BETWEEN '{3}' and '{4}'
+                and "measurement" IN ({2}) and ARRAY{1} && "Value"  group by "Value","measurement" """.format(entity, subcategory, measurement,date[0],date[1])
     else:
         categorical_filter_str = [x.replace(" is ", "\" in ('").replace(",", "','") for x in categorical_filter]
         categorical_filter_str = '"'+"') and \"".join(categorical_filter_str) + "')"
@@ -563,7 +560,7 @@ def get_cat_values_barchart(entity, subcategory,measurement,categorical_filter,c
         return df,None
 
 
-def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, categorical_filter, categorical, id_filter, r):
+def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, categorical_filter, categorical, id_filter, date, r):
     """ Retrieve categorical and numerical value
 
     get_num_cat_values use in histogram and boxplot
@@ -580,9 +577,10 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, categori
         sql = """SELECT en."Name_ID",en."measurement",AVG(a."Value") as "{0}",STRING_AGG(distinct f."Value", ',') 
         as "{1}" FROM examination_numerical as en left join examination_categorical as ec 
         on en."Name_ID" = ec."Name_ID",unnest(en."Value") as a ("Value"),unnest(ec."Value") as f ("Value") 
-        where en."Key" = '{0}' and ec."Key" = '{1}' and en."measurement" IN ({3}) and ec."measurement" IN ({3})
+        where en."Key" = '{0}' and ec."Key" = '{1}' and en."measurement" IN ({3}) and ec."measurement" IN ({3}) 
+        and en."Date" Between '{4}' and '{5}' 
         and f."Value" IN ({2}) group by en."Name_ID",en."measurement",ec."measurement" order by en."Name_ID",en."measurement" """.format(
-            entity_num, entity_cat, subcategory, measurement)
+            entity_num, entity_cat, subcategory, measurement,date[0],date[1])
     else:
         categorical_filter_str = [x.replace(" is ", "\" in ('").replace(",", "','") for x in categorical_filter]
         categorical_filter_str = '"'+"') and \"".join(categorical_filter_str) + "')"
@@ -619,7 +617,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory,measurement, categori
         return df, None
 
 
-def get_values_heatmap(entity,measurement,categorical_filter, categorical, id_filter, r):
+def get_values_heatmap(entity,measurement,categorical_filter, categorical, id_filter,date, r):
     """ Get numerical values from numerical table  from database
 
     get_values use in heatmap, clustering
@@ -635,8 +633,9 @@ def get_values_heatmap(entity,measurement,categorical_filter, categorical, id_fi
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
     if not categorical_filter and not id_filter:
-        sql = """SELECT "Name_ID","measurement","Key",AVG(f."Value") as "Value" FROM examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "measurement" in ('{1}') 
-                Group by "Name_ID","measurement","Key" """.format(entity_fin,measurement)
+        sql = """SELECT "Name_ID","measurement","Key",AVG(f."Value") as "Value" FROM examination_numerical, 
+            unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "measurement" in ('{1}') and "Date" Between '{2}' and '{3}'
+                Group by "Name_ID","measurement","Key" """.format(entity_fin, measurement, date[0], date[1])
     else:
         categorical_filter_str = [x.replace(" is ", "\" in ('").replace(",", "','") for x in categorical_filter]
         categorical_filter_str = '"'+"') and \"".join(categorical_filter_str) + "')"
@@ -657,7 +656,9 @@ def get_values_heatmap(entity,measurement,categorical_filter, categorical, id_fi
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str, id_filter_final)
 
-        sql = """SELECT "Name_ID","measurement","Key",AVG(f."Value") as "Value" FROM examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "measurement" in ('{1}') and "Name_ID" in (""".format(entity_fin,measurement)+text+""")
+        sql = """SELECT "Name_ID","measurement","Key",AVG(f."Value") as "Value" FROM examination_numerical, 
+                unnest("Value") as f("Value") WHERE "Key" IN ({0}) and "measurement" in ('{1}') and "Date" Between '{2}' and '{3}'
+                 and "Name_ID" in (""".format(entity_fin,measurement, date[0], date[1])+text+""")
                 Group by "Name_ID","measurement","Key" """
 
 

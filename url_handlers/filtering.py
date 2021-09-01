@@ -1,5 +1,5 @@
 from flask import request,session
-
+from datetime import datetime
 
 def check_for_filter_get():
     categorical_filter = session.get('categorical_filter')
@@ -8,6 +8,13 @@ def check_for_filter_get():
         categorical_filter = zip(categorical_names, categorical_filter)
     return categorical_filter, categorical_names
 
+
+def check_for_numerical_filter_get():
+    categorical_filter = session.get('categorical_filter')
+    categorical_names = session.get('categorical_names')
+    if categorical_filter:
+        categorical_filter = zip(categorical_names, categorical_filter)
+    return categorical_filter, categorical_names
 
 def check_for_filter_post():
 
@@ -20,6 +27,19 @@ def check_for_filter_post():
         categorical_filter_zip = zip(categorical_names, categorical_filter)
 
     return categorical_filter, categorical_names, categorical_filter_zip
+
+def check_for_date_filter_post():
+    date_filter = request.form.get('Date')
+    date = date_filter.split(" - ")
+
+    start_date, end_date = datetime.strptime(date[0], '%m/%d/%Y').timestamp() * 1000, \
+                           datetime.strptime(date[1], '%m/%d/%Y').timestamp() * 1000
+    session['start_date'] = start_date
+    session['end_date'] = end_date
+    date[0],date[1]=datetime.strptime(date[0], '%m/%d/%Y').strftime('%Y-%m-%d'),\
+                    datetime.strptime(date[1], '%m/%d/%Y').strftime('%Y-%m-%d')
+
+    return start_date,end_date,date
 
 def check_for_data_filter():
 

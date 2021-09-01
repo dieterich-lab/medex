@@ -1,10 +1,9 @@
-
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
 from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,\
-    all_subcategory_entities, measurement_name,Name_ID, block, data
+    all_subcategory_entities, measurement_name,Name_ID, block, data, df_min_max
 
 boxplot_page = Blueprint('boxplot', __name__,
                          template_folder='templates')
@@ -12,7 +11,7 @@ boxplot_page = Blueprint('boxplot', __name__,
 
 @boxplot_page.route('/boxplot', methods=['GET'])
 def get_boxplots():
-    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
+    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('boxplot.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -20,7 +19,10 @@ def get_boxplots():
                            all_numeric_entities=all_numeric_entities,
                            all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
+                           start_date=session.get('start_date'),
+                           end_date=session.get('end_date'),
                            filter=categorical_filter,
+                           df_min_max=df_min_max
                            )
 
 
@@ -37,8 +39,10 @@ def post_boxplots():
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
 
+
+    start_date, end_date,date = filtering.check_for_date_filter_post()
     id_filter = data.id_filter
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
 
     # handling errors and load data from database
     error = None
@@ -50,7 +54,7 @@ def post_boxplots():
         error = "Please select subcategory"
     if not error:
         df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement,
-                                          categorical_filter, categorical_names, id_filter, rdb)
+                                          categorical_filter, categorical_names, id_filter,date, rdb)
         df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
@@ -76,8 +80,11 @@ def post_boxplots():
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
+                               start_date=start_date,
+                               end_date=end_date,
                                filter=categorical_filter_zip,
-                               how_to_plot=how_to_plot
+                               how_to_plot=how_to_plot,
+                               df_min_max=df_min_max
                                )
 
     # Plot figure and convert to an HTML string representation
@@ -105,6 +112,9 @@ def post_boxplots():
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
+                           start_date=start_date,
+                           end_date=end_date,
                            filter=categorical_filter_zip,
                            how_to_plot=how_to_plot,
+                           df_min_max=df_min_max,
                            plot=fig)

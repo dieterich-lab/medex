@@ -25,6 +25,8 @@ def get_data():
                            all_numeric_entities=all_numeric_entities,
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
+                           start_date=session.get('start_date'),
+                           end_date=session.get('end_date'),
                            filter=categorical_filter,
                            df_min_max=df_min_max)
 
@@ -37,15 +39,17 @@ def post_data():
     what_table = request.form.get('what_table')
 
     # get filter
+    start_date, end_date, date = filtering.check_for_date_filter_post()
+
     id_filter = data.id_filter
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-    datau = filtering.check_for_data_filter()
-    print('oooooooooo',datau)
+
+
     # errors
     if len(entities) == 0:
         error = "Please select entities"
     else:
-       df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter, rdb)
+       df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter,date, rdb)
 
     if error:
         return render_template('data.html',
@@ -55,7 +59,10 @@ def post_data():
                                all_subcategory_entities=all_subcategory_entities,
                                all_categorical_entities=all_categorical_entities,
                                entities=entities,
+                               start_date=start_date,
+                               end_date=end_date,
                                filter=categorical_filter_zip,
+                               df_min_max=df_min_max
                                )
 
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
@@ -89,9 +96,12 @@ def post_data():
                            all_categorical_entities=all_categorical_entities,
                            entities=entities,
                            name=column,
+                           start_date=start_date,
+                           end_date=end_date,
                            what_table=what_table,
                            column=dict_of_column,
-                           filter=categorical_filter_zip
+                           filter=categorical_filter_zip,
+                           df_min_max=df_min_max
                            )
 
 

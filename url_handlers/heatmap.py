@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request,session
 import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.graph_objects as go
 import url_handlers.filtering as filtering
 from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,measurement_name, block, \
-    all_subcategory_entities, data
+    all_subcategory_entities, data, df_min_max
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
@@ -13,7 +13,7 @@ heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
 
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
-    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
+    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('heatmap.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -22,7 +22,10 @@ def get_plots():
                            all_subcategory_entities=all_subcategory_entities,
                            all_categorical_entities=all_categorical_entities,
                            all_measurement=all_measurement,
-                           filter=categorical_filter
+                           start_date=session.get('start_date'),
+                           end_date=session.get('end_date'),
+                           filter=categorical_filter,
+                           df_min_max=df_min_max
                            )
 
 
@@ -37,15 +40,16 @@ def post_plots():
         measurement = request.form.get('measurement')
 
     # get filter
+    start_date, end_date,date = filtering.check_for_date_filter_post()
     id_filter = data.id_filter
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
 
     # handling errors and load data from database
     if measurement == "Search entity":
         error = "Please select number of {}".format(measurement)
     elif len(numeric_entities) > 1:
         numeric_df, error = ps.get_values_heatmap(numeric_entities, measurement, categorical_filter, categorical_names,
-                                                  id_filter, rdb)
+                                                  id_filter, date, rdb)
         if not error:
             if len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
@@ -66,7 +70,10 @@ def post_plots():
                                numeric_entities=numeric_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
+                               start_date=start_date,
+                               end_date=end_date,
                                filter=categorical_filter_zip,
+                               df_min_max=df_min_max,
                                error=error)
 
     # calculate person correlation
@@ -125,5 +132,8 @@ def post_plots():
                            measurement=measurement,
                            plot_series=plot_series,
                            plot=fig,
-                           filter=categorical_filter_zip
+                           start_date=start_date,
+                           end_date=end_date,
+                           filter=categorical_filter_zip,
+                           df_min_max=df_min_max
                            )

@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
 from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement, all_subcategory_entities,\
-    data, measurement_name, block
+    data, measurement_name, block,df_min_max
 
 
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
@@ -10,7 +10,7 @@ basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_sta
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
-    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
+    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
                            name=measurement_name,
@@ -20,13 +20,19 @@ def get_statistics():
                            all_subcategory_entities=all_subcategory_entities,
                            all_numeric_entities=all_numeric_entities,
                            all_measurement=all_measurement,
-                           filter=categorical_filter)
+                           start_date=session.get('start_date'),
+                           end_date=session.get('end_date'),
+                           filter=categorical_filter,
+                           df_min_max=df_min_max)
 
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
+
+    start_date, end_date,date = filtering.check_for_date_filter_post()
     id_filter = data.id_filter
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
+
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
 
@@ -47,7 +53,7 @@ def get_basic_stats():
         elif numeric_entities:
             n, error = ps.number(rdb) if not error else (None, error)
             df,error = ps.get_num_values_basic_stats(numeric_entities, measurement1, categorical_filter, categorical_names,
-                                                     id_filter, rdb)
+                                                     id_filter,date, rdb)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -61,7 +67,10 @@ def get_basic_stats():
                                    all_measurement=all_measurement,
                                    numeric_entities=numeric_entities,
                                    measurement_numeric=measurement1,
+                                   start_date=start_date,
+                                   end_date=end_date,
                                    filter=categorical_filter_zip,
+                                   df_min_max=df_min_max,
                                    error=error)
 
         # calculation basic stats
@@ -92,7 +101,10 @@ def get_basic_stats():
                                    numeric_entities=numeric_entities,
                                    measurement_numeric=measurement1,
                                    instance=instance,
+                                   start_date=start_date,
+                                   end_date=end_date,
                                    filter=categorical_filter_zip,
+                                   df_min_max=df_min_max,
                                    error=error_message,
                                    )
 
@@ -112,7 +124,10 @@ def get_basic_stats():
                                    measurement_numeric=measurement1,
                                    instance=instance,
                                    first_value=list(result.keys())[0],
-                                   filter=categorical_filter_zip
+                                   start_date=start_date,
+                                   end_date=end_date,
+                                   filter=categorical_filter_zip,
+                                   df_min_max=df_min_max
                                    )
 
     if 'basic_stats_c' in request.form:
@@ -134,7 +149,7 @@ def get_basic_stats():
         else:
             n, error = ps.number(rdb) if not error else (None, error)
             categorical_df, error = ps.get_cat_values_basic_stats(categorical_entities, measurement, categorical_filter,
-                                                                 categorical_names, id_filter, rdb)
+                                                                 categorical_names, id_filter,date, rdb)
             if not error:
                 if len(categorical_df.index) == 0:
                     error = "The selected entities (" + ", ".join(categorical_entities) + ") do not contain any values. "
@@ -151,7 +166,10 @@ def get_basic_stats():
                                    all_measurement=all_measurement,
                                    categorical_entities=categorical_entities,
                                    measurement_categorical=measurement,
+                                   start_date=start_date,
+                                   end_date=end_date,
                                    filter=categorical_filter_zip,
+                                   df_min_max=df_min_max,
                                    error=error)
 
         categorical_df['count NaN'] = int(n) - categorical_df['count']
@@ -173,7 +191,10 @@ def get_basic_stats():
                                measurement_categorical=measurement,
                                instance=instance,
                                basic_stats_c=basic_stats_c,
-                               filter=categorical_filter_zip,)
+                               start_date=start_date,
+                               end_date=end_date,
+                               filter=categorical_filter_zip,
+                               df_min_max=df_min_max)
 
 
 
