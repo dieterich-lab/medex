@@ -14,6 +14,7 @@ heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
     categorical_filter, categorical_names = filtering.check_for_filter_get()
+    numerical_filter = filtering.check_for_numerical_filter_get()
     return render_template('heatmap.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -25,6 +26,7 @@ def get_plots():
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
                            filter=categorical_filter,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max
                            )
 
@@ -41,15 +43,17 @@ def post_plots():
 
     # get filter
     start_date, end_date,date = filtering.check_for_date_filter_post()
-    id_filter = data.id_filter
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
     # handling errors and load data from database
     if measurement == "Search entity":
         error = "Please select number of {}".format(measurement)
     elif len(numeric_entities) > 1:
-        numeric_df, error = ps.get_values_heatmap(numeric_entities, measurement, categorical_filter, categorical_names,
-                                                  id_filter, date, rdb)
+        numeric_df, error = ps.get_values_heatmap(numeric_entities, measurement, case_ids,categorical_filter, categorical_names,
+                                                   name, from1, to1, date, rdb)
+
         if not error:
             if len(numeric_df.index) == 0:
                 error = "This two entities don't have common values"
@@ -73,6 +77,7 @@ def post_plots():
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
                                df_min_max=df_min_max,
                                error=error)
 
@@ -135,5 +140,6 @@ def post_plots():
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max
                            )

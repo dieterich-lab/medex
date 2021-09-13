@@ -10,6 +10,7 @@ basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_sta
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
+    numerical_filter = filtering.check_for_numerical_filter_get()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
@@ -23,6 +24,7 @@ def get_statistics():
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
                            filter=categorical_filter,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max)
 
 
@@ -30,8 +32,9 @@ def get_statistics():
 def get_basic_stats():
 
     start_date, end_date,date = filtering.check_for_date_filter_post()
-    id_filter = data.id_filter
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
@@ -52,8 +55,8 @@ def get_basic_stats():
             error = "Please select numeric entities"
         elif numeric_entities:
             n, error = ps.number(rdb) if not error else (None, error)
-            df,error = ps.get_num_values_basic_stats(numeric_entities, measurement1, categorical_filter, categorical_names,
-                                                     id_filter,date, rdb)
+            df, error = ps.get_num_values_basic_stats(numeric_entities, measurement1, case_ids, categorical_filter,
+                                                     categorical_names, name, from1, to1, date, rdb)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -70,6 +73,7 @@ def get_basic_stats():
                                    start_date=start_date,
                                    end_date=end_date,
                                    filter=categorical_filter_zip,
+                                   numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
                                    error=error)
 
@@ -104,6 +108,7 @@ def get_basic_stats():
                                    start_date=start_date,
                                    end_date=end_date,
                                    filter=categorical_filter_zip,
+                                   numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
                                    error=error_message,
                                    )
@@ -127,6 +132,7 @@ def get_basic_stats():
                                    start_date=start_date,
                                    end_date=end_date,
                                    filter=categorical_filter_zip,
+                                   numerical_filter=numerical_filter,
                                    df_min_max=df_min_max
                                    )
 
@@ -148,8 +154,9 @@ def get_basic_stats():
             error = "Please select entities"
         else:
             n, error = ps.number(rdb) if not error else (None, error)
-            categorical_df, error = ps.get_cat_values_basic_stats(categorical_entities, measurement, categorical_filter,
-                                                                 categorical_names, id_filter,date, rdb)
+            categorical_df, error = ps.get_cat_values_basic_stats(categorical_entities, measurement, case_ids,
+                                                                  categorical_filter, categorical_names, name, from1,
+                                                                  to1, date, rdb)
             if not error:
                 if len(categorical_df.index) == 0:
                     error = "The selected entities (" + ", ".join(categorical_entities) + ") do not contain any values. "
@@ -169,6 +176,7 @@ def get_basic_stats():
                                    start_date=start_date,
                                    end_date=end_date,
                                    filter=categorical_filter_zip,
+                                   numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
                                    error=error)
 
@@ -194,6 +202,7 @@ def get_basic_stats():
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
                                df_min_max=df_min_max)
 
 

@@ -6,14 +6,13 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+
 <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
-
 
 <div class="card" >
     <div class="card-body">
@@ -32,7 +31,7 @@
 <div class="card" >
     <div class="card-body">
         <label>Case ID selection</label>
-        <a  href="{{url_for('download', filename = 'patient_id.csv')}}" id="download" class="btn btn-outline-info">Download Case ID</a>
+        <a  href="{{url_for('download', filename = 'case_ids.csv')}}" id="download" class="btn btn-outline-info">Download Case ID</a>
     </div>
 </div>
 
@@ -67,14 +66,14 @@
     <div class="card-body">
         <label>Numerical filter selection:</label>
         {% import 'macro_template.html' as m %}
-        {{ m.entity_form_single(id_single= "numerical_filter",name =all_numeric_entities,value=entity,d="") }}
+        {{ m.entity_form_single(id_single="numerical_filter",name =all_numeric_entities,value=entity,d="") }}
 
         <script type="text/javascript">
         var df = {{df_min_max|safe }};
         </script>
 
         <div class="range-slider">
-        <input  type="text" class="js-range-slider" value="" />
+        <input  type="text" name="my-slider" id="range" class="js-range-slider" value="" />
             </div>
         <br>
         <div class="extra-controls">
@@ -99,7 +98,13 @@
             {% endfor %}
             {% endif %}
         </div>
-        <div id="demo2" >
+        <div id="demo2">
+            {% if numerical_filter %}
+            {% for name,value1,value2,min,max in numerical_filter %}
+                <div><input type="hidden" name="name" value='{{ name }}'/>{{ name }}<input type="text" class="range" name="loan_term"  data-min="{{ min }}" data-max="{{ max }}" data-from="{{ value1 }}" data-to="{{ value2 }}"/></div>
+            {% endfor %}
+            {% endif %}
+            </div>
         </div>
     </div>
 </div>

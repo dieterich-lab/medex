@@ -1,7 +1,6 @@
 $(function () {
 
 
-
 function cd(start, end) {
         $('#Date span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
     }
@@ -21,9 +20,9 @@ var instance,
 
 
 
-$('.js-range-slider').ionRangeSlider({
+$('#range').ionRangeSlider({
     type: "double",
-    skin: "round",
+    skin: "big",
     grid: true,
     grid_num: 4,
     min: min,
@@ -32,12 +31,14 @@ $('.js-range-slider').ionRangeSlider({
     onStart: updateInputs,
     onChange: updateInputs
 });
-instance = $('.js-range-slider').data("ionRangeSlider");
+instance = $('#range').data("ionRangeSlider");
 
 
 function updateInputs (data) {
 	from = data.from;
     to = data.to;
+    min = data.min;
+    max = data.max;
 
     $('#input1').prop("value", from);
     $('#input2').prop("value", to);
@@ -87,6 +88,14 @@ $('#numerical_filter').change(function () {
     });
 
 });
+        $(".range").ionRangeSlider({
+            type: "double",
+            skin: "big",
+            grid: true,
+            grid_num: 4,
+            step: 0.001,
+        });
+
 
 
     $("#clean").click(function(){
@@ -105,11 +114,20 @@ $('#numerical_filter').change(function () {
     });
 
     $("#Add2").click(function() {
-        var max = 'demo2';
-        var e =document.getElementById("numerical_filter");
-        var mag = e.options[e.selectedIndex].value;
 
-        document.getElementById("demo2").innerHTML = document.getElementById("demo2").innerHTML + mag + "<div class='range-slider'><input  type='text' class='js-range-slider' value='' /></div>" ;
+        var e =document.getElementById("numerical_filter").value;
+        var mag = document.getElementById("range").value;
+        var result = mag.split(";");
+        var fieldvalue ='<div><input type="hidden" name="name" value="'+e+'">'+ e +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
+
+        $(fieldvalue).appendTo($('#demo2'));
+        $(".range").ionRangeSlider({
+            type: "double",
+            skin: "big",
+            grid: true,
+            grid_num: 4,
+            step: 0.001,
+        });
 
     });
 

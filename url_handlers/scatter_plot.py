@@ -12,6 +12,7 @@ scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlat
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
     categorical_filter, categorical_names = filtering.check_for_filter_get()
+    numerical_filter = filtering.check_for_numerical_filter_get()
     return render_template('scatter_plot.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -23,6 +24,7 @@ def get_plots():
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
                            filter=categorical_filter,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max)
 
 
@@ -41,7 +43,7 @@ def post_plots():
         y_measurement = request.form.get('y_measurement')
 
     start_date, end_date,date = filtering.check_for_date_filter_post()
-    id_filter = data.id_filter
+    case_ids = session.get('case_ids')
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
@@ -50,6 +52,7 @@ def post_plots():
 
     add_group_by = request.form.get('add_group_by') is not None
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
+    numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
     # handling errors and load data from database
     if x_measurement == "Search entity" or y_axis == "Search entity":
@@ -65,8 +68,8 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     else:
-        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, categorical_filter,
-                                                       categorical_names, id_filter, date, rdb)
+        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, case_ids, categorical_filter,
+                                                       categorical_names, numerical_filter_name, from1, to1, date, rdb)
 
         x_unit, error = ps.get_unit(x_axis, rdb)
         y_unit, error = ps.get_unit(y_axis, rdb)
@@ -89,7 +92,7 @@ def post_plots():
                 y_axis_v = y_axis
         if add_group_by and categorical_entities:
             df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
-                                          categorical_filter, categorical_names, id_filter, rdb)
+                                          categorical_filter, categorical_names, case_ids, rdb)
             if not error:
                 categorical_df = numeric_df.merge(df, on="Name_ID").dropna()
                 categorical_df = categorical_df.sort_values(by=[categorical_entities])
@@ -128,6 +131,7 @@ def post_plots():
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
                                df_min_max=df_min_max,
                                error=error,
                                )
@@ -221,6 +225,7 @@ def post_plots():
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max,
                            plot=fig
                            )

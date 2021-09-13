@@ -3,7 +3,7 @@ import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
 from webserver import rdb, all_categorical_entities, all_measurement, all_subcategory_entities, measurement_name,\
-    Name_ID, block, data, df_min_max
+    Name_ID, block, df_min_max, all_numeric_entities
 
 barchart_page = Blueprint('barchart', __name__, template_folder='templates')
 
@@ -11,15 +11,18 @@ barchart_page = Blueprint('barchart', __name__, template_folder='templates')
 @barchart_page.route('/barchart', methods=['GET'])
 def get_statistics():
     categorical_filter, categorical_names = filtering.check_for_filter_get()
+    numerical_filter = filtering.check_for_numerical_filter_get()
     return render_template('barchart.html',
                            block=block,
                            name='{}'.format(measurement_name),
                            all_categorical_entities=all_categorical_entities,
                            all_subcategory_entities=all_subcategory_entities,
+                           all_numeric_entities=all_numeric_entities,
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
                            filter=categorical_filter,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max
                            )
 
@@ -41,8 +44,9 @@ def post_statistics():
     # get filters
     start_date, end_date,date = filtering.check_for_date_filter_post()
 
-    id_filter = data.id_filter
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
     # handling errors and load data from database
     error = None
@@ -54,8 +58,8 @@ def post_statistics():
         error = "Please select subcategory"
     else:
         # select data from database
-        categorical_df, error = ps.get_cat_values_barchart(categorical_entities, subcategory_entities, measurement,
-                                                           categorical_filter, categorical_names, id_filter,date, rdb)
+        categorical_df, error = ps.get_cat_values_barchart(categorical_entities, subcategory_entities, measurement, case_ids,
+                                                           categorical_filter, categorical_names, name, from1, to1, date, rdb)
 
         # rename columns
         categorical_df = categorical_df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
@@ -72,6 +76,7 @@ def post_statistics():
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
                                measurement=measurement,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
@@ -110,6 +115,7 @@ def post_statistics():
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,
+                           numerical_filter=numerical_filter,
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            how_to_plot=how_to_plot,

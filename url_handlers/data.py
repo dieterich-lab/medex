@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, session
 import modules.load_data_postgre as ps
-import pandas as pd
-import json
+
 import url_handlers.filtering as filtering
 from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_categorical_entities,\
     all_subcategory_entities, all_numeric_entities,all_entities,df_min_max
@@ -19,6 +18,7 @@ def table_data():
 
 @data_page.route('/data', methods=['GET'])
 def get_data():
+    numerical_filter = filtering.check_for_numerical_filter_get()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('data.html',
                            all_entities=all_entities,
@@ -27,6 +27,7 @@ def get_data():
                            all_subcategory_entities=all_subcategory_entities,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
+                           numerical_filter=numerical_filter,
                            filter=categorical_filter,
                            df_min_max=df_min_max)
 
@@ -41,15 +42,15 @@ def post_data():
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
 
-    id_filter = data.id_filter
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
     # errors
     if len(entities) == 0:
         error = "Please select entities"
     else:
-       df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter,date, rdb)
+       df, error = ps.get_data(entities, what_table, case_ids, categorical_filter, categorical_names, name, from1, to1, date, rdb)
 
     if error:
         return render_template('data.html',
@@ -62,6 +63,7 @@ def post_data():
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
                                df_min_max=df_min_max
                                )
 
@@ -101,6 +103,7 @@ def post_data():
                            what_table=what_table,
                            column=dict_of_column,
                            filter=categorical_filter_zip,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max
                            )
 

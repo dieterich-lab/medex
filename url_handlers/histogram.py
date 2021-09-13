@@ -12,6 +12,7 @@ histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 def get_statistics():
     number_of_bins = 20
     categorical_filter, categorical_names = filtering.check_for_filter_get()
+    numerical_filter = filtering.check_for_numerical_filter_get()
     return render_template('histogram.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -23,6 +24,7 @@ def get_statistics():
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
                            filter=categorical_filter,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max
                            )
 
@@ -42,8 +44,9 @@ def post_statistics():
 
     # get filters
     start_date, end_date,date = filtering.check_for_date_filter_post()
-    id_filter = data.id_filter
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
+    numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
     # handling errors and load data from database
     error = None
@@ -54,8 +57,8 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
-        df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement,
-                                          categorical_filter, categorical_names, id_filter, date, rdb)
+        df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement, case_ids,
+                                          categorical_filter, categorical_names,numerical_filter_name, from1, to1, date, rdb)
         df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
@@ -84,6 +87,7 @@ def post_statistics():
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
                                df_min_max=df_min_max,
                                error=error)
 
@@ -110,6 +114,7 @@ def post_statistics():
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
                                df_min_max=df_min_max,
                                error=error)
 
@@ -155,6 +160,7 @@ def post_statistics():
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max,
                            plot=fig,
                            )

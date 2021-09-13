@@ -12,6 +12,7 @@ boxplot_page = Blueprint('boxplot', __name__,
 @boxplot_page.route('/boxplot', methods=['GET'])
 def get_boxplots():
     categorical_filter, categorical_names = filtering.check_for_filter_get()
+    numerical_filter = filtering.check_for_numerical_filter_get()
     return render_template('boxplot.html',
                            name='{}'.format(measurement_name),
                            block=block,
@@ -22,6 +23,7 @@ def get_boxplots():
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
                            filter=categorical_filter,
+                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max
                            )
 
@@ -41,8 +43,9 @@ def post_boxplots():
 
 
     start_date, end_date,date = filtering.check_for_date_filter_post()
-    id_filter = data.id_filter
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
+    numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
     # handling errors and load data from database
     error = None
@@ -53,8 +56,8 @@ def post_boxplots():
     elif not subcategory_entities:
         error = "Please select subcategory"
     if not error:
-        df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement,
-                                          categorical_filter, categorical_names, id_filter,date, rdb)
+        df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement,case_ids,
+                                          categorical_filter, categorical_names, numerical_filter_name, from1, to1, date, rdb)
         df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
@@ -83,6 +86,7 @@ def post_boxplots():
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
                                how_to_plot=how_to_plot,
                                df_min_max=df_min_max
                                )
@@ -115,6 +119,7 @@ def post_boxplots():
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,
+                           numerical_filter=numerical_filter,
                            how_to_plot=how_to_plot,
                            df_min_max=df_min_max,
                            plot=fig)

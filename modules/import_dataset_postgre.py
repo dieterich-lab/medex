@@ -20,10 +20,11 @@ def create_table(rdb):
                                                     "description" text,
                                                     "show" text)"""
 
-    statement_examination = """CREATE TABLE examination ("ID" numeric PRIMARY KEY,
+    statement_examination = """CREATE TABLE examination (
+                                "ID" numeric PRIMARY KEY,
                                 "Name_ID" text,
                                 measurement text,
-                                "Billing_ID" text,
+                                "Case_ID" text,
                                 "Date" text,
                                 "Time" text,
                                 "Key" text,
@@ -126,7 +127,7 @@ def alter_table(rdb):
     as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') 
     as f group by "Name_ID","Date","measurement","Key" order by "Name_ID" """
 
-    sql4 = """CREATE TABLE Patient AS select distinct "Name_ID" from examination"""
+    sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from examination"""
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
     sql6 = """ALTER TABLE examination_numerical ADD CONSTRAINT examination_numerical_pkey PRIMARY KEY ("ID")"""
