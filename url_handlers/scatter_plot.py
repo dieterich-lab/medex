@@ -2,9 +2,7 @@ from flask import Blueprint, render_template, request,session
 import plotly.express as px
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,\
-    all_subcategory_entities, Name_ID, measurement_name,\
-    block, data,df_min_max
+from webserver import rdb, all_measurement, Name_ID, measurement_name, block,df_min_max
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
@@ -16,16 +14,11 @@ def get_plots():
     return render_template('scatter_plot.html',
                            name='{}'.format(measurement_name),
                            block=block,
-                           numeric_tab=True,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
-                           all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
                            filter=categorical_filter,
-                           numerical_filter=numerical_filter,
-                           df_min_max=df_min_max)
+                           numerical_filter=numerical_filter)
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
@@ -52,7 +45,7 @@ def post_plots():
 
     add_group_by = request.form.get('add_group_by') is not None
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-    numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    numerical_filter, numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
     # handling errors and load data from database
     if x_measurement == "Search entity" or y_axis == "Search entity":
@@ -117,9 +110,6 @@ def post_plots():
                                name='{}'.format(measurement_name),
                                block=block,
                                numeric_tab=True,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
-                               all_numeric_entities=all_numeric_entities,
                                all_measurement=all_measurement,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
@@ -208,9 +198,6 @@ def post_plots():
                            name='{}'.format(measurement_name),
                            block=block,
                            numeric_tab=True,
-                           all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
                            all_measurement=all_measurement,
                            subcategory_entities=subcategory_entities,
                            categorical_entities=categorical_entities,

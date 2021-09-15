@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import rdb, all_categorical_entities, all_measurement, all_subcategory_entities, measurement_name,\
-    Name_ID, block, df_min_max, all_numeric_entities
+from webserver import rdb, all_measurement, measurement_name,\
+    Name_ID, block, df_min_max
 
 barchart_page = Blueprint('barchart', __name__, template_folder='templates')
 
@@ -15,15 +15,11 @@ def get_statistics():
     return render_template('barchart.html',
                            block=block,
                            name='{}'.format(measurement_name),
-                           all_categorical_entities=all_categorical_entities,
-                           all_subcategory_entities=all_subcategory_entities,
-                           all_numeric_entities=all_numeric_entities,
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,
-                           df_min_max=df_min_max
                            )
 
 
@@ -70,9 +66,6 @@ def post_statistics():
         return render_template('barchart.html',
                                name='{}'.format(measurement_name),
                                block=block,
-                               all_categorical_entities=all_categorical_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_measurement=all_measurement,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -81,7 +74,6 @@ def post_statistics():
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                how_to_plot=how_to_plot,
-                               df_min_max=df_min_max,
                                error=error
                                )
 
@@ -108,9 +100,6 @@ def post_statistics():
     return render_template('barchart.html',
                            name='{}'.format(measurement_name),
                            block=block,
-                           all_categorical_entities=all_categorical_entities,
-                           all_subcategory_entities=all_subcategory_entities,
-                           all_measurement=all_measurement,
                            measurement=measurement,
                            start_date=start_date,
                            end_date=end_date,
@@ -120,5 +109,4 @@ def post_statistics():
                            subcategory_entities=subcategory_entities,
                            how_to_plot=how_to_plot,
                            plot=fig,
-                           df_min_max=df_min_max
                            )

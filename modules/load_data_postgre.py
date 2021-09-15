@@ -7,53 +7,51 @@ from collections import ChainMap
 def get_header(r):
     """
     :param r: connection with database
-    :return: DataFrame with header for table browser
+    :return: data from header table
     """
     try:
         sql = "Select * from header"
         df = pd.read_sql(sql, r)
-        Name_ID, measurement_name = df['Name_ID'][0], df['measurement'][0]
-        return Name_ID, measurement_name
+        name_id, measurement_name = df['Name_ID'][0], df['measurement'][0]
     except Exception:
-        Name_ID, measurement_name = 'Name_ID', 'measurement'
-        return Name_ID, measurement_name
+        name_id, measurement_name = 'Name_ID', 'measurement'
+    return name_id, measurement_name
 
 
 def get_date(r):
     """
     :param r: connection with database
-    :return: DataFrame with header for table browser
+    :return: get the first and last date on which the data were collected
     """
     try:
-        sql = """ Select min("Date"),max("Date") from examination_numerical """
+        sql = """ Select min("Date"),max("Date") from examination """
         df = pd.read_sql(sql, r)
-        start_date,end_date = datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000,\
-                            datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
-        date = [df['min'][0],df['max'][0]]
-        return start_date, end_date,date
+        start_date = datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
+        end_date = datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
+        return start_date, end_date
     except Exception:
-
-        return "No data", "No data","No data"
+        start_date = datetime.today().strptime('%Y-%m-%d').timestamp() * 1000
+        end_date = datetime.today().strptime('%Y-%m-%d').timestamp() * 1000
+    return start_date, end_date
 
 
 def get_entities(r):
     """
     :param r: connection with database
     :return: DataFrame with entities names and their description
-            DataFrame with entities which should be showed on fisrst page
+            DataFrame with entities which should be showed on first page
     """
     all_entities = """SELECT "Key","description","synonym" FROM name_type order by "order" """
     show_on_first_page = """Select "Key" from name_type where "show" = '+' """
 
     try:
-        df = pd.read_sql(all_entities, r)
-        df2 = pd.read_sql(show_on_first_page, r)
-        df = df.replace([None], ' ')
-        return df, df2
+        all_entities = pd.read_sql(all_entities, r)
+        all_entities = all_entities.replace([None], ' ')
+        show_on_first_page = pd.read_sql(show_on_first_page, r)
     except Exception:
-        df = pd.DataFrame(columns=["Key", "description", "synonym"])
-        df2 = pd.DataFrame(columns=['Key'])
-        return df, df2
+        all_entities = pd.DataFrame(columns=["Key", "description", "synonym"])
+        show_on_first_page = pd.DataFrame(columns=['Key'])
+    return all_entities, show_on_first_page
 
 
 def get_numeric_entities(r):
@@ -74,14 +72,13 @@ def get_numeric_entities(r):
         df1 = df1.replace([None], ' ')
 
         df_min_max = pd.read_sql(min_max, r)
-        df_min_max=df_min_max.set_index('Key')
+        df_min_max = df_min_max.set_index('Key')
 
-        return df, df1,df_min_max
     except Exception:
         df = pd.DataFrame(columns=["Key","description","synonym"] )
-        df2 = pd.DataFrame()
+        df1 = pd.DataFrame()
         df_min_max = pd.DataFrame()
-        return df, df2, df_min_max
+    return df, df1, df_min_max
 
 
 def get_categorical_entities(r):
@@ -431,7 +428,6 @@ def get_cat_values_basic_stats(entity,measurement, case_id, categorical_filter, 
                 and "Date" between '{2}' and '{3}' 
                 group by "measurement","Key",number """.format(entity_final, measurement, date[0], date[1], df)
 
-    df = pd.read_sql(sql, r)
     try:
         df = pd.read_sql(sql, r)
         return df, None
@@ -485,7 +481,6 @@ def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, cas
                 order by "measurement" """.format(y_entity, y_measurement, date[0], date[1], df)
     df3 = pd.read_sql(sql, r)
     df4 = pd.read_sql(sql2, r)
-    print('df3',df3,'df4',df4,sql, sql2)
     try:
         df3 = pd.read_sql(sql, r)
         df4 = pd.read_sql(sql2, r)

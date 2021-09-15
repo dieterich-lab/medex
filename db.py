@@ -8,7 +8,8 @@ password = os.environ['POSTGRES_PASSWORD']
 host = os.environ['POSTGRES_HOST']
 database = os.environ['POSTGRES_DB']
 port = os.environ['POSTGRES_PORT']
-DATABASE_URL= f'postgresql://{user}:{password}@{host}:{port}/{database}'
+DATABASE_URL = f'postgresql://{user}:{password}@{host}:{port}/{database}'
+
 
 # Connection with database
 def connect_db():
@@ -20,8 +21,6 @@ def connect_db():
             return db
         except Exception:
             time.sleep(0.1)
-
-
 
 
 def close_db(e=None):

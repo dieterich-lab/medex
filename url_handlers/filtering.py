@@ -9,6 +9,7 @@ def check_for_filter_get():
         categorical_filter = zip(categorical_names, categorical_filter)
     return categorical_filter, categorical_names
 
+
 def check_for_numerical_filter_get():
     name, from1, to1, min1, max1 = session.get('name'), session.get('from'), session.get('to'), session.get(
         'min'), session.get('max')
@@ -17,6 +18,7 @@ def check_for_numerical_filter_get():
     else:
         numerical_filter = {}
     return numerical_filter
+
 
 def check_for_filter_post():
 
@@ -29,6 +31,7 @@ def check_for_filter_post():
         categorical_filter_zip = zip(categorical_names, categorical_filter)
 
     return categorical_filter, categorical_names, categorical_filter_zip
+
 
 def check_for_date_filter_post():
     date_filter = request.form.get('Date')

@@ -2,8 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, session
 import modules.load_data_postgre as ps
 
 import url_handlers.filtering as filtering
-from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_categorical_entities,\
-    all_subcategory_entities, all_numeric_entities,all_entities,df_min_max
+from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_entities, df_min_max
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -22,9 +21,6 @@ def get_data():
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('data.html',
                            all_entities=all_entities,
-                           all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_entities,
-                           all_subcategory_entities=all_subcategory_entities,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
                            numerical_filter=numerical_filter,
@@ -56,9 +52,6 @@ def post_data():
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
                                entities=entities,
                                start_date=start_date,
                                end_date=end_date,
@@ -93,9 +86,6 @@ def post_data():
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
-                           all_numeric_entities=all_numeric_entities,
-                           all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities,
                            entities=entities,
                            name=column,
                            start_date=start_date,

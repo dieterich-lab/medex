@@ -2,8 +2,7 @@ from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import data, rdb, all_numeric_entities, all_categorical_entities, all_measurement,\
-    all_subcategory_entities, Name_ID, measurement_name, block, df_min_max
+from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max
 
 histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 
@@ -17,9 +16,6 @@ def get_statistics():
                            name='{}'.format(measurement_name),
                            block=block,
                            number_of_bins=number_of_bins,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
-                           all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
@@ -76,9 +72,6 @@ def post_statistics():
                                name='{}'.format(measurement_name),
                                block=block,
                                number_of_bins=number_of_bins,
-                               all_categorical_entities=all_categorical_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
@@ -102,11 +95,7 @@ def post_statistics():
         return render_template('histogram.html',
                                name='{}'.format(measurement_name),
                                block=block,
-                               all_categorical_entities=all_categorical_entities,
                                number_of_bins=number_of_bins,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_measurement=all_measurement,
                                numeric_entities=numeric_entities,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
@@ -148,9 +137,6 @@ def post_statistics():
     return render_template('histogram.html',
                            name='{}'.format(measurement_name),
                            block=block,
-                           all_categorical_entities=all_categorical_entities,
-                           all_numeric_entities=all_numeric_entities,
-                           all_subcategory_entities=all_subcategory_entities,
                            all_measurement=all_measurement,
                            number_of_bins=number_of_bins,
                            numeric_entities=numeric_entities,

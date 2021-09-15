@@ -14,8 +14,8 @@ function cd(start, end) {
 
 
 var instance,
-    min = df['Delta0']['min'],
-    max = df['Delta0']['max']
+    min = 10,
+    max = 100
 
 
 

@@ -4,8 +4,7 @@ from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.graph_objects as go
 import url_handlers.filtering as filtering
-from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement,measurement_name, block, \
-    all_subcategory_entities, data, df_min_max
+from webserver import rdb, all_measurement,measurement_name, block, df_min_max
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
@@ -19,9 +18,6 @@ def get_plots():
                            name='{}'.format(measurement_name),
                            block=block,
                            numeric_tab=True,
-                           all_numeric_entities=all_numeric_entities,
-                           all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities,
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
@@ -68,9 +64,6 @@ def post_plots():
                                name='{}'.format(measurement_name),
                                block=block,
                                numeric_tab=True,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
                                numeric_entities=numeric_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
@@ -129,9 +122,6 @@ def post_plots():
                            name='{}'.format(measurement_name),
                            block=block,
                            numeric_tab=True,
-                           all_numeric_entities=all_numeric_entities,
-                           all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities,
                            all_measurement=all_measurement,
                            numeric_entities=numeric_entities,
                            measurement=measurement,

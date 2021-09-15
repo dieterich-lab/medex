@@ -7,27 +7,28 @@ In order to add new data add a new `entities.csv` and `dataset.csv` to the `./im
 
 To work the files should have the same format as the current example files that are already in that directory. 
 
-The currently used format of the dataset.csv file comes from the research warehouse export format of the data we are analysing with this tool:
+The currently used format of the dataset.csv file comes from the research warehouse export format of the data we are 
+analysing with this tool:
  
-`Patient_ID,Visit,Date,Time,Entity,Value`
+`Patient_ID,Case_ID,Date,Time,Entity,Value`
 
 Example file starts like this:
 ```
-f96ae85e2c3598e7eefa593a927fe1c8,1,2012-07-13,4:51:9,Gender,male
-f96ae85e2c3598e7eefa593a927fe1c8,0,1999-03-13,15:26:20,Jitter_rel,0.25546
+f96ae85e2c3598e7eefa593a927fe1c8,g85e2c3598e7eefa593a927fe1c8,2012-07-13,4:51:9,Gender,male
+f96ae85e2c3598e7eefa593a927fe1c8,g85e2c3598e7eefa593a927fe1c8,1999-03-13,15:26:20,Jitter_rel,0.25546
 ```
-Date and Time are currently not used and are optional, required are a unique identifier of the data instance (Patient), number of visit a parameter name and the respective value, and the six columns format, so this line works as well:
+Time is currently not used and is optional, required are a unique identifier of the data instance (Patient), case_id a 
+parameter name and the respective value, and the six columns format, so this line works as well:
 ```
 Patient1,,,,A_numeric_parameter,5.8
 ```
   
-Also necessary is the entities.csv file, specifying the data type, which can be String or Double. 
+Also necessary is the entities.csv file, specifying the data type, which can be String, Double or Date. 
 In our Example that would be a file starting like this:
 ```
 Gender,String
 Jitter_rel,Double
 ```
-If your data have entities with a different data type (ex.date), you can complete the columns with this data type, but the entity will not be taken into account in the subsequent analysis.
 
 It is also possible to add four more columns(synonym,unit,description,show ) to the entities.csv file.
 ```
@@ -35,19 +36,33 @@ Gender,String,Sex,,,Gender,+
 Jitter_rel,Double,jitter_rel,%,relative jitter,+
 ```
 
-The synonym column should contain a synonym for the variable. A variable that has a synonym can be searched by variable name or synonym.
+The synonym column should contain a synonym for the variable. A variable that has a synonym can be searched by variable 
+name or synonym.
 
 Adding the unit column allows units to be displayed in the graphs.. 
 
-The Description column should contain a description of the entity.The description is displayed as a tooltip after hovering the cursor over the selected entity.
+The Description column should contain a description of the entity.The description is displayed as a tooltip after 
+hovering the cursor over the selected entity.
 
-The show column can be empty or contain a "+" next to the entities you want to show in the "Table browser" after the program is started.
+The show column can be empty or contain a "+" next to the entities you want to show in the "Table browser" after 
+the program is started.
 
-It is also possible to add file header.csv by adding this file you can rename columns from dataset.csv file.
-In default column names are Name_ID,measurement,description,Date,Time,Key,Value.
+It is also possible to add file header.csv, by adding this file you can rename columns from dataset.csv file.
+In default column names are Name_ID,Case_ID,description,Date,Time,Key,Value.
+
+By adding a file header.csv it is also possible to add an additional visit column which indicates at which visit the 
+measurement was performed.
+
+`Patient_ID,Case_ID,Visits,Date,Time,Entity,Value`
 
 Example files can be found in `./dataset_examples`. To test them copy them to `./import` and restart the tool.
 
+Example file starts like this:
+
+```
+f96ae85e2c3598e7eefa593a927fe1c8,g85e2c3598e7eefa593a927fe1c8,1,2012-07-13,4:51:9,Gender,male
+f96ae85e2c3598e7eefa593a927fe1c8,g85e2c3598e7eefa593a927fe1c8,0,1999-03-13,15:26:20,Jitter_rel,0.25546
+```
 
 ### Controlling the Data Import Scheduler ###
 To learn more about the scheduler and the configuration methods read [here](https://apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html#module-apscheduler.triggers.cron). 
@@ -70,7 +85,8 @@ Database is creating automatically during creating container for database. Envir
 You can change them in docker-compose.yml
 
 During load the data if exists tables in database they are deleted and new tables are created in their place.
-Update table and adding data to table by Medex application is impossible . This option only exists if you log into the database directly [(instruction to log into database )](https://github.com/dieterich-lab/medex/blob/PostgreSQL/documentation/log_into_database.md) 
+Update table and adding data to table by Medex application is impossible . This option only exists if you log into the 
+database directly [(instruction to log into database )](https://github.com/dieterich-lab/medex/blob/PostgreSQL/documentation/log_into_database.md) 
 and directly execute queries in PostgreSQL database not by Medex application.
 
 
