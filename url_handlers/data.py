@@ -64,6 +64,7 @@ def post_data():
 
     data.table_browser_entities = entities
     data.csv = df.to_csv(index=False)
+    df=df.fillna("missing data")
     column = df.columns.tolist()
 
     column_change_name = []

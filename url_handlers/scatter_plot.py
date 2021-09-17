@@ -84,8 +84,8 @@ def post_plots():
                 x_axis_v = x_axis
                 y_axis_v = y_axis
         if add_group_by and categorical_entities:
-            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
-                                          categorical_filter, categorical_names, case_ids, rdb)
+            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement], case_ids,
+                                          categorical_filter, categorical_names, numerical_filter_name, from1, to1, date, rdb)
             if not error:
                 categorical_df = numeric_df.merge(df, on="Name_ID").dropna()
                 categorical_df = categorical_df.sort_values(by=[categorical_entities])

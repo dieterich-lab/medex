@@ -118,7 +118,7 @@ $('#numerical_filter').change(function () {
         var e =document.getElementById("numerical_filter").value;
         var mag = document.getElementById("range").value;
         var result = mag.split(";");
-        var fieldvalue ='<div><input type="hidden" name="name" value="'+e+'">'+ e +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
+        var fieldvalue ='<div class="fd-box2"><span onclick="(this).closest(".fd-box2").remove()"   class="close" > x </span><input type="hidden" name="name" value="'+e+'">'+ e +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
 
         $(fieldvalue).appendTo($('#demo2'));
         $(".range").ionRangeSlider({

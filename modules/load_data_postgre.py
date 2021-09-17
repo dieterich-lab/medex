@@ -30,8 +30,8 @@ def get_date(r):
         end_date = datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
         return start_date, end_date
     except Exception:
-        start_date = datetime.today().strptime('%Y-%m-%d').timestamp() * 1000
-        end_date = datetime.today().strptime('%Y-%m-%d').timestamp() * 1000
+        start_date = datetime.today().strftime('%Y-%m-%d').timestamp() * 1000
+        end_date = datetime.today().strftime('%Y-%m-%d').timestamp() * 1000
     return start_date, end_date
 
 
@@ -160,7 +160,7 @@ def patient(r):
         return None, "Problem with load data from database"
 
 
-def get_unit(name,r):
+def get_unit(name, r):
     """ Get number of all patients
 
      number use only for basic_stats
@@ -255,18 +255,18 @@ def get_data(entity, what_table, case_id, categorical_filter, categorical, numer
                 WHERE "Key" IN ({0}) and "Date" Between '{1}' and '{2}'
                 """.format(entity_final,date[0],date[1])
 
-        sql2 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS 
+        sql2 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS 
                 row_name,"Name_ID","measurement","Date","Key",array_to_string("Value",'';'') as "Value" 
                 FROM examination_numerical 
                 WHERE  "Key" IN ({0}) 
                             UNION
-                SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,"Name_ID","measurement",
+                SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,"Name_ID","measurement",
                 "Date","Key",array_to_string("Value",'';'') as "Value" 
                 FROM examination_categorical
                 WHERE "Key" IN ({0})  order by row_name',
                 'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
                 as ct (row_name text,"Name_ID" text,"measurement" text,"Date" text,{1}) 
-                where "Date" Between '{2}' and '{3}' """.format(entity_final, entity_column, date[0], date[1])
+                where "Date" Between '{2}' and '{3}' order by "Name_ID", measurement """.format(entity_final, entity_column, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1)
         sql = """SELECT en."Name_ID",en."measurement",en."Key",array_to_string(en."Value",';') as "Value" 
