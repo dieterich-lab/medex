@@ -49,8 +49,7 @@ more about `static`, `templates` and `url_handlers` in [html_and_js.md](https://
 
 `medex/serverside`
 --------------
-
-This directory, as the name suggests, contains code to display the table in the browser using the server-side option.
+This directory, as the name suggests, contains the code to display the table in the browser using the server-side option.
 
 `medex/scripts`
 ---------------

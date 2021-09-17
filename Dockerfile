@@ -1,17 +1,19 @@
 FROM python:slim
 
+WORKDIR /app
+COPY Pipfile Pipfile.lock ./
 
-COPY . /app
-COPY Pipfile Pipfile.lock /app/
 
 RUN apt-get update && \
     apt-get install -y && \
     cd /app/ && \
     pip install --no-cache-dir pipenv && \
-    pipenv install --ignore-pipfile --deploy --system --clear
+    pipenv install --ignore-pipfile --deploy --system --clear &&\
+    rm -rf /var/lib/apt/lists/*
 
 
-WORKDIR /app
+
+COPY . /app
 
 ENV FLASK_ENV production
 ENV TZ=Europe/Berlin

@@ -34,11 +34,11 @@ Not recommended for pure deployment.
 * Develop
 
 
-## Data Import ##
+## Data Import ### [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/time-series/dataset_examples/Data_import.md)
 * Database imports run every night at 5:05 and at startup.
 * The database is only updated if there is new data to import.
-* In order to add new data add a new `header.csv`,`entities.csv` and `dataset.csv` to the `./import` folder.
-* The `header.csv`,`entities.csv` and `dataset.csv` files should look like in directory `dataset_examples` [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/time-series/dataset_examples/Data_import.md).
+* In order to add new data add a new `entities.csv` and `dataset.csv` to the `./import` folder.
+* The `entities.csv` and `dataset.csv` files should look like in directory `dataset_examples`.
 
 
 
