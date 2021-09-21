@@ -47,7 +47,7 @@ function formatCustom(state) {
     placeholder:"Search entity",
     });
 
-    $("#measurement").select2({
+    $(".measurement").select2({
     placeholder:"Search entity"
     });
     $("#measurement_categorical").select2({

@@ -16,15 +16,14 @@
                     <img src="{{ url_for('static', filename='images/baruu.png') }}"
                          width="90%" class="img-responsive">
                 </div>
-                <br />
-                The bar also contains a button that can be used to download a file with names of all entities and their descriptions.
-                <br />
+                If to file entites.csv was added synonym is dispalyed under name of the entity and we have possibility
+                to search for the entity by name or synonym.
                 <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/button_description.png') }}"
-                         width="40%" class="img-responsive">
+                    <img src="{{ url_for('static', filename='images/mouse_over.png') }}"
+                         width="90%" class="img-responsive">
                 </div>
                 <br />
-                Description of each entity is also visible as a tooltip when you move the mouse over the entity.
+                If the description was also added to entities.csv file. It is visible as a tooltip when you move the mouse over the entity.
                 <br />
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/mouse_over.png') }}"
@@ -33,7 +32,8 @@
                 <br />
 
 
-                The numerical and categorical tables in the database look like in the picture below. They contain only three columns: Transcript_ID, Key and Value. <br />
+                The numerical and categorical tables in the database look like in the picture below. They contain
+                columns: Patient_ID,Case_ID,Visit(optional),Date, Key and Value. <br />
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/table_browser_long_format.png') }}"
                          width="80%" class="img-responsive">
@@ -42,29 +42,20 @@
                 </div>
                <br />
                 <h5>Data filtering</h5>
-                It is possible to filter the data. When you select a filter, it will be applied to every tab.
-                For example If we select filters like the following:
+                When you select a filter, it will be applied to every tab.
+
+                First filter it is time window filter which shows only data from selected range of data:
+
+                Next possible filter is categorical filter.
                 <br />
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/filtering.png') }}"
                          width="70%" class="img-responsive">
                 </div>
                 <br />
-                Then only those Transcript_ID where 'Boerries_et_al_2013.enriched is yes' and Conservation by.GenderOrder is no' will be taken into account in subsequent actions.<br />
-                Example result for barchart
-                                <br />
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/filtered_barchat.png') }}"
-                         width="90%" class="img-responsive">
-                </div>
-                <br />
-                In parentheses it is also visible how many filters have been applied.
-                                <br />
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/parentheses.png') }}"
-                         width="90%" class="img-responsive">
-                </div>
-                <br />
+                Then only those Patient_ID where 'Boerries_et_al_2013.enriched is yes' and Conservation by.GenderOrder is no' will be taken into account in subsequent actions.<br />
+
+                The last filter is numerical filter which select the range numerical entity
 
 
                 <h5>Explanation of the tabs:</h5>

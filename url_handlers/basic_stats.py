@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import rdb, all_numeric_entities, all_categorical_entities, all_measurement, all_subcategory_entities,\
+from webserver import rdb,  all_measurement, \
     data, measurement_name, block,df_min_max
 
 

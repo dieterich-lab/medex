@@ -191,20 +191,49 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
                     AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
                                                                     categorical_filter_str)
 
+
+    category_filter_not = """SELECT distinct "Name_ID" FROM crosstab('SELECT "Name_ID","Key",array_to_string("Value",'';'') as "Value" 
+                    FROM examination_categorical WHERE "Key" IN ({0}) ')
+                    AS CT ("Name_ID" text,{1}) where {2} """.format(categorical_names, categorical_columns,
+                                                                    categorical_filter_str)
+
+
     #numerical_filter
     names = "$$" + "$$,$$".join(numerical_filter_name) + "$$"
     numerical_columns = '"' + '" double precision,"'.join(numerical_filter_name) + '" double precision'
     numerical = ""
+    numerical_not = ""
     for i in range(len(from1)):
         if i == 0:
             numerical_filter = """ "{0}" between '{1}' and '{2}' """.format(numerical_filter_name[i],from1[i],to1[i])
+            numerical_filter_not = """ "{0}" not between '{1}' and '{2}' """.format(numerical_filter_name[i], from1[i], to1[i])
         else:
             numerical_filter = """ and "{0}" between '{1}' and '{2}' """.format(numerical_filter_name[i], from1[i], to1[i])
+            numerical_filter_not = """ and "{0}" not between '{1}' and '{2}' """.format(numerical_filter_name[i], from1[i],
+                                                                                to1[i])
         numerical = numerical + numerical_filter
+        numerical_not = numerical_not + numerical_filter_not
 
-    numerical_filter = """Select distinct "Name_ID" FROM crosstab('SELECT "Name_ID","Key",AVG(f."Value") as "Value" FROM 
+    numerical_filter = """Select distinct "Name_ID" FROM crosstab(
+                        'SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,"Name_ID",
+                        "measurement","Key", AVG(f."Value") as "Value" FROM 
                         examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) 
-                        Group by "Name_ID","Key" ORDER  BY 1,2')  AS CT ("Name_ID" text,{1}) where {2}  """.format(names,numerical_columns,numerical)
+                        Group by "Name_ID","measurement","Key" ORDER  BY 1','Select "Key" from name_type 
+                        where "Key" IN ({0}) and measurement IN ({})')  AS CT ("row_name" text,"Name_ID" text,"measurement" text,{1}) where {2}  """\
+        .format(names, numerical_columns, numerical)
+
+    numerical_filter_not = """Select distinct "Name_ID" FROM crosstab(
+                        'SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,"Name_ID",
+                        "measurement","Key",AVG(f."Value") as "Value" FROM 
+                        examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) 
+                        Group by "Name_ID","measurement","Key" ORDER  BY 1','Select "Key" from name_type 
+                        where "Key" IN ({0}) and measurement IN ({})')  AS CT ("row_name" text,"Name_ID" text,"measurement" text,{1}) where {2}  """\
+        .format(names, numerical_columns, numerical_not)
+
+
+
+    numerical_filter = """ SELECT A."Name_ID" FROM ({0}) as A LEFT JOIN ({1}) B ON A."Name_ID" = B."Name_ID" 
+    WHERE B."Name_ID" IS NULL """.format(numerical_filter,numerical_filter_not)
 
     # join filters
     if categorical_filter and case_id and numerical_filter_name:
@@ -225,6 +254,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         sql = category_filter
     elif case_id and not categorical_filter and not numerical_filter_name:
         sql = case_id_filter
+
 
     return sql
 
@@ -256,14 +286,14 @@ def get_data(entity, what_table, case_id, categorical_filter, categorical, numer
                 """.format(entity_final,date[0],date[1])
 
         sql2 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS 
-                row_name,"Name_ID","measurement","Date","Key",array_to_string("Value",'';'') as "Value" 
+                row_name,* from (Select "Name_ID","measurement","Date","Key",array_to_string("Value",'';'') as "Value" 
                 FROM examination_numerical 
                 WHERE  "Key" IN ({0}) 
                             UNION
-                SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,"Name_ID","measurement",
+                SELECT "Name_ID","measurement",
                 "Date","Key",array_to_string("Value",'';'') as "Value" 
                 FROM examination_categorical
-                WHERE "Key" IN ({0})  order by row_name',
+                WHERE "Key" IN ({0})) as k  order by row_name',
                 'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
                 as ct (row_name text,"Name_ID" text,"measurement" text,"Date" text,{1}) 
                 where "Date" Between '{2}' and '{3}' order by "Name_ID", measurement """.format(entity_final, entity_column, date[0], date[1])
@@ -283,18 +313,18 @@ def get_data(entity, what_table, case_id, categorical_filter, categorical, numer
                 """.format(entity_final, date[0], date[1], df)
 
         sql2 = """SELECT ec.* FROM crosstab(
-                'SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,
-                "Name_ID","measurement","Date","Key",array_to_string("Value",'';'') as "Value" 
+                'SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS 
+                row_name,* from (Select "Name_ID","measurement","Date","Key",array_to_string("Value",'';'') as "Value" 
                 FROM examination_numerical 
                 WHERE  "Key" IN ({0}) 
                             UNION
-                SELECT dense_rank() OVER (ORDER BY "Name_ID","measurement")::text AS row_name,
-                "Name_ID","measurement","Date","Key",array_to_string("Value",'';'') as "Value" 
+                SELECT "Name_ID","measurement",
+                "Date","Key",array_to_string("Value",'';'') as "Value" 
                 FROM examination_categorical
-                WHERE "Key" IN ({0})  order by row_name',
-                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
+                WHERE "Key" IN ({0})) as k order by row_name',
+                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order" ') 
                 as ec (row_name text,"Name_ID" text,"measurement" text,"Date" text,{1}) 
-                right join ({4}) as df 
+                inner join ({4}) as df 
                 on ec."Name_ID" = df."Name_ID"  
                 where "Date" Between '{2}' and '{3}' """.format(entity_final, entity_column, date[0], date[1], df)
 

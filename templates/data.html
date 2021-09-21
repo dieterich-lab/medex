@@ -76,14 +76,14 @@
 
 <div id="numeric_results" class="collapse show " aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
-        {% if name %}
+        {% if name_column %}
         <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
         <br><br>
         <div id="tab"  column="{{ column }}"></div>
         <table id="serverside_table" class="display" width="100%">
             <thead>
             <tr>
-                {% for i in name %}
+                {% for i in name_column %}
                 <th>{{ i }}</th>
                 {% endfor %}
             </tr>
