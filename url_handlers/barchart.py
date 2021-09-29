@@ -18,6 +18,7 @@ def get_statistics():
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
+                           measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,
                            )
@@ -25,8 +26,14 @@ def get_statistics():
 
 @barchart_page.route('/barchart', methods=['POST'])
 def post_statistics():
+    # get filters
+    start_date, end_date,date = filtering.check_for_date_filter_post()
+    case_ids = session.get('case_ids')
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    session['measurement_filter'] = measurement_filter
 
-    # get data from  html form
+
     # checking if display selector for measurement
     if block == 'none':
         measurement = all_measurement.values
@@ -36,13 +43,6 @@ def post_statistics():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
-
-    # get filters
-    start_date, end_date,date = filtering.check_for_date_filter_post()
-
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
     # handling errors and load data from database
     error = None
@@ -55,7 +55,8 @@ def post_statistics():
     else:
         # select data from database
         categorical_df, error = ps.get_cat_values_barchart(categorical_entities, subcategory_entities, measurement, case_ids,
-                                                           categorical_filter, categorical_names, name, from1, to1, date, rdb)
+                                                           categorical_filter, categorical_names, name, from1, to1,
+                                                           measurement_filter, date, rdb)
 
         # rename columns
         categorical_df = categorical_df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
@@ -71,6 +72,8 @@ def post_statistics():
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
                                measurement=measurement,
+                               measurement_filter=measurement_filter,
+                               measurement_filter_text=measurement_filter_text,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                how_to_plot=how_to_plot,
@@ -78,7 +81,6 @@ def post_statistics():
                                )
 
     categorical_df['%'] = 100*categorical_df['count']/categorical_df.groupby(measurement_name)['count'].transform('sum')
-
 
     # Plot figure and convert to an HTML string representation
     if block == 'none':
@@ -101,6 +103,8 @@ def post_statistics():
                            name='{}'.format(measurement_name),
                            block=block,
                            measurement=measurement,
+                           measurement_filter=measurement_filter,
+                           measurement_filter_text=measurement_filter_text,
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,

@@ -19,6 +19,7 @@ def get_statistics():
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
+                           measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,
                            df_min_max=df_min_max
@@ -27,6 +28,12 @@ def get_statistics():
 
 @histogram_page.route('/histogram', methods=['POST'])
 def post_statistics():
+    # get filters
+    start_date, end_date,date = filtering.check_for_date_filter_post()
+    case_ids = session.get('case_ids')
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    session['measurement_filter'] = measurement_filter
 
     # get selected entities
     if block == 'none':
@@ -38,12 +45,6 @@ def post_statistics():
     subcategory_entities = request.form.getlist('subcategory_entities')
     number_of_bins = request.form.get('number_of_bins')
 
-    # get filters
-    start_date, end_date,date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-    numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-
     # handling errors and load data from database
     error = None
     if measurement == "Search entity":
@@ -53,8 +54,10 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
+        print(subcategory_entities)
         df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement, case_ids,
-                                          categorical_filter, categorical_names,numerical_filter_name, from1, to1, date, rdb)
+                                          categorical_filter, categorical_names, numerical_filter_name, from1, to1,
+                                          measurement_filter, date, rdb)
         df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
@@ -76,6 +79,8 @@ def post_statistics():
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
+                               measurement_filter=measurement_filter,
+                               measurement_filter_text=measurement_filter_text,
                                all_measurement=all_measurement,
                                start_date=start_date,
                                end_date=end_date,
@@ -100,6 +105,8 @@ def post_statistics():
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
+                               measurement_filter=measurement_filter,
+                               measurement_filter_text=measurement_filter_text,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -143,6 +150,8 @@ def post_statistics():
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
+                           measurement_filter=measurement_filter,
+                           measurement_filter_text=measurement_filter_text,
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,

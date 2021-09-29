@@ -21,6 +21,7 @@ def get_plots():
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
+                           measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,
                            df_min_max=df_min_max
@@ -29,6 +30,12 @@ def get_plots():
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
 def post_plots():
+    # get filter
+    start_date, end_date, date = filtering.check_for_date_filter_post()
+    case_ids = session.get('case_ids')
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    session['measurement_filter'] = measurement_filter
 
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities_multiple')
@@ -37,18 +44,12 @@ def post_plots():
     else:
         measurement = request.form.get('measurement')
 
-    # get filter
-    start_date, end_date,date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-
     # handling errors and load data from database
     if measurement == "Search entity":
-        error = "Please select number of {}".format(measurement)
+        error = "Please select number of {}".format(measurement_name)
     elif len(numeric_entities) > 1:
-        numeric_df, error = ps.get_values_heatmap(numeric_entities, measurement, case_ids,categorical_filter, categorical_names,
-                                                   name, from1, to1, date, rdb)
+        numeric_df, error = ps.get_values_heatmap(numeric_entities, measurement, case_ids,categorical_filter,
+                                                  categorical_names, name, from1, to1, measurement_filter, date, rdb)
 
         if not error:
             if len(numeric_df.index) == 0:
@@ -67,6 +68,8 @@ def post_plots():
                                numeric_entities=numeric_entities,
                                measurement=measurement,
                                all_measurement=all_measurement,
+                               measurement_filter=measurement_filter,
+                               measurement_filter_text=measurement_filter_text,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -125,6 +128,8 @@ def post_plots():
                            all_measurement=all_measurement,
                            numeric_entities=numeric_entities,
                            measurement=measurement,
+                           measurement_filter=measurement_filter,
+                           measurement_filter_text=measurement_filter_text,
                            plot_series=plot_series,
                            plot=fig,
                            start_date=start_date,

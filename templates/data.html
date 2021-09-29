@@ -11,6 +11,7 @@
     <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
     <script src="{{ url_for('static', filename='js/data.js') }}"></script>
     <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/subcategories.js') }}"></script>
 
     {# plotly and jquery #}
     <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
@@ -47,6 +48,7 @@
             {{ m.show_error(error) }}
             {% endif %}
 
+            {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name =all_measurement,class="measurement",value=entity,select=measurement,d=name,block=block) }}
             {{ m.entity_form_multiple(id_multiple= "entities",name =all_entities,value=entity,select=entities,d="Entities:") }}
             <label >Table: </label>
             <div class="custom-control custom-radio" >

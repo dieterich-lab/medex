@@ -17,12 +17,18 @@ def get_plots():
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
+                           measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter)
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
+    # get filter
+    add_group_by = request.form.get('add_group_by') is not None
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    numerical_filter, numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    session['measurement_filter'] = measurement_filter
 
     # list selected data
     y_axis = request.form.get('y_axis')
@@ -43,10 +49,6 @@ def post_plots():
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
 
-    add_group_by = request.form.get('add_group_by') is not None
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-    numerical_filter, numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-
     # handling errors and load data from database
     if x_measurement == "Search entity" or y_axis == "Search entity":
         error = "Please select number of {}".format(measurement_name)
@@ -61,8 +63,9 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     else:
-        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, case_ids, categorical_filter,
-                                                       categorical_names, numerical_filter_name, from1, to1, date, rdb)
+        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, case_ids,
+                                                       categorical_filter, categorical_names, numerical_filter_name,
+                                                       from1, to1, measurement_filter, date, rdb)
 
         x_unit, error = ps.get_unit(x_axis, rdb)
         y_unit, error = ps.get_unit(y_axis, rdb)
@@ -84,10 +87,12 @@ def post_plots():
                 x_axis_v = x_axis
                 y_axis_v = y_axis
         if add_group_by and categorical_entities:
-            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement], case_ids,
-                                          categorical_filter, categorical_names, numerical_filter_name, from1, to1, date, rdb)
+            df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
+                                          case_ids, categorical_filter, categorical_names, numerical_filter_name,
+                                          from1, to1, measurement_filter, date, rdb)
             if not error:
-                categorical_df = numeric_df.merge(df, on="Name_ID").dropna()
+
+                categorical_df = numeric_df.merge(df, on="Patient_ID").dropna()
                 categorical_df = categorical_df.sort_values(by=[categorical_entities])
                 categorical_df = categorical_df.rename(
                     columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
@@ -118,6 +123,8 @@ def post_plots():
                                y_axis=y_axis,
                                x_measurement=x_measurement,
                                y_measurement=y_measurement,
+                               measurement_filter=measurement_filter,
+                               measurement_filter_text=measurement_filter_text,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -209,6 +216,8 @@ def post_plots():
                            how_to_plot=how_to_plot,
                            x_measurement=x_measurement,
                            y_measurement=y_measurement,
+                           measurement_filter=measurement_filter,
+                           measurement_filter_text=measurement_filter_text,
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,

@@ -104,23 +104,29 @@ $('#numerical_filter').change(function () {
     });
 
     $("#Add").click(function() {
-        var e =document.getElementById("categorical_filter");
-        var mag = e.options[e.selectedIndex].value;
+        var visit =$("#measurement_filter").val();
+
+        var mag =$("#categorical_filter").val();
         var e2 =$('#subcategory_filter').val();
-        var m1 = mag
         var mm = mag + " is " +e2
-        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  style='display: block; width: 100%' class='btn btn-outline-primary'  ><span onclick='remove(this)'  class='close' > x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + m1+"'>" + mm + "</button>";
 
-    });
+        document.getElementById("demo0").innerHTML = '<p>Filter by visit as on:'+ visit +'</p><input type="hidden" value='+visit+'>'
+        $( "#measurement_filter").change();
 
-    $("#Add2").click(function() {
+        if (mag != 'Search entity'){
+        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  style='display: block; width: 100%' class='btn btn-outline-primary'  ><span onclick='remove(this)'  class='close' > x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + mag+"'>" + mm + "</button>";
+        $("#categorical_filter").val('Search entity').change();
 
-        var e =document.getElementById("numerical_filter").value;
-        var mag = document.getElementById("range").value;
-        var result = mag.split(";");
-        var fieldvalue ='<div class="fd-box2"><span onclick="(this).closest(".fd-box2").remove()"   class="close" > x </span><input type="hidden" name="name" value="'+e+'">'+ e +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
+        }
 
+        var ed = $("#numerical_filter").val();
+        var mag2 = $("#range").val();
+        var result = mag2.split(";");
+        var fieldvalue ='<div class="fd-box2"><span onclick="(this).closest(".fd-box2").remove()"   class="close" > x </span><input type="hidden" name="name" value="'+ed+'">'+ ed +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
+        if (ed != 'Search entity'){
         $(fieldvalue).appendTo($('#demo2'));
+        $("#numerical_filter").val('Search entity').change();
+        }
         $(".range").ionRangeSlider({
             type: "double",
             skin: "big",
@@ -130,5 +136,6 @@ $('#numerical_filter').change(function () {
         });
 
     });
+
 
 });

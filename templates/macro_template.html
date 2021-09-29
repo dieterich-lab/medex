@@ -42,6 +42,7 @@
     <div class="form-group" style="display: {{ block }}">
         <label for="{{ id_multi_measurement }}">{{ d }}</label>
         <select multiple name="{{ id_multi_measurement }}" class="{{ class }}" id="{{ id_multi_measurement }}" class="form-control" style="width: 100%">
+        <option value="Select all">Select all</option>
         {% for entity in name %}
             <option value="{{ entity }}" {% if select and entity in select %}selected{% endif %}>{{ entity }}</option>
          {% endfor %}

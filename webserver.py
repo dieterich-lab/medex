@@ -62,6 +62,7 @@ if len(all_measurement) < 2:
 else:
     block = 'block'
 
+
 # favicon
 @app.route('/favicon.ico')
 def favicon():
@@ -72,6 +73,11 @@ def favicon():
 # information about database
 @app.context_processor
 def message_count():
+    case_id = session.get('case_ids')
+    if case_id != None:
+        case_display = 'block'
+    else:
+        case_display = 'none'
     database_name = os.environ['POSTGRES_DB']
     database = '{} data'.format(database_name)
     if all_numeric_entities:
@@ -96,7 +102,8 @@ def message_count():
                 all_measurement=all_measurement,
                 df_min_max=df_min_max,
                 start_date=start_date,
-                end_date=end_date)
+                end_date=end_date,
+                case_display=case_display)
 
 
 # data store for filters and download
@@ -144,6 +151,7 @@ def login_get():
     # get selected entities
     session['start_date'] = start_date
     session['end_date'] = end_date
+    session['measurement_filter'] = ['1']
     return redirect('/data')
 
 
@@ -163,6 +171,7 @@ def get_cases():
     session['table_case_ids'] = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
 
     return redirect('/data')
+
 
 
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])

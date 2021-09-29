@@ -29,17 +29,21 @@
 </div>
 
 <div class="card" >
-    <div class="card-body">
-        <label>Case ID selection</label>
-        <a  href="{{url_for('download', filename = 'case_ids.csv')}}" id="download" class="btn btn-outline-info">Download Case ID</a>
+    <div class="card-body" style="display: {{ case_display }}">
+        <label>Selected Case ID</label>
+        <br>
+        <a  href="{{url_for('download', filename = 'case_ids.csv')}}" id="download" class="btn btn-outline-info">Download</a>
     </div>
 </div>
 
 
 <div class="card">
     <div class="card-body">
-        <label>Categorical filter selection:</label>
-        {{ m.entity_form_measurement_multiple(id_multi_measurement= "measurement1",name =all_measurement,class="measurement",value=entity,select=measurement,d=name,block=block) }}
+        <label>Filter selection</label>
+        <br>
+
+        {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_filter",name =all_measurement,value=entity,select=measurement_filter,d="Filter by visit as on:",block=block) }}
+        <label>Categorical:</label>
         <select id="categorical_filter"  name="categorical_filter" style="width: 100%" class="js-example-basic-single" >
             <option>Search entity</option>
             {% for entity in all_categorical_entities %}
@@ -58,18 +62,9 @@
             {% endfor %}
         </select>
                 <br><br>
-        <button id="Add" type="button" class="btn btn-outline-info" >Add Filter</button>
 
-    </div>
-</div>
-
-<div class="card" >
-    <div class="card-body">
-        <label>Numerical filter selection:</label>
-
-        {{ m.entity_form_measurement_multiple(id_multi_measurement= "measurement",name =all_measurement,class="measurement",value=entity,select=measurement,d=name,block=block) }}
+        <label>Numerical:</label>
         {{ m.entity_form_single(id_single="numerical_filter",name =all_numeric_entities,value=entity,d="") }}
-
         <script type="text/javascript">
         var df = {{df_min_max|safe }};
         </script>
@@ -78,13 +73,13 @@
         <input  type="text" name="my-slider" id="range" class="js-range-slider" value="" />
             </div>
         <br>
-        <div class="extra-controls">
+        <!-- <div class="extra-controls">
         from    <input style="width: 30%" id="input1" type="text" class="js-input-from" value="" />
         to  <input style="width: 30%" id="input2" type="text" class="js-input-to" value="" />
-        </div>
+        </div> -->
 
         <br>
-        <button id="Add2" type="button" class="btn btn-outline-info" >Add Filter</button>
+        <button id="Add" type="button" class="btn btn-outline-info" >Add Filter</button>
     </div>
 </div>
 
@@ -93,6 +88,11 @@
     <div class="card-body">
         <label>Filters </label>
         <button id ="clean" name='clean' type="button" class="btn btn-outline-info">Clear All</button>
+        <div id="demo0" >
+            {% if filter %}
+                <p>Filter by visit as on: {{ measurement_filter_text }}</p><input type="hidden" value='1'>
+            {% endif %}
+        </div>
         <div id="demo" >
             {% if filter %}
             {% for cat,filter in filter %}

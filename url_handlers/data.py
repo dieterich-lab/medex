@@ -25,6 +25,7 @@ def get_data():
                            name=measurement_name,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
+                           measurement_filter=session.get('measurement_filter'),
                            numerical_filter=numerical_filter,
                            filter=categorical_filter,
                            df_min_max=df_min_max)
@@ -33,22 +34,30 @@ def get_data():
 @data_page.route('/data', methods=['POST'])
 def post_data():
 
+    # get filter
+    start_date, end_date, date = filtering.check_for_date_filter_post()
+    case_ids = session.get('case_ids')
+    categorical_filter, categorical_names, categorical_filter_zip,measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    session['measurement_filter'] = measurement_filter
+
     # get selected entities
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
 
-    # get filter
-    start_date, end_date, date = filtering.check_for_date_filter_post()
-
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    if block == 'none':
+        measurement = all_measurement.values
+    else:
+        measurement = request.form.getlist('measurement')
 
     # errors
-    if len(entities) == 0:
+    if not measurement:
+        error = "Please select number of {}".format(measurement_name)
+    elif len(entities) == 0:
         error = "Please select entities"
     else:
-       df, error = ps.get_data(entities, what_table, case_ids, categorical_filter, categorical_names, name, from1, to1, date, rdb)
+       df, error = ps.get_data(entities, what_table,measurement, case_ids, categorical_filter, categorical_names, name, from1, to1,
+                               measurement_filter, date, rdb)
 
     if error:
         return render_template('data.html',
@@ -56,6 +65,9 @@ def post_data():
                                all_entities=all_entities,
                                all_measurement=all_measurement,
                                name=measurement_name,
+                               measurement=measurement,
+                               measurement_filter=measurement_filter,
+                               measurement_filter_text=measurement_filter_text,
                                entities=entities,
                                start_date=start_date,
                                end_date=end_date,
@@ -92,6 +104,9 @@ def post_data():
                            error=error,
                            all_entities=all_entities,
                            all_measurement=all_measurement,
+                           measurement=measurement,
+                           measurement_filter=measurement_filter,
+                           measurement_filter_text=measurement_filter_text,
                            entities=entities,
                            name_column=column,
                            name=measurement_name,

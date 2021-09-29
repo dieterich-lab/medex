@@ -18,6 +18,7 @@ def get_boxplots():
                            all_measurement=all_measurement,
                            start_date=session.get('start_date'),
                            end_date=session.get('end_date'),
+                           measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,
                            df_min_max=df_min_max
@@ -26,6 +27,12 @@ def get_boxplots():
 
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
+    # get filters
+    start_date, end_date, date = filtering.check_for_date_filter_post()
+    case_ids = session.get('case_ids')
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    session['measurement_filter'] = measurement_filter
 
     if block == 'none':
         measurement = all_measurement.values
@@ -37,12 +44,6 @@ def post_boxplots():
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
 
-
-    start_date, end_date,date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-    numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-
     # handling errors and load data from database
     error = None
     if not measurement:
@@ -53,12 +54,13 @@ def post_boxplots():
         error = "Please select subcategory"
     if not error:
         df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement,case_ids,
-                                          categorical_filter, categorical_names, numerical_filter_name, from1, to1, date, rdb)
+                                          categorical_filter, categorical_names, numerical_filter_name, from1, to1,
+                                          measurement_filter, date, rdb)
         df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
             numeric_entities_unit = numeric_entities + ' (' + numeric_entities_unit + ')'
-            df.columns = [Name_ID, numeric_entities_unit,categorical_entities]
+            df.columns =  [Name_ID,measurement_name, numeric_entities_unit,categorical_entities]
         else:
             numeric_entities_unit = numeric_entities
         if not error:
@@ -75,6 +77,8 @@ def post_boxplots():
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
+                               measurement_filter=measurement_filter,
+                               measurement_filter_text=measurement_filter_text,
                                all_measurement=all_measurement,
                                start_date=start_date,
                                end_date=end_date,
@@ -106,6 +110,8 @@ def post_boxplots():
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
+                           measurement_filter=measurement_filter,
+                           measurement_filter_text=measurement_filter_text,
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,
