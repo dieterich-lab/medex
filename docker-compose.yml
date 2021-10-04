@@ -1,41 +1,41 @@
 version: '3.6'
 services:
   medex:
-    image: aljoschak1/medex
-    container_name: medex_torch
+    image: medex
+    container_name: medex
     build: .
     ports:
-      - "127.0.0.1:1200:1200"
+      - "127.0.0.1:100:100"
     depends_on: # other containers it needs in order to run
-      - database_torch
+      - database
     environment:
-      - EXPRESS_MEDEX_MEDDUSA_URL=http://172.XX.0.1:3500/result/cases/get
+      - EXPRESS_MEDEX_MEDDUSA_URL=http://localhost:3500/result/cases/get
       - PYTHONUNBUFFERED=1
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=torch
+      - POSTGRES_DB=example
       - POSTGRES_PORT=5432
-      - POSTGRES_HOST=database_torch
-      - hostname=medex_torch
+      - POSTGRES_HOST=database
     volumes:
       - ./import:/app/import
     restart: always
 
 
-  database_torch:
+  database:
     image: postgres
-    container_name: database_torch
+    container_name: database
     ports:
-      - "127.0.0.1:5427:5432"
+      - "127.0.0.1:5428:5432"
     environment:
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=torch
+      - POSTGRES_DB=example
     restart: always
 
 networks:
   express-medex-meddusa-network:
     external: true
+
 
 
 

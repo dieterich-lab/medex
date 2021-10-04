@@ -1,23 +1,25 @@
 FROM python:slim
 
+WORKDIR /app
+COPY Pipfile Pipfile.lock ./
 
-COPY . /app
-COPY Pipfile Pipfile.lock /app/
 
 RUN apt-get update && \
     apt-get install -y && \
     cd /app/ && \
     pip install --no-cache-dir pipenv && \
-    pipenv install --ignore-pipfile --deploy --system --clear
+    pipenv install --ignore-pipfile --deploy --system --clear &&\
+    rm -rf /var/lib/apt/lists/*
 
 
-WORKDIR /app
+
+COPY . /app
 
 ENV FLASK_ENV production
 ENV TZ=Europe/Berlin
 
-EXPOSE 5427
-EXPOSE 1200
+EXPOSE 5428
+EXPOSE 100
 
 
-CMD [ "waitress-serve","--port","1200","--host","medex","--call", "webserver:main" ]
+CMD [ "waitress-serve","--port","100","--host","medex","--call", "webserver:main" ]

@@ -7,13 +7,11 @@
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/heatmap.js') }}"></script>
     <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
 
     {# pretty multiselect inputs #}
     {# plotly and jquery #}
     <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
 
     {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
@@ -29,7 +27,7 @@
 <div class="card">
     <div class="card-header" id="settings_header">
         <h5 class="mb-0">
-            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
                 Settings
             </button>
         </h5>
@@ -52,7 +50,7 @@
 
 <div class="card-header" id="results_header">
     <h5 class="mb-0">
-        <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
                 {% if measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
             Results
         </button>

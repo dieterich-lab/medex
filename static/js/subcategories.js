@@ -9,12 +9,22 @@ $(function () {
            var data = e.params.data.text;
            if(data=='Select all'){
             $(".subcategory_entities> option").prop("selected","selected");
+            $('.subcategory_entities> option[value="Select all"]').prop("selected", false);
             $(".subcategory_entities").trigger("change");
            }
       });
+
+
     $("#categorical_filter").select2({
     placeholder:"Search entity"
     });
+    $("#numerical_filter").select2({
+    placeholder:"Search entity"
+    });
+    $("#measurement_filter").select2({
+    placeholder:"Search entity"
+    });
+
 
     //change subcategories if category change
     $('.categorical_entities').change(function () {
@@ -34,6 +44,7 @@ $(function () {
            var data = e.params.data.text;
            if(data=='Select all'){
             $("#subcategory_filter> option").prop("selected","selected");
+            $('#subcategory_filter> option[value="Select all"]').prop("selected", false);
             $("#subcategory_filter").trigger("change");
            }
       });
@@ -53,7 +64,18 @@ $(function () {
            var data = e.params.data.text;
            if(data=='Select all'){
             $(".measurement> option").prop("selected","selected");
+            $('.measurement> option[value="Select all"]').prop("selected", false);
             $(".measurement").trigger("change");
+           }
+      });
+
+        // handling select all choice
+    $('#measurement_filter').on("select2:select", function (e) {
+           var data = e.params.data.text;
+           if(data=='Select all'){
+            $("#measurement_filter> option").prop("selected","selected");
+            $('#measurement_filter> option[value="Select all"]').prop("selected", false);
+            $("#measurement_filter").trigger("change");
            }
       });
 

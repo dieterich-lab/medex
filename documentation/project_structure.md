@@ -12,9 +12,10 @@ The project contains the following directories:
 4. `import`
 5. `modules`
 6. `scripts`
-7. `static`
-8. `templates`
-9. `url_handlers`
+7. `serverside`
+8. `static`
+9. `templates`
+10. `url_handlers`
 
 
 medex
@@ -45,6 +46,10 @@ Contains html templates which will be rendered by related view. For big pages (l
 As mentioned above, this directory contains url handlers, one file is one url. These files have to be registered in the webserver.py as Blueprints
 
 more about `static`, `templates` and `url_handlers` in [html_and_js.md](https://github.com/dieterich-lab/medex/blob/PostgreSQL/documentation/html_and_js.md) and [creating_a_new_page.md](https://github.com/dieterich-lab/medex/blob/PostgreSQL/documentation/creating_a_new_page.md).
+
+`medex/serverside`
+--------------
+This directory, as the name suggests, contains the code to display the table in the browser using the server-side option.
 
 `medex/scripts`
 ---------------

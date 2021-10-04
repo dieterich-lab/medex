@@ -1,11 +1,12 @@
 {# Categorical tab. Using bootstrap classes. The tab container (div#statistics) and navigation links (ul#statistics_tab)
             are defined in basic_stats.html #}
+
 <div class="tab-pane fade {% if categorical_tab %}show active{% endif %}" id="categorical_tab" role="tabpanel" aria-labelledby="c_settings_header">
     <div id="categorical_accordion">
         <div class="card">
             <div class="card-header" id="c_settings_header">
                 <h5 class="mb-0">
-                    <button class="btn btn-link" data-toggle="collapse" data-target="#categorical_settings"
+                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#categorical_settings"
                         {% if categorical_entities %} aria-expanded="true" {% endif %} aria-controls="categorical_settings">
                         Settings
                     </button>
@@ -19,7 +20,7 @@
                     {{ m.show_error(error) }}
                     {% endif %}
 
-                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_categorical",name =all_measurement,value=entity,select=measurement_categorical,d=name,block=block) }}
+                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_categorical",name =all_measurement,class="measurement",value=entity,select=measurement_categorical,d=name,block=block) }}
                     {{ m.entity_form_multiple(id_multiple= "categorical_entities",class="categorical_entities", name =all_categorical_entities ,value=entity,select=categorical_entities,d="Categorical entities:") }}
                     <button id="result_categorical" name="basic_stats_c" class="btn btn-outline-info" class="Plot">Basic Stats</button>
                 </div>
@@ -29,7 +30,7 @@
         <div class="card">
             <div class="card-header" id="results_header">
                   <h5 class="mb-0">
-                      <button class="btn btn-link" data-toggle="collapse" data-target="#categorical_results"
+                      <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#categorical_results"
                               {% if categorical_entities %} aria-expanded="true" {% endif %} aria-controls="#categorical_results">
                           Results
                       </button>

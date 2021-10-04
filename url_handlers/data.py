@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, jsonify, session
 import modules.load_data_postgre as ps
-import pandas as pd
+
 import url_handlers.filtering as filtering
-from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_categorical_entities_sc,\
-    all_subcategory_entities, all_numeric_entities,all_entities
+from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_entities, df_min_max, measurement_name,\
+    all_measurement
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -18,47 +18,69 @@ def table_data():
 
 @data_page.route('/data', methods=['GET'])
 def get_data():
-    categorical_filter, categorical_names = filtering.check_for_filter_get(data)
+    numerical_filter = filtering.check_for_numerical_filter_get()
+    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('data.html',
                            all_entities=all_entities,
-                           all_numeric_entities=all_numeric_entities,
-                           all_categorical_entities=all_categorical_entities_sc,
-                           all_subcategory_entities=all_subcategory_entities,
-                           filter=categorical_filter)
+                           name=measurement_name,
+                           start_date=session.get('start_date'),
+                           end_date=session.get('end_date'),
+                           measurement_filter=session.get('measurement_filter'),
+                           numerical_filter=numerical_filter,
+                           filter=categorical_filter,
+                           df_min_max=df_min_max)
 
 
 @data_page.route('/data', methods=['POST'])
 def post_data():
 
+    # get filter
+    start_date, end_date, date = filtering.check_for_date_filter_post()
+    case_ids = session.get('case_ids')
+    categorical_filter, categorical_names, categorical_filter_zip,measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    session['measurement_filter'] = measurement_filter
+
     # get selected entities
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
 
-    # get filter
-    id_filter = data.id_filter
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post(data)
+    if block == 'none':
+        measurement = all_measurement.values
+    else:
+        measurement = request.form.getlist('measurement')
 
     # errors
-    if len(entities) == 0:
+    if not measurement:
+        error = "Please select number of {}".format(measurement_name)
+    elif len(entities) == 0:
         error = "Please select entities"
     else:
-       df, error = ps.get_data(entities, what_table, categorical_filter, categorical_names, id_filter, rdb)
+       df, error = ps.get_data(entities, what_table,measurement, case_ids, categorical_filter, categorical_names, name, from1, to1,
+                               measurement_filter, date, rdb)
 
     if error:
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities_sc,
+                               all_measurement=all_measurement,
+                               name=measurement_name,
+                               measurement=measurement,
+                               measurement_filter=measurement_filter,
+                               measurement_filter_text=measurement_filter_text,
                                entities=entities,
+                               start_date=start_date,
+                               end_date=end_date,
                                filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
+                               df_min_max=df_min_max
                                )
 
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     data.table_browser_entities = entities
     data.csv = df.to_csv(index=False)
+    df=df.fillna("missing data")
     column = df.columns.tolist()
 
     column_change_name = []
@@ -81,14 +103,20 @@ def post_data():
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
-                           all_numeric_entities=all_numeric_entities,
-                           all_subcategory_entities=all_subcategory_entities,
-                           all_categorical_entities=all_categorical_entities_sc,
+                           all_measurement=all_measurement,
+                           measurement=measurement,
+                           measurement_filter=measurement_filter,
+                           measurement_filter_text=measurement_filter_text,
                            entities=entities,
-                           name=column,
+                           name_column=column,
+                           name=measurement_name,
+                           start_date=start_date,
+                           end_date=end_date,
                            what_table=what_table,
                            column=dict_of_column,
-                           filter=categorical_filter_zip
+                           filter=categorical_filter_zip,
+                           numerical_filter=numerical_filter,
+                           df_min_max=df_min_max
                            )
 
 

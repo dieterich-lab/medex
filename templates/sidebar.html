@@ -7,17 +7,43 @@
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
 
-<div class="card" style="display: none">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
+{% import 'macro_template.html' as m %}
+<div class="card" >
     <div class="card-body">
-        <label>Patient ID selection</label>
-        <a  href="{{url_for('download', filename = 'patient_id.csv')}}" id="download" class="btn btn-outline-info">Download Patient ID</a>
+        <label>Date range</label>
+
+        <script type="text/javascript">
+            var start = moment({{start_date|safe}});
+            var end =  moment({{end_date|safe}});
+        </script>
+
+        <input id="Date" name="Date" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+
+    </div>
+</div>
+
+<div class="card" >
+    <div class="card-body" style="display: {{ case_display }}">
+        <label>Selected Case ID</label>
+        <br>
+        <a  href="{{url_for('download', filename = 'case_ids.csv')}}" id="download" class="btn btn-outline-info">Download</a>
     </div>
 </div>
 
 
 <div class="card">
     <div class="card-body">
-        <label>Categorical filter selection:</label>
+        <label>Filter selection</label>
+        <br>
+
+        {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_filter",name =all_measurement,value=entity,select=measurement_filter,d="Filter by visit as on:",block=block) }}
+        <label>Categorical:</label>
         <select id="categorical_filter"  name="categorical_filter" style="width: 100%" class="js-example-basic-single" >
             <option>Search entity</option>
             {% for entity in all_categorical_entities %}
@@ -36,6 +62,23 @@
             {% endfor %}
         </select>
                 <br><br>
+
+        <label>Numerical:</label>
+        {{ m.entity_form_single(id_single="numerical_filter",name =all_numeric_entities,value=entity,d="") }}
+        <script type="text/javascript">
+        var df = {{df_min_max|safe }};
+        </script>
+
+        <div class="range-slider">
+        <input  type="text" name="my-slider" id="range" class="js-range-slider" value="" />
+            </div>
+        <br>
+        <!-- <div class="extra-controls">
+        from    <input style="width: 30%" id="input1" type="text" class="js-input-from" value="" />
+        to  <input style="width: 30%" id="input2" type="text" class="js-input-to" value="" />
+        </div> -->
+
+        <br>
         <button id="Add" type="button" class="btn btn-outline-info" >Add Filter</button>
     </div>
 </div>
@@ -45,12 +88,25 @@
     <div class="card-body">
         <label>Filters </label>
         <button id ="clean" name='clean' type="button" class="btn btn-outline-info">Clear All</button>
+        <div id="demo0" >
+            {% if filter %}
+                <p>Filter by visit as on: {{ measurement_filter_text }}</p><input type="hidden" value='1'>
+            {% endif %}
+        </div>
         <div id="demo" >
             {% if filter %}
             {% for cat,filter in filter %}
                 <button  style="display: block; width: 100%" class='btn btn-outline-primary' ><span class='close' onclick="remove(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
             {% endfor %}
             {% endif %}
+        </div>
+        <div id="demo2">
+            {% if numerical_filter %}
+            {% for name,value1,value2,min,max in numerical_filter %}
+                <div class="fd-box2"><span onclick='(this).closest(".fd-box2").remove()'  class='close' > x </span><input type="hidden" name="name" value='{{ name }}'/>{{ name }}<input type="text" class="range" name="loan_term"  data-min="{{ min }}" data-max="{{ max }}" data-from="{{ value1 }}" data-to="{{ value2 }}"/></div>
+            {% endfor %}
+            {% endif %}
+            </div>
         </div>
     </div>
 </div>

@@ -1,1 +1,1 @@
-Patient_ID,Visit,Date,Time,Key,Value
+Patient_ID,Case_ID,Visit,Date,Time,Key,Value

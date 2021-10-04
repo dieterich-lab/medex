@@ -46,3 +46,25 @@ button {
 }
 
 .foo { color: #808080; text-size: smaller; }
+
+.columns {
+  display: flex;
+  margin: 0 -5px;
+}
+.columns__item {
+  width: 50%;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.columns__item img {
+  display: block;
+  width: 100%;
+}
+figure {
+  margin: 0;
+}
+figcaption {
+  background-color: #fff;
+  padding: 10px;
+  text-align: center;
+}

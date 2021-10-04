@@ -16,13 +16,15 @@ def create_table(rdb):
                                                     "Key" text Primary key,
                                                     "type" text,
                                                     "synonym" text,
-                                                    "unit" text,
                                                     "description" text,
+                                                    "unit" text,
                                                     "show" text)"""
 
-    statement_examination = """CREATE TABLE examination ("ID" numeric PRIMARY KEY,
+    statement_examination = """CREATE TABLE examination (
+                                "ID" numeric PRIMARY KEY,
                                 "Name_ID" text,
-                                "measurement" text,
+                                "Case_ID" text,
+                                measurement text,
                                 "Date" text,
                                 "Time" text,
                                 "Key" text,
@@ -38,7 +40,7 @@ def create_table(rdb):
         return print("Problem with connection with database")
 
 
-def load_data(entities, dataset,header,rdb):
+def load_data(entities, dataset, header, rdb):
     """
     Load data from entities.csv, data.csv,header.csv files into examination table in Postgresql
     """
@@ -46,7 +48,7 @@ def load_data(entities, dataset,header,rdb):
     cur = rdb.cursor()
 
     # load data from header.csv file to header table
-    cur.execute("INSERT INTO header VALUES (%s, %s) ON CONFLICT DO NOTHING", header)
+    cur.execute("INSERT INTO header VALUES (%s, %s) ON CONFLICT DO NOTHING", [header[0], header[2]])
 
     # load data from entities.csv file to name_type table
     with open(entities, 'r') as in_file:
@@ -91,16 +93,17 @@ def load_data(entities, dataset,header,rdb):
         i = 0
         for row in in_file:
             i += 1
-            row = row.rstrip()
-            row = row.replace('"', "")
-            row = row.replace("\n", "").split(",")
+            row = row.rstrip().replace('"', "").replace("\n", "").split(",")
             # insert data from dataset.csv to table examination
-            line = [i] + row[0:5] + [";".join([str(x) for x in row[5:]])]
+            if 'Visit' in header:
+                line = [i] + row[0:6] + [";".join([str(x) for x in row[6:]])]
+            else:
+                line = [i] + row[0:1] + [1] + row[1:5] + [";".join([str(x) for x in row[5:]])]
             if len(line) < 6:
                 print("This line doesn't have appropriate format:", line)
             else:
                 try:
-                    cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s)", line)
+                    cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                 except:
                     print(line)
 
@@ -116,16 +119,16 @@ def alter_table(rdb):
 
     sql_remove_null = """Delete from examination where "Value" is null """
 
-    sql2 = """CREATE TABLE examination_categorical as select min("ID") as "ID","Name_ID","measurement",min("Date") 
-    as "Date","Key",array_agg("Value") as "Value" from (SELECT e.* from examination as e join name_type as n on e."Key" 
-    = n."Key" where n."type" = 'String') as f group by "Name_ID","measurement","Key" order by "Name_ID" """
+    sql2 = """CREATE TABLE examination_categorical as select min("ID") as "ID","Name_ID","measurement","Date" ,"Key",
+    array_agg("Value") as "Value" from (SELECT e.* from examination as e join name_type as n on e."Key" 
+    = n."Key" where n."type" = 'String') as f group by "Name_ID","Date","measurement","Key" order by "Name_ID" """
 
-    sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Name_ID","measurement",min("Date") as 
-    "Date","Key",array_agg("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type
+    sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Name_ID","measurement","Date","Key",
+    array_agg("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type
     as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') 
-    as f group by "Name_ID","measurement","Key" order by "Name_ID" """
+    as f group by "Name_ID","Date","measurement","Key" order by "Name_ID" """
 
-    sql4 = """CREATE TABLE Patient AS select distinct "Name_ID" from examination"""
+    sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from examination"""
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
     sql6 = """ALTER TABLE examination_numerical ADD CONSTRAINT examination_numerical_pkey PRIMARY KEY ("ID")"""
