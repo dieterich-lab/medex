@@ -15,7 +15,7 @@
                 <br />
                 <br />
                 <p style="font-size:18px;"> When loading data into the database from an entities.csv file, it is possible to add
-                    a synonym, description and unit column. <br />
+                    a synonym, description and unit columns. <br />
                 The synonym is displayed under the entity name. It is possible to search for an entity by name or synonym.</p>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/synonym.png') }}"
@@ -48,7 +48,7 @@
                 <p style="font-size:18px;">Filters are applied to each tab.<br />
                 First, you can select a time window that shows only data from the selected range.<br />
                 <br />
-                The numeric and categorical filters filter the data by Name_ID.<br />
+                The numeric and categorical filters filter the data by ID.<br />
                 <br />
                 Next, if there is more than one visit.
                 First, select which visit the filter will be applied to. Data can be filtered based on multiple visits.
@@ -60,7 +60,8 @@
                     <figure>
                       <img src="{{ url_for('static', filename='images/filtering_results2.png') }}" />
                       <figcaption>
-                        Example 1: shows that we will select only those IDs where the bmi_overweigth is 1 during first and second visit and basis_drinksweek is between 6 and 18.
+                        Example 1: shows that we will only select IDs where bmi_overweigth is 1 and basis_drinksweek is
+                          between 6 and 18 on the first and second visit.
                       </figcaption>
                      </figure>
                   </div>
@@ -68,8 +69,9 @@
                     <figure>
                       <img src="{{ url_for('static', filename='images/filtering_results.png') }}" />
                       <figcaption>
-                        Second example:
-                This example shows that we will select only those IDs where the bmi_overweigth is 1 and basis_drinksweek is between 6 and 18 during first(It can be diffrent during other visit) .
+                        Example 2: This example shows that we will only select IDs where bmi_overweigth is 1 and
+                          basis_drinksweek is between 6 and 18 during the first visit (these values for the selected
+                          entities may vary during other visits).
                       </figcaption>
                      </figure>
                   </div>
@@ -79,19 +81,21 @@
                 <br />
                 <h4>Table browser</h4>
                 <h5>Selector Panel</h5>
-                <p style="font-size:18px;">Below is the selection panel for tab: Table browser.
-                It contain a selector where you can choose which entities will be displayed in the table and what format the table should have: long format or entities as columns.</p>
+                <p style="font-size:18px;">Below is the selection panel for the tab: Table browser. <br/>
+                It contains a selector where you can choose which entities will be displayed in the table and what
+                    format the table should have: long format or entities as columns.</p>
                 <div class="thumbnail">
                     <div class="caption">
                     </div>
                     <img src="{{ url_for('static', filename='images/table_browser_selector.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                 </div>
                 <br />
-                <p style="font-size:18px;">Long format: In this format, the table only contains columns Name_ID,Date,Visit(if exists), Key and Value.</p>
+                <p style="font-size:18px;">Long format: In this format, the table contains only columns ID,Date,Visit(if exists),
+                    Key and Value.</p>
                                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/table_browser_long_format.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
@@ -99,150 +103,148 @@
                 <p style="font-size:18px;">Entities as columns: In this case entities are as columns.</p>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/table_browser_entities_format.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
-               <p style="font-size:18px;">Result also has a download button, by pressing this button, you can download the displayed table in the csv format.</p>
+                <br/>
+               <p style="font-size:18px;">Result also has a download button, by pressing this button you can download the displayed
+                   table in csv format.</p>
                 <br />
                 <br />
                 <h4>Basic Stats</h4>
-                <p style="font-size:18px;">The Basic Statistics table calculates the min/max/average/median/standard deviation/standard error value of all occurrences of individual entities.</p>
+                <p style="font-size:18px;">The Basic Statistics table calculates the min/max/average/median/standard
+                    deviation/standard error value for all occurrences of each entity.</p>
                 <br />
-                <h6>Selector Panel</h6>
-
-
+                <h5>Selector Panel</h5>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/basic_statisc_slector.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
-                <h6>Results</h6>
+                <br />
+                <h5>Results</h5>
                                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/basic_statisc_results.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
                 <br />
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/basic_statisc_c_slector.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
                 <br />
-                <p style="font-size:18px;">Counts show for how many transcripts the specific categorical information is available<br />
+                <p style="font-size:18px;"> <!-- Counts show for how many transcripts the specific categorical information is available<br /> -->
                 In this case it is also possible to download the table with basic statistics using the download button.</p>
                 <br />
-                <br />
                 <h4>Scatter plot</h4>
-                <h6>Selector Panel</h6>
+                <h5>Selector Panel</h5>
                 <!-- Scatter plot panel jest troche bardziej rozbudowany tutaj mozemy wybrac -->
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/scatter_plot_selector.png') }}"
-                         width="80%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <h6>Results</h6>
-                <p style="font-size:18px;">On each graph in the upper right corner there is Modebar. This is Plotly feature that contains buttons for download chart, zoom, scroll etc.</p>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/scatter_plot_result1.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
                 <br />
+                <h5>Results</h5>
+                <p style="font-size:18px;">On each graph there is Modebar in the upper right corner . This is Plotly
+                    feature that contains buttons for download chart, zoom, scroll etc.<</p>>
                 <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/scatter_plot_result2.png') }}"
-                         width="80%" class="img-responsive">
+                    <img src="{{ url_for('static', filename='images/scatter_plot_result1.png') }}"
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
-                or with group by category
+                <br />
+                <p style="font-size:18px;">or with group by category</p>
                                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/scatter_plot_selector2.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/scatter_plot_result_group.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
                 <br />
                 <h4>Barchart</h4>
-                <h6>Selector Panel</h6>
-                <p style="font-size:18px;">The number of occurrences of values may be presented as a percentage or count.</p>
+                <h5>Selector Panel</h5>
+                <p style="font-size:18px;">The number of occurrences of a value can be presented as a percentage or a count.</p>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/barchart_selector.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
-                <h6>Results</h6>
+                <br />
+                <h5>Results</h5>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/barchart_results.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
+                <br />
                 <h4>Histogram</h4>
-                It shows distribution of the data.
-                <h6>Selector Panel</h6>
-                <p style="font-size:18px;">The number of bins can also be changed, but must be more than 1.</p>
+                <p style="font-size:18px;">It shows distribution of the data.</p>
+                <h5>Selector Panel</h5>
+                <p style="font-size:18px;">It is possible to change the number of bins.</p>
 
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/histogram_selector.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
-                <h6>Results</h6>
+                <br />
+                <h5>Results</h5>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/histogram_results.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
                 <br />
                 <h4>Boxplot</h4>
                 <p style="font-size:18px;">It show distribution of the data and compare the distributions of numerical measurements between groups.</p>
-
-                <br />
-                <h6>Selector Panel</h6>
+                <h5>Selector Panel</h5>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/boxplot_selector.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
-                <h6>Results</h6>
+                <h5>Results</h5>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/boxplot_results.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
                 <br />
                 <h4>Heatmap</h4>
                 <p style="font-size:18px;">It calculates the Pearson correlation between numeric data.</p>
-                <br />
-                <h6>Selector Panel</h6>
+                <h5>Selector Panel</h5>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/heatmap_selector.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>
-                <h6>Results</h6>
+                <br />
+                <h5>Results</h5>
                 <div class="thumbnail">
                     <img src="{{ url_for('static', filename='images/heatmap_results.png') }}"
-                         width="80%" class="img-responsive">
+                         width="100%" class="img-responsive">
                     <div class="caption">
                     </div>
                 </div>

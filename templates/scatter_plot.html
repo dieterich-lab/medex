@@ -29,7 +29,7 @@
 <div class="card">
     <div class="card-header" id="settings_header">
         <h5 class="mb-0">
-            <button class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
+            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
                 Settings
             </button>
 
@@ -101,21 +101,15 @@
                             {% endfor %}
                         </select>
                      </div>
-
                 </div>
-
-
                    <button id="Plot"  name="scatter_plot" class="btn btn-outline-info">Plot</button>
-
-
         </div>
     </div>
-
 </div>
 
 <div class="card-header" id="results_header">
     <h5 class="mb-0">
-        <button class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
             {% if x_measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
             Results
         </button>
