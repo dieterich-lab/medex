@@ -73,11 +73,12 @@ def start_import(rdb):
         return print("Data set not changed", file=sys.stderr)
     else:
         if not os.path.isfile(header):
-            header = ['Name_ID', 'measurement']
+            header = ['Name_ID','Case_ID', 'measurement']
         else:
             with open(header, 'r') as in_file:
                 for row in in_file:
                     header = row.replace("\n", "").split(",")
+                header = header[0:3]
         # use function from import_dataset_postgre.py to create tables in database
         print("Start create tables")
         idp.create_table(rdb)

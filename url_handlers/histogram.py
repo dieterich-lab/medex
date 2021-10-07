@@ -62,6 +62,7 @@ def post_statistics():
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
             numeric_entities_unit = numeric_entities + ' (' + numeric_entities_unit + ')'
+            print(df)
             df.columns = [Name_ID,measurement_name, numeric_entities_unit,categorical_entities]
         else:
             numeric_entities_unit = numeric_entities

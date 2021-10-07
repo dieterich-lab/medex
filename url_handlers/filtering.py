@@ -29,6 +29,7 @@ def check_for_filter_post():
     session['categorical_filter'] = categorical_filter
     session['categorical_names'] = categorical_names
     categorical_filter_zip = None
+    print(categorical_filter)
     if categorical_filter is not None:
         categorical_filter_zip = zip(categorical_names, categorical_filter)
 

@@ -98,7 +98,7 @@ def load_data(entities, dataset, header, rdb):
             if 'Visit' in header:
                 line = [i] + row[0:6] + [";".join([str(x) for x in row[6:]])]
             else:
-                line = [i] + row[0:1] + [1] + row[1:5] + [";".join([str(x) for x in row[5:]])]
+                line = [i] + row[0:2] + [1] + row[2:5] + [";".join([str(x) for x in row[5:]])]
             if len(line) < 6:
                 print("This line doesn't have appropriate format:", line)
             else:
@@ -144,6 +144,8 @@ def alter_table(rdb):
 
     sql12 = """CREATE INDEX IF NOT EXISTS "Key_index_numerical" ON examination_numerical ("Key")"""
     sql13 = """CREATE INDEX IF NOT EXISTS "Key_index_categorical" ON examination_categorical ("Key")"""
+    sql15 = """CREATE INDEX IF NOT EXISTS "ID_index_numerical" ON examination_numerical ("Name_ID")"""
+    sql16 = """CREATE INDEX IF NOT EXISTS "ID_index_categorical" ON examination_categorical ("Name_ID")"""
     sql14 = """CREATE EXTENSION IF NOT EXISTS tablefunc"""
 
     try:
@@ -168,6 +170,8 @@ def alter_table(rdb):
         cur.execute(sql12)
         cur.execute(sql13)
         cur.execute(sql14)
+        cur.execute(sql15)
+        cur.execute(sql16)
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")

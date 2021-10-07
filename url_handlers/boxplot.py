@@ -46,21 +46,23 @@ def post_boxplots():
 
     # handling errors and load data from database
     error = None
-    if not measurement:
+    if measurement == "Search entity":
         error = "Please select number of {}".format(measurement_name)
     elif numeric_entities == "Search entity" or categorical_entities == "Search entity":
         error = "Please select entity"
     elif not subcategory_entities:
         error = "Please select subcategory"
-    if not error:
-        df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement,case_ids,
+    elif not error:
+        print(subcategory_entities)
+        df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement, case_ids,
                                           categorical_filter, categorical_names, numerical_filter_name, from1, to1,
                                           measurement_filter, date, rdb)
-        df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
+        df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
             numeric_entities_unit = numeric_entities + ' (' + numeric_entities_unit + ')'
-            df.columns =  [Name_ID,measurement_name, numeric_entities_unit,categorical_entities]
+            print(df)
+            df.columns = [Name_ID,measurement_name, numeric_entities_unit,categorical_entities]
         else:
             numeric_entities_unit = numeric_entities
         if not error:

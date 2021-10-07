@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from collections import ChainMap
+import time
 
 
 def get_header(r):
@@ -119,7 +120,7 @@ def get_categorical_entities(r):
         df1= pd.DataFrame()
         df = pd.DataFrame(columns=["Key","description"])
         df2 = dict(ChainMap(*array))
-        return df1,df, df2
+        return df1,df,df2
 
 
 def get_measurement(r):
@@ -181,74 +182,38 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         case_id_filter = """ SELECT "Name_ID" FROM patient where "Case_ID" in ({0}) """.format(case_id_all)
 
     # categorical_filter
-    categorical_filter_str = [x.replace(" is ", "\" in ('").replace(",", "','") for x in categorical_filter]
-    categorical_filter_str = '"' + "') and \"".join(categorical_filter_str) + "')"
-    categorical_names = "$$" + "$$,$$".join(categorical) + "$$"
-    categorical_columns = '"' + '" text,"'.join(categorical) + '" text'
-    measurement_filter = "'" + "','".join(measurement_filter) + "'"
+    measurement_filteru = "'" + "','".join(measurement_filter) + "'"
+    category_filter=""
+    numerical_filter=""
 
-    categorical_filter_str2 = [x.replace(" is ", "\" not in ('").replace(",", "','") for x in categorical_filter]
-    categorical_filter_str2 = '"' + "') and \"".join(categorical_filter_str2) + "')"
+    for i in range(len(categorical)):
+        cat=categorical_filter[i]
+        cat = "'"+cat[(cat.find(' is ') + 4):].replace(",", "','")+"'"
+        category_m = categorical[i].replace(" ","_")
+        category_m0 = categorical[i - 1].replace(" ", "_")
 
-    category_filter = """SELECT distinct "Name_ID" FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement",
-                        "Name_ID")::text AS row_name,"Name_ID","measurement","Key",
-                        array_to_string("Value",'';'') as "Value" 
-                        FROM examination_categorical WHERE "Key" IN ({0}) ORDER  BY 1','Select "Key" from name_type 
-                        where "Key" IN ({0}) ')
-                        AS CT ("row_name" text,"Name_ID" text,"measurement" text,{1})
-                         where {2} and "measurement" IN ({3}) """.format(categorical_names, categorical_columns,
-                                                                         categorical_filter_str, measurement_filter)
+        if i == 0 :
+            cat_filter = """Select {0}."Name_ID" from (Select "Name_ID" FROM examination_categorical where "Key"='{1}' 
+            and "Value"[1] in ({2}) and measurement in ({3}) group by "Name_ID" HAVING count("Name_ID") = {4} ) as {0} """.format(category_m,categorical[i],cat,measurement_filteru,len(measurement_filter))
+        else:
+            cat_filter = """ inner join (Select "Name_ID" FROM examination_categorical where "Key"='{0}' and "Value"[1] 
+            in ({1}) and measurement in ({2}) group by "Name_ID" HAVING count("Name_ID") = {5} ) AS {3} on {4}."Name_ID" = {3}."Name_ID"  """.format(categorical[i],cat,measurement_filteru,category_m,category_m0,len(measurement_filter))
+        category_filter = category_filter + cat_filter
 
-    category_filter_not = """SELECT distinct "Name_ID" FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement",
-                            "Name_ID")::text AS row_name,"Name_ID","measurement","Key",
-                            array_to_string("Value",'';'') as "Value" 
-                            FROM examination_categorical WHERE "Key" IN ({0}) ORDER  BY 1','Select "Key" from name_type 
-                            where "Key" IN ({0}) ')
-                            AS CT ("row_name" text,"Name_ID" text,"measurement" text,{1})
-                            where {2} and "measurement" IN ({3}) """.format(categorical_names, categorical_columns,
-                                                                            categorical_filter_str2, measurement_filter)
-
-    category_filter = """ SELECT A."Name_ID" FROM ({0}) as A LEFT JOIN ({1}) B ON A."Name_ID" = B."Name_ID"
-        WHERE B."Name_ID" IS NULL """.format(category_filter, category_filter_not)
-
-    # numerical_filter
-    names = "$$" + "$$,$$".join(numerical_filter_name) + "$$"
-    numerical_columns = '"' + '" double precision,"'.join(numerical_filter_name) + '" double precision'
-
-    numerical = ""
-    numerical_not = ""
 
     for i in range(len(from1)):
-        if i == 0:
-            numerical_filter = """ "{0}" between '{1}' and '{2}' """.format(numerical_filter_name[i], from1[i], to1[i])
-            numerical_filter_not = """ "{0}" not between '{1}' and '{2}' """.format(numerical_filter_name[i], from1[i],
-                                                                                    to1[i])
+        numeric_m =  numerical_filter_name[i].replace(" ","_")
+        if i == 0 :
+            num_filter = """Select {0}."Name_ID" from (Select "Name_ID" FROM examination_numerical where "Key"='{1}' 
+                and "Value"[1] between '{2}' and '{3}' and measurement in ({4}) group by "Name_ID" HAVING count("Name_ID") = {5}) as {0} """.format(numeric_m,
+                numerical_filter_name[i], from1[i], to1[i],measurement_filteru,len(measurement_filter))
         else:
-            numerical_filter = """ and "{0}" between '{1}' and '{2}' """.format(numerical_filter_name[i], from1[i],
-                                                                                to1[i])
-            numerical_filter_not = """ and "{0}" not between '{1}' and '{2}' """.format(numerical_filter_name[i],
-                                                                                        from1[i], to1[i])
-        numerical = numerical + numerical_filter
-        numerical_not = numerical_not + numerical_filter_not
+            numeric_m0 =  numerical_filter_name[i-1].replace(" ","_")
+            num_filter = """ inner join (Select "Name_ID" FROM examination_numerical where "Key"='{0}' and "Value"[1] between '{1}' 
+                and '{2}' and measurement in ({3}) group by "Name_ID" HAVING count("Name_ID") = {6}) AS {4} on {5}."Name_ID" = {5}."Name_ID"  """.format(
+                numerical_filter_name[i], from1[i], to1[i],measurement_filteru,numeric_m,numeric_m0,len(measurement_filter))
+        numerical_filter = numerical_filter+num_filter
 
-    numerical_filter = """Select distinct "Name_ID" FROM crosstab(
-                        'SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,"Name_ID",
-                        "measurement","Key", AVG(f."Value") as "Value" FROM 
-                        examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) 
-                        Group by "Name_ID","measurement","Key" ORDER  BY 1','Select "Key" from name_type 
-                        where "Key" IN ({0}) ')  AS CT ("row_name" text,"Name_ID" text,"measurement" text,{1}) where {2} and "measurement" IN ({3})"""\
-        .format(names, numerical_columns, numerical, measurement_filter)
-
-    numerical_filter_not = """Select distinct "Name_ID" FROM crosstab(
-                        'SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,"Name_ID",
-                        "measurement","Key",AVG(f."Value") as "Value" FROM 
-                        examination_numerical, unnest("Value") as f("Value") WHERE "Key" IN ({0}) 
-                        Group by "Name_ID","measurement","Key" ORDER  BY 1','Select "Key" from name_type 
-                        where "Key" IN ({0}) ')  AS CT ("row_name" text,"Name_ID" text,"measurement" text,{1}) where {2} and "measurement" IN ({3}) """\
-        .format(names, numerical_columns, numerical_not, measurement_filter)
-
-    numerical_filter = """ SELECT A."Name_ID" FROM ({0}) as A LEFT JOIN ({1}) B ON A."Name_ID" = B."Name_ID" 
-                            WHERE B."Name_ID" IS NULL """.format(numerical_filter, numerical_filter_not)
 
     # join filters
     if categorical_filter and case_id and numerical_filter_name:
@@ -256,7 +221,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         on b."Name_ID" = c."Name_ID" """.format(case_id_filter, category_filter, numerical_filter)
     elif not case_id and categorical_filter and numerical_filter_name:
         sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" """.format(
-            category_filter, numerical_filter)
+            category_filter, numerical_filter )
     elif case_id and not categorical_filter and numerical_filter_name:
         sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" """.format(
             case_id_filter, numerical_filter)
@@ -269,6 +234,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         sql = category_filter
     elif case_id and not categorical_filter and not numerical_filter_name:
         sql = case_id_filter
+
 
     return sql
 
@@ -317,6 +283,8 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
         sql = """SELECT en."Name_ID",en."measurement",en."Date",en."Key",array_to_string(en."Value",';') as "Value" 
                 FROM examination_numerical as en 
+                right join ({4}) as df 
+                on en."Name_ID" = df."Name_ID"
                 WHERE en."Key" IN ({0})  and en.measurement IN ({1}) and en."Date" Between '{2}' and '{3}' 
                 UNION
                 SELECT ec."Name_ID",ec."measurement",ec."Date",ec."Key",array_to_string(ec."Value",';') as "Value"
@@ -338,17 +306,26 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
                 WHERE "Key" IN ({0})) as k order by row_name',
                 'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order" ') 
                 as ec (row_name text,"Name_ID" text,"measurement" text,"Date" text,{2}) 
-                inner join ({5}) as df 
-                on ec."Name_ID" = df."Name_ID"  
+                right join ({5}) as df 
+                on ec."Name_ID" = df."Name_ID"
                 where "Date" Between '{3}' and '{4}' and "measurement" IN ({1}) 
                 """.format(entity_final, measurement, entity_column, date[0], date[1], df)
-
     try:
         if what_table == 'long':
+            start_time = time.time()
             df = pd.read_sql(sql, r)
+            end_time = time.time()
+            times = end_time - start_time
+            print(sql)
+            print(times)
         else:
+            start_time = time.time()
             df = pd.read_sql(sql2, r)
             df = df.drop(['row_name'], axis=1)
+            end_time = time.time()
+            times = end_time - start_time
+            print(sql2)
+            print(times)
         return df, None
     except Exception:
         df = pd.DataFrame()
@@ -432,8 +409,13 @@ def get_num_values_basic_stats(entity, measurement, case_id, categorical_filter,
 
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
         df = df.round(2)
+        end_time = time.time()
+        times = end_time - start_time
+        print(sql)
+        print(times)
         return df, None
     except Exception:
         return None, "Problem with load data from database"
@@ -472,7 +454,12 @@ def get_cat_values_basic_stats(entity,measurement, case_id, categorical_filter, 
                 group by "measurement","Key",number """.format(entity_final, measurement, date[0], date[1], df)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        end_time = time.time()
+        times = end_time - start_time
+        print(sql)
+        print(times)
         return df, None
     except Exception:
         return None, "Problem with load data from database"
@@ -507,26 +494,34 @@ def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, cas
 
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT "Name_ID",AVG(f."Value") as "{0}" 
-                FROM examination_numerical
+        sql = """SELECT en."Name_ID",AVG(f."Value") as "{0}" 
+                FROM examination_numerical as en
+                right join ({4}) as df 
+                on en."Name_ID" = df."Name_ID" 
                 ,unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "Name_ID" in ({4}) and "measurement"= '{1}' 
-                and "Date" between '{2}' and '{3}' 
-                Group by "Name_ID","measurement","Key" 
-                order by "measurement"  """.format(x_entity, x_measurement, date[0], date[1], df)
+                WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' 
+                and en."Date" between '{2}' and '{3}' 
+                Group by en."Name_ID",en."measurement",en."Key" 
+                order by en."measurement"  """.format(x_entity, x_measurement, date[0], date[1], df)
 
-        sql2 = """SELECT "Name_ID",AVG(f."Value") as "{0}" 
-                FROM examination_numerical
+        sql2 = """SELECT en."Name_ID",AVG(f."Value") as "{0}" 
+                FROM examination_numerical as en
+                right join ({4}) as df 
+                on en."Name_ID" = df."Name_ID" 
                 ,unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "Name_ID" in ({4}) and "measurement"= '{1}' 
-                and "Date" between '{2}' and '{3}'
-                Group by "Name_ID","measurement","Key" 
+                WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' 
+                and en."Date" between '{2}' and '{3}'
+                Group by en."Name_ID",en."measurement",en."Key" 
                 order by "measurement" """.format(y_entity, y_measurement, date[0], date[1], df)
 
     try:
+        start_time = time.time()
         df3 = pd.read_sql(sql, r)
         df4 = pd.read_sql(sql2, r)
-
+        end_time = time.time()
+        times = end_time - start_time
+        print(sql)
+        print(times)
         if len(df3) == 0:
             error = "Category {} is empty".format(x_entity)
             return None, error
@@ -576,13 +571,18 @@ def get_cat_values(entity, subcategory, measurement, case_id, categorical_filter
         order by string_agg(distinct f."Value",',')""".format(entity, subcategory_final, measurement, df)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        end_time = time.time()
+        times = end_time - start_time
+        print(sql)
+        print(times)
     except Exception:
         return None, "Problem with load data from database"
     if df.empty or len(df) == 0:
         return None, "The entity {} wasn't measured".format(entity)
     else:
-        df.columns = ["Patient_ID", entity]
+        df.columns = ["Name_ID", entity]
         return df, None
 
 
@@ -618,7 +618,12 @@ def get_cat_values_barchart(entity, subcategory, measurement, case_id, categoric
                 group by "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1], df)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        end_time = time.time()
+        times = end_time - start_time
+        print(sql)
+        print(times)
     except Exception:
         return None, "Problem with load data from database"
     if df.empty or len(df) == 0:
@@ -675,7 +680,12 @@ def get_num_cat_values(entity_num, entity_cat, subcategory, measurement, case_id
                 """.format(entity_num, entity_cat, subcategory, measurement, date[0], date[1], df)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        end_time = time.time()
+        times = end_time - start_time
+        print(sql)
+        print(times)
     except Exception:
         return None, "Problem with load data from database"
     if df.empty or len(df) == 0:
@@ -717,7 +727,12 @@ def get_values_heatmap(entity, measurement, case_id, categorical_filter, categor
                 Group by en."Name_ID","measurement","Key" """.format(entity_fin, measurement, date[0], date[1],df)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        end_time = time.time()
+        times = end_time - start_time
+        print(sql)
+        print(times)
         df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"

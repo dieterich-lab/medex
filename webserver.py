@@ -63,6 +63,27 @@ else:
     block = 'block'
 
 
+# data store for filters and download
+class DataStore():
+
+    case_ids = []
+    table_case_ids = None
+
+    # for table browser server side
+    table_schema = None
+    table_browser_column = None
+    dict = None
+    table_browser_entities = None
+    table_browser_what_table = None
+    table_browser_column2 = None
+
+
+
+
+table_builder = TableBuilder()
+data = DataStore()
+
+
 # favicon
 @app.route('/favicon.ico')
 def favicon():
@@ -73,8 +94,8 @@ def favicon():
 # information about database
 @app.context_processor
 def message_count():
-    case_id = session.get('case_ids')
-    if case_id != None:
+    case_id = data.case_ids
+    if case_id :
         case_display = 'block'
     else:
         case_display = 'none'
@@ -105,21 +126,6 @@ def message_count():
                 end_date=end_date,
                 case_display=case_display)
 
-
-# data store for filters and download
-class DataStore():
-
-    # for table browser server side
-    table_schema = None
-    table_browser_column = None
-    dict = None
-    table_browser_entities = None
-    table_browser_what_table = None
-    table_browser_column2 = None
-
-
-table_builder = TableBuilder()
-data = DataStore()
 
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
@@ -167,8 +173,8 @@ def get_cases():
     session_id_json = {"session_id": "{}".format(session_id)}
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL, json=session_id_json)
     case_ids = cases_get.json()
-    session['case_ids'] = case_ids['cases_ids']
-    session['table_case_ids'] = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
+    data.case_ids = case_ids['cases_ids']
+    data.table_case_ids = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
 
     return redirect('/data')
 
@@ -179,7 +185,7 @@ def download(filename):
     if filename == 'data.csv':
         csv = data.csv
     elif filename == 'case_ids.csv':
-        csv = session.get('table_case_ids')
+        csv = data.table_case_ids
     # Create a string buffer
     buf_str = io.StringIO(csv)
 

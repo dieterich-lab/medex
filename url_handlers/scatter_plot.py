@@ -67,6 +67,7 @@ def post_plots():
                                                        categorical_filter, categorical_names, numerical_filter_name,
                                                        from1, to1, measurement_filter, date, rdb)
 
+
         x_unit, error = ps.get_unit(x_axis, rdb)
         y_unit, error = ps.get_unit(y_axis, rdb)
         if x_unit and y_unit:
@@ -92,7 +93,7 @@ def post_plots():
                                           from1, to1, measurement_filter, date, rdb)
             if not error:
 
-                categorical_df = numeric_df.merge(df, on="Patient_ID").dropna()
+                categorical_df = numeric_df.merge(df, on="Name_ID").dropna()
                 categorical_df = categorical_df.sort_values(by=[categorical_entities])
                 categorical_df = categorical_df.rename(
                     columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})

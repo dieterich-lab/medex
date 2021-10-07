@@ -21,6 +21,7 @@ def get_data():
     numerical_filter = filtering.check_for_numerical_filter_get()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('data.html',
+                           block=block,
                            all_entities=all_entities,
                            name=measurement_name,
                            start_date=session.get('start_date'),
@@ -62,6 +63,7 @@ def post_data():
     if error:
         return render_template('data.html',
                                error=error,
+                               block=block,
                                all_entities=all_entities,
                                all_measurement=all_measurement,
                                name=measurement_name,
@@ -102,6 +104,7 @@ def post_data():
 
     return render_template('data.html',
                            error=error,
+                           block=block,
                            all_entities=all_entities,
                            all_measurement=all_measurement,
                            measurement=measurement,
