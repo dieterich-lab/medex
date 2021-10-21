@@ -1,11 +1,11 @@
 version: '3.6'
 services:
   medex:
-    image: medex
+    image: aljoschak1/medex
     container_name: medex
     build: .
     ports:
-      - "127.0.0.1:100:100"
+      - "127.0.0.1:80:80"
     depends_on: # other containers it needs in order to run
       - database
     environment:

@@ -37,8 +37,8 @@ def post_data():
 
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip,measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    case_ids = data.case_ids
+    categorical_filter, categorical_names, categorical_filter_zip,measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
@@ -50,6 +50,7 @@ def post_data():
         measurement = all_measurement.values
     else:
         measurement = request.form.getlist('measurement')
+
 
     # errors
     if not measurement:
@@ -69,7 +70,6 @@ def post_data():
                                name=measurement_name,
                                measurement=measurement,
                                measurement_filter=measurement_filter,
-                               measurement_filter_text=measurement_filter_text,
                                entities=entities,
                                start_date=start_date,
                                end_date=end_date,
@@ -109,7 +109,6 @@ def post_data():
                            all_measurement=all_measurement,
                            measurement=measurement,
                            measurement_filter=measurement_filter,
-                           measurement_filter_text=measurement_filter_text,
                            entities=entities,
                            name_column=column,
                            name=measurement_name,

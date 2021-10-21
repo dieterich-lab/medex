@@ -146,6 +146,8 @@ def alter_table(rdb):
     sql13 = """CREATE INDEX IF NOT EXISTS "Key_index_categorical" ON examination_categorical ("Key")"""
     sql15 = """CREATE INDEX IF NOT EXISTS "ID_index_numerical" ON examination_numerical ("Name_ID")"""
     sql16 = """CREATE INDEX IF NOT EXISTS "ID_index_categorical" ON examination_categorical ("Name_ID")"""
+    sql17 = """CREATE INDEX IF NOT EXISTS "case_index_patient" ON Patient ("Case_ID")"""
+    sql18 = """CREATE INDEX IF NOT EXISTS "ID_index_patient" ON Patient ("Name_ID")"""
     sql14 = """CREATE EXTENSION IF NOT EXISTS tablefunc"""
 
     try:
@@ -172,6 +174,8 @@ def alter_table(rdb):
         cur.execute(sql14)
         cur.execute(sql15)
         cur.execute(sql16)
+        cur.execute(sql17)
+        #cur.execute(sql18)
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")

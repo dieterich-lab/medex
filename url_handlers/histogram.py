@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max
+from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max,data
 
 histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 
@@ -30,8 +30,8 @@ def get_statistics():
 def post_statistics():
     # get filters
     start_date, end_date,date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    case_ids = data.case_ids
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
@@ -54,7 +54,6 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
-        print(subcategory_entities)
         df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement, case_ids,
                                           categorical_filter, categorical_names, numerical_filter_name, from1, to1,
                                           measurement_filter, date, rdb)
@@ -62,7 +61,6 @@ def post_statistics():
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
             numeric_entities_unit = numeric_entities + ' (' + numeric_entities_unit + ')'
-            print(df)
             df.columns = [Name_ID,measurement_name, numeric_entities_unit,categorical_entities]
         else:
             numeric_entities_unit = numeric_entities
@@ -81,7 +79,6 @@ def post_statistics():
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
                                measurement_filter=measurement_filter,
-                               measurement_filter_text=measurement_filter_text,
                                all_measurement=all_measurement,
                                start_date=start_date,
                                end_date=end_date,
@@ -107,7 +104,6 @@ def post_statistics():
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
                                measurement_filter=measurement_filter,
-                               measurement_filter_text=measurement_filter_text,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -152,7 +148,6 @@ def post_statistics():
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
                            measurement_filter=measurement_filter,
-                           measurement_filter_text=measurement_filter_text,
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,

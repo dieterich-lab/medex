@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import rdb,  all_measurement, \
-    data, measurement_name, block, df_min_max
+from webserver import rdb,  all_measurement, data, measurement_name, block, df_min_max
 
 
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
@@ -31,8 +30,8 @@ def get_basic_stats():
 
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    case_ids = data.case_ids
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
@@ -68,7 +67,6 @@ def get_basic_stats():
                                    numeric_entities=numeric_entities,
                                    measurement_numeric=measurement1,
                                    measurement_filter=measurement_filter,
-                                   measurement_filter_text=measurement_filter_text,
                                    start_date=start_date,
                                    end_date=end_date,
                                    filter=categorical_filter_zip,
@@ -101,7 +99,6 @@ def get_basic_stats():
                                    numeric_entities=numeric_entities,
                                    measurement_numeric=measurement1,
                                    measurement_filter=measurement_filter,
-                                   measurement_filter_text=measurement_filter_text,
                                    instance=instance,
                                    start_date=start_date,
                                    end_date=end_date,
@@ -123,7 +120,6 @@ def get_basic_stats():
                                    basic_stats=result,
                                    measurement_numeric=measurement1,
                                    measurement_filter=measurement_filter,
-                                   measurement_filter_text=measurement_filter_text,
                                    instance=instance,
                                    first_value=list(result.keys())[0],
                                    start_date=start_date,
@@ -168,7 +164,6 @@ def get_basic_stats():
                                    categorical_entities=categorical_entities,
                                    measurement_categorical=measurement,
                                    measurement_filter=measurement_filter,
-                                   measurement_filter_text=measurement_filter_text,
                                    start_date=start_date,
                                    end_date=end_date,
                                    filter=categorical_filter_zip,
@@ -191,7 +186,6 @@ def get_basic_stats():
                                categorical_entities=categorical_entities,
                                measurement_categorical=measurement,
                                measurement_filter=measurement_filter,
-                               measurement_filter_text=measurement_filter_text,
                                instance=instance,
                                basic_stats_c=basic_stats_c,
                                start_date=start_date,

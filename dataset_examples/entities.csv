@@ -1,8 +1,8 @@
 Key,type,synonym,description,unit,show
 NYHA,String,NYHA,NYHA,,+
 Diabetes,String,Diabetes,Diabetes,,+
-Gender,String,Gender,Gender,,+
-Jitter_rel,Double,Jitter_rel,Pitch local perturbation measures:relative jitter,m,
+Gender,String,Sex,Gender,,+
+Jitter_rel,Double,Jr,Pitch local perturbation measures:relative jitter,m,
 Jitter_abs,Double,Jitter_abs,Pitch local perturbation measures:absolute jitter,s,
 Jitter_RAP,Double,Jitter_RAP,Pitch local perturbation measures:relative average perturbation,m,
 Jitter_PPQ,Double,Jitter_PPQ,Pitch local perturbation measures:and pitch perturbation quotient,m,

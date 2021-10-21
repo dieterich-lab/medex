@@ -2,8 +2,7 @@ from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, measurement_name,\
-    Name_ID, block, df_min_max
+from webserver import rdb, all_measurement, measurement_name, Name_ID, block, df_min_max, data
 
 barchart_page = Blueprint('barchart', __name__, template_folder='templates')
 
@@ -28,8 +27,8 @@ def get_statistics():
 def post_statistics():
     # get filters
     start_date, end_date,date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    case_ids = data.case_ids
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
@@ -73,7 +72,6 @@ def post_statistics():
                                numerical_filter=numerical_filter,
                                measurement=measurement,
                                measurement_filter=measurement_filter,
-                               measurement_filter_text=measurement_filter_text,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                how_to_plot=how_to_plot,
@@ -104,7 +102,6 @@ def post_statistics():
                            block=block,
                            measurement=measurement,
                            measurement_filter=measurement_filter,
-                           measurement_filter_text=measurement_filter_text,
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,

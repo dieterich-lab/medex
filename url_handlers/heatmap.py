@@ -4,7 +4,7 @@ from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.graph_objects as go
 import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement,measurement_name, block, df_min_max
+from webserver import rdb, all_measurement,measurement_name, block, df_min_max,data
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
@@ -32,8 +32,8 @@ def get_plots():
 def post_plots():
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    case_ids = data.case_ids
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
@@ -69,7 +69,6 @@ def post_plots():
                                measurement=measurement,
                                all_measurement=all_measurement,
                                measurement_filter=measurement_filter,
-                               measurement_filter_text=measurement_filter_text,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -129,7 +128,6 @@ def post_plots():
                            numeric_entities=numeric_entities,
                            measurement=measurement,
                            measurement_filter=measurement_filter,
-                           measurement_filter_text=measurement_filter_text,
                            plot_series=plot_series,
                            plot=fig,
                            start_date=start_date,

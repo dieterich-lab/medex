@@ -95,9 +95,11 @@ def favicon():
 @app.context_processor
 def message_count():
     case_id = data.case_ids
-    if case_id :
+    case = session.get('case_ids')
+    if case != None :
         case_display = 'block'
     else:
+        data.case_id = []
         case_display = 'none'
     database_name = os.environ['POSTGRES_DB']
     database = '{} data'.format(database_name)
@@ -157,7 +159,7 @@ def login_get():
     # get selected entities
     session['start_date'] = start_date
     session['end_date'] = end_date
-    session['measurement_filter'] = ['1']
+    session['measurement_filter'] = '1'
     return redirect('/data')
 
 
@@ -175,8 +177,8 @@ def get_cases():
     case_ids = cases_get.json()
     data.case_ids = case_ids['cases_ids']
     data.table_case_ids = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
-
-    return redirect('/data')
+    session['case_ids'] = 'Yes'
+    return redirect('/')
 
 
 

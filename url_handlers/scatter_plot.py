@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request,session
 import plotly.express as px
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, Name_ID, measurement_name, block,df_min_max
+from webserver import rdb, all_measurement, Name_ID, measurement_name, block,df_min_max,data
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
@@ -26,7 +26,7 @@ def get_plots():
 def post_plots():
     # get filter
     add_group_by = request.form.get('add_group_by') is not None
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter,measurement_filter_text = filtering.check_for_filter_post()
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
     numerical_filter, numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
@@ -42,7 +42,7 @@ def post_plots():
         y_measurement = request.form.get('y_measurement')
 
     start_date, end_date,date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
+    case_ids = data.case_ids
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
@@ -125,7 +125,6 @@ def post_plots():
                                x_measurement=x_measurement,
                                y_measurement=y_measurement,
                                measurement_filter=measurement_filter,
-                               measurement_filter_text=measurement_filter_text,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -218,7 +217,6 @@ def post_plots():
                            x_measurement=x_measurement,
                            y_measurement=y_measurement,
                            measurement_filter=measurement_filter,
-                           measurement_filter_text=measurement_filter_text,
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,
