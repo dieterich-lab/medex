@@ -62,7 +62,13 @@ function formatCustom(state) {
     $("#y_measurement").select2({
     placeholder:"Search entity"
     });
-    $('.Plot').click(function(){
+    $('#Plot').click(function(){
+        $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
+    });
+    $('#result_numeric').click(function(){
+        $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
+    });
+    $('#result_categorical').click(function(){
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
     });
 
