@@ -175,7 +175,7 @@ def alter_table(rdb):
         cur.execute(sql15)
         cur.execute(sql16)
         cur.execute(sql17)
-        #cur.execute(sql18)
+        cur.execute(sql18)
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")

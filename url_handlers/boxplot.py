@@ -53,7 +53,6 @@ def post_boxplots():
     elif not subcategory_entities:
         error = "Please select subcategory"
     elif not error:
-        print(subcategory_entities)
         df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement, case_ids,
                                           categorical_filter, categorical_names, numerical_filter_name, from1, to1,
                                           measurement_filter, date, rdb)
@@ -61,7 +60,6 @@ def post_boxplots():
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         if numeric_entities_unit:
             numeric_entities_unit = numeric_entities + ' (' + numeric_entities_unit + ')'
-            print(df)
             df.columns = [Name_ID,measurement_name, numeric_entities_unit,categorical_entities]
         else:
             numeric_entities_unit = numeric_entities

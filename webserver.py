@@ -94,12 +94,11 @@ def favicon():
 # information about database
 @app.context_processor
 def message_count():
-    case_id = data.case_ids
     case = session.get('case_ids')
     if case != None :
         case_display = 'block'
     else:
-        data.case_id = []
+        data.case_ids = []
         case_display = 'none'
     database_name = os.environ['POSTGRES_DB']
     database = '{} data'.format(database_name)

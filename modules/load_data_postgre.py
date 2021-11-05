@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from collections import ChainMap
-import time
 
 
 def get_header(r):
@@ -25,14 +24,14 @@ def get_date(r):
     :return: get the first and last date on which the data were collected
     """
     try:
-        sql = """ Select min("Date"),max("Date") from examination """
+        sql = """ Select min("Date"),max("Date") from examination_numerical """
         df = pd.read_sql(sql, r)
         start_date = datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
         end_date = datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
-        return start_date, end_date
     except Exception:
-        start_date = datetime.today().strftime('%Y-%m-%d').timestamp() * 1000
-        end_date = datetime.today().strftime('%Y-%m-%d').timestamp() * 1000
+        now = datetime.now()
+        start_date = datetime.timestamp(now) * 1000
+        end_date = datetime.timestamp(now) * 1000
     return start_date, end_date
 
 
@@ -195,7 +194,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         category_m0 = categorical[i - 1].replace(" ", "_")
 
         if i == 0:
-            cat_filter = """Select {0}."Name_ID",{0}.measurement FROM examination_categorical as {0}   """.format(category_m)
+            cat_filter = """Select {0}."Name_ID" FROM examination_categorical as {0}   """.format(category_m)
 
             cat_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value"[1] in ({2}) and {0}.measurement in ({3}) """.format(category_m,
                                                                                                     categorical[i], cat,
@@ -217,7 +216,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         numeric_m =  numerical_filter_name[i].replace(" ","_")
         numeric_m0 = numerical_filter_name[i - 1].replace(" ", "_")
         if i == 0:
-            num_filter = """Select {0}."Name_ID",{0}.measurement FROM examination_numerical as {0}   """.format(numeric_m)
+            num_filter = """Select {0}."Name_ID" FROM examination_numerical as {0}   """.format(numeric_m)
 
             num_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value"[1] between $${2}$$ and $${3}$$ and {0}.measurement in ({4}) """.format(numeric_m,
                                                                                    numerical_filter_name[i], from1[i],
