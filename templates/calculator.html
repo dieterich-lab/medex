@@ -9,7 +9,7 @@
 {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/data.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/new_table.js') }}"></script>
     <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
     <script src="{{ url_for('static', filename='js/subcategories.js') }}"></script>
 
@@ -48,19 +48,35 @@
             {{ m.show_error(error) }}
             {% endif %}
 
-            {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name =all_measurement,class="measurement",value=entity,select=measurement,d=name,block=block) }}
-            {{ m.entity_form_multiple(id_multiple= "entities",name =all_entities,name2 =all_numeric_entities2,value=entity,select=entities,d="Entities:") }}
-            <label >Table: </label>
-            <div class="custom-control custom-radio" >
-                <input type="radio" class="custom-control-input" id="long" name="what_table" value="long"
-                       {% if what_table =="long" or not what_table %}checked{% endif %}>
-                <label class="custom-control-label" for="long">long format</label>
-            </div>
-            <div class="custom-control custom-radio">
-                <input type="radio" class="custom-control-input" id="short" name="what_table" value="short"
-                       {% if what_table =="short"  %} checked {% endif %}>
-                <label class="custom-control-label" for="short">entities as columns</label>
-            </div>
+
+            <table >
+                <tr>
+                    <td>
+                        {{ m.entity_form_single(id_single= "timestamp_entities1",name =all_timestamp_entities,value=entity,select=entities1,d="Date entity:") }}
+                    </td>
+                    <td>
+                        <br>
+                        <span style="font-size:3em; margin: 35px;">  &minus;  </span>
+                        <br>
+                    </td>
+                    <td>
+                        {{ m.entity_form_single(id_single= "timestamp_entities2",name =all_timestamp_entities,value=entity,select=entities2,d="Date entity:") }}
+                    </td>
+                    <td>
+                        <br>
+                        <span style="font-size:3em;  margin: 35px;">  &equals;  </span>
+
+                    </td>
+                    <td>
+                        <div class="form-group">
+                        <label for="name">New column's name:</label><br>
+                        <input type="text" id="name" name="column_name" value="{{ column_name }}">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+
             <button id="Plot" name="Result" class="btn btn-outline-info">Result</button>
         </div>
     </div>

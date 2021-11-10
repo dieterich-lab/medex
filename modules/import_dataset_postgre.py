@@ -8,7 +8,8 @@ def create_table(rdb):
     Remove tables from database if exists and create new name_type and examination tables in the PostgreSQL database
     """
 
-    sql_drop = "DROP TABLE IF EXISTS header,name_type,examination,examination_categorical,examination_numerical,patient"
+    sql_drop = "DROP TABLE IF EXISTS header,name_type,examination,examination_categorical,examination_numerical," \
+               "examination_date,patient"
     statement_header = """CREATE TABLE header ("Name_ID" text Primary key,
                                                 "measurement" text)"""
 
@@ -128,6 +129,11 @@ def alter_table(rdb):
     as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') 
     as f group by "Name_ID","Date","measurement","Key" order by "Name_ID" """
 
+    sql3b = """CREATE TABLE examination_date AS SELECT "ID","Name_ID","measurement","Date","Key","Value"::timestamp
+     from (SELECT e.* from examination as e join name_type as n on e."Key" = n."Key" where n."type" = 'timestamp'and
+     e."Value" ~ '^(0[0-9]{2}[1-9]|[1-9][0-9]{3})-((0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01])|02-(0[1-9]|1[0-9]|2[0-8])|(0[469]|11)-(0[1-9]|[12][0-9]|30))$') 
+    as f"""  # here I have to change but not yet
+
     sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from examination"""
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
@@ -148,6 +154,7 @@ def alter_table(rdb):
     sql16 = """CREATE INDEX IF NOT EXISTS "ID_index_categorical" ON examination_categorical ("Name_ID")"""
     sql17 = """CREATE INDEX IF NOT EXISTS "case_index_patient" ON Patient ("Case_ID")"""
     sql18 = """CREATE INDEX IF NOT EXISTS "ID_index_patient" ON Patient ("Name_ID")"""
+    sql19 = """CREATE INDEX IF NOT EXISTS "ID_index_date" ON examination_numerical ("Name_ID")"""
     sql14 = """CREATE EXTENSION IF NOT EXISTS tablefunc"""
 
     try:
@@ -155,6 +162,7 @@ def alter_table(rdb):
         cur.execute(sql_remove_null)
         cur.execute(sql2)
         cur.execute(sql3)
+        cur.execute(sql3b)
         cur.execute(sql4)
     except Exception:
         return print("Problem with connection with database")
@@ -175,7 +183,8 @@ def alter_table(rdb):
         cur.execute(sql15)
         cur.execute(sql16)
         cur.execute(sql17)
-        #cur.execute(sql18)
+        cur.execute(sql18)
+        cur.execute(sql19)
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")

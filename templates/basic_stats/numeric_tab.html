@@ -21,7 +21,7 @@
                     {% endif %}
 
                     {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_numeric",name =all_measurement,class="measurement",value=entity,select=measurement_numeric,d=name,block=block) }}
-                    {{ m.entity_form_multiple(id_multiple="numeric_entities_multiple",name=all_numeric_entities ,value=entity,select=numeric_entities,d="Numeric entities:") }}
+                    {{ m.entity_form_multiple(id_multiple="numeric_entities_multiple",name=all_numeric_entities ,name2 =all_numeric_entities2,value=entity,select=numeric_entities,d="Numeric entities:") }}
 
                     <label>Include following statistics:</label>
                     <div class="row ml-2">
@@ -103,22 +103,20 @@
                             <tbody>
                                 {% for entity in numeric_entities %}
                                 {% for m in measurement_numeric %}
-                                {% for i in instance %}
                                 <tr>
-                                    {% if basic_stats[first_value][entity,m,i] is defined %}
+                                    {% if basic_stats[first_value][entity,m] is defined %}
                                     <td>{{ entity }}</a></td>
                                     {% if block != 'none' %}<td>{{ m }}</td>{% endif %}
-                                        {% if 'count' in basic_stats %}<td>{{ basic_stats['count'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'count NaN' in basic_stats %}<td>{{ basic_stats['count NaN'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'max' in basic_stats %}<td>{{ basic_stats['max'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'mean' in basic_stats %}<td>{{ basic_stats['mean'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'median' in basic_stats %}<td>{{ basic_stats['median'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'stddev' in basic_stats %}<td>{{ basic_stats['stddev'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'stderr' in basic_stats %}<td>{{ basic_stats['stderr'][entity,m,i] }}</td>{% endif %}
+                                        {% if 'count' in basic_stats %}<td>{{ basic_stats['count'][entity,m] }}</td>{% endif %}
+                                        {% if 'count NaN' in basic_stats %}<td>{{ basic_stats['count NaN'][entity,m] }}</td>{% endif %}
+                                        {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity,m] }}</td>{% endif %}
+                                        {% if 'max' in basic_stats %}<td>{{ basic_stats['max'][entity,m] }}</td>{% endif %}
+                                        {% if 'mean' in basic_stats %}<td>{{ basic_stats['mean'][entity,m] }}</td>{% endif %}
+                                        {% if 'median' in basic_stats %}<td>{{ basic_stats['median'][entity,m] }}</td>{% endif %}
+                                        {% if 'stddev' in basic_stats %}<td>{{ basic_stats['stddev'][entity,m] }}</td>{% endif %}
+                                        {% if 'stderr' in basic_stats %}<td>{{ basic_stats['stderr'][entity,m] }}</td>{% endif %}
                                     {% endif %}
                                 </tr>
-                            {% endfor %}
                             {% endfor %}
                             {% endfor %}
                             </tbody>

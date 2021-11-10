@@ -62,6 +62,15 @@ function formatCustom(state) {
     $("#y_measurement").select2({
     placeholder:"Search entity"
     });
+    $("#y_measurement").select2({
+    placeholder:"Search entity"
+    });
+    $("#timestamp_entities1").select2({
+    placeholder:"Search entity"
+    });
+    $("#timestamp_entities2").select2({
+    placeholder:"Search entity"
+    });
     $('#Plot').click(function(){
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
     });

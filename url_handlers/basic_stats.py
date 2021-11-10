@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
 from webserver import rdb,  all_measurement, data, measurement_name, block, df_min_max
+from url_handlers import calculate_basic_stats as cbs
+import pandas as pd
 
 
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
@@ -54,9 +56,23 @@ def get_basic_stats():
             error = "Please select numeric entities"
         elif numeric_entities:
             n, error = ps.number(rdb) if not error else (None, error)
-            df, error = ps.get_num_values_basic_stats(numeric_entities, measurement1, case_ids, categorical_filter,
-                                                     categorical_names, name, from1, to1,measurement_filter, date, rdb)
+            new_column = session.get('new_column')
+            entities=[]
+            if new_column:
+                numeric_entities1 = [x for x in numeric_entities if x not in new_column]
+                entities = [x for x in numeric_entities if x in new_column]
+                df = data.new_table
+                c = ['measurement'] + entities
+                df1 = df[c]
+                df1 = df1.loc[df1['measurement'].isin(measurement1)]
+                df1 = cbs.calculation_basic(df1)
 
+            else:
+                numeric_entities1 = numeric_entities
+            df, error = ps.get_num_values_basic_stats(numeric_entities1, measurement1, case_ids, categorical_filter,
+                                                     categorical_names, name, from1, to1,measurement_filter, date, rdb)
+            if new_column and entities:
+                df = pd.concat([df1, df])
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
@@ -75,7 +91,7 @@ def get_basic_stats():
                                    error=error)
 
         # calculation basic stats
-        instance = df['instance'].unique()
+        print(df)
 
         if 'count NaN' in request.form: df['count NaN'] = int(n) - df['count']
         if not 'count' in request.form: df = df.drop(['count'], axis=1)
@@ -86,7 +102,7 @@ def get_basic_stats():
         if not 'std_err' in request.form: df = df.drop(['stderr'], axis=1)
         if not 'median' in request.form: df = df.drop(['median'], axis=1)
 
-        df = df.set_index(['Key', 'measurement',  'instance' ])
+        df = df.set_index(['Key', 'measurement'])
         data.csv = df.to_csv()
         if df.empty:
             error_message = "You must select at least some statistics"
@@ -99,7 +115,6 @@ def get_basic_stats():
                                    numeric_entities=numeric_entities,
                                    measurement_numeric=measurement1,
                                    measurement_filter=measurement_filter,
-                                   instance=instance,
                                    start_date=start_date,
                                    end_date=end_date,
                                    filter=categorical_filter_zip,
@@ -120,7 +135,6 @@ def get_basic_stats():
                                    basic_stats=result,
                                    measurement_numeric=measurement1,
                                    measurement_filter=measurement_filter,
-                                   instance=instance,
                                    first_value=list(result.keys())[0],
                                    start_date=start_date,
                                    end_date=end_date,

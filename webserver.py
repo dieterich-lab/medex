@@ -20,6 +20,34 @@ app.secret_key = os.urandom(24)
 with app.app_context():
     rdb = connect_db()
 
+# data store for filters and download
+class DataStore():
+
+    case_ids = []
+    table_case_ids = None
+
+    # for table browser server side
+    table_schema = None
+    table_browser_column = None
+    dict = None
+    table_browser_entities = None
+    table_browser_what_table = None
+    table_browser_column2 = None
+
+    year = None
+    new_table = pd.DataFrame()
+    new_table_dict = None
+    new_table_schema = None
+
+    # for download
+    csv = None
+    csv_new_table = None
+
+
+
+
+table_builder = TableBuilder()
+data = DataStore()
 
 def check_for_env(key: str, default=None, cast=None):
     if key in os.environ:
@@ -48,10 +76,12 @@ start_date, end_date = ps.get_date(rdb)
 all_entities, show = ps.get_entities(rdb)
 all_patient = ps.patient(rdb)
 size_numerical_table, all_numeric_entities, df_min_max = ps.get_numeric_entities(rdb)
+size_timestamp_table, all_timestamp_entities = ps.get_timestamp_entities(rdb)
 size_categorical_table, all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
 all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
+all_timestamp_entities = all_timestamp_entities.to_dict('index')
 df_min_max = df_min_max.to_dict('index')
 all_measurement = ps.get_measurement(rdb)
 
@@ -63,25 +93,7 @@ else:
     block = 'block'
 
 
-# data store for filters and download
-class DataStore():
 
-    case_ids = []
-    table_case_ids = None
-
-    # for table browser server side
-    table_schema = None
-    table_browser_column = None
-    dict = None
-    table_browser_entities = None
-    table_browser_what_table = None
-    table_browser_column2 = None
-
-
-
-
-table_builder = TableBuilder()
-data = DataStore()
 
 
 # favicon
@@ -94,12 +106,11 @@ def favicon():
 # information about database
 @app.context_processor
 def message_count():
-    case_id = data.case_ids
     case = session.get('case_ids')
     if case != None :
         case_display = 'block'
     else:
-        data.case_id = []
+        data.case_ids = []
         case_display = 'none'
     database_name = os.environ['POSTGRES_DB']
     database = '{} data'.format(database_name)
@@ -120,8 +131,10 @@ def message_count():
                 len_categorical=len_categorical,
                 size_categorical=size_categorical,
                 all_numeric_entities=all_numeric_entities,
+                all_numeric_entities2=session.get('new_column'),
                 all_categorical_entities=all_categorical_entities,
                 all_subcategory_entities=all_subcategory_entities,
+                all_timestamp_entities=all_timestamp_entities,
                 all_measurement=all_measurement,
                 df_min_max=df_min_max,
                 start_date=start_date,
@@ -140,6 +153,7 @@ from url_handlers.barchart import barchart_page
 from url_handlers.heatmap import heatmap_plot_page
 from url_handlers.logout import logout_page
 from url_handlers.tutorial import tutorial_page
+from url_handlers.calculator import calculator_page
 
 # register blueprints here:\
 app.register_blueprint(data_page)
@@ -151,6 +165,7 @@ app.register_blueprint(boxplot_page)
 app.register_blueprint(scatter_plot_page)
 app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
+app.register_blueprint(calculator_page)
 
 
 # Direct to Data browser website during opening the program.
@@ -160,6 +175,7 @@ def login_get():
     session['start_date'] = start_date
     session['end_date'] = end_date
     session['measurement_filter'] = '1'
+    session['new_column'] = []
     return redirect('/data')
 
 
@@ -179,7 +195,6 @@ def get_cases():
     data.table_case_ids = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
     session['case_ids'] = 'Yes'
     return redirect('/')
-
 
 
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])

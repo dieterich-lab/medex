@@ -48,8 +48,23 @@ def post_plots():
     if measurement == "Search entity":
         error = "Please select number of {}".format(measurement_name)
     elif len(numeric_entities) > 1:
-        numeric_df, error = ps.get_values_heatmap(numeric_entities, measurement, case_ids,categorical_filter,
+        new_column = session.get('new_column')
+        if new_column:
+            numeric_entities1 = [x for x in numeric_entities if x not in new_column]
+        else:
+            numeric_entities1 = numeric_entities
+        df0, error = ps.get_values_heatmap(numeric_entities1, measurement, case_ids,categorical_filter,
                                                   categorical_names, name, from1, to1, measurement_filter, date, rdb)
+
+        df = data.new_table
+        if df.empty:
+            numeric_df = df0
+        else:
+            entities = [x for x in numeric_entities if x in new_column]
+            c = ["Name_ID"] + entities
+            df = df.loc[df['measurement'] == measurement]
+            df1 = df[c]
+            numeric_df = pd.merge(df0, df1, on=["Name_ID"])
 
         if not error:
             if len(numeric_df.index) == 0:
@@ -77,6 +92,7 @@ def post_plots():
                                error=error)
 
     # calculate person correlation
+
     numeric_df = numeric_df.drop(columns=['Name_ID'])
     new_numeric_entities = numeric_df.columns.tolist()
     numeric_entities_not_measured = set(numeric_entities).difference(set(new_numeric_entities))

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from collections import ChainMap
-import time
+
 
 
 def get_header(r):
@@ -25,14 +25,14 @@ def get_date(r):
     :return: get the first and last date on which the data were collected
     """
     try:
-        sql = """ Select min("Date"),max("Date") from examination """
+        sql = """ Select min("Date"),max("Date") from examination_numerical """
         df = pd.read_sql(sql, r)
         start_date = datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
         end_date = datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
-        return start_date, end_date
     except Exception:
-        start_date = datetime.today().strftime('%Y-%m-%d').timestamp() * 1000
-        end_date = datetime.today().strftime('%Y-%m-%d').timestamp() * 1000
+        now = datetime.now()
+        start_date = datetime.timestamp(now) * 1000
+        end_date = datetime.timestamp(now) * 1000
     return start_date, end_date
 
 
@@ -81,6 +81,30 @@ def get_numeric_entities(r):
         df_min_max = pd.DataFrame()
     return df, df1, df_min_max
 
+def get_timestamp_entities(r):
+    """
+
+    :param r:
+    :return:
+    """
+    size = """SELECT count(*) FROM examination_date"""
+    all_timestamp_entities = """ Select "Key","description","synonym" from name_type where type = 'timestamp' 
+                                 order by "Key" """
+
+    try:
+        df = pd.read_sql(size, r)
+        df = df.iloc[0]['count']
+
+        df1 = pd.read_sql(all_timestamp_entities, r)
+        df1 = df1.replace([None], ' ')
+
+
+
+    except Exception:
+        df = pd.DataFrame(columns=["Key","description","synonym"] )
+        df1 = pd.DataFrame()
+    return df, df1
+
 
 def get_categorical_entities(r):
     """
@@ -120,7 +144,7 @@ def get_categorical_entities(r):
         df1= pd.DataFrame()
         df = pd.DataFrame(columns=["Key","description"])
         df2 = dict(ChainMap(*array))
-        return df1,df,df2
+        return df1, df, df2
 
 
 def get_measurement(r):
@@ -189,13 +213,13 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
     numerical_filter_where = ""
 
     for i in range(len(categorical)):
-        cat=categorical_filter[i]
+        cat = categorical_filter[i]
         cat = "$$"+cat[(cat.find(' is ') + 4):].replace(",", "$$,$$")+"$$"
         category_m = categorical[i].replace(" ","_")
         category_m0 = categorical[i - 1].replace(" ", "_")
 
         if i == 0:
-            cat_filter = """Select {0}."Name_ID",{0}.measurement FROM examination_categorical as {0}   """.format(category_m)
+            cat_filter = """Select {0}."Name_ID" FROM examination_categorical as {0}   """.format(category_m)
 
             cat_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value"[1] in ({2}) and {0}.measurement in ({3}) """.format(category_m,
                                                                                                     categorical[i], cat,
@@ -217,7 +241,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         numeric_m =  numerical_filter_name[i].replace(" ","_")
         numeric_m0 = numerical_filter_name[i - 1].replace(" ", "_")
         if i == 0:
-            num_filter = """Select {0}."Name_ID",{0}.measurement FROM examination_numerical as {0}   """.format(numeric_m)
+            num_filter = """Select {0}."Name_ID" FROM examination_numerical as {0}   """.format(numeric_m)
 
             num_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value"[1] between $${2}$$ and $${3}$$ and {0}.measurement in ({4}) """.format(numeric_m,
                                                                                    numerical_filter_name[i], from1[i],
@@ -301,7 +325,7 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
                 where "Date" Between '{3}' and '{4}' and "measurement" IN ({1}) order by "Name_ID", measurement 
                 """.format(entity_final, measurement, entity_column, date[0], date[1])
     else:
-        df= filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
+        df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
         sql = """SELECT en."Name_ID",en."measurement",en."Date",en."Key",array_to_string(en."Value",';') as "Value" 
                 FROM examination_numerical as en 
                 right join ({4}) as df 
@@ -332,7 +356,6 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
                 as ek (row_name text,"Name_ID" text,"measurement" text,"Date" text,{2}) 
                 where "Date" Between '{3}' and '{4}' and "measurement" IN ({1}) 
                 """.format(entity_final, measurement, entity_column, date[0], date[1], df)
-
 
     try:
         if what_table == 'long':
@@ -365,62 +388,61 @@ def get_num_values_basic_stats(entity, measurement, case_id, categorical_filter,
     measurement = "'" + "','".join(measurement) + "'"
     if not categorical_filter and not case_id and not numerical_filter_name:
         if round == 'not':
-            sql = """SELECT "Key","measurement","instance",
-                    count(f."Value"),
-                    min(f."Value"),
-                    max(f."Value"),
-                    AVG(f."Value") as "mean",
-                    stddev(f."Value"),
-                    (stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",
-                    (percentile_disc(0.5) within group (order by f."Value")) as median 
-                    FROM examination_numerical,unnest("Value") WITH ordinality as f ("Value", instance) 
+            sql = """SELECT "Key","measurement",
+                    count("Value"[1]),
+                    min("Value"[1]),
+                    max("Value"[1]),
+                    AVG("Value"[1]) as "mean",
+                    stddev("Value"[1]),
+                    (stddev("Value"[1])/sqrt(count("Value"[1]))) as "stderr",
+                    (percentile_disc(0.5) within group (order by "Value"[1])) as median 
+                    FROM examination_numerical 
                     WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Date" between '{2}' and '{3}' 
-                    group by "Key","measurement","instance" order by "Key","measurement","instance" """.format(
+                    group by "Key","measurement" order by "Key","measurement" """.format(
                     entity_final, measurement, date[0], date[1])
         else:
-            sql = """SELECT "Key","measurement","instance",
-                    count(f."Value"),
-                    min(f."Value"),
-                    max(f."Value"),
-                    ROUND(AVG(f."Value")::numeric,2) as "mean",
-                    ROUND(stddev(f."Value")::numeric,2),
-                    ROUND((stddev(f."Value")/sqrt(count(f."Value")))::numeric,2) as "stderr",
-                    (percentile_disc(0.5) within group (order by f."Value")) as median 
-                    FROM examination_numerical,unnest("Value") WITH ordinality as f ("Value", instance) 
+            sql = """SELECT "Key","measurement",
+                    count("Value"[1]),
+                    min("Value"[1]),
+                    max("Value"[1]),
+                    ROUND(AVG("Value"[1])::numeric,2) as "mean",
+                    ROUND(stddev("Value"[1])::numeric,2),
+                    ROUND((stddev("Value"[1])/sqrt(count("Value"[1])))::numeric,2) as "stderr",
+                    (percentile_disc(0.5) within group (order by "Value"[1])) as median 
+                    FROM examination_numerical
                     WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Date" between '{2}' and '{3}' 
-                    group by "Key","measurement","instance" order by "Key","measurement","instance" """.format(
+                    group by "Key","measurement" order by "Key","measurement" """.format(
                     entity_final, measurement, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
         if round == 'not':
-            sql = """SELECT "Key","measurement","instance",
-                    count(f."Value"),
-                    min(f."Value"),
-                    max(f."Value"),
-                    AVG(f."Value") as "mean",
-                    stddev(f."Value"),(stddev(f."Value")/sqrt(count(f."Value"))) as "stderr",
-                    (percentile_disc(0.5) within group (order by f."Value")) as median 
-                    FROM examination_numerical,unnest("Value") WITH ordinality as f ("Value", instance)
+            sql = """SELECT "Key","measurement",
+                    count("Value"[1]),
+                    min("Value"[1]),
+                    max("Value"[1]),
+                    AVG("Value"[1]) as "mean",
+                    stddev("Value"[1]),(stddev("Value"[1])/sqrt(count("Value"[1]))) as "stderr",
+                    (percentile_disc(0.5) within group (order by "Value"[1])) as median 
+                    FROM examination_numerical
                     WHERE "Key" IN ({0}) and "Name_ID" in ({4}) and "measurement" IN ({1}) 
                     and "Date" between '{2}' and '{3}' 
-                    group by "Key","measurement","instance" order by "Key","measurement","instance"
+                    group by "Key","measurement" order by "Key","measurement"
                     """.format(entity_final, measurement, date[0], date[1],df)
         else:
-            sql = """SELECT "Key","measurement","instance",
-                    count(f."Value"),
-                    min(f."Value"),
-                    max(f."Value"),
-                    ROUND(AVG(f."Value")::numeric,2) as "mean",
-                    ROUND(stddev(f."Value")::numeric,2),
-                    ROUND((stddev(f."Value")/sqrt(count(f."Value")))::numeric,2) as "stderr",
-                    (percentile_disc(0.5) within group (order by f."Value")) as median 
-                    FROM examination_numerical as en,unnest("Value") WITH ordinality as f ("Value", instance) 
+            sql = """SELECT "Key","measurement",
+                    count("Value"[1]),
+                    min("Value"[1]),
+                    max("Value"[1]),
+                    ROUND(AVG("Value"[1])::numeric,2) as "mean",
+                    ROUND(stddev("Value"[1])::numeric,2),
+                    ROUND((stddev("Value"[1])/sqrt(count("Value"[1])))::numeric,2) as "stderr",
+                    (percentile_disc(0.5) within group (order by "Value"[1])) as median 
+                    FROM examination_numerical as en
                     left join ({4}) as df 
                     on en."Name_ID" = df."Name_ID" 
                     WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Date" between '{2}' and '{3}' 
-                    group by "Key","measurement","instance" order by "Key","measurement","instance" 
+                    group by "Key","measurement" order by "Key","measurement"
                     """.format(entity_final, measurement, date[0], date[1], df)
-
 
     try:
         df = pd.read_sql(sql, r)
@@ -521,17 +543,9 @@ def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, cas
     try:
         df3 = pd.read_sql(sql, r)
         df4 = pd.read_sql(sql2, r)
-        if len(df3) == 0:
-            error = "Category {} is empty".format(x_entity)
-            return None, error
-        elif len(df4) == 0:
-            error = "Category {} is empty".format(y_entity)
-            return None, error
-        else:
-            df = df3.merge(df4, on=["Name_ID"])
-            return df, None
+        return df3, df4, None
     except Exception:
-        return None, "Problem with load data from database"
+        return None,None, "Problem with load data from database"
 
 
 def get_cat_values(entity, subcategory, measurement, case_id, categorical_filter, categorical, numerical_filter_name,
@@ -721,4 +735,15 @@ def get_values_heatmap(entity, measurement, case_id, categorical_filter, categor
         return None, "Problem with load data from database"
 
 
+def calculator(entity1, entity2, column_name, r):
 
+    sql = """ SELECT a."Name_ID",a."measurement",
+                DATE_PART('year',a."Value"::timestamp) - DATE_PART('year',b."Value"::timestamp) as "{2}" 
+                FROM examination_date as a FULL JOIN examination_date as b on a."Name_ID" = b."Name_ID" 
+                and a."measurement" = b."measurement" where a."Key"='{0}' and b."Key"='{1}' """.format(entity1, entity2, column_name)
+
+    try:
+        df = pd.read_sql(sql, r)
+        return df
+    except Exception:
+        return None

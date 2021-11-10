@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, session
 import modules.load_data_postgre as ps
+import pandas as pd
 
 import url_handlers.filtering as filtering
 from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_entities, df_min_max, measurement_name,\
@@ -38,7 +39,7 @@ def post_data():
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip,measurement_filter = filtering.check_for_filter_post()
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
@@ -51,15 +52,33 @@ def post_data():
     else:
         measurement = request.form.getlist('measurement')
 
-
     # errors
     if not measurement:
         error = "Please select number of {}".format(measurement_name)
     elif len(entities) == 0:
         error = "Please select entities"
     else:
-       df, error = ps.get_data(entities, what_table,measurement, case_ids, categorical_filter, categorical_names, name, from1, to1,
+       new_column = session.get('new_column')
+       if new_column:
+            entities1 = [x for x in entities if x not in new_column]
+       else:
+           entities1 = entities
+       df0, error = ps.get_data(entities1, what_table, measurement, case_ids, categorical_filter, categorical_names, name, from1, to1,
                                measurement_filter, date, rdb)
+
+       df = data.new_table
+       if df.empty:
+           df = df0
+       else:
+           entities = [x for x in entities if x in new_column]
+           c = ["Name_ID", "measurement"] + entities
+           df1 = df[c]
+           df1 = df1.loc[df1['measurement'].isin(measurement)]
+           if what_table != 'long':
+                df = pd.merge(df0, df1, on=["Name_ID", "measurement"])
+           else:
+                df_melt = df1.melt(id_vars=["Name_ID", "measurement"], var_name='Key', value_name="Value")
+                df = pd.concat([df0, df_melt]).fillna(0)
 
     if error:
         return render_template('data.html',
@@ -82,7 +101,7 @@ def post_data():
 
     data.table_browser_entities = entities
     data.csv = df.to_csv(index=False)
-    df=df.fillna("missing data")
+    df = df.fillna("missing data")
     column = df.columns.tolist()
 
     column_change_name = []

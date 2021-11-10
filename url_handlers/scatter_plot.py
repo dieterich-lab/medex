@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, request,session
 import plotly.express as px
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, Name_ID, measurement_name, block,df_min_max,data
+from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max, data
+import pandas as pd
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
@@ -63,13 +64,37 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     else:
-        numeric_df, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, case_ids,
-                                                       categorical_filter, categorical_names, numerical_filter_name,
-                                                       from1, to1, measurement_filter, date, rdb)
 
+        df3,df4, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, case_ids,
+                                                               categorical_filter, categorical_names, numerical_filter_name,
+                                                               from1, to1, measurement_filter, date, rdb)
 
         x_unit, error = ps.get_unit(x_axis, rdb)
         y_unit, error = ps.get_unit(y_axis, rdb)
+
+        new_column = session.get('new_column')
+        if new_column:
+            df = data.new_table
+            if x_axis in new_column and y_axis in new_column:
+                error = None
+                df3 = df.loc[df['measurement'] == x_measurement]
+                df3 = df3[['Name_ID', x_axis]]
+                df4 = df.loc[df['measurement'] == y_measurement]
+                df4 = df4[['Name_ID', y_axis]]
+                numeric_df = df3.merge(df4, on=["Name_ID"])
+            elif x_axis in new_column:
+                df3 = df.loc[df['measurement'] == x_measurement]
+                df3 = df3[['Name_ID', x_axis]]
+                numeric_df = df3.merge(df4, on=["Name_ID"])
+            elif y_axis in new_column:
+                df4 = df.loc[df['measurement'] == y_measurement]
+                df4 = df4[['Name_ID', y_axis]]
+                numeric_df = df3.merge(df4, on=["Name_ID"])
+            else:
+                numeric_df = df3.merge(df4, on=["Name_ID"])
+        else:
+            numeric_df = df3.merge(df4, on=["Name_ID"])
+
         if x_unit and y_unit:
             x_axis_unit = x_axis + ' (' + x_unit + ')'
             y_axis_unit = y_axis + ' (' + y_unit + ')'
