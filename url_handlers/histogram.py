@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max,data
+from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max, data
+import pandas as pd
 
 histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 
@@ -57,11 +58,23 @@ def post_statistics():
         df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement, case_ids,
                                           categorical_filter, categorical_names, numerical_filter_name, from1, to1,
                                           measurement_filter, date, rdb)
-        df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
+
+        #get cat values only
+        new_column = session.get('new_column')
+        if new_column and (numeric_entities in new_column):
+            df = data.new_table
+            df = df[['Name_ID', 'measurement', numeric_entities]]
+            df_cat, error = ps.get_cat_values_histogram(categorical_entities, subcategory_entities, measurement,
+                                          case_ids, categorical_filter, categorical_names, numerical_filter_name,
+                                          from1, to1, measurement_filter, date, rdb)
+            df = pd.merge(df, df_cat, on=["Name_ID", "measurement"])
+
+        df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
+
         if numeric_entities_unit:
             numeric_entities_unit = numeric_entities + ' (' + numeric_entities_unit + ')'
-            df.columns = [Name_ID,measurement_name, numeric_entities_unit,categorical_entities]
+            df.columns = [Name_ID,measurement_name, numeric_entities_unit, categorical_entities]
         else:
             numeric_entities_unit = numeric_entities
         if not error:

@@ -64,8 +64,7 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     else:
-
-        df3,df4, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, case_ids,
+        df3, df4, error = ps.get_values_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, case_ids,
                                                                categorical_filter, categorical_names, numerical_filter_name,
                                                                from1, to1, measurement_filter, date, rdb)
 

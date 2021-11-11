@@ -565,8 +565,7 @@ def get_cat_values(entity, subcategory, measurement, case_id, categorical_filter
     subcategory_final = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
     if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT "Name_ID",string_agg(distinct f."Value",',') 
-        FROM examination_categorical,
+        sql = """SELECT "Name_ID",string_agg(distinct f."Value",',') FROM examination_categorical,
         unnest("Value") as f ("Value") 
         WHERE "Key"= '{0}' and f."Value" IN ({1})  and "measurement" IN ({2}) 
         Group by "Name_ID" 
@@ -574,8 +573,7 @@ def get_cat_values(entity, subcategory, measurement, case_id, categorical_filter
 
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT ec."Name_ID",string_agg(distinct f."Value",',') 
-        FROM examination_categorical as ec
+        sql = """SELECT ec."Name_ID",string_agg(distinct f."Value",',') FROM examination_categorical as ec
         right join ({3}) as df 
         on ec."Name_ID" = df."Name_ID",
         unnest("Value") as f ("Value") 
@@ -593,6 +591,51 @@ def get_cat_values(entity, subcategory, measurement, case_id, categorical_filter
         df.columns = ["Name_ID", entity]
         return df, None
 
+def get_cat_values_histogram(entity, subcategory, measurement, case_id, categorical_filter, categorical, numerical_filter_name,
+                   from1, to1, measurement_filter, date, r):
+    """ Get categorical values from database
+
+    get_cat_values use in scatter plot and coplots
+
+    r: connection with database
+
+    Returns
+    -------
+    df: DataFrame with columns Name_ID,entity
+
+    """
+
+    subcategory_final = "$$" + "$$,$$".join(subcategory) + "$$"
+    measurement = "'" + "','".join(measurement) + "'"
+    if not categorical_filter and not case_id and not numerical_filter_name:
+        sql = """SELECT "Name_ID","measurement",string_agg(distinct f."Value",',') 
+        FROM examination_categorical,
+        unnest("Value") as f ("Value") 
+        WHERE "Key"= '{0}' and f."Value" IN ({1})  and "measurement" IN ({2}) 
+        Group by "Name_ID","measurement"
+        order by string_agg(distinct f."Value",',')""".format(entity, subcategory_final, measurement)
+
+    else:
+        df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
+        sql = """SELECT ec."Name_ID",ec."measurement",string_agg(distinct f."Value",',') 
+        FROM examination_categorical as ec
+        right join ({3}) as df 
+        on ec."Name_ID" = df."Name_ID",
+        unnest("Value") as f ("Value") 
+        WHERE ec."Key"= '{0}' and f."Value" IN ({1}) and ec."measurement" IN ({2}) 
+        Group by ec."Name_ID", ec."measurement"
+        order by string_agg(distinct f."Value",',')""".format(entity, subcategory_final, measurement, df)
+
+    df = pd.read_sql(sql, r)
+    try:
+        df = pd.read_sql(sql, r)
+    except Exception:
+        return None, "Problem with load data from database"
+    if df.empty or len(df) == 0:
+        return None, "The entity {} wasn't measured".format(entity)
+    else:
+        df.columns = ["Name_ID","measurement", entity]
+        return df, None
 
 def get_cat_values_barchart(entity, subcategory, measurement, case_id, categorical_filter, categorical,
                             numerical_filter_name, from1, to1, measurement_filter, date, r):

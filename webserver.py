@@ -112,6 +112,9 @@ def message_count():
     else:
         data.case_ids = []
         case_display = 'none'
+    new_column = session.get('new_column')
+    if new_column != None:
+        data.case_ids = []
     database_name = os.environ['POSTGRES_DB']
     database = '{} data'.format(database_name)
     if all_numeric_entities:
