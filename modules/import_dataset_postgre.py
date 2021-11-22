@@ -133,13 +133,13 @@ def alter_table(rdb):
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
     sql6 = """ALTER TABLE examination_numerical ADD CONSTRAINT examination_numerical_pkey PRIMARY KEY ("ID")"""
     sql7 = """ALTER TABLE examination_categorical ADD CONSTRAINT examination_categorical_pkey PRIMARY KEY ("ID")"""
-    sql8 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Name_ID") REFERENCES 
+    sql8 = """ALTER TABLE examination_categorical ADD CONSTRAINT foreign_key_c2 FOREIGN KEY ("Name_ID") REFERENCES 
     patient ("Name_ID")"""
-    sql9 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n2 FOREIGN KEY ("Name_ID") REFERENCES 
+    sql9 = """ALTER TABLE examination_numerical ADD CONSTRAINT foreign_key_n2 FOREIGN KEY ("Name_ID") REFERENCES 
     patient ("Name_ID")"""
-    sql10 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c1 FOREIGN KEY ("Key") REFERENCES 
+    sql10 = """ALTER TABLE examination_categorical ADD CONSTRAINT foreign_key_c1 FOREIGN KEY ("Key") REFERENCES 
     name_type ("Key")"""
-    sql11 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n1 FOREIGN KEY ("Key") REFERENCES 
+    sql11 = """ALTER TABLE examination_numerical ADD CONSTRAINT foreign_key_n1 FOREIGN KEY ("Key") REFERENCES 
     name_type ("Key")"""
 
     sql12 = """CREATE INDEX IF NOT EXISTS "Key_index_numerical" ON examination_numerical ("Key")"""

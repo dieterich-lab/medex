@@ -173,22 +173,36 @@ def get_unit(name, r):
         return None, "Problem with load data from database"
 
 
+def create_temp_table(case_id,rdb):
+    case_id_all = "$$" + "$$,$$".join(case_id) + "$$"
+    sql_drop = "DROP TABLE IF EXISTS temp_table_case_ids"
+    create_table = """ CREATE TEMP TABLE temp_table_case_ids as (SELECT "Name_ID" FROM patient where 
+    "Case_ID" in ({0})) """.format(case_id_all)
+
+    try:
+        cur = rdb.cursor()
+        cur.execute(sql_drop)
+        cur.execute(create_table)
+    except Exception:
+        print('something wrong')
+
+
 def filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter):
 
     # case_id filter
     if case_id != None:
-        case_id_all = "$$" + "$$,$$".join(case_id) + "$$"
-        case_id_filter = """ SELECT "Name_ID" FROM patient where "Case_ID" in ({0}) """.format(case_id_all)
+        case_id_filter = """ SELECT "Name_ID" FROM temp_table_case_ids """
+
 
     # categorical_filter
     measurement_filteru = "$$" + "$$,$$".join(measurement_filter) + "$$"
-    category_filter0=""
-    numerical_filter0=""
-    category_filter_where=""
+    category_filter0 = ""
+    numerical_filter0 = ""
+    category_filter_where = ""
     numerical_filter_where = ""
 
     for i in range(len(categorical)):
-        cat=categorical_filter[i]
+        cat = categorical_filter[i]
         cat = "$$"+cat[(cat.find(' is ') + 4):].replace(",", "$$,$$")+"$$"
         category_m = categorical[i].replace(" ","_")
         category_m0 = categorical[i - 1].replace(" ", "_")
@@ -211,9 +225,8 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         category_filter_where = category_filter_where + cat_filter_where
     category_filter = category_filter0 + category_filter_where
 
-
     for i in range(len(from1)):
-        numeric_m =  numerical_filter_name[i].replace(" ","_")
+        numeric_m = numerical_filter_name[i].replace(" ", "_")
         numeric_m0 = numerical_filter_name[i - 1].replace(" ", "_")
         if i == 0:
             num_filter = """Select {0}."Name_ID" FROM examination_numerical as {0}   """.format(numeric_m)
@@ -238,7 +251,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
     # join filters
     if categorical_filter and case_id and numerical_filter_name:
         sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" inner join ({2}) AS c
-        on b."Name_ID" = c."Name_ID" """.format(case_id_filter, category_filter, numerical_filter)
+        on b."Name_ID" = c."Name_ID" """.format(category_filter, numerical_filter,case_id_filter)
     elif not case_id and categorical_filter and numerical_filter_name:
         sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" """.format(
             category_filter, numerical_filter )

@@ -177,6 +177,7 @@ def get_cases():
     data.case_ids = case_ids['cases_ids']
     data.table_case_ids = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
     session['case_ids'] = 'Yes'
+    ps.create_temp_table(case_ids['cases_ids'],rdb)
     return redirect('/')
 
 
