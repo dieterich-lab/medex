@@ -54,29 +54,32 @@ This directory, as the name suggests, contains the code to display the table in 
 `medex/scripts`
 ---------------
 
-This directory contain start.sh file (Bourne shell script).The start.sh file contain commands which export database environmental variables and flask environmental variables  
- and command for running flask application.  
+This directory contain start.sh file (Bourne shell script).The start.sh file contain commands which export 
+database environmental variables and flask environmental variables and command for running flask application for developers.  
 
 
 `medex/modules`
 ----------------
- This directory contains files for create database and import data from database to application,
-  more about files and data import in [Data_import.md](https://github.com/dieterich-lab/medex/blob/PostgreSQL/documentation/Data_import.md)
+ This directory contains files for create database and import data from database to application.
+ More about files and data import in [Data_import.md](https://github.com/dieterich-lab/medex/blob/PostgreSQL/documentation/Data_import.md)
 
 
 `medex/import`
 ----------------
 
-In this folder there should be files looking like example files in `dataset_examples` directory we want to load into the application.
+This folder should contain data files that will be imported into the application. 
+These files should look like sample files in the `dataset_examples` directory. 
 
 `medex/dataset_examples`
 ------------------------
 
-The directory contains example files. The files with data to import to application should look like example file. 
+The directory contains example files. The files with data in import folder should look like example files.  
 
 `medex/documentation`
 ----------------------
 
 The directory contains documentation files related to the project.
-This is documentation for the developers, not for the end users. Therefor, all the technical details regarding implementation should be documented here. Each file contains a small piece of information. It is again *STRONGLY* recommended to separate the documentation into multiple files and do not use one for everything.
+This is documentation for the developers, not for the end users. Therefor, all the technical details regarding 
+implementation should be documented here. Each file contains a small piece of information. 
+It is again *STRONGLY* recommended to separate the documentation into multiple files and do not use one for everything.
 

@@ -4,14 +4,13 @@ from datetime import datetime
 from collections import ChainMap
 
 
-
 def get_header(r):
     """
     :param r: connection with database
     :return: data from header table
     """
     try:
-        sql = "Select * from header"
+        sql = "SELECT * FROM header"
         df = pd.read_sql(sql, r)
         name_id, measurement_name = df['Name_ID'][0], df['measurement'][0]
     except Exception:
@@ -25,7 +24,7 @@ def get_date(r):
     :return: get the first and last date on which the data were collected
     """
     try:
-        sql = """ Select min("Date"),max("Date") from examination_numerical """
+        sql = """ SELECT min("Date"),max("Date") FROM examination_numerical """
         df = pd.read_sql(sql, r)
         start_date = datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
         end_date = datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
@@ -42,8 +41,8 @@ def get_entities(r):
     :return: DataFrame with entities names and their description
             DataFrame with entities which should be showed on first page
     """
-    all_entities = """SELECT "Key","description","synonym" FROM name_type order by "order" """
-    show_on_first_page = """Select "Key" from name_type where "show" = '+' """
+    all_entities = """SELECT "Key","description","synonym" FROM name_type ORDER BY "order" """
+    show_on_first_page = """SELECT "Key" FROM name_type WHERE "show" = '+' """
 
     try:
         all_entities = pd.read_sql(all_entities, r)
@@ -62,8 +61,11 @@ def get_numeric_entities(r):
     :return:
     """
     size = """SELECT count(*) FROM examination_numerical"""
-    all_numerical_entities = """Select "Key","description","synonym" from name_type where type = 'Double' order by "Key" """
-    min_max = """Select distinct "Key",max("Value"[1]),min("Value"[1]) from examination_numerical group by "Key" """
+    all_numerical_entities = """SELECT "Key","description","synonym" 
+                                FROM name_type 
+                                WHERE type = 'Double' 
+                                ORDER BY "Key" """
+    min_max = """SELECT "Key",max("Value"),min("Value") FROM examination_numerical GROUP BY "Key" """
 
     try:
         df = pd.read_sql(size, r)
@@ -81,6 +83,7 @@ def get_numeric_entities(r):
         df_min_max = pd.DataFrame()
     return df, df1, df_min_max
 
+
 def get_timestamp_entities(r):
     """
 
@@ -88,8 +91,10 @@ def get_timestamp_entities(r):
     :return:
     """
     size = """SELECT count(*) FROM examination_date"""
-    all_timestamp_entities = """ Select "Key","description","synonym" from name_type where type = 'timestamp' 
-                                 order by "Key" """
+    all_timestamp_entities = """ SELECT "Key","description","synonym" 
+                                    FROM name_type 
+                                    WHERE type = 'timestamp' 
+                                    ORDER BY "Key" """
 
     try:
         df = pd.read_sql(size, r)
@@ -97,8 +102,6 @@ def get_timestamp_entities(r):
 
         df1 = pd.read_sql(all_timestamp_entities, r)
         df1 = df1.replace([None], ' ')
-
-
 
     except Exception:
         df = pd.DataFrame(columns=["Key","description","synonym"] )
@@ -115,17 +118,16 @@ def get_categorical_entities(r):
 
     # Retrieve all categorical values
     examination_categorical_table_size = """SELECT count(*) FROM examination_categorical"""
-    all_categorical_entities = """Select "Key","description" from name_type where "type" = 'String' order by "Key" """
+    all_categorical_entities = """SELECT "Key","description" FROM name_type WHERE "type" = 'String' ORDER BY "Key" """
 
     # Retrieve categorical values with subcategories
-    all_subcategories = """Select distinct "Key","Value"[1] from examination_categorical order by "Key","Value"[1] """
+    all_subcategories = """SELECT DISTINCT "Key","Value" FROM examination_categorical ORDER by "Key","Value" """ # check if group by is faster but shouldn't
 
     try:
         size = pd.read_sql(examination_categorical_table_size , r)
         df1 = size.iloc[0]['count']
         df2 = pd.read_sql(all_categorical_entities, r)
         df3 = pd.read_sql(all_subcategories, r)
-
 
         array = []
         # create dictionary with categories and subcategories
@@ -154,7 +156,7 @@ def get_measurement(r):
     :return:
     """
     try:
-        sql = """Select distinct "measurement":: int from examination order by "measurement" """
+        sql = """SELECT DISTINCT "measurement":: int FROM examination ORDER BY "measurement" """ # add the information about measurents to other table MAYBE
         df = pd.read_sql(sql, r)
         df['measurement'] = df['measurement'].astype(str)
         return df['measurement']
@@ -191,7 +193,7 @@ def get_unit(name, r):
      number use only for basic_stats
      """
     try:
-        sql = """SELECT "Key","unit" FROM name_type where "Key"='{}' """.format(name)
+        sql = """SELECT "Key","unit" FROM name_type WHERE "Key"='{}' """.format(name)
         df = pd.read_sql(sql, r)
         return df['unit'][0], None
     except Exception:
@@ -207,58 +209,82 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
 
     # categorical_filter
     measurement_filteru = "$$" + "$$,$$".join(measurement_filter) + "$$"
-    category_filter0=""
-    numerical_filter0=""
-    category_filter_where=""
+    category_filter0 = ""
+    numerical_filter0 = ""
+    category_filter_where = ""
     numerical_filter_where = ""
 
     for i in range(len(categorical)):
         cat = categorical_filter[i]
         cat = "$$"+cat[(cat.find(' is ') + 4):].replace(",", "$$,$$")+"$$"
-        category_m = categorical[i].replace(" ","_")
+        category_m = categorical[i].replace(" ", "_")
         category_m0 = categorical[i - 1].replace(" ", "_")
 
         if i == 0:
-            cat_filter = """Select {0}."Name_ID" FROM examination_categorical as {0}   """.format(category_m)
+            cat_filter = """SELECT {0}."Name_ID" FROM examination_categorical AS {0}   """.format(category_m)
 
-            cat_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value"[1] in ({2}) and {0}.measurement in ({3}) """.format(category_m,
-                                                                                                    categorical[i], cat,
-                                                                                                    measurement_filteru)
+            cat_filter_where = """WHERE {0}."Key"=$${1}$$ AND {0}."Value" IN ({2}) AND {0}.measurement IN ({3}) """\
+                .format(category_m, categorical[i], cat, measurement_filteru)
 
         else:
-            cat_filter = """ inner join examination_categorical as {0} on {1}."Name_ID" = {0}."Name_ID"  """.format(category_m, category_m0)
+            cat_filter = """ INNER JOIN examination_categorical AS {0} ON {1}."Name_ID" = {0}."Name_ID" """\
+                .format(category_m, category_m0)
 
-            cat_filter_where = """  and {3}."Key"=$${0}$$ and {3}."Value"[1] in ({1}) and {3}.measurement in ({2}) """.format(categorical[i], cat,
-                                                                                                  measurement_filteru,
-                                                                                                  category_m)
+            cat_filter_where = """  AND {3}."Key"=$${0}$$ AND {3}."Value" IN ({1}) AND {3}.measurement IN ({2}) """\
+                .format(categorical[i], cat,measurement_filteru, category_m)
+
+        case_cat = """ WHEN "Key"=$${0}$$ and "Value" IN ({1}) AND measurement IN ({2}) THEN "Name_ID" """\
+            .format(categorical[i], cat, measurement_filteru)
 
         category_filter0 = category_filter0 + cat_filter
         category_filter_where = category_filter_where + cat_filter_where
     category_filter = category_filter0 + category_filter_where
 
+    case_cat_final = """ SELECT "Name_ID",count("Name_ID")
+                         FROM (SELECT CASE {0} END AS "Name_ID" FROM examination_categorical) f 
+                         GROUP BY "Name_ID" 
+                         HAVING count("Name_ID") = {1} """.format(case_cat, len(categorical))
+
+    print(case_cat_final)
+    print(category_filter)
+
+    """ SELECT "Name_ID1" from (SELECT CASE WHEN "Key"=$$Diabetes$$ and "Value"[1] IN ('no') AND measurement 
+    IN ('1') THEN "Name_ID" END AS "Name_ID1",CASE WHEN "Key"=$$NYHA$$ and "Value"[1] IN ('I','II') 
+    AND measurement IN ('1') THEN "Name_ID" END AS "Name_ID2" FROM examination_categorical 
+    where examination_categorical is not null) f group by "Name_ID1" """
 
     for i in range(len(from1)):
-        numeric_m =  numerical_filter_name[i].replace(" ","_")
+        numeric_m = numerical_filter_name[i].replace(" ","_")
         numeric_m0 = numerical_filter_name[i - 1].replace(" ", "_")
         if i == 0:
-            num_filter = """Select {0}."Name_ID" FROM examination_numerical as {0}   """.format(numeric_m)
+            num_filter = """SELECT {0}."Name_ID" FROM examination_numerical as {0}   """.format(numeric_m)
 
-            num_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value"[1] between $${2}$$ and $${3}$$ and {0}.measurement in ({4}) """.format(numeric_m,
-                                                                                   numerical_filter_name[i], from1[i],
-                                                                                   to1[i], measurement_filteru,)
+            num_filter_where = """WHERE {0}."Key"=$${1}$$ AND {0}."Value" BETWEEN $${2}$$ AND $${3}$$ 
+                                    AND {0}.measurement IN ({4}) """.format(numeric_m, numerical_filter_name[i],
+                                                                            from1[i], to1[i], measurement_filteru)
 
         else:
-            num_filter = """ inner join examination_numerical as {0} on {1}."Name_ID" = {0}."Name_ID"  """.format( numeric_m, numeric_m0)
+            num_filter = """ INNER JOIN examination_numerical as {0} 
+                             ON {1}."Name_ID" = {0}."Name_ID"  """.format(numeric_m, numeric_m0)
 
-            num_filter_where = """  and {4}."Key"=$${0}$$ and {4}."Value"[1] between $${1}$$ and $${2}$$ and {4}.measurement in ({3}) """.format(numerical_filter_name[i], from1[i],
-                                                                                   to1[i], measurement_filteru,numeric_m)
-
+            num_filter_where = """ AND {4}."Key"=$${0}$$ 
+                                   AND {4}."Value" BETWEEN $${1}$$ AND $${2}$$ 
+                                   AND {4}.measurement IN ({3}) """.format(numerical_filter_name[i], from1[i], to1[i],
+                                                                           measurement_filteru,numeric_m)
+        case_num = """ WHEN "Key"=$${0}$$ and "Value" BETWEEN $${1}$$ AND $${2}$$ AND measurement IN ({2}) 
+                       THEN "Name_ID" """.format(numerical_filter_name[i], from1[i], to1[i], measurement_filteru)
 
         numerical_filter0 = numerical_filter0 + num_filter
         numerical_filter_where = numerical_filter_where + num_filter_where
     numerical_filter = numerical_filter0 + numerical_filter_where
 
+    case_num_final = """ SELECT "Name_ID",count("Name_ID")
+                         FROM (SELECT CASE {0} END AS "Name_ID" FROM examination_categorical) f 
+                         GROUP BY "Name_ID" 
+                         HAVING count("Name_ID") = {1} """.format(case_num, len(from1))
 
+    print(case_num_final)
+    print(numerical_filter)
 
     # join filters
     if categorical_filter and case_id and numerical_filter_name:
@@ -279,7 +305,6 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         sql = category_filter
     elif case_id and not categorical_filter and not numerical_filter_name:
         sql = case_id_filter
-
 
     return sql
 
@@ -302,59 +327,83 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
     entity_column = '"'+'" text,"'.join(entity) + '" text'
     measurement = "'" + "','".join(measurement) + "'"
     if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT "Name_ID","measurement","Date","Key",array_to_string("Value",';') as "Value" 
+        sql = """SELECT "Name_ID","measurement","Date","Key","Value"::text 
                 FROM examination_numerical 
-                WHERE "Key" IN ({0})  and measurement IN ({1}) and "Date" Between '{2}' and '{3}'
+                WHERE "Key" IN ({0})  
+                AND measurement IN ({1}) 
+                AND "Date" BETWEEN '{2}' AND '{3}'
                 UNION
-                SELECT "Name_ID","measurement","Date","Key",array_to_string("Value",';') as "Value"
+                SELECT "Name_ID","measurement","Date","Key","Value"
                 FROM examination_categorical 
-                WHERE "Key" IN ({0}) and measurement IN ({1}) and "Date" Between '{2}' and '{3}'
+                WHERE "Key" IN ({0}) 
+                AND measurement IN ({1}) 
+                ANd "Date" BETWEEN '{2}' and '{3}'
                 """.format(entity_final, measurement, date[0], date[1])
 
-        sql2 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS 
-                row_name,* from (Select "Name_ID","measurement","Date","Key",array_to_string("Value",'';'') as "Value" 
-                FROM examination_numerical 
-                WHERE  "Key" IN ({0})
-                            UNION
-                SELECT "Name_ID","measurement",
-                "Date","Key",array_to_string("Value",'';'') as "Value" 
-                FROM examination_categorical
-                WHERE "Key" IN ({0})) as k  order by row_name',
-                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order"') 
-                as ct (row_name text,"Name_ID" text,"measurement" text,"Date" text,{2}) 
-                where "Date" Between '{3}' and '{4}' and "measurement" IN ({1}) order by "Name_ID", measurement 
+        # Pivoting
+        """ SELECT "Name_ID",measurement
+                    AVG(CASE WHEN "Key"=$${1}$$ THEN "Value" END) AS "{1}"
+                    AVG(CASE WHEN "Key"=$${1}$$ THEN "Value" END) AS "{1}" 
+                    group by "Name_ID",measurement """
+
+        sql2 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,* 
+                                        FROM (SELECT "Name_ID","measurement","Date","Key",
+                                                        STRING_AGG("Value"::text,'';'') "Value"
+                                                FROM examination_numerical 
+                                                WHERE  "Key" IN ({0})
+                                                GROUP BY "Name_ID","measurement","Date","Key"
+                                                UNION
+                                            SELECT "Name_ID","measurement","Date","Key",STRING_AGG("Value",'';'') "Value"
+                                            FROM examination_categorical
+                                            WHERE "Key" IN ({0})
+                                            GROUP BY "Name_ID","measurement","Date","Key"
+                                            ) AS k  
+                                            ORDER BY row_name',
+                                        'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) ORDER BY "order"') 
+                                        AS ct (row_name text,"Name_ID" text,"measurement" text,"Date" text,{2}) 
+                WHERE "Date" BETWEEN '{3}' AND '{4}' 
+                AND "measurement" IN ({1}) 
+                ORDER BY "Name_ID", measurement 
                 """.format(entity_final, measurement, entity_column, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
         sql = """SELECT en."Name_ID",en."measurement",en."Date",en."Key",array_to_string(en."Value",';') as "Value" 
                 FROM examination_numerical as en 
-                right join ({4}) as df 
-                on en."Name_ID" = df."Name_ID"
-                WHERE en."Key" IN ({0})  and en.measurement IN ({1}) and en."Date" Between '{2}' and '{3}' 
+                RIGHT JOIN ({4}) AS df 
+                ON en."Name_ID"=df."Name_ID"
+                WHERE en."Key" IN ({0}) 
+                AND en.measurement IN ({1}) 
+                AND en."Date" BETWEEN '{2}' AND '{3}' 
                 UNION
                 SELECT ec."Name_ID",ec."measurement",ec."Date",ec."Key",array_to_string(ec."Value",';') as "Value"
                 FROM examination_categorical as ec 
-                right join ({4}) as df 
-                on ec."Name_ID" = df."Name_ID"
-                WHERE ec."Key" IN ({0}) and ec.measurement IN ({1}) and ec."Date" Between '{2}' and '{3}' 
+                RIGHT JOIN ({4}) as df 
+                on ec."Name_ID"=df."Name_ID"
+                WHERE ec."Key" IN ({0}) 
+                AND ec.measurement IN ({1}) 
+                AND ec."Date" BETWEEN '{2}' AND '{3}' 
                 """.format(entity_final, measurement, date[0], date[1], df)
 
-        sql2 = """SELECT ek.* FROM crosstab(
-                'SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS 
-                row_name,* from (SELECT en."Name_ID",en."measurement",en."Date",en."Key",array_to_string(en."Value",'';'') as "Value" 
-                FROM examination_numerical as en 
-                right join ({5}) as df 
-                on en."Name_ID" = df."Name_ID"
-                WHERE en."Key" IN ({0}) 
-                UNION
-                SELECT ec."Name_ID",ec."measurement",ec."Date",ec."Key",array_to_string(ec."Value",'';'') as "Value"
-                FROM examination_categorical as ec 
-                right join ({5}) as df 
-                on ec."Name_ID" = df."Name_ID"
-                WHERE ec."Key" IN ({0}) ) as k order by row_name',
-                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) order by "order" ') 
-                as ek (row_name text,"Name_ID" text,"measurement" text,"Date" text,{2}) 
-                where "Date" Between '{3}' and '{4}' and "measurement" IN ({1}) 
+        sql2 = """SELECT ek.* FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,*
+                                            FROM (SELECT en."Name_ID",en."measurement",en."Date",en."Key",
+                                                             STRING_AGG("Value"::text,'';'') "Value"
+                                                    FROM examination_numerical AS en 
+                                                    RIGHT JOIN ({5}) AS df 
+                                                    ON en."Name_ID"=df."Name_ID"
+                                                    WHERE en."Key" IN ({0})
+                                                    GROUP BY "Name_ID","measurement","Date","Key" 
+                                                    UNION
+                                                SELECT ec."Name_ID",ec."measurement",ec."Date",ec."Key",
+                                                        STRING_AGG("Value",'';'') "Value"
+                                                FROM examination_categorical AS ec 
+                                                RIGHT JOIN ({5}) AS df 
+                                                ON ec."Name_ID" = df."Name_ID"
+                                                WHERE ec."Key" IN ({0}) 
+                                                GROUP BY "Name_ID","measurement","Date","Key"
+                                                ) as k ORDER BY row_name',
+                                            'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) ORDER BY "order" ') 
+                                            AS ek (row_name text,"Name_ID" text,"measurement" text,"Date" text,{2}) 
+                    WHERE "Date" BETWEEN '{3}' AND '{4}' AND "measurement" IN ({1}) 
                 """.format(entity_final, measurement, entity_column, date[0], date[1], df)
 
     try:
@@ -383,65 +432,78 @@ def get_num_values_basic_stats(entity, measurement, case_id, categorical_filter,
     df: DataFrame with columns Name_ID,measurement,Key,instance,Value
 
     """
+
     round = 'not'
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
     if not categorical_filter and not case_id and not numerical_filter_name:
         if round == 'not':
             sql = """SELECT "Key","measurement",
-                    count("Value"[1]),
-                    min("Value"[1]),
-                    max("Value"[1]),
-                    AVG("Value"[1]) as "mean",
-                    stddev("Value"[1]),
-                    (stddev("Value"[1])/sqrt(count("Value"[1]))) as "stderr",
-                    (percentile_disc(0.5) within group (order by "Value"[1])) as median 
+                    count(DISTINCT "Name_ID"),
+                    min("Value"),
+                    max("Value"),
+                    AVG("Value") AS "mean",
+                    stddev("Value"),
+                    (stddev("Value")/sqrt(count("Value"))) AS "stderr",
+                    (percentile_disc(0.5) within group (order by "Value")) AS median 
                     FROM examination_numerical 
-                    WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Date" between '{2}' and '{3}' 
-                    group by "Key","measurement" order by "Key","measurement" """.format(
+                    WHERE "Key" IN ({0}) 
+                    AND "measurement" IN ({1}) 
+                    AND "Date" BETWEEN '{2}' AND '{3}' 
+                    GROUP BY "Key","measurement" 
+                    ORDER BY "Key","measurement" """.format(
                     entity_final, measurement, date[0], date[1])
         else:
             sql = """SELECT "Key","measurement",
-                    count("Value"[1]),
-                    min("Value"[1]),
-                    max("Value"[1]),
-                    ROUND(AVG("Value"[1])::numeric,2) as "mean",
-                    ROUND(stddev("Value"[1])::numeric,2),
-                    ROUND((stddev("Value"[1])/sqrt(count("Value"[1])))::numeric,2) as "stderr",
-                    (percentile_disc(0.5) within group (order by "Value"[1])) as median 
+                    count(DISTINCT "Name_ID"),
+                    min("Value"),
+                    max("Value"),
+                    ROUND(AVG("Value")::numeric,2) AS "mean",
+                    ROUND(stddev("Value")::numeric,2),
+                    ROUND((stddev("Value")/sqrt(count("Value")))::numeric,2) AS "stderr",
+                    (percentile_disc(0.5) within group (order by "Value")) as median 
                     FROM examination_numerical
-                    WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Date" between '{2}' and '{3}' 
-                    group by "Key","measurement" order by "Key","measurement" """.format(
+                    WHERE "Key" IN ({0}) 
+                    AND "measurement" IN ({1}) 
+                    AND "Date" BETWEEN '{2}' AND '{3}' 
+                    GROUP BY "Key","measurement" 
+                    ORDER BY "Key","measurement" """.format(
                     entity_final, measurement, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
         if round == 'not':
             sql = """SELECT "Key","measurement",
-                    count("Value"[1]),
-                    min("Value"[1]),
-                    max("Value"[1]),
-                    AVG("Value"[1]) as "mean",
-                    stddev("Value"[1]),(stddev("Value"[1])/sqrt(count("Value"[1]))) as "stderr",
-                    (percentile_disc(0.5) within group (order by "Value"[1])) as median 
+                    count(DISTINCT "Name_ID"),
+                    min("Value"),
+                    max("Value"),
+                    AVG("Value") AS "mean",
+                    stddev("Value"),(stddev("Value")/sqrt(count("Value"))) AS "stderr",
+                    (percentile_disc(0.5) within group (order by "Value")) AS median 
                     FROM examination_numerical
-                    WHERE "Key" IN ({0}) and "Name_ID" in ({4}) and "measurement" IN ({1}) 
-                    and "Date" between '{2}' and '{3}' 
-                    group by "Key","measurement" order by "Key","measurement"
+                    WHERE "Key" IN ({0}) 
+                    AND "Name_ID" IN ({4}) 
+                    AND "measurement" IN ({1}) 
+                    AND "Date" BETWEEN '{2}' AND '{3}' 
+                    GROUP BY "Key","measurement" 
+                    ORDER BY "Key","measurement"
                     """.format(entity_final, measurement, date[0], date[1],df)
         else:
             sql = """SELECT "Key","measurement",
-                    count("Value"[1]),
-                    min("Value"[1]),
-                    max("Value"[1]),
-                    ROUND(AVG("Value"[1])::numeric,2) as "mean",
-                    ROUND(stddev("Value"[1])::numeric,2),
-                    ROUND((stddev("Value"[1])/sqrt(count("Value"[1])))::numeric,2) as "stderr",
-                    (percentile_disc(0.5) within group (order by "Value"[1])) as median 
-                    FROM examination_numerical as en
-                    left join ({4}) as df 
-                    on en."Name_ID" = df."Name_ID" 
-                    WHERE "Key" IN ({0}) and "measurement" IN ({1}) and "Date" between '{2}' and '{3}' 
-                    group by "Key","measurement" order by "Key","measurement"
+                    count(DISTINCT "Name_ID"),
+                    min("Value"),
+                    max("Value"),
+                    ROUND(AVG("Value")::numeric,2) AS "mean",
+                    ROUND(stddev("Value")::numeric,2),
+                    ROUND((stddev("Value")/sqrt(count("Value")))::numeric,2) AS "stderr",
+                    (percentile_disc(0.5) within group (order by "Value")) AS median 
+                    FROM examination_numerical AS en
+                    RIGHT JOIN ({4}) AS df 
+                    ON en."Name_ID" = df."Name_ID" 
+                    WHERE "Key" IN ({0}) 
+                    AND "measurement" IN ({1}) 
+                    AND "Date" between '{2}' and '{3}' 
+                    GROUP BY "Key","measurement" 
+                    ORDER BY "Key","measurement"
                     """.format(entity_final, measurement, date[0], date[1], df)
 
     try:
@@ -470,19 +532,20 @@ def get_cat_values_basic_stats(entity,measurement, case_id, categorical_filter, 
     measurement = "'" + "','".join(measurement) + "'"
 
     if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT "Key","measurement",number,count("Key") 
-                FROM examination_categorical,
-                array_length("Value",1) as f (number) 
-                WHERE "Key" IN ({0}) and "measurement" IN ({1}) 
-                group by "measurement","Key",number """.format(entity_final, measurement)
+        sql = """SELECT "Key","measurement",count(DISTINCT "Name_ID") 
+                FROM examination_categorical
+                WHERE "Key" IN ({0}) 
+                AND "measurement" IN ({1}) 
+                GROUP BY "measurement","Key" """.format(entity_final, measurement)
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT "Key","measurement",number,count("Key") 
-                FROM examination_categorical,
-                array_length("Value",1) as f (number)
-                WHERE "Key" IN ({0}) and "Name_ID" in ({4}) and "measurement" IN ({1}) 
-                and "Date" between '{2}' and '{3}' 
-                group by "measurement","Key",number """.format(entity_final, measurement, date[0], date[1], df)
+        sql = """SELECT "Key","measurement",count(DISTINCT "Name_ID") 
+                FROM examination_categorical
+                WHERE "Key" IN ({0}) 
+                AND "Name_ID" in ({4}) 
+                AND "measurement" IN ({1}) 
+                AND "Date" BETWEEN '{2}' AND '{3}' 
+                GROUP BY "Name_ID","measurement","Key" """.format(entity_final, measurement, date[0], date[1], df)
 
     try:
         df = pd.read_sql(sql, r)
@@ -505,47 +568,57 @@ def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, cas
 
     """
     if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT "Name_ID",AVG(f."Value") as "{0}" 
-                FROM examination_numerical,unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Date" between '{2}' and '{3}' 
-                Group by "Name_ID","measurement","Key" 
-                order by "measurement"  """.format(x_entity, x_measurement, date[0], date[1])
+        sql = """SELECT "Name_ID",AVG("Value") as "{0}" 
+                FROM examination_numerical  
+                WHERE "Key" IN ('{0}') 
+                AND "measurement"='{1}' 
+                AND "Date" BETWEEN '{2}' AND '{3}' 
+                GROUP BY "Name_ID","measurement","Key" """.format(x_entity, x_measurement, date[0], date[1])
 
-        sql2 = """SELECT "Name_ID",AVG(f."Value") as "{0}" 
-                FROM examination_numerical,
-                unnest("Value") as f ("Value")  
-                WHERE "Key" IN ('{0}') and "measurement"= '{1}' and "Date" between '{2}' and '{3}'
-                Group by "Name_ID","measurement","Key" 
-                order by "measurement" """.format(y_entity, y_measurement, date[0], date[1])
+        sql2 = """SELECT "Name_ID",AVG("Value") as "{0}" 
+                FROM examination_numerical
+                WHERE "Key" IN ('{0}') 
+                AND "measurement"= '{1}' AND "Date" BETWEEN '{2}' AND '{3}'
+                GROUP BY "Name_ID","measurement","Key" 
+                ORDER BY "measurement" """.format(y_entity, y_measurement, date[0], date[1])
+
+        """SELECT "Name_ID",AVG("Value") as "{0}" 
+                        FROM examination_numerical  
+                        WHERE "Key" IN ('{0}') 
+                        AND "measurement"='{1}' 
+                        AND "Date" BETWEEN '{2}' AND '{3}' 
+                        GROUP BY "Name_ID","measurement","Key" """
+
+        # join or case what is faster?
 
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT en."Name_ID",AVG(f."Value") as "{0}" 
+        sql = """SELECT en."Name_ID",AVG("Value") as "{0}" 
                 FROM examination_numerical as en
-                right join ({4}) as df 
-                on en."Name_ID" = df."Name_ID" 
-                ,unnest("Value") as f ("Value")  
-                WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' 
-                and en."Date" between '{2}' and '{3}' 
-                Group by en."Name_ID",en."measurement",en."Key" 
-                order by en."measurement"  """.format(x_entity, x_measurement, date[0], date[1], df)
+                RIGHT JOIN ({4}) as df 
+                ON en."Name_ID" = df."Name_ID" 
+                WHERE en."Key" IN ('{0}') 
+                AND en."measurement"= '{1}' 
+                AND en."Date" BETWEEN '{2}' AND '{3}' 
+                GROUP BY en."Name_ID",en."measurement",en."Key" 
+                ORDER BY en."measurement"  """.format(x_entity, x_measurement, date[0], date[1], df)
 
-        sql2 = """SELECT en."Name_ID",AVG(f."Value") as "{0}" 
+        sql2 = """SELECT en."Name_ID",AVG("Value") as "{0}" 
                 FROM examination_numerical as en
-                right join ({4}) as df 
-                on en."Name_ID" = df."Name_ID" 
-                ,unnest("Value") as f ("Value")  
-                WHERE en."Key" IN ('{0}') and en."measurement"= '{1}' 
-                and en."Date" between '{2}' and '{3}'
-                Group by en."Name_ID",en."measurement",en."Key" 
-                order by "measurement" """.format(y_entity, y_measurement, date[0], date[1], df)
+                RIGHT JOIN ({4}) as df 
+                ON en."Name_ID" = df."Name_ID" 
+                WHERE en."Key" IN ('{0}') 
+                AND en."measurement"= '{1}' 
+                AND en."Date" BETWEEN '{2}' AND '{3}'
+                GROUP BY en."Name_ID",en."measurement",en."Key" 
+                ORDER BY "measurement" """.format(y_entity, y_measurement, date[0], date[1], df)
 
     try:
         df3 = pd.read_sql(sql, r)
         df4 = pd.read_sql(sql2, r)
         return df3, df4, None
     except Exception:
-        return None,None, "Problem with load data from database"
+        return None, None, "Problem with load data from database"
 
 
 def get_cat_values(entity, subcategory, measurement, case_id, categorical_filter, categorical, numerical_filter_name,
@@ -626,7 +699,7 @@ def get_cat_values_histogram(entity, subcategory, measurement, case_id, categori
         Group by ec."Name_ID", ec."measurement"
         order by string_agg(distinct f."Value",',')""".format(entity, subcategory_final, measurement, df)
 
-    df = pd.read_sql(sql, r)
+
     try:
         df = pd.read_sql(sql, r)
     except Exception:
@@ -636,6 +709,7 @@ def get_cat_values_histogram(entity, subcategory, measurement, case_id, categori
     else:
         df.columns = ["Name_ID","measurement", entity]
         return df, None
+
 
 def get_cat_values_barchart(entity, subcategory, measurement, case_id, categorical_filter, categorical,
                             numerical_filter_name, from1, to1, measurement_filter, date, r):
@@ -655,18 +729,22 @@ def get_cat_values_barchart(entity, subcategory, measurement, case_id, categoric
     if not categorical_filter and not case_id and not numerical_filter_name:
         sql = """SELECT "Value","measurement",count("Value") 
                 FROM examination_categorical 
-                WHERE "Key"='{0}' and "Date" BETWEEN '{3}' and '{4}'
-                and "measurement" IN ({2}) and ARRAY{1} && "Value"  
-                group by "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1])
+                WHERE "Key"='{0}'
+                AND "Value" IN IN ({1}) 
+                AND "Date" BETWEEN '{3}' AND '{4}'
+                AND "measurement" IN ({2})
+                GROUP BY "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
         sql = """SELECT "Value","measurement",count("Value") 
-                FROM examination_categorical as ec
-                right join ({5}) as df 
-                on ec."Name_ID" = df."Name_ID"  
-                WHERE "Key"='{0}' and "Date" BETWEEN '{3}' and '{4}'
-                and "measurement" IN ({2}) and ARRAY{1} && "Value"  
-                group by "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1], df)
+                FROM examination_categorical AS ec
+                RIGHT JOIN ({5}) as df 
+                ON ec."Name_ID" = df."Name_ID"  
+                WHERE "Key"='{0}'
+                AND "Value" IN IN ({1})  
+                AND "Date" BETWEEN '{3}' AND '{4}'
+                AND "measurement" IN ({2})
+                GROUP BY "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1], df)
 
     try:
         df = pd.read_sql(sql, r)
@@ -696,33 +774,33 @@ def get_num_cat_values(entity_num, entity_cat, subcategory, measurement, case_id
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
     if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT en."Name_ID",en."measurement",
-                AVG(a."Value") as "{0}",
-                STRING_AGG(distinct f."Value", ',') as "{1}" 
-                FROM examination_numerical as en 
-                left join examination_categorical as ec 
-                on en."Name_ID" = ec."Name_ID",
-                unnest(en."Value") as a ("Value"),
-                unnest(ec."Value") as f ("Value") 
-                where en."Key" = '{0}' and ec."Key" = '{1}' and en."measurement" IN ({3}) and ec."measurement" IN ({3}) 
-                and en."Date" Between '{4}' and '{5}' and f."Value" IN ({2}) 
-                group by en."Name_ID",en."measurement",ec."measurement" order by en."Name_ID",en."measurement" 
+        sql = """SELECT en."Name_ID",en."measurement",AVG(en."Value"),ec."Value"
+                FROM examination_numerical AS en 
+                LEFT JOIN examination_categorical AS ec 
+                ON en."Name_ID" = ec."Name_ID" AND en."measurement"=ec."measurement"
+                WHERE en."Key" = '{0}' 
+                AND ec."Key" = '{1}' 
+                AND ec."Value" IN ({2}) 
+                AND en."measurement" IN ({3}) 
+                AND ec."measurement" IN ({3}) 
+                AND en."Date" BETWEEN '{4}' AND '{5}'
+                GROUP BY en."Name_ID",en."measurement",ec."measurement" " 
                 """.format(entity_num, entity_cat, subcategory, measurement,date[0],date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT en."Name_ID",en."measurement",
-                AVG(a."Value") as "{0}",
-                STRING_AGG(distinct f."Value", ',') as "{1}" 
-                FROM examination_numerical as en 
-                left join examination_categorical as ec 
-                on en."Name_ID" = ec."Name_ID"
-                right join ({6}) as df 
-                on ec."Name_ID" = df."Name_ID"  
-                ,unnest(en."Value") as a ("Value"),
-                unnest(ec."Value") as f ("Value") 
-                where en."Key" = '{0}' and ec."Key" = '{1}' and en."measurement" IN ({3}) and ec."measurement" IN ({3}) 
-                and en."Date" Between '{4}' and '{5}' and f."Value" IN ({2}) 
-                group by en."Name_ID",en."measurement",ec."measurement" order by en."Name_ID",en."measurement" 
+        sql = """SELECT en."Name_ID",en."measurement",AVG(en."Value"),ec."Value" 
+                FROM examination_numerical AS en 
+                LEFT JOIN examination_categorical AS ec 
+                ON en."Name_ID" = ec."Name_ID" AND en."measurement"=ec."measurement"
+                RIGHT JOIN ({6}) as df 
+                ON ec."Name_ID" = df."Name_ID"
+                WHERE en."Key" = '{0}' 
+                AND ec."Key" = '{1}'
+                AND ec."Value" IN ({2})  
+                AND en."measurement" IN ({3}) 
+                AND ec."measurement" IN ({3}) 
+                AND en."Date" BETWEEN '{4}' and '{5}' 
+                GROUP BY en."Name_ID",en."measurement",ec."measurement" 
                 """.format(entity_num, entity_cat, subcategory, measurement, date[0], date[1], df)
 
     try:
@@ -735,7 +813,7 @@ def get_num_cat_values(entity_num, entity_cat, subcategory, measurement, case_id
         return df, None
 
 
-def get_values_heatmap(entity, measurement, case_id, categorical_filter, categorical, numerical_filter_name, from1,
+def get_values_heatmap(entity, case_id, categorical_filter, categorical, numerical_filter_name, from1,
                        to1, measurement_filter, date, r):
     """ Get numerical values from numerical table  from database
 
@@ -748,28 +826,52 @@ def get_values_heatmap(entity, measurement, case_id, categorical_filter, categor
     df: DataFrame with columns Name_ID,entity1,entity2,...
 
     """
+    case_statement = ""
+    crosstab_columns = ""
+    for ent in entity:
+        create_case_statement = """CASE WHEN "Key" = '{0}' THEN "Value" END AS "{0}" """.format(ent)
+        case_statement = case_statement + ',' + create_case_statement
+        create_crosstab_columns = '"{}" double precision'.format(ent)
+        crosstab_columns = crosstab_columns + ',' + create_crosstab_columns
+
 
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
     if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT "Name_ID","measurement","Key",AVG(f."Value") as "Value" 
-                FROM examination_numerical, 
-                unnest("Value") as f("Value") 
-                WHERE "Key" IN ({0}) and "measurement" in ('{1}') and "Date" Between '{2}' and '{3}'
-                Group by "Name_ID","measurement","Key" """.format(entity_fin, measurement, date[0], date[1])
+        sql = """SELECT "Name_ID","Key",AVG("Value") as "Value" 
+                FROM examination_numerical 
+                WHERE "Key" IN ({0}) 
+                AND "Date" BETWEEN '{1}' ANd '{2}'
+                GROUP BY "Name_ID","Key" """.format(entity_fin, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT en."Name_ID","measurement","Key",AVG(f."Value") as "Value" 
-                FROM examination_numerical as en
-                right join ({4}) as df 
-                on en."Name_ID" = df."Name_ID" , 
-                unnest("Value") as f("Value")
-                WHERE "Key" IN ({0}) and "measurement" in ('{1}') and "Date" Between '{2}' and '{3}'
-                Group by en."Name_ID","measurement","Key" """.format(entity_fin, measurement, date[0], date[1],df)
+        sql = """SELECT en."Name_ID","Key","Value" 
+                FROM examination_numerical AS en
+                RIGHT JOIN ({3}) AS df 
+                ON en."Name_ID" = df."Name_ID" 
+                WHERE "Key" IN ({0}) 
+                AND "Date" Between '{1}' AND '{2}'
+                GROUP BY en."Name_ID","Key" """.format(entity_fin, date[0], date[1], df)
+
+    sql_case = """SELECT "Name_ID","Key",AVG(f."Value") as "Value", {3}
+            FROM examination_numerical 
+            WHERE "Key" IN ({0}) 
+            AND "Date" BETWEEN '{1}' ANd '{2}'
+            GROUP BY "Name_ID" """.format(entity_fin, date[0], date[1],case_statement)
+
+    sql_crosstab = """SELECT * FROM crosstab ('SELECT "Name_ID","Key","Value" 
+            FROM examination_numerical 
+            WHERE "Key" IN ({0}) 
+            AND "Date" BETWEEN '{1}' ANd '{2}'
+            ORDER  BY 1,2') AS ct ("Name_ID" text, {3})""".format(entity_fin, date[0], date[1], crosstab_columns)
+
+    print(sql_case)
+    print(sql_crosstab)
 
     try:
         df = pd.read_sql(sql, r)
-        df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
+
+        df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index() # should I do this sql?
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"
         else:

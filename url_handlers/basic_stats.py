@@ -186,10 +186,10 @@ def get_basic_stats():
                                    error=error)
 
         categorical_df['count NaN'] = int(n) - categorical_df['count']
-        instance=categorical_df['number'].unique()
 
-        categorical_df = categorical_df.set_index(['Key', 'measurement', 'number'])
+        categorical_df = categorical_df.set_index(['Key', 'measurement'])
         basic_stats_c = categorical_df.to_dict()
+        print(basic_stats_c)
 
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,
@@ -200,7 +200,6 @@ def get_basic_stats():
                                categorical_entities=categorical_entities,
                                measurement_categorical=measurement,
                                measurement_filter=measurement_filter,
-                               instance=instance,
                                basic_stats_c=basic_stats_c,
                                start_date=start_date,
                                end_date=end_date,

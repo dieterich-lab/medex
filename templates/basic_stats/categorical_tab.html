@@ -53,16 +53,14 @@
                         <tbody>
                             {% for entity in categorical_entities %}
                             {% for m in measurement_categorical %}
-                            {% for i in instance %}
                             <tr>
-                                {% if basic_stats_c['count'][entity,m,i] is defined %}
+                                {% if basic_stats_c['count'][entity,m] is defined %}
                                 <td>{{ entity }}</td>
                                 {% if block != 'none' %}<td>{{ m }}</td>{% endif %}
-                                <td>{{ basic_stats_c['count'][entity,m,i]}}</td>
-                                <td>{{ basic_stats_c['count NaN'][entity,m,i] }}</td>
+                                <td>{{ basic_stats_c['count'][entity,m]}}</td>
+                                <td>{{ basic_stats_c['count NaN'][entity,m] }}</td>
                                 {% endif %}
                             </tr>
-                            {% endfor %}
                             {% endfor %}
                             {% endfor %}
                         </tbody>

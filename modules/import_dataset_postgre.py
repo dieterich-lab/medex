@@ -120,19 +120,24 @@ def alter_table(rdb):
 
     sql_remove_null = """Delete from examination where "Value" is null """
 
-    sql2 = """CREATE TABLE examination_categorical as select min("ID") as "ID","Name_ID","measurement","Date" ,"Key",
-    array_agg("Value") as "Value" from (SELECT e.* from examination as e join name_type as n on e."Key" 
-    = n."Key" where n."type" = 'String') as f group by "Name_ID","Date","measurement","Key" order by "Name_ID" """
+    sql2 = """CREATE TABLE examination_categorical 
+                AS SELECT "ID","Name_ID","measurement","Date" ,"Key","Value" 
+                FROM (SELECT e.* FROM examination AS e 
+                                JOIN name_type AS n ON e."Key"=n."Key" 
+                                WHERE n."type" = 'String') AS f """
 
-    sql3 = """CREATE TABLE examination_numerical AS SELECT min("ID") as "ID","Name_ID","measurement","Date","Key",
-    array_agg("Value"::double precision) as "Value" from (SELECT e.* from examination as e join name_type
-    as n on e."Key" = n."Key" where n."type" = 'Double' and e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') 
-    as f group by "Name_ID","Date","measurement","Key" order by "Name_ID" """
+    sql3 = """CREATE TABLE examination_numerical 
+                AS SELECT "ID","Name_ID","measurement","Date","Key","Value"::double precision 
+                FROM (SELECT e.* from examination AS e 
+                JOIN name_type AS n ON e."Key"=n."Key" 
+                WHERE n."type" = 'Double' AND e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') AS f """
 
-    sql3b = """CREATE TABLE examination_date AS SELECT "ID","Name_ID","measurement","Date","Key","Value"::timestamp
-     from (SELECT e.* from examination as e join name_type as n on e."Key" = n."Key" where n."type" = 'timestamp'and
-     e."Value" ~ '^(0[0-9]{2}[1-9]|[1-9][0-9]{3})-((0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01])|02-(0[1-9]|1[0-9]|2[0-8])|(0[469]|11)-(0[1-9]|[12][0-9]|30))$') 
-    as f"""  # here I have to change but not yet
+    sql3b = """CREATE TABLE examination_date 
+                AS SELECT "ID","Name_ID","measurement","Date","Key","Value"::timestamp
+                FROM (SELECT e.* FROM examination AS e 
+                                JOIN name_type AS n ON e."Key"=n."Key" 
+                                WHERE n."type" = 'timestamp' AND e."Value" ~ '^(0[0-9]{2}[1-9]|[1-9][0-9]{3})-((0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01])|02-(0[1-9]|1[0-9]|2[0-8])|(0[469]|11)-(0[1-9]|[12][0-9]|30))$') 
+                AS f"""  # here I have to change but not yet
 
     sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from examination"""
 
