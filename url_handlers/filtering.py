@@ -5,7 +5,6 @@ from datetime import datetime
 def date():
     start_date = session.get('start_date')
     end_date = session.get('end_date')
-    print(start_date)
     if start_date is None:
         now = datetime.now()
         start_date = datetime.timestamp(now) * 1000
