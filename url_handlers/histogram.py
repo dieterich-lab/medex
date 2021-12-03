@@ -9,6 +9,7 @@ histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 
 @histogram_page.route('/histogram', methods=['GET'])
 def get_statistics():
+    start_date, end_date = filtering.date()
     number_of_bins = 20
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
@@ -17,8 +18,8 @@ def get_statistics():
                            block=block,
                            number_of_bins=number_of_bins,
                            all_measurement=all_measurement,
-                           start_date=session.get('start_date'),
-                           end_date=session.get('end_date'),
+                           start_date=start_date,
+                           end_date=start_date,
                            measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,

@@ -123,8 +123,6 @@ def message_count():
                 all_subcategory_entities=all_subcategory_entities,
                 all_measurement=all_measurement,
                 df_min_max=df_min_max,
-                start_date=start_date,
-                end_date=end_date,
                 case_display=case_display)
 
 

@@ -9,6 +9,7 @@ basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_sta
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
+    start_date, end_date = filtering.date()
     numerical_filter = filtering.check_for_numerical_filter_get()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('basic_stats/basic_stats.html',
@@ -17,8 +18,8 @@ def get_statistics():
                            block=block,
                            measurement_name=measurement_name,
                            all_measurement=all_measurement,
-                           start_date=session.get('start_date'),
-                           end_date=session.get('end_date'),
+                           start_date=start_date,
+                           end_date=start_date,
                            measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,

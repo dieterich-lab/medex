@@ -9,14 +9,15 @@ barchart_page = Blueprint('barchart', __name__, template_folder='templates')
 
 @barchart_page.route('/barchart', methods=['GET'])
 def get_statistics():
+    start_date, end_date = filtering.date()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
     return render_template('barchart.html',
                            block=block,
                            name='{}'.format(measurement_name),
                            all_measurement=all_measurement,
-                           start_date=session.get('start_date'),
-                           end_date=session.get('end_date'),
+                           start_date=start_date,
+                           end_date=start_date,
                            measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,

@@ -12,6 +12,7 @@ heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
 
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
+    start_date, end_date = filtering.date()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
     return render_template('heatmap.html',
@@ -19,8 +20,8 @@ def get_plots():
                            block=block,
                            numeric_tab=True,
                            all_measurement=all_measurement,
-                           start_date=session.get('start_date'),
-                           end_date=session.get('end_date'),
+                           start_date=start_date,
+                           end_date=start_date,
                            measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,

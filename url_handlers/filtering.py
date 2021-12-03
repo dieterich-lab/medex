@@ -2,6 +2,17 @@ from flask import request,session
 from datetime import datetime
 
 
+def date():
+    start_date = session.get('start_date')
+    end_date = session.get('end_date')
+    print(start_date)
+    if start_date is None:
+        now = datetime.now()
+        start_date = datetime.timestamp(now) * 1000
+        end_date = datetime.timestamp(now) * 1000
+    return start_date,end_date
+
+
 def check_for_filter_get():
     categorical_filter = session.get('categorical_filter')
     categorical_names = session.get('categorical_names')
