@@ -21,7 +21,7 @@ def get_plots():
                            numeric_tab=True,
                            all_measurement=all_measurement,
                            start_date=start_date,
-                           end_date=start_date,
+                           end_date=end_date,
                            measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,

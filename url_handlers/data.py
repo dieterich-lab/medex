@@ -26,7 +26,7 @@ def get_data():
                            all_entities=all_entities,
                            name=measurement_name,
                            start_date=start_date,
-                           end_date=start_date,
+                           end_date=end_date,
                            measurement_filter=session.get('measurement_filter'),
                            numerical_filter=numerical_filter,
                            filter=categorical_filter,
