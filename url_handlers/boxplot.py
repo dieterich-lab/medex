@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import rdb, df_min_max, data, block, all_measurement
+from webserver import rdb, df_min_max, data, block, all_measurement, measurement_name
 import pandas as pd
 
 boxplot_page = Blueprint('boxplot', __name__,template_folder='templates')
