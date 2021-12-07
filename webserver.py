@@ -142,6 +142,8 @@ def message_count():
                 df_min_max=df_min_max,
                 start_date=start_date,
                 end_date=end_date,
+                name='{}'.format(measurement_name),
+                block=block,
                 case_display=case_display)
 
 

@@ -41,8 +41,7 @@
             {{ m.show_error(error) }}
             {% endif %}
 
-            {{ m.entity_form_single_measurement(id_single_measurement="measurement",name =all_measurement,value=entity,select=measurement,d=name,block=block) }}
-            {{ m.entity_form_multiple(id_multiple="numeric_entities_multiple",name=all_numeric_entities ,name2 =all_numeric_entities2,value=entity,select=numeric_entities,d="Numeric entities:") }}
+            {{ m.entity_form_multiple(id_multiple="numeric_entities_multiple",name=all_numeric_entities ,name_date =all_numeric_entities2,value=entity,select=numeric_entities,d="Numeric entities:") }}
             <button id="Plot"  name="heatmap" class="btn btn-outline-info">Plot</button>
         </div>
     </div>
@@ -51,14 +50,14 @@
 <div class="card-header" id="results_header">
     <h5 class="mb-0">
         <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                {% if measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                {% if plot %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
             Results
         </button>
     </h5>
 </div>
-<div id="numeric_results" class="collapse {% if measurement %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+<div id="numeric_results" class="collapse {% if plot %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
     <div class="card-body">
-        <div id="scatter_plot" >
+        <div id="heatmap_plot" >
             {{plot | safe}}
         </div>
     </div>

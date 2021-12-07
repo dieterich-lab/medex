@@ -10,15 +10,15 @@
 {%- endmacro %}
 
 <!-- multiple selector entity -->
-{%- macro entity_form_multiple(id_multiple,name,name2,class,value,select,d) %}
+{%- macro entity_form_multiple(id_multiple,name,name_date,class,value,select,d) %}
     <div class="form-group">
         <label for="{{ id_multiple }}">{{ d }}</label>
         <select multiple name="{{ id_multiple }}" id="{{ id_multiple }}" class="{{ class }}" class="form-control" style="width: 100%">
         {% for entity in name %}
             <option title="{{ name[entity].description }}" data ="{{ name[entity].synonym }}" value="{{ name[entity].Key }}"  {% if select and name[entity].Key in select %} selected {% endif %}>{{ name[entity].Key }}</option>
         {% endfor %}
-        {% if name2 %}
-            {% for entity in name2 %}
+        {% if name_date %}
+            {% for entity in name_date %}
                 <option value="{{ entity }}"  data="" {% if select and entity in select %}selected{% endif %}>{{ entity }}</option>
             {% endfor %}
         {% endif %}
@@ -27,7 +27,7 @@
 {%- endmacro %}
 
 <!-- single selector entity -->
-{%- macro entity_form_single(id_single,name,name2,class,value,select,d) %}
+{%- macro entity_form_single(id_single,name,name_date,class,value,select,d) %}
     <div class="form-group">
         <label for="{{ id_single }}">{{ d }}</label>
         <select name="{{ id_single }}" id="{{ id_single }}" class="{{ class }}" class="js-example-basic-single" style="width: 100%">
@@ -35,8 +35,8 @@
             {% for entity in name %}
                 <option title="{{ name[entity].description }}" data ="{{ name[entity].synonym }}" value="{{ name[entity].Key }}" {% if name[entity].Key == select %}selected{% endif %}>{{ name[entity].Key }}</option>
             {% endfor %}
-            {% if name2 %}
-                {% for entity in name2 %}
+            {% if name_date %}
+                {% for entity in name_date %}
                     <option value="{{ entity }}"  data="" {% if select and entity == select %}selected{% endif %}>{{ entity }}</option>
                 {% endfor %}
             {% endif %}

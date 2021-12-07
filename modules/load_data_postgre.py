@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from datetime import datetime
+import datetime
+import time
 from collections import ChainMap
 
 
@@ -26,12 +27,12 @@ def get_date(r):
     try:
         sql = """ SELECT min("Date"),max("Date") FROM examination_numerical """
         df = pd.read_sql(sql, r)
-        start_date = datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
-        end_date = datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
+        start_date = datetime.datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
+        end_date = datetime.datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
     except Exception:
-        now = datetime.now()
-        start_date = datetime.timestamp(now) * 1000
-        end_date = datetime.timestamp(now) * 1000
+        now = datetime.datetime.now()
+        start_date = datetime.datetime.timestamp(now - datetime.timedelta(days=365.24*100)) * 1000
+        end_date = datetime.datetime.timestamp(now) * 1000
     return start_date, end_date
 
 
@@ -61,9 +62,7 @@ def get_numeric_entities(r):
     :return:
     """
     size = """SELECT count(*) FROM examination_numerical"""
-    all_numerical_entities = """SELECT "Key","description","synonym" 
-                                FROM name_type 
-                                WHERE type = 'Double' 
+    all_numerical_entities = """SELECT "Key","description","synonym" FROM name_type WHERE type = 'Double' \
                                 ORDER BY "Key" """
     min_max = """SELECT "Key",max("Value"),min("Value") FROM examination_numerical GROUP BY "Key" """
 
@@ -85,16 +84,10 @@ def get_numeric_entities(r):
 
 
 def get_timestamp_entities(r):
-    """
-
-    :param r:
-    :return:
-    """
+    """ """
     size = """SELECT count(*) FROM examination_date"""
-    all_timestamp_entities = """ SELECT "Key","description","synonym" 
-                                    FROM name_type 
-                                    WHERE type = 'timestamp' 
-                                    ORDER BY "Key" """
+    all_timestamp_entities = """ SELECT "Key","description","synonym" FROM name_type WHERE type = 'timestamp' 
+                                 ORDER BY "Key" """
 
     try:
         df = pd.read_sql(size, r)
@@ -104,7 +97,7 @@ def get_timestamp_entities(r):
         df1 = df1.replace([None], ' ')
 
     except Exception:
-        df = pd.DataFrame(columns=["Key","description","synonym"] )
+        df = pd.DataFrame(columns=["Key", "description", "synonym"])
         df1 = pd.DataFrame()
     return df, df1
 
@@ -245,8 +238,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
                          GROUP BY "Name_ID" 
                          HAVING count("Name_ID") = {1} """.format(case_cat, len(categorical))
 
-    print(case_cat_final)
-    print(category_filter)
+
 
     """ SELECT "Name_ID1" from (SELECT CASE WHEN "Key"=$$Diabetes$$ and "Value"[1] IN ('no') AND measurement 
     IN ('1') THEN "Name_ID" END AS "Name_ID1",CASE WHEN "Key"=$$NYHA$$ and "Value"[1] IN ('I','II') 
@@ -254,7 +246,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
     where examination_categorical is not null) f group by "Name_ID1" """
 
     for i in range(len(from1)):
-        numeric_m = numerical_filter_name[i].replace(" ","_")
+        numeric_m = numerical_filter_name[i].replace(" ", "_")
         numeric_m0 = numerical_filter_name[i - 1].replace(" ", "_")
         if i == 0:
             num_filter = """SELECT {0}."Name_ID" FROM examination_numerical as {0}   """.format(numeric_m)
@@ -311,17 +303,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
 
 def get_data(entity, what_table, measurement, case_id, categorical_filter, categorical, numerical_filter_name, from1,
              to1, measurement_filter, date, r):
-    """
-    Get data for tab Table browser
-    get_numerical_values_basic_stats use in basic_stats
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Name_ID,measurement,Key,instance,Value
-
-    """
+    """ Get DataFrame with selected values to plot scatter plot  """
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     entity_column = '"'+'" text,"'.join(entity) + '" text'
@@ -339,12 +321,6 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
                 AND measurement IN ({1}) 
                 ANd "Date" BETWEEN '{2}' and '{3}'
                 """.format(entity_final, measurement, date[0], date[1])
-
-        # Pivoting
-        """ SELECT "Name_ID",measurement
-                    AVG(CASE WHEN "Key"=$${1}$$ THEN "Value" END) AS "{1}"
-                    AVG(CASE WHEN "Key"=$${1}$$ THEN "Value" END) AS "{1}" 
-                    group by "Name_ID",measurement """
 
         sql2 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,* 
                                         FROM (SELECT "Name_ID","measurement","Date","Key",
@@ -418,20 +394,9 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
         return df, "Problem with load data from database"
 
 
-def get_num_values_basic_stats(entity, measurement, case_id, categorical_filter, categorical, numerical_filter_name,
-                               from1, to1, measurement_filter, date, r):
-    """
-    Get numerical values from numerical table  from database
-
-    get_numerical_values_basic_stats use in basic_stats
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Name_ID,measurement,Key,instance,Value
-
-    """
+def get_basic_stats(entity, measurement, case_id, categorical_filter, categorical, numerical_filter_name, from1, to1,
+                    measurement_filter, date, r):
+    """ """
 
     round = 'not'
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
@@ -514,19 +479,9 @@ def get_num_values_basic_stats(entity, measurement, case_id, categorical_filter,
         return None, "Problem with load data from database"
 
 
-def get_cat_values_basic_stats(entity,measurement, case_id, categorical_filter, categorical, numerical_filter_name,
-                               from1, to1, measurement_filter, date, r):
-    """ Get number of categorical values from database
-
-    get_cat_values_basic_stas use only for basic_stats categorical
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Key,count
-
-    """
+def get_cat_basic_stats(entity, measurement, case_id, categorical_filter, categorical, numerical_filter_name, from1,
+                        to1, measurement_filter, date, r):
+    """ """
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
@@ -554,42 +509,45 @@ def get_cat_values_basic_stats(entity,measurement, case_id, categorical_filter, 
         return None, "Problem with load data from database"
 
 
-def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, case_id, categorical_filter, categorical,
-                            numerical_filter_name, from1, to1, measurement_filter, date, r):
-    """ Get numerical values from numerical table  from database
+def get_scatter_plot(entity, subcategory, x_entity, y_entity, x_measurement,y_measurement, case_id, categorical_filter,
+                     categorical, numerical_filter_name, from1, to1, measurement_filter, date, r):
+    """ Get DataFrame with selected values to plot scatter plot """
 
-    get_values use in scatter plot, coplot
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Name_ID,entity1,entity2,...
-
-    """
     if not categorical_filter and not case_id and not numerical_filter_name:
         sql = """SELECT "Name_ID",AVG("Value") as "{0}" 
                 FROM examination_numerical  
                 WHERE "Key" IN ('{0}') 
                 AND "measurement"='{1}' 
                 AND "Date" BETWEEN '{2}' AND '{3}' 
-                GROUP BY "Name_ID","measurement","Key" """.format(x_entity, x_measurement, date[0], date[1])
+                GROUP BY "Name_ID" """.format(x_entity, x_measurement, date[0], date[1])
 
         sql2 = """SELECT "Name_ID",AVG("Value") as "{0}" 
                 FROM examination_numerical
                 WHERE "Key" IN ('{0}') 
                 AND "measurement"= '{1}' AND "Date" BETWEEN '{2}' AND '{3}'
-                GROUP BY "Name_ID","measurement","Key" 
-                ORDER BY "measurement" """.format(y_entity, y_measurement, date[0], date[1])
-
-        """SELECT "Name_ID",AVG("Value") as "{0}" 
-                        FROM examination_numerical  
-                        WHERE "Key" IN ('{0}') 
-                        AND "measurement"='{1}' 
-                        AND "Date" BETWEEN '{2}' AND '{3}' 
-                        GROUP BY "Name_ID","measurement","Key" """
+                GROUP BY "Name_ID" """.format(y_entity, y_measurement, date[0], date[1])
 
         # join or case what is faster?
+        sql_test = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{0}"{,ec."Value"}
+                        FROM examination_numerical as "x"
+                        INNER JOIN examination_numerical as "y"
+                            ON x."Name_ID" == y."Name_ID"
+                        {INNER JOIN examination_categorical AS ec
+                        ON y."Name_ID" = ec."Name_ID"}  
+                        WHERE x."Key" IN ('{0}') 
+                        AND x."measurement"='{1}' 
+                        AND y."measurement"='{1}' 
+                        AND x."Date" BETWEEN '{2}' AND '{3}' 
+                        AND y."Date" BETWEEN '{2}' AND '{3}'
+                        {AND ec."Key"= '{0}' 
+                        AND ec."Value" IN ({1})}  
+                        GROUP BY x."Name_ID",y."Name_ID"  """
+
+        # categorical value
+        sql = """SELECT "Name_ID","Value" FROM examination_categorical,
+                 WHERE "Key"= '{0}' 
+                 AND "Value" IN ({1}) """.format(entity, subcategory)
+
 
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
@@ -616,191 +574,78 @@ def get_values_scatter_plot(x_entity, y_entity, x_measurement,y_measurement, cas
     try:
         df3 = pd.read_sql(sql, r)
         df4 = pd.read_sql(sql2, r)
-        return df3, df4, None
+        df = df3.merge(df4, on=["Name_ID"])
+        return df, None
     except Exception:
         return None, None, "Problem with load data from database"
 
 
-def get_cat_values(entity, subcategory, measurement, case_id, categorical_filter, categorical, numerical_filter_name,
-                   from1, to1, measurement_filter, date, r):
-    """ Get categorical values from database
+def get_bar_chart(entity, subcategory, measurement, case_id, categorical_filter, categorical,numerical_filter_name,
+                  from1, to1, measurement_filter, date, r):
+    """ Get DataFrame with selected values to plot bar chart """
 
-    get_cat_values use in scatter plot and coplots
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Name_ID,entity
-
-    """
-
-    subcategory_final = "$$" + "$$,$$".join(subcategory) + "$$"
+    subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
+
     if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT "Name_ID",string_agg(distinct f."Value",',') FROM examination_categorical,
-        unnest("Value") as f ("Value") 
-        WHERE "Key"= '{0}' and f."Value" IN ({1})  and "measurement" IN ({2}) 
-        Group by "Name_ID" 
-        order by string_agg(distinct f."Value",',')""".format(entity, subcategory_final, measurement)
-
-    else:
-        df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT ec."Name_ID",string_agg(distinct f."Value",',') FROM examination_categorical as ec
-        right join ({3}) as df 
-        on ec."Name_ID" = df."Name_ID",
-        unnest("Value") as f ("Value") 
-        WHERE ec."Key"= '{0}' and f."Value" IN ({1}) and ec."measurement" IN ({2}) 
-        Group by ec."Name_ID" 
-        order by string_agg(distinct f."Value",',')""".format(entity, subcategory_final, measurement, df)
-
-    try:
-        df = pd.read_sql(sql, r)
-    except Exception:
-        return None, "Problem with load data from database"
-    if df.empty or len(df) == 0:
-        return None, "The entity {} wasn't measured".format(entity)
-    else:
-        df.columns = ["Name_ID", entity]
-        return df, None
-
-def get_cat_values_histogram(entity, subcategory, measurement, case_id, categorical_filter, categorical, numerical_filter_name,
-                   from1, to1, measurement_filter, date, r):
-    """ Get categorical values from database
-
-    get_cat_values use in scatter plot and coplots
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Name_ID,entity
-
-    """
-
-    subcategory_final = "$$" + "$$,$$".join(subcategory) + "$$"
-    measurement = "'" + "','".join(measurement) + "'"
-    if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT "Name_ID","measurement",string_agg(distinct f."Value",',') 
-        FROM examination_categorical,
-        unnest("Value") as f ("Value") 
-        WHERE "Key"= '{0}' and f."Value" IN ({1})  and "measurement" IN ({2}) 
-        Group by "Name_ID","measurement"
-        order by string_agg(distinct f."Value",',')""".format(entity, subcategory_final, measurement)
-
-    else:
-        df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT ec."Name_ID",ec."measurement",string_agg(distinct f."Value",',') 
-        FROM examination_categorical as ec
-        right join ({3}) as df 
-        on ec."Name_ID" = df."Name_ID",
-        unnest("Value") as f ("Value") 
-        WHERE ec."Key"= '{0}' and f."Value" IN ({1}) and ec."measurement" IN ({2}) 
-        Group by ec."Name_ID", ec."measurement"
-        order by string_agg(distinct f."Value",',')""".format(entity, subcategory_final, measurement, df)
-
-
-    try:
-        df = pd.read_sql(sql, r)
-    except Exception:
-        return None, "Problem with load data from database"
-    if df.empty or len(df) == 0:
-        return None, "The entity {} wasn't measured".format(entity)
-    else:
-        df.columns = ["Name_ID","measurement", entity]
-        return df, None
-
-
-def get_cat_values_barchart(entity, subcategory, measurement, case_id, categorical_filter, categorical,
-                            numerical_filter_name, from1, to1, measurement_filter, date, r):
-    """ Get number of subcategory values from database
-
-    get_cat_values_barchart use only for barchart
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Name_ID,Key,Value
-
-    """
-
-    measurement = "'" + "','".join(measurement) + "'"
-    if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT "Value","measurement",count("Value") 
+        sql = """SELECT "Value" AS "{0}","measurement",count("Value")
                 FROM examination_categorical 
                 WHERE "Key"='{0}'
-                AND "Value" IN IN ({1}) 
+                AND "Value" IN ({1}) 
                 AND "Date" BETWEEN '{3}' AND '{4}'
                 AND "measurement" IN ({2})
                 GROUP BY "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT "Value","measurement",count("Value") 
+        sql = """SELECT "Value" AS "{0}","measurement",count("Value") 
                 FROM examination_categorical AS ec
                 RIGHT JOIN ({5}) as df 
                 ON ec."Name_ID" = df."Name_ID"  
                 WHERE "Key"='{0}'
-                AND "Value" IN IN ({1})  
+                AND "Value" IN ({1})  
                 AND "Date" BETWEEN '{3}' AND '{4}'
                 AND "measurement" IN ({2})
                 GROUP BY "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1], df)
 
     try:
         df = pd.read_sql(sql, r)
+        return df, None
     except Exception:
         return None, "Problem with load data from database"
-    if df.empty or len(df) == 0:
-        return df, "{} not measured during this measurement".format(entity)
-    else:
-        a =lambda x: ','.join(x)
-        df['Value'] = df['Value'].map(a)
-        df.columns = [entity, 'measurement', 'count']
-        return df, None
 
 
-def get_num_cat_values(entity_num, entity_cat, subcategory, measurement, case_id, categorical_filter, categorical,
-                       numerical_filter_name, from1, to1, measurement_filter, date, r):
-    """ Retrieve categorical and numerical value
-
-    get_num_cat_values use in histogram and boxplot
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Name_ID,entity_num,entity_cat
-     """
+def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, case_id, categorical_filter, categorical,
+                           numerical_filter_name, from1, to1, measurement_filter, date, r):
+    """ Get DataFrame with selected values to plot histogram or box plot """
+    
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
     if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT en."Name_ID",en."measurement",AVG(en."Value"),ec."Value"
+        sql = """SELECT en."Name_ID",en."measurement",AVG(en."Value") AS "{0}",ec."Value" AS "{1}"
                 FROM examination_numerical AS en 
                 LEFT JOIN examination_categorical AS ec 
-                ON en."Name_ID" = ec."Name_ID" AND en."measurement"=ec."measurement"
+                ON en."Name_ID" = ec."Name_ID"
                 WHERE en."Key" = '{0}' 
                 AND ec."Key" = '{1}' 
                 AND ec."Value" IN ({2}) 
                 AND en."measurement" IN ({3}) 
-                AND ec."measurement" IN ({3}) 
                 AND en."Date" BETWEEN '{4}' AND '{5}'
-                GROUP BY en."Name_ID",en."measurement",ec."measurement" " 
+                GROUP BY en."Name_ID",en."measurement",ec."Value" 
                 """.format(entity_num, entity_cat, subcategory, measurement,date[0],date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        sql = """SELECT en."Name_ID",en."measurement",AVG(en."Value"),ec."Value" 
+        sql = """SELECT en."Name_ID",en."measurement",AVG(en."Value") AS "{0}",ec."Value" AS "{1}" 
                 FROM examination_numerical AS en 
                 LEFT JOIN examination_categorical AS ec 
-                ON en."Name_ID" = ec."Name_ID" AND en."measurement"=ec."measurement"
+                ON en."Name_ID" = ec."Name_ID"
                 RIGHT JOIN ({6}) as df 
                 ON ec."Name_ID" = df."Name_ID"
                 WHERE en."Key" = '{0}' 
                 AND ec."Key" = '{1}'
                 AND ec."Value" IN ({2})  
                 AND en."measurement" IN ({3}) 
-                AND ec."measurement" IN ({3}) 
                 AND en."Date" BETWEEN '{4}' and '{5}' 
-                GROUP BY en."Name_ID",en."measurement",ec."measurement" 
+                GROUP BY en."Name_ID",en."measurement",ec."Value"
                 """.format(entity_num, entity_cat, subcategory, measurement, date[0], date[1], df)
 
     try:
@@ -808,24 +653,15 @@ def get_num_cat_values(entity_num, entity_cat, subcategory, measurement, case_id
     except Exception:
         return None, "Problem with load data from database"
     if df.empty or len(df) == 0:
-        return df, "The entity {0} or {1} wasn't measured".format(entity_num,entity_cat)
+        return df, "The entity {0} or {1} wasn't measured".format(entity_num, entity_cat)
     else:
         return df, None
 
 
-def get_values_heatmap(entity, case_id, categorical_filter, categorical, numerical_filter_name, from1,
+def get_heat_map(entity, case_id, categorical_filter, categorical, numerical_filter_name, from1,
                        to1, measurement_filter, date, r):
-    """ Get numerical values from numerical table  from database
+    """ Get DataFrame with selected values to plot heat map"""
 
-    get_values use in heatmap, clustering
-
-    r: connection with database
-
-    Returns
-    -------
-    df: DataFrame with columns Name_ID,entity1,entity2,...
-
-    """
     case_statement = ""
     crosstab_columns = ""
     for ent in entity:
@@ -834,14 +670,13 @@ def get_values_heatmap(entity, case_id, categorical_filter, categorical, numeric
         create_crosstab_columns = '"{}" double precision'.format(ent)
         crosstab_columns = crosstab_columns + ',' + create_crosstab_columns
 
-
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
 
     if not categorical_filter and not case_id and not numerical_filter_name:
         sql = """SELECT "Name_ID","Key",AVG("Value") as "Value" 
                 FROM examination_numerical 
                 WHERE "Key" IN ({0}) 
-                AND "Date" BETWEEN '{1}' ANd '{2}'
+                AND "Date" BETWEEN '{1}' AND '{2}'
                 GROUP BY "Name_ID","Key" """.format(entity_fin, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
@@ -869,9 +704,10 @@ def get_values_heatmap(entity, case_id, categorical_filter, categorical, numeric
     print(sql_crosstab)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
-
         df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index() # should I do this sql?
+        print("--- %s seconds ---" % (time.time() - start_time))
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"
         else:

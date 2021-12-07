@@ -10,6 +10,7 @@ def create_table(rdb):
 
     sql_drop = "DROP TABLE IF EXISTS header,name_type,examination,examination_categorical,examination_numerical," \
                "examination_date,patient"
+
     statement_header = """CREATE TABLE header ("Name_ID" text Primary key,
                                                 "measurement" text)"""
 
@@ -118,26 +119,30 @@ def alter_table(rdb):
     tables
     """
 
-    sql_remove_null = """Delete from examination where "Value" is null """
+    sql_remove_null = """DELETE FROM examination WHERE "Value" is null """
 
     sql2 = """CREATE TABLE examination_categorical 
-                AS SELECT "ID","Name_ID","measurement","Date" ,"Key","Value" 
-                FROM (SELECT e.* FROM examination AS e 
-                                JOIN name_type AS n ON e."Key"=n."Key" 
-                                WHERE n."type" = 'String') AS f """
+                AS SELECT * FROM (SELECT e."ID",e."Name_ID",e."measurement",e."Date" ,e."Key",e."Value" 
+                                    FROM examination AS e 
+                                    JOIN name_type AS n 
+                                    ON e."Key"=n."Key" 
+                                    WHERE n."type" = 'String') AS foo """
 
     sql3 = """CREATE TABLE examination_numerical 
-                AS SELECT "ID","Name_ID","measurement","Date","Key","Value"::double precision 
-                FROM (SELECT e.* from examination AS e 
-                JOIN name_type AS n ON e."Key"=n."Key" 
-                WHERE n."type" = 'Double' AND e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') AS f """
+                AS SELECT * FROM (SELECT e."ID",e."Name_ID",e."measurement",e."Date",e."Key",e."Value"::double precision 
+                                    FROM examination AS e 
+                                    JOIN name_type AS n 
+                                    ON e."Key"=n."Key" 
+                                    WHERE n."type" = 'Double' 
+                                    AND e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') AS foo """
 
     sql3b = """CREATE TABLE examination_date 
-                AS SELECT "ID","Name_ID","measurement","Date","Key","Value"::timestamp
-                FROM (SELECT e.* FROM examination AS e 
-                                JOIN name_type AS n ON e."Key"=n."Key" 
-                                WHERE n."type" = 'timestamp' AND e."Value" ~ '^(0[0-9]{2}[1-9]|[1-9][0-9]{3})-((0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01])|02-(0[1-9]|1[0-9]|2[0-8])|(0[469]|11)-(0[1-9]|[12][0-9]|30))$') 
-                AS f"""  # here I have to change but not yet
+                AS SELECT * FROM (SELECT e."ID",e."Name_ID",e."measurement",e."Date",e."Key",e."Value"::timestamp
+                                    FROM examination AS e 
+                                    JOIN name_type AS n 
+                                    ON e."Key"=n."Key" 
+                                    WHERE n."type" = 'timestamp' 
+                                    AND e."Value" ~ '^(0[0-9]{2}[1-9]|[1-9][0-9]{3})-((0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01])|02-(0[1-9]|1[0-9]|2[0-8])|(0[469]|11)-(0[1-9]|[12][0-9]|30))$') AS foo"""  # here I have to change but not yet
 
     sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from examination"""
 

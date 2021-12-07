@@ -4,7 +4,7 @@ from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import plotly.graph_objects as go
 import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement,measurement_name, block, df_min_max,data
+from webserver import rdb, df_min_max, data
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
@@ -12,15 +12,14 @@ heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
 
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
+    # get data for filters
+    start_date, end_date = filtering.date()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
+
     return render_template('heatmap.html',
-                           name='{}'.format(measurement_name),
-                           block=block,
-                           numeric_tab=True,
-                           all_measurement=all_measurement,
-                           start_date=session.get('start_date'),
-                           end_date=session.get('end_date'),
+                           start_date=start_date,
+                           end_date=end_date,
                            measurement_filter=session.get('measurement_filter'),
                            filter=categorical_filter,
                            numerical_filter=numerical_filter,
@@ -30,46 +29,24 @@ def get_plots():
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
 def post_plots():
-    # get filter
+
+    # get filters
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
+    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities_multiple')
-    if block == 'none':
-        measurement = all_measurement.values[0]
-    else:
-        measurement = request.form.get('measurement')
 
     # handling errors and load data from database
-    if measurement == "Search entity":
-        error = "Please select number of {}".format(measurement_name)
-    elif len(numeric_entities) > 1:
-        new_column = session.get('new_column')
-        if new_column:
-            numeric_entities1 = [x for x in numeric_entities if x not in new_column]
-        else:
-            numeric_entities1 = numeric_entities
-        df0, error = ps.get_values_heatmap(numeric_entities1, measurement, case_ids,categorical_filter,
-                                                  categorical_names, name, from1, to1, measurement_filter, date, rdb)
-
-        df = data.new_table
-        if df.empty:
-            numeric_df = df0
-        else:
-            entities = [x for x in numeric_entities if x in new_column]
-            c = ["Name_ID"] + entities
-            df = df.loc[df['measurement'] == measurement]
-            df1 = df[c]
-            numeric_df = pd.merge(df0, df1, on=["Name_ID"])
-
+    if len(numeric_entities) > 1:
+        df, error = ps.get_heat_map(numeric_entities, case_ids, categorical_filter, categorical_names, name,from1, to1,
+                                    measurement_filter, date, rdb)
         if not error:
-            if len(numeric_df.index) == 0:
+            if len(df.index) == 0:
                 error = "This two entities don't have common values"
-
     elif len(numeric_entities) < 2:
         error = "Please select more then one category"
     else:
@@ -77,12 +54,7 @@ def post_plots():
 
     if error:
         return render_template('heatmap.html',
-                               name='{}'.format(measurement_name),
-                               block=block,
-                               numeric_tab=True,
                                numeric_entities=numeric_entities,
-                               measurement=measurement,
-                               all_measurement=all_measurement,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
@@ -93,8 +65,9 @@ def post_plots():
 
     # calculate person correlation
 
-    numeric_df = numeric_df.drop(columns=['Name_ID'])
+    numeric_df = df.drop(columns=['Name_ID'])
     new_numeric_entities = numeric_df.columns.tolist()
+
     numeric_entities_not_measured = set(numeric_entities).difference(set(new_numeric_entities))
     if len(numeric_entities_not_measured) > 0:
         error = "{} not measure during Replicate".format(numeric_entities_not_measured)
@@ -128,27 +101,13 @@ def post_plots():
     fig = go.Figure(data=go.Heatmap(z=corr_values, x=numeric_entities, y=numeric_entities, colorscale='Viridis'))
     fig.update_layout(height=600)
     fig = fig.to_html()
-    plot_series = []
-    plot_series.append({'z': corr_values,
-                        'x': numeric_entities,
-                        'y': numeric_entities,
-                        'type': "heatmap",
-                        'color': 'corr'
-                        })
 
     return render_template('heatmap.html',
-                           name='{}'.format(measurement_name),
-                           block=block,
-                           numeric_tab=True,
-                           all_measurement=all_measurement,
-                           numeric_entities=numeric_entities,
-                           measurement=measurement,
-                           measurement_filter=measurement_filter,
-                           plot_series=plot_series,
-                           plot=fig,
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,
                            numerical_filter=numerical_filter,
-                           df_min_max=df_min_max
-                           )
+                           df_min_max=df_min_max,
+                           numeric_entities=numeric_entities,
+                           measurement_filter=measurement_filter,
+                           plot=fig)

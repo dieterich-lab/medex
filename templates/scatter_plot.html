@@ -45,9 +45,9 @@
             {% endif %}
 
             {{ m.entity_form_single_measurement(id_single_measurement= "x_measurement",name =all_measurement,value=entity,select=x_measurement,d=name,block=block) }}
-            {{ m.entity_form_single(id_single= "x_axis",class="axis",name =all_numeric_entities,name2 =all_numeric_entities2,value=entity,select=x_axis,d="x axis:") }}
+            {{ m.entity_form_single(id_single= "x_axis",class="axis",name =all_numeric_entities,name_date =all_numeric_entities2,value=entity,select=x_axis,d="x axis:") }}
             {{ m.entity_form_single_measurement(id_single_measurement= "y_measurement",name =all_measurement,value=entity,select=y_measurement,d=name,block=block) }}
-            {{ m.entity_form_single(id_single= "y_axis",class="axis",name =all_numeric_entities,name2 =all_numeric_entities2,value=entity,select=y_axis,d="y axis:") }}
+            {{ m.entity_form_single(id_single= "y_axis",class="axis",name =all_numeric_entities,name_date =all_numeric_entities2,value=entity,select=y_axis,d="y axis:") }}
 
                 <label >Scale</label>
                     <table >

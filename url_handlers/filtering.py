@@ -1,5 +1,15 @@
 from flask import request,session
-from datetime import datetime
+import datetime
+
+
+def date():
+    start_date = session.get('start_date')
+    end_date = session.get('end_date')
+    if start_date is None:
+        now = datetime.datetime.now()
+        start_date = datetime.datetime.timestamp(now - datetime.timedelta(days=365.24*100)) * 1000
+        end_date = datetime.datetime.timestamp(now) * 1000
+    return start_date, end_date
 
 
 def check_for_filter_get():
@@ -39,12 +49,12 @@ def check_for_date_filter_post():
     date_filter = request.form.get('Date')
     date = date_filter.split(" - ")
 
-    start_date, end_date = datetime.strptime(date[0], '%m/%d/%Y').timestamp() * 1000, \
-                           datetime.strptime(date[1], '%m/%d/%Y').timestamp() * 1000
+    start_date, end_date = datetime.datetime.strptime(date[0], '%m/%d/%Y').timestamp() * 1000, \
+                           datetime.datetime.strptime(date[1], '%m/%d/%Y').timestamp() * 1000
     session['start_date'] = start_date
     session['end_date'] = end_date
-    date[0], date[1] = datetime.strptime(date[0], '%m/%d/%Y').strftime('%Y-%m-%d'),\
-                    datetime.strptime(date[1], '%m/%d/%Y').strftime('%Y-%m-%d')
+    date[0], date[1] = datetime.datetime.strptime(date[0], '%m/%d/%Y').strftime('%Y-%m-%d'),\
+                    datetime.datetime.strptime(date[1], '%m/%d/%Y').strftime('%Y-%m-%d')
 
     return start_date,end_date,date
 
