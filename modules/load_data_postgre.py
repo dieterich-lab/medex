@@ -149,7 +149,7 @@ def get_measurement(r):
     :return:
     """
     try:
-        sql = """SELECT DISTINCT "measurement":: int FROM examination ORDER BY "measurement" """ # add the information about measurents to other table MAYBE
+        sql = """SELECT DISTINCT "measurement":: int FROM examination_numerical ORDER BY "measurement" """ # add the information about measurents to other table MAYBE
         df = pd.read_sql(sql, r)
         df['measurement'] = df['measurement'].astype(str)
         return df['measurement']

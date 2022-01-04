@@ -1,6 +1,24 @@
 """
     This module contains functions for creating tables in PostgreSQL database
 """
+import datetime
+import time
+import re
+
+
+def validate(date_text):
+    try:
+        datetime.datetime.strptime(date_text, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+
+
+def is_date(date):
+    if re.match("^(0[0-9]{2}[1-9]|[1-9][0-9]{3})-((0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01])|02-(0[1-9]|1[0-9]|2[0-8])|(0[469]|11)-(0[1-9]|[12][0-9]|30))$",date) is None:
+        return False
+    else:
+        return True
 
 
 def create_table(rdb):
@@ -22,7 +40,17 @@ def create_table(rdb):
                                                     "unit" text,
                                                     "show" text)"""
 
-    statement_examination = """CREATE TABLE examination (
+    examination_numerical = """CREATE TABLE examination_numerical (
+                                "ID" numeric PRIMARY KEY,
+                                "Name_ID" text,
+                                "Case_ID" text,
+                                measurement text,
+                                "Date" text,
+                                "Time" text,
+                                "Key" text,
+                                "Value" double precision)"""
+
+    examination_date = """CREATE TABLE examination_date (
                                 "ID" numeric PRIMARY KEY,
                                 "Name_ID" text,
                                 "Case_ID" text,
@@ -31,12 +59,25 @@ def create_table(rdb):
                                 "Time" text,
                                 "Key" text,
                                 "Value" text)"""
+
+    examination_categorical = """CREATE TABLE examination_categorical (
+                                "ID" numeric PRIMARY KEY,
+                                "Name_ID" text,
+                                "Case_ID" text,
+                                measurement text,
+                                "Date" text,
+                                "Time" text,
+                                "Key" text,
+                                "Value" text)"""
+
     try:
         cur = rdb.cursor()
         cur.execute(sql_drop)
         cur.execute(statement_header)
         cur.execute(statement_entities)
-        cur.execute(statement_examination)
+        cur.execute(examination_numerical)
+        cur.execute(examination_categorical)
+        cur.execute(examination_date)
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")
@@ -50,6 +91,7 @@ def load_data(entities, dataset, header, rdb):
     cur = rdb.cursor()
 
     # load data from header.csv file to header table
+
     cur.execute("INSERT INTO header VALUES (%s, %s) ON CONFLICT DO NOTHING", [header[0], header[2]])
 
     # load data from entities.csv file to name_type table
@@ -61,7 +103,7 @@ def load_data(entities, dataset, header, rdb):
                 if len(row) == 3:
                     cur.execute("INSERT INTO name_type VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", row)
                 elif len(row) == 4:
-                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING",row)
+                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
                 elif len(row) == 5:
                     cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
                 elif len(row) == 6:
@@ -90,7 +132,7 @@ def load_data(entities, dataset, header, rdb):
                     print("This line doesn't have appropriate format:", row)
     rdb.commit()
     in_file.close()
-
+    start_time = time.time()
     with open(dataset, 'r', encoding="utf8", errors='ignore') as in_file:
         i = 0
         for row in in_file:
@@ -101,15 +143,21 @@ def load_data(entities, dataset, header, rdb):
                 line = [i] + row[0:6] + [";".join([str(x) for x in row[6:]])]
             else:
                 line = [i] + row[0:2] + [1] + row[2:5] + [";".join([str(x) for x in row[5:]])]
-            if len(line) < 6:
+            if len(line) < 7:
                 print("This line doesn't have appropriate format:", line)
             else:
                 try:
-                    cur.execute("INSERT INTO examination VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+                    if line[7].lstrip('-').replace('.', '', 1).isdigit():
+                        cur.execute("INSERT INTO examination_numerical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+                    elif is_date(line[7]):
+                        cur.execute("INSERT INTO examination_date VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+                    else:
+                        cur.execute("INSERT INTO examination_categorical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                 except:
                     print(line)
 
     rdb.commit()
+    print("--- %s seconds ---" % (time.time() - start_time))
     in_file.close()
 
 
@@ -119,36 +167,11 @@ def alter_table(rdb):
     tables
     """
 
-    sql_remove_null = """DELETE FROM examination WHERE "Value" is null """
+    sql_remove_null = """DELETE FROM examination_categorical WHERE "Value" is null """
 
-    sql2 = """CREATE TABLE examination_categorical 
-                AS SELECT * FROM (SELECT e."ID",e."Name_ID",e."measurement",e."Date" ,e."Key",e."Value" 
-                                    FROM examination AS e 
-                                    JOIN name_type AS n 
-                                    ON e."Key"=n."Key" 
-                                    WHERE n."type" = 'String') AS foo """
-
-    sql3 = """CREATE TABLE examination_numerical 
-                AS SELECT * FROM (SELECT e."ID",e."Name_ID",e."measurement",e."Date",e."Key",e."Value"::double precision 
-                                    FROM examination AS e 
-                                    JOIN name_type AS n 
-                                    ON e."Key"=n."Key" 
-                                    WHERE n."type" = 'Double' 
-                                    AND e."Value" ~ '^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$') AS foo """
-
-    sql3b = """CREATE TABLE examination_date 
-                AS SELECT * FROM (SELECT e."ID",e."Name_ID",e."measurement",e."Date",e."Key",e."Value"::timestamp
-                                    FROM examination AS e 
-                                    JOIN name_type AS n 
-                                    ON e."Key"=n."Key" 
-                                    WHERE n."type" = 'timestamp' 
-                                    AND e."Value" ~ '^(0[0-9]{2}[1-9]|[1-9][0-9]{3})-((0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01])|02-(0[1-9]|1[0-9]|2[0-8])|(0[469]|11)-(0[1-9]|[12][0-9]|30))$') AS foo"""  # here I have to change but not yet
-
-    sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from examination"""
+    sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from examination_numerical """
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
-    sql6 = """ALTER TABLE examination_numerical ADD CONSTRAINT examination_numerical_pkey PRIMARY KEY ("ID")"""
-    sql7 = """ALTER TABLE examination_categorical ADD CONSTRAINT examination_categorical_pkey PRIMARY KEY ("ID")"""
     sql8 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Name_ID") REFERENCES 
     patient ("Name_ID")"""
     sql9 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n2 FOREIGN KEY ("Name_ID") REFERENCES 
@@ -170,16 +193,11 @@ def alter_table(rdb):
     try:
         cur = rdb.cursor()
         cur.execute(sql_remove_null)
-        cur.execute(sql2)
-        cur.execute(sql3)
-        cur.execute(sql3b)
         cur.execute(sql4)
     except Exception:
         return print("Problem with connection with database")
     try:
         cur.execute(sql5)
-        cur.execute(sql6)
-        cur.execute(sql7)
         cur.execute(sql8)
         cur.execute(sql9)
         cur.execute(sql10)
