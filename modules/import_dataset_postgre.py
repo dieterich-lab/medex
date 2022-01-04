@@ -23,8 +23,6 @@ def create_table(rdb):
 
     statement_header = """CREATE TABLE header ("Name_ID" text Primary key,
                                                 "measurement" text)"""
-    patient = """CREATE TABLE patient ("Name_ID" text ,
-                                       "Case_ID" text)"""
 
     statement_entities = """CREATE TABLE name_type ("order" numeric,
                                                     "Key" text Primary key,
@@ -67,7 +65,6 @@ def create_table(rdb):
     try:
         cur = rdb.cursor()
         cur.execute(sql_drop)
-        cur.execute(patient)
         cur.execute(statement_header)
         cur.execute(statement_entities)
         cur.execute(examination_numerical)
