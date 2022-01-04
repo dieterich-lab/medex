@@ -1,17 +1,9 @@
 """
     This module contains functions for creating tables in PostgreSQL database
 """
-import datetime
+
 import time
 import re
-
-
-def validate(date_text):
-    try:
-        datetime.datetime.strptime(date_text, '%Y-%m-%d')
-        return True
-    except ValueError:
-        return False
 
 
 def is_date(date):
@@ -31,6 +23,8 @@ def create_table(rdb):
 
     statement_header = """CREATE TABLE header ("Name_ID" text Primary key,
                                                 "measurement" text)"""
+    patient = """CREATE TABLE patient ("Name_ID" text ,
+                                       "Case_ID" text)"""
 
     statement_entities = """CREATE TABLE name_type ("order" numeric,
                                                     "Key" text Primary key,
@@ -73,6 +67,7 @@ def create_table(rdb):
     try:
         cur = rdb.cursor()
         cur.execute(sql_drop)
+        cur.execute(patient)
         cur.execute(statement_header)
         cur.execute(statement_entities)
         cur.execute(examination_numerical)
@@ -132,7 +127,6 @@ def load_data(entities, dataset, header, rdb):
                     print("This line doesn't have appropriate format:", row)
     rdb.commit()
     in_file.close()
-    start_time = time.time()
     with open(dataset, 'r', encoding="utf8", errors='ignore') as in_file:
         i = 0
         for row in in_file:
@@ -153,11 +147,11 @@ def load_data(entities, dataset, header, rdb):
                         cur.execute("INSERT INTO examination_date VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                     else:
                         cur.execute("INSERT INTO examination_categorical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+
                 except:
                     print(line)
 
     rdb.commit()
-    print("--- %s seconds ---" % (time.time() - start_time))
     in_file.close()
 
 
@@ -169,7 +163,12 @@ def alter_table(rdb):
 
     sql_remove_null = """DELETE FROM examination_categorical WHERE "Value" is null """
 
-    sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from examination_numerical """
+    sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from 
+                        (SELECT "Name_ID","Case_ID" FROM examination_numerical
+                         UNION
+                         SELECT "Name_ID","Case_ID" FROM examination_date
+                         UNION
+                         SELECT "Name_ID","Case_ID" FROM examination_categorical) as foo"""
 
     sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
     sql8 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Name_ID") REFERENCES 
