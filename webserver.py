@@ -73,8 +73,8 @@ if os.environ.get('IMPORT_DISABLED') is None:
 # get all numeric and categorical entities from database
 Name_ID, measurement_name = ps.get_header(rdb)
 start_date, end_date = ps.get_date(rdb)
-all_entities, show = ps.get_entities(rdb)
 all_patient = ps.patient(rdb)
+all_entities = ps.get_entities(rdb)
 size_numerical_table, all_numeric_entities, df_min_max = ps.get_numeric_entities(rdb)
 size_timestamp_table, all_timestamp_entities = ps.get_timestamp_entities(rdb)
 size_categorical_table, all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)

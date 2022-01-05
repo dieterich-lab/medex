@@ -14,7 +14,7 @@ def get_header(r):
         sql = "SELECT * FROM header"
         df = pd.read_sql(sql, r)
         name_id, measurement_name = df['Name_ID'][0], df['measurement'][0]
-    except Exception:
+    except ValueError:
         name_id, measurement_name = 'Name_ID', 'measurement'
     return name_id, measurement_name
 
@@ -29,168 +29,151 @@ def get_date(r):
         df = pd.read_sql(sql, r)
         start_date = datetime.datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
         end_date = datetime.datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
-    except Exception:
+    except ValueError:
         now = datetime.datetime.now()
         start_date = datetime.datetime.timestamp(now - datetime.timedelta(days=365.24*100)) * 1000
         end_date = datetime.datetime.timestamp(now) * 1000
     return start_date, end_date
 
 
+def patient(r):
+    """
+    :param r: connection with database
+    :return: Patient ID list
+    """
+    try:
+        sql = """SELECT * FROM Patient"""
+        df = pd.read_sql(sql, r)
+        return df['Name_ID'], None
+    except ValueError:
+        return None, "Problem with load data from database"
+
+
 def get_entities(r):
     """
     :param r: connection with database
     :return: DataFrame with entities names and their description
-            DataFrame with entities which should be showed on first page
     """
     all_entities = """SELECT "Key","description","synonym" FROM name_type ORDER BY "order" """
-    show_on_first_page = """SELECT "Key" FROM name_type WHERE "show" = '+' """
 
     try:
         all_entities = pd.read_sql(all_entities, r)
         all_entities = all_entities.replace([None], ' ')
-        show_on_first_page = pd.read_sql(show_on_first_page, r)
-    except Exception:
+    except ValueError:
         all_entities = pd.DataFrame(columns=["Key", "description", "synonym"])
-        show_on_first_page = pd.DataFrame(columns=['Key'])
-    return all_entities, show_on_first_page
+    return all_entities
 
 
 def get_numeric_entities(r):
     """
-
-    :param r:
-    :return:
+    param r: connection with database
+    return:
+        size: number of numerical entities
+        entities: DataFrame with name, synonym,description for numerical entities
+        df_min_max: DataFrame with min and max values
     """
     size = """SELECT count(*) FROM examination_numerical"""
-    all_numerical_entities = """SELECT "Key","description","synonym" FROM name_type WHERE type = 'Double' \
+    all_numerical_entities = """SELECT "Key","description","synonym" FROM name_type WHERE type = 'Double'
                                 ORDER BY "Key" """
     min_max = """SELECT "Key",max("Value"),min("Value") FROM examination_numerical GROUP BY "Key" """
 
     try:
         df = pd.read_sql(size, r)
-        df = df.iloc[0]['count']
+        size = df.iloc[0]['count']
 
-        df1 = pd.read_sql(all_numerical_entities, r)
-        df1 = df1.replace([None], ' ')
+        entities = pd.read_sql(all_numerical_entities, r)
+        entities = entities.replace([None], ' ')
 
         df_min_max = pd.read_sql(min_max, r)
         df_min_max = df_min_max.set_index('Key')
 
-    except Exception:
-        df = pd.DataFrame(columns=["Key","description","synonym"] )
-        df1 = pd.DataFrame()
+    except ValueError:
+        size = 0
+        entities = pd.DataFrame(columns=["Key", "description", "synonym"])
         df_min_max = pd.DataFrame()
-    return df, df1, df_min_max
+    return size, entities, df_min_max
 
 
 def get_timestamp_entities(r):
-    """ """
+    """
+    param r: connection with database
+    return:
+        size: number of date entities
+        entities: DataFrame with name, synonym,description for date entities
+    """
     size = """SELECT count(*) FROM examination_date"""
-    all_timestamp_entities = """ SELECT "Key","description","synonym" FROM name_type WHERE type = 'timestamp' 
+    all_timestamp_entities = """ SELECT "Key","description","synonym" FROM name_type WHERE type IN ('Date','Time') 
                                  ORDER BY "Key" """
 
     try:
         df = pd.read_sql(size, r)
-        df = df.iloc[0]['count']
+        size = df.iloc[0]['count']
 
-        df1 = pd.read_sql(all_timestamp_entities, r)
-        df1 = df1.replace([None], ' ')
+        entities = pd.read_sql(all_timestamp_entities, r)
+        entities = entities.replace([None], ' ')
 
-    except Exception:
-        df = pd.DataFrame(columns=["Key", "description", "synonym"])
-        df1 = pd.DataFrame()
-    return df, df1
+    except ValueError:
+        size = 0
+        entities = pd.DataFrame(columns=["Key", "description", "synonym"])
+    return size, entities
 
 
 def get_categorical_entities(r):
     """
-
-    :param r: connection with database
-    :return:
+    param r: connection with database
+    return:
+        size: number of categorical entities
+        entities: DataFrame with name, synonym,description for categorical entities
+        df_subcategories: dictionary with subcategories for categorical entities
     """
 
     # Retrieve all categorical values
     examination_categorical_table_size = """SELECT count(*) FROM examination_categorical"""
-    all_categorical_entities = """SELECT "Key","description" FROM name_type WHERE "type" = 'String' ORDER BY "Key" """
+    all_categorical_entities = """SELECT "Key","description","synonym" FROM name_type WHERE "type" = 'String' 
+                                  ORDER BY "Key" """
 
     # Retrieve categorical values with subcategories
-    all_subcategories = """SELECT DISTINCT "Key","Value" FROM examination_categorical ORDER by "Key","Value" """ # check if group by is faster but shouldn't
+    all_subcategories = """SELECT DISTINCT "Key","Value" FROM examination_categorical ORDER by "Key","Value" """
 
     try:
-        size = pd.read_sql(examination_categorical_table_size , r)
-        df1 = size.iloc[0]['count']
-        df2 = pd.read_sql(all_categorical_entities, r)
-        df3 = pd.read_sql(all_subcategories, r)
+        size = pd.read_sql(examination_categorical_table_size, r)
+        size = size.iloc[0]['count']
+        entities = pd.read_sql(all_categorical_entities, r)
+        subcategories = pd.read_sql(all_subcategories, r)
 
         array = []
         # create dictionary with categories and subcategories
-        for value in df2['Key']:
-            df = {}
-            df4 = df3[df3["Key"] == value]
-            del df4['Key']
-            df[value] = list(df4['Value'])
+        for value in entities['Key']:
+            df_subcategories = {}
+            df = subcategories[subcategories["Key"] == value]
+            del df['Key']
+            df_subcategories[value] = list(df['Value'])
             array.append(df)
 
-        df = dict(ChainMap(*array))
+        df_subcategories = dict(ChainMap(*array))
 
-        return df1, df2, df,
-    except Exception:
+        return size, entities, df_subcategories,
+    except ValueError:
         array = []
-        df1= pd.DataFrame()
-        df = pd.DataFrame(columns=["Key","description"])
-        df2 = dict(ChainMap(*array))
-        return df1, df, df2
+        size = 0
+        entities = pd.DataFrame(columns=["Key", "description", "synonym"])
+        df_subcategories = dict(ChainMap(*array))
+        return size, entities, df_subcategories
 
 
 def get_measurement(r):
     """
-
-    :param r:
-    :return:
+    param r: connection with database
+    return: return column with measurements
     """
     try:
-        sql = """SELECT DISTINCT "measurement":: int FROM examination_numerical ORDER BY "measurement" """ # add the information about measurents to other table MAYBE
+        # add the information about measurement to other table MAYBE
+        sql = """SELECT DISTINCT "measurement":: int FROM examination_numerical ORDER BY "measurement" """
         df = pd.read_sql(sql, r)
         df['measurement'] = df['measurement'].astype(str)
         return df['measurement']
-    except Exception:
+    except ValueError:
         return ["No data"]
-
-
-def number(r):
-    """ Get number of all patients
-
-     number use only for basic_stats
-     """
-    try:
-        sql = """SELECT COUNT (*) FROM Patient"""
-        n = pd.read_sql(sql, r)
-        return n['count'], None
-    except Exception:
-        return None, "Problem with load data from database"
-
-
-def patient(r):
-
-    try:
-        sql = """SELECT * FROM Patient"""
-        df = pd.read_sql(sql, r)
-        return df['Name_ID'], None
-    except Exception:
-        return None, "Problem with load data from database"
-
-
-def get_unit(name, r):
-    """ Get number of all patients
-
-     number use only for basic_stats
-     """
-    try:
-        sql = """SELECT "Key","unit" FROM name_type WHERE "Key"='{}' """.format(name)
-        df = pd.read_sql(sql, r)
-        return df['unit'][0], None
-    except Exception:
-        return None, "Problem with load data from database"
 
 
 def filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter):
@@ -303,7 +286,14 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
 
 def get_data(entity, what_table, measurement, case_id, categorical_filter, categorical, numerical_filter_name, from1,
              to1, measurement_filter, date, r):
-    """ Get DataFrame with selected values to plot scatter plot  """
+    """
+    param:
+     entity: entities names which should be selected from database
+     what_table: How the data should be present as long table or entities as columns
+     measurement: selected measurements
+     r: connection with database
+    return: DataFrame with all selected entities
+    """
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     entity_column = '"'+'" text,"'.join(entity) + '" text'
@@ -319,13 +309,25 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
                 FROM examination_categorical 
                 WHERE "Key" IN ({0}) 
                 AND measurement IN ({1}) 
-                ANd "Date" BETWEEN '{2}' and '{3}'
+                AND "Date" BETWEEN '{2}' and '{3}'
+                UNION
+                SELECT "Name_ID","measurement","Date","Key","Value"::text
+                FROM examination_date 
+                WHERE "Key" IN ({0}) 
+                AND measurement IN ({1}) 
+                AND "Date" BETWEEN '{2}' and '{3}'
                 """.format(entity_final, measurement, date[0], date[1])
 
         sql2 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,* 
                                         FROM (SELECT "Name_ID","measurement","Date","Key",
                                                         STRING_AGG("Value"::text,'';'') "Value"
                                                 FROM examination_numerical 
+                                                WHERE  "Key" IN ({0})
+                                                GROUP BY "Name_ID","measurement","Date","Key"
+                                                UNION
+                                                SELECT "Name_ID","measurement","Date","Key",
+                                                        STRING_AGG("Value"::text,'';'') "Value"
+                                                FROM examination_date
                                                 WHERE  "Key" IN ({0})
                                                 GROUP BY "Name_ID","measurement","Date","Key"
                                                 UNION
@@ -388,11 +390,37 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
         else:
             df = pd.read_sql(sql2, r)
             df = df.drop(['row_name'], axis=1)
+
         return df, None
     except Exception:
         df = pd.DataFrame()
         return df, "Problem with load data from database"
 
+
+def number(r):
+    """ Get number of all patients
+
+     number use only for basic_stats
+     """
+    try:
+        sql = """SELECT COUNT (*) FROM Patient"""
+        n = pd.read_sql(sql, r)
+        return n['count'], None
+    except Exception:
+        return None, "Problem with load data from database"
+
+
+def get_unit(name, r):
+    """ Get number of all patients
+
+     number use only for basic_stats
+     """
+    try:
+        sql = """SELECT "Key","unit" FROM name_type WHERE "Key"='{}' """.format(name)
+        df = pd.read_sql(sql, r)
+        return df['unit'][0], None
+    except Exception:
+        return None, "Problem with load data from database"
 
 def get_basic_stats(entity, measurement, case_id, categorical_filter, categorical, numerical_filter_name, from1, to1,
                     measurement_filter, date, r):

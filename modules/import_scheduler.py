@@ -6,7 +6,6 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
-
 class ImportSettings():
     """
     Class which create file dev_import necessary to import data.
@@ -65,7 +64,6 @@ def start_import(rdb):
     dataset = './import/dataset.csv'
     entities = './import/entities.csv'
     header = './import/header.csv'
-
 
     if not os.path.isfile(dataset) or not os.path.isfile(entities):
         return print("Could not import to database either or entities.csv and dataset.csv is missing", file=sys.stderr)

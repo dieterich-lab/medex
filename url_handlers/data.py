@@ -3,7 +3,7 @@ import modules.load_data_postgre as ps
 import pandas as pd
 
 import url_handlers.filtering as filtering
-from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_entities, df_min_max, measurement_name,\
+from webserver import rdb, data, Name_ID, block, table_builder, all_entities, df_min_max, measurement_name,\
     all_measurement
 
 data_page = Blueprint('data', __name__, template_folder='templates')
@@ -19,17 +19,18 @@ def table_data():
 
 @data_page.route('/data', methods=['GET'])
 def get_data():
+    start_date, end_date = filtering.date()
     numerical_filter = filtering.check_for_numerical_filter_get()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('data.html',
                            block=block,
                            all_entities=all_entities,
                            name=measurement_name,
-                           start_date=session.get('start_date'),
-                           end_date=session.get('end_date'),
+                           start_date=start_date,
+                           end_date=end_date,
                            measurement_filter=session.get('measurement_filter'),
                            numerical_filter=numerical_filter,
-                           filter=categorical_filter,
+                           categorical_filter=categorical_filter,
                            df_min_max=df_min_max)
 
 
@@ -47,6 +48,7 @@ def post_data():
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
 
+    df = pd.DataFrame()
     if block == 'none':
         measurement = all_measurement.values
     else:
@@ -58,27 +60,8 @@ def post_data():
     elif len(entities) == 0:
         error = "Please select entities"
     else:
-       new_column = session.get('new_column')
-       if new_column:
-            entities1 = [x for x in entities if x not in new_column]
-       else:
-           entities1 = entities
-       df0, error = ps.get_data(entities1, what_table, measurement, case_ids, categorical_filter, categorical_names, name, from1, to1,
-                               measurement_filter, date, rdb)
-
-       df = data.new_table
-       if df.empty:
-           df = df0
-       else:
-           entities = [x for x in entities if x in new_column]
-           c = ["Name_ID", "measurement"] + entities
-           df1 = df[c]
-           df1 = df1.loc[df1['measurement'].isin(measurement)]
-           if what_table != 'long':
-                df = pd.merge(df0, df1, on=["Name_ID", "measurement"])
-           else:
-                df_melt = df1.melt(id_vars=["Name_ID", "measurement"], var_name='Key', value_name="Value")
-                df = pd.concat([df0, df_melt]).fillna(0)
+        df, error = ps.get_data(entities, what_table, measurement, case_ids, categorical_filter, categorical_names,
+                                name, from1, to1, measurement_filter, date, rdb)
 
     if error:
         return render_template('data.html',
@@ -92,7 +75,7 @@ def post_data():
                                entities=entities,
                                start_date=start_date,
                                end_date=end_date,
-                               filter=categorical_filter_zip,
+                               categorical_filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
                                df_min_max=df_min_max
                                )
@@ -104,8 +87,9 @@ def post_data():
     df = df.fillna("missing data")
     column = df.columns.tolist()
 
+    # change name of entities if they have dot inside otherwise server side table doesn't work properly
     column_change_name = []
-    [column_change_name.append(i.replace('.','_')) for i in column]
+    [column_change_name.append(i.replace('.', '_')) for i in column]
     df.columns = column_change_name
 
     data.dict = df.to_dict("records")
@@ -125,7 +109,6 @@ def post_data():
                            error=error,
                            block=block,
                            all_entities=all_entities,
-                           all_measurement=all_measurement,
                            measurement=measurement,
                            measurement_filter=measurement_filter,
                            entities=entities,
@@ -135,7 +118,7 @@ def post_data():
                            end_date=end_date,
                            what_table=what_table,
                            column=dict_of_column,
-                           filter=categorical_filter_zip,
+                           categorical_filter=categorical_filter_zip,
                            numerical_filter=numerical_filter,
                            df_min_max=df_min_max
                            )

@@ -4,6 +4,7 @@
 
 import time
 import re
+import pandas as pd
 
 
 def is_date(date):
@@ -87,6 +88,7 @@ def load_data(entities, dataset, header, rdb):
     cur.execute("INSERT INTO header VALUES (%s, %s) ON CONFLICT DO NOTHING", [header[0], header[2]])
 
     # load data from entities.csv file to name_type table
+
     with open(entities, 'r') as in_file:
         head = next(in_file)
         if 'order' in head:
@@ -144,7 +146,6 @@ def load_data(entities, dataset, header, rdb):
                         cur.execute("INSERT INTO examination_date VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                     else:
                         cur.execute("INSERT INTO examination_categorical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
-
                 except:
                     print(line)
 
