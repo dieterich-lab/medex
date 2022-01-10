@@ -2,9 +2,7 @@ from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
 from webserver import rdb,  all_measurement, data, measurement_name, block, df_min_max
-from url_handlers import calculate_basic_stats as cbs
 import pandas as pd
-
 
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
 
@@ -48,18 +46,18 @@ def get_basic_stats():
             measurement1 = request.form.getlist('measurement_numeric')
 
         # handling errors and load data from database
+        df = pd.DataFrame()
         error = None
         if not measurement1:
             error = "Please select number of {}".format(measurement_name)
         elif len(numeric_entities) == 0:
             error = "Please select numeric entities"
         elif numeric_entities:
-            n, error = ps.number(rdb)
             df, error = ps.get_basic_stats(numeric_entities, measurement1, case_ids, categorical_filter,
                                            categorical_names, name, from1, to1, measurement_filter, date, rdb)
 
         # calculation basic stats
-        if 'count NaN' in request.form: df['count NaN'] = int(n) - df['count']
+        if not 'count NaN' in request.form: df = df.drop(['count NaN'], axis=1)
         if not 'count' in request.form: df = df.drop(['count'], axis=1)
         if not 'mean' in request.form: df = df.drop(['mean'], axis=1)
         if not 'min' in request.form: df = df.drop(['min'], axis=1)
@@ -70,7 +68,6 @@ def get_basic_stats():
 
         df = df.set_index(['Key', 'measurement'])
         data.csv = df.to_csv()
-        error_message = "You must select at least some statistics"
         result = df.to_dict()
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -116,20 +113,20 @@ def get_basic_stats():
             measurement = all_measurement.values
         else:
             measurement = request.form.getlist('measurement_categorical')
-        if 'Select all' in measurement: measurement.remove('Select all')
+
         # handling errors and load data from database
-        error = None
+        df = pd.DataFrame()
+
         if len(measurement) == 0:
             error = "Please select number of {}".format(measurement_name)
         elif len(categorical_entities) == 0:
             error = "Please select entities"
         else:
-            n, error = ps.number(rdb) if not error else (None, error)
-            categorical_df, error = ps.get_cat_values_basic_stats(categorical_entities, measurement, case_ids,
-                                                                  categorical_filter, categorical_names, name, from1,
-                                                                  to1, measurement_filter, date, rdb)
+            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, case_ids,
+                                                           categorical_filter, categorical_names, name, from1,
+                                                           to1, measurement_filter, date, rdb)
             if not error:
-                if len(categorical_df.index) == 0:
+                if len(df.index) == 0:
                     error = "The selected entities (" + ", ".join(categorical_entities) + ") do not contain any values. "
 
         if error:
@@ -148,12 +145,8 @@ def get_basic_stats():
                                    numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
                                    error=error)
-
-        categorical_df['count NaN'] = int(n) - categorical_df['count']
-
-        categorical_df = categorical_df.set_index(['Key', 'measurement'])
-        basic_stats_c = categorical_df.to_dict()
-        print(basic_stats_c)
+        df = df.set_index(['Key', 'measurement'])
+        basic_stats_c = df.to_dict()
 
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,

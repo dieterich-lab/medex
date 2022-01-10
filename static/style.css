@@ -68,3 +68,5 @@ figcaption {
   padding: 10px;
   text-align: center;
 }
+
+select { white-space: pre-wrap;}

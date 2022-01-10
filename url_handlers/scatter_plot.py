@@ -63,12 +63,9 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     else:
-        df, error = ps.get_scatter_plot(x_axis, y_axis, x_measurement, y_measurement, case_ids, categorical_filter, 
-                                        categorical_names, numerical_filter_name, from1, to1, measurement_filter, date, 
-                                        rdb)
-#        df, error = ps.get_cat_values(categorical_entities, subcategory_entities, [x_measurement, y_measurement],
-#                                      case_ids, categorical_filter, categorical_names, numerical_filter_name,
-#                                      from1, to1, measurement_filter, date, rdb)
+        df, error = ps.get_scatter_plot(categorical_entities, subcategory_entities, x_axis, y_axis, x_measurement,
+                                        y_measurement, case_ids, categorical_filter, categorical_names,
+                                        numerical_filter_name, from1, to1, measurement_filter, date, rdb)
 
     if error:
         return render_template('scatter_plot.html',
@@ -89,6 +86,7 @@ def post_plots():
                                )
 
     # Plot figure and convert to an HTML string representation
+    df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
     fig = {}
     if how_to_plot == 'linear':
         if add_group_by :
@@ -133,7 +131,6 @@ def post_plots():
                 fig = px.scatter(df, x=x_axis, y=y_axis, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_y=True)
 
-#    results = px.get_trendline_results(fig)
     if block == 'none':
         fig.update_layout(
             font=dict(size=16),

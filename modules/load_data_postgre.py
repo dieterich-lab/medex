@@ -397,41 +397,24 @@ def get_data(entity, what_table, measurement, case_id, categorical_filter, categ
         return df, "Problem with load data from database"
 
 
-def number(r):
-    """ Get number of all patients
-
-     number use only for basic_stats
-     """
-    try:
-        sql = """SELECT COUNT (*) FROM Patient"""
-        n = pd.read_sql(sql, r)
-        return n['count'], None
-    except Exception:
-        return None, "Problem with load data from database"
-
-
-def get_unit(name, r):
-    """ Get number of all patients
-
-     number use only for basic_stats
-     """
-    try:
-        sql = """SELECT "Key","unit" FROM name_type WHERE "Key"='{}' """.format(name)
-        df = pd.read_sql(sql, r)
-        return df['unit'][0], None
-    except Exception:
-        return None, "Problem with load data from database"
-
 def get_basic_stats(entity, measurement, case_id, categorical_filter, categorical, numerical_filter_name, from1, to1,
                     measurement_filter, date, r):
-    """ """
+    """
+    param:
+     entity: numerical entities names which should be selected from database
+     measurement: selected measurements
+     r: connection with database
+    return: DataFrame with calculated basic statistic
+    """
 
-    round = 'not'
+    n = """SELECT COUNT ( DISTINCT "Name_ID") FROM Patient"""
+    n = pd.read_sql(n, r)
+    n = n['count']
+
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
     if not categorical_filter and not case_id and not numerical_filter_name:
-        if round == 'not':
-            sql = """SELECT "Key","measurement",
+        sql = """SELECT "Key","measurement",
                     count(DISTINCT "Name_ID"),
                     min("Value"),
                     max("Value"),
@@ -446,42 +429,9 @@ def get_basic_stats(entity, measurement, case_id, categorical_filter, categorica
                     GROUP BY "Key","measurement" 
                     ORDER BY "Key","measurement" """.format(
                     entity_final, measurement, date[0], date[1])
-        else:
-            sql = """SELECT "Key","measurement",
-                    count(DISTINCT "Name_ID"),
-                    min("Value"),
-                    max("Value"),
-                    ROUND(AVG("Value")::numeric,2) AS "mean",
-                    ROUND(stddev("Value")::numeric,2),
-                    ROUND((stddev("Value")/sqrt(count("Value")))::numeric,2) AS "stderr",
-                    (percentile_disc(0.5) within group (order by "Value")) as median 
-                    FROM examination_numerical
-                    WHERE "Key" IN ({0}) 
-                    AND "measurement" IN ({1}) 
-                    AND "Date" BETWEEN '{2}' AND '{3}' 
-                    GROUP BY "Key","measurement" 
-                    ORDER BY "Key","measurement" """.format(
-                    entity_final, measurement, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
-        if round == 'not':
-            sql = """SELECT "Key","measurement",
-                    count(DISTINCT "Name_ID"),
-                    min("Value"),
-                    max("Value"),
-                    AVG("Value") AS "mean",
-                    stddev("Value"),(stddev("Value")/sqrt(count("Value"))) AS "stderr",
-                    (percentile_disc(0.5) within group (order by "Value")) AS median 
-                    FROM examination_numerical
-                    WHERE "Key" IN ({0}) 
-                    AND "Name_ID" IN ({4}) 
-                    AND "measurement" IN ({1}) 
-                    AND "Date" BETWEEN '{2}' AND '{3}' 
-                    GROUP BY "Key","measurement" 
-                    ORDER BY "Key","measurement"
-                    """.format(entity_final, measurement, date[0], date[1],df)
-        else:
-            sql = """SELECT "Key","measurement",
+        sql = """SELECT "Key","measurement",
                     count(DISTINCT "Name_ID"),
                     min("Value"),
                     max("Value"),
@@ -501,15 +451,26 @@ def get_basic_stats(entity, measurement, case_id, categorical_filter, categorica
 
     try:
         df = pd.read_sql(sql, r)
+        df['count NaN'] = int(n) - df['count']
         df = df.round(2)
         return df, None
-    except Exception:
+    except ValueError:
         return None, "Problem with load data from database"
 
 
 def get_cat_basic_stats(entity, measurement, case_id, categorical_filter, categorical, numerical_filter_name, from1,
                         to1, measurement_filter, date, r):
-    """ """
+    """
+    param:
+     entity: categorical entities names which should be selected from database
+     measurement: selected measurements
+     r: connection with database
+    return: DataFrame with calculated basic statistic
+    """
+
+    n = """SELECT COUNT ( DISTINCT "Name_ID") FROM Patient"""
+    n = pd.read_sql(n, r)
+    n = n['count']
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
@@ -532,49 +493,62 @@ def get_cat_basic_stats(entity, measurement, case_id, categorical_filter, catego
 
     try:
         df = pd.read_sql(sql, r)
+        df['count NaN'] = int(n) - df['count']
         return df, None
-    except Exception:
+    except ValueError:
+        return None, "Problem with load data from database"
+
+
+def get_unit(name, r):
+    """ Get number of all patients
+
+     number use only for basic_stats
+     """
+    try:
+        sql = """SELECT "Key","unit" FROM name_type WHERE "Key"='{}' """.format(name)
+        df = pd.read_sql(sql, r)
+        return df['unit'][0], None
+    except ValueError:
         return None, "Problem with load data from database"
 
 
 def get_scatter_plot(entity, subcategory, x_entity, y_entity, x_measurement,y_measurement, case_id, categorical_filter,
                      categorical, numerical_filter_name, from1, to1, measurement_filter, date, r):
-    """ Get DataFrame with selected values to plot scatter plot """
+    """
+    param:
+     entity: categorical entities names which should be selected from database
+     measurement: selected measurements
+     r: connection with database
+    return: DataFrame with calculated basic statistic
+    """
 
     if not categorical_filter and not case_id and not numerical_filter_name:
-        sql = """SELECT "Name_ID",AVG("Value") as "{0}" 
-                FROM examination_numerical  
-                WHERE "Key" IN ('{0}') 
-                AND "measurement"='{1}' 
-                AND "Date" BETWEEN '{2}' AND '{3}' 
-                GROUP BY "Name_ID" """.format(x_entity, x_measurement, date[0], date[1])
-
-        sql2 = """SELECT "Name_ID",AVG("Value") as "{0}" 
-                FROM examination_numerical
-                WHERE "Key" IN ('{0}') 
-                AND "measurement"= '{1}' AND "Date" BETWEEN '{2}' AND '{3}'
-                GROUP BY "Name_ID" """.format(y_entity, y_measurement, date[0], date[1])
-
-        # join or case what is faster?
-        sql_test = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{0}"{,ec."Value"}
-                        FROM examination_numerical as "x"
-                        INNER JOIN examination_numerical as "y"
-                            ON x."Name_ID" == y."Name_ID"
-                        {INNER JOIN examination_categorical AS ec
-                        ON y."Name_ID" = ec."Name_ID"}  
-                        WHERE x."Key" IN ('{0}') 
-                        AND x."measurement"='{1}' 
-                        AND y."measurement"='{1}' 
-                        AND x."Date" BETWEEN '{2}' AND '{3}' 
-                        AND y."Date" BETWEEN '{2}' AND '{3}'
-                        {AND ec."Key"= '{0}' 
-                        AND ec."Value" IN ({1})}  
-                        GROUP BY x."Name_ID",y."Name_ID"  """
-
-        # categorical value
-        sql = """SELECT "Name_ID","Value" FROM examination_categorical,
-                 WHERE "Key"= '{0}' 
-                 AND "Value" IN ({1}) """.format(entity, subcategory)
+        if entity.empty:
+            sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{0}"
+                            FROM examination_numerical as "x"
+                            INNER JOIN examination_numerical as "y"
+                                ON x."Name_ID" = y."Name_ID"
+                            WHERE x."Key" IN ('{0}') 
+                            AND x."Key" IN ('{0}') 
+                            AND x."measurement"='{1}' 
+                            AND y."measurement"='{1}' 
+                            AND x."Date" BETWEEN '{2}' AND '{3}' 
+                            AND y."Date" BETWEEN '{2}' AND '{3}'
+                            GROUP BY x."Name_ID",y."Name_ID"  """
+        else:
+            sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{0}",ec.
+                            FROM examination_numerical as "x"
+                            INNER JOIN examination_numerical as "y"
+                                ON x."Name_ID" = y."Name_ID"
+                            WHERE x."Key" IN ('{0}') 
+                            AND x."Key" IN ('{0}') 
+                            AND x."measurement"='{1}' 
+                            AND y."measurement"='{1}' 
+                            AND x."Date" BETWEEN '{2}' AND '{3}' 
+                            AND y."Date" BETWEEN '{2}' AND '{3}'
+                            GROUP BY x."Name_ID",y."Name_ID"  """
+        start_time = time.time()
+        print("--- %s seconds ---" % (time.time() - start_time))
 
 
     else:
@@ -600,11 +574,9 @@ def get_scatter_plot(entity, subcategory, x_entity, y_entity, x_measurement,y_me
                 ORDER BY "measurement" """.format(y_entity, y_measurement, date[0], date[1], df)
 
     try:
-        df3 = pd.read_sql(sql, r)
-        df4 = pd.read_sql(sql2, r)
-        df = df3.merge(df4, on=["Name_ID"])
+        df = pd.read_sql(sql, r)
         return df, None
-    except Exception:
+    except ValueError:
         return None, None, "Problem with load data from database"
 
 

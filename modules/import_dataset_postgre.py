@@ -93,6 +93,7 @@ def load_data(entities, dataset, header, rdb):
         head = next(in_file)
         if 'order' in head:
             for row in in_file:
+                row = row.replace("  ", " ")
                 row = row.replace("\n", "").split(",")
                 if len(row) == 3:
                     cur.execute("INSERT INTO name_type VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", row)
@@ -109,6 +110,7 @@ def load_data(entities, dataset, header, rdb):
         else:
             i = 0
             for row in in_file:
+                row = row.replace("  ", " ")
                 i += 1
                 row = row.replace("\n", "").split(",")
                 line = [i] + row[:]
@@ -140,6 +142,7 @@ def load_data(entities, dataset, header, rdb):
                 print("This line doesn't have appropriate format:", line)
             else:
                 try:
+                    line[6] = line[6].replace("  ", " ")
                     if line[7].lstrip('-').replace('.', '', 1).isdigit():
                         cur.execute("INSERT INTO examination_numerical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                     elif is_date(line[7]):
