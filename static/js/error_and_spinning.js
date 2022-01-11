@@ -50,6 +50,12 @@ function formatCustom(state) {
     $("#measurement").select2({
     placeholder:"Search entity"
     });
+    $("#measurement_date").select2({
+    placeholder:"Search entity"
+    });
+    $("#date_entities").select2({
+    placeholder:"Search entity"
+    });
     $("#measurement_categorical").select2({
     placeholder:"Search entity"
     });

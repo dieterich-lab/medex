@@ -34,7 +34,7 @@
   </li>
   <li class="nav-item">
     <a class="nav-link {% if date_tab %}show active" aria-selected="true"{% endif %} id="date_link" data-toggle="tab"
-       href="#date_tab" role="tab" aria-controls="categorical_tab">Categorical</a>
+       href="#date_tab" role="tab" aria-controls="date_tab">Date</a>
   </li>
 </ul>
 
@@ -43,6 +43,7 @@
     {# each tab in a single file, for readability #}
     {% include 'basic_stats/categorical_tab.html' %}
     {% include 'basic_stats/numeric_tab.html' %}
+     {% include 'basic_stats/date_tab.html' %}
 </div>
 </div>
 </form>

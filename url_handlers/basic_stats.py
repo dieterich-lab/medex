@@ -164,5 +164,64 @@ def get_basic_stats():
                                numerical_filter=numerical_filter,
                                df_min_max=df_min_max)
 
+    if 'basic_stats_d' in request.form:
+        """ calculation for date values"""
+
+        # list selected data by client
+        date_entities = request.form.getlist('date_entities')
+        if block == 'none':
+            measurement = all_measurement.values
+        else:
+            measurement = request.form.getlist('measurement_date')
+
+        # handling errors and load data from database
+        df = pd.DataFrame()
+
+        if len(measurement) == 0:
+            error = "Please select number of {}".format(measurement_name)
+        elif len(date_entities) == 0:
+            error = "Please select entities"
+        else:
+            df, error = ps.get_date_basic_stats(date_entities, measurement, case_ids,
+                                                           categorical_filter, categorical_names, name, from1,
+                                                           to1, measurement_filter, date, rdb)
+            if not error:
+                if len(df.index) == 0:
+                    error = "The selected entities (" + ", ".join(date_entities) + ") do not contain any values. "
+
+        if error:
+            return render_template('basic_stats/basic_stats.html',
+                                   date_tab=True,
+                                   name=measurement_name,
+                                   block=block,
+                                   measurement_name=measurement_name,
+                                   all_measurement=all_measurement,
+                                   date_entities=date_entities,
+                                   measurement_categorical=measurement,
+                                   measurement_filter=measurement_filter,
+                                   start_date=start_date,
+                                   end_date=end_date,
+                                   filter=categorical_filter_zip,
+                                   numerical_filter=numerical_filter,
+                                   df_min_max=df_min_max,
+                                   error=error)
+        df = df.set_index(['Key', 'measurement'])
+        basic_stats_d = df.to_dict()
+
+        return render_template('basic_stats/basic_stats.html',
+                               date_tab=True,
+                               name=measurement_name,
+                               block=block,
+                               measurement_name=measurement_name,
+                               all_measurement=all_measurement,
+                               date_entities=date_entities,
+                               measurement_categorical=measurement,
+                               measurement_filter=measurement_filter,
+                               basic_stats_d=basic_stats_d,
+                               start_date=start_date,
+                               end_date=end_date,
+                               filter=categorical_filter_zip,
+                               numerical_filter=numerical_filter,
+                               df_min_max=df_min_max)
 
 

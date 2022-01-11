@@ -1,6 +1,8 @@
 $(function () {
 
-    var column = JSON.parse($('#tab').attr('column').replace(/'/g, '"')); //"));
+    var column = $('#tab').attr('column');
+    if (column !== undefined){
+    var column =  JSON.parse($('#tab').attr('column').replace(/'/g, '"')); //"));
     $('#serverside_table').DataTable({
     bProcessing: true,
     bServerSide: true,
@@ -11,6 +13,7 @@ $(function () {
     sAjaxSource: '/data/data1',
     columns: column
   });
+  }
 
 
 });

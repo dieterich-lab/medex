@@ -85,7 +85,7 @@ function formatCustom(state) {
 		dataAdapter:$.fn.select2.amd.require('select2/data/CustomData'),
 		templateResult: formatCustom,
 	});
-		$("#numeric_entities_multiple").select2({
+	$("#numeric_entities_multiple").select2({
 		ajax:{},
 		allowClear:true,
 		width:"element",

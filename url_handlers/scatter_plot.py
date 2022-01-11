@@ -4,6 +4,7 @@ import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
 from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max, data
 import pandas as pd
+import textwrap
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
@@ -63,7 +64,7 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     else:
-        df, error = ps.get_scatter_plot(categorical_entities, subcategory_entities, x_axis, y_axis, x_measurement,
+        df, error = ps.get_scatter_plot(add_group_by, categorical_entities, subcategory_entities, x_axis, y_axis, x_measurement,
                                         y_measurement, case_ids, categorical_filter, categorical_names,
                                         numerical_filter_name, from1, to1, measurement_filter, date, rdb)
 
@@ -86,6 +87,7 @@ def post_plots():
                                )
 
     # Plot figure and convert to an HTML string representation
+    print(categorical_entities)
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
     fig = {}
     if how_to_plot == 'linear':
@@ -141,12 +143,22 @@ def post_plots():
                 'xanchor': 'center',
                 'yanchor': 'top'})
     else:
-
+        split_text = textwrap.wrap("Compare values of <b>" + x_axis + "</b> : " + measurement_name + " <b>" +
+                                   x_measurement + "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" +
+                                   y_measurement + "</b> ", width=100)
+        xaxis = textwrap.wrap(x_axis + "</b> ")
+        yaxis = textwrap.wrap(y_axis, width=40)
         fig.update_layout(
+            height=700,
+            legend=dict(
+                xanchor= "center",
+            yanchor= "top",
+            y=-0.2,x=0.1),
             font=dict(size=16),
+            xaxis_title='<br>'.join(xaxis),
+            yaxis_title='<br>'.join(yaxis),
             title={
-                'text': "Compare values of <b>" + x_axis + "</b> : " + measurement_name + "<b>" + x_measurement +
-                        "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" + y_measurement + "</b> ",
+                'text': '<br>'.join(split_text),
                 'y': 0.9,
                 'x': 0.5,
                 'xanchor': 'center',

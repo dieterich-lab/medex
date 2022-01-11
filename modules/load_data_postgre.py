@@ -133,7 +133,7 @@ def get_categorical_entities(r):
                                   ORDER BY "Key" """
 
     # Retrieve categorical values with subcategories
-    all_subcategories = """SELECT DISTINCT "Key","Value" FROM examination_categorical ORDER by "Key","Value" """
+    all_subcategories = """SELECT DISTINCT "Key","Value" FROM examination_categorical ORDER by "Key" """
 
     try:
         size = pd.read_sql(examination_categorical_table_size, r)
@@ -142,17 +142,17 @@ def get_categorical_entities(r):
         subcategories = pd.read_sql(all_subcategories, r)
 
         array = []
+        df_subcategories = {}
         # create dictionary with categories and subcategories
         for value in entities['Key']:
-            df_subcategories = {}
             df = subcategories[subcategories["Key"] == value]
             del df['Key']
             df_subcategories[value] = list(df['Value'])
-            array.append(df)
+            array.append(df_subcategories)
 
         df_subcategories = dict(ChainMap(*array))
 
-        return size, entities, df_subcategories,
+        return size, entities, df_subcategories
     except ValueError:
         array = []
         size = 0
@@ -499,6 +499,47 @@ def get_cat_basic_stats(entity, measurement, case_id, categorical_filter, catego
         return None, "Problem with load data from database"
 
 
+def get_date_basic_stats(entity, measurement, case_id, categorical_filter, categorical, numerical_filter_name, from1,
+                        to1, measurement_filter, date, r):
+    """
+    param:
+     entity: date entities names which should be selected from database
+     measurement: selected measurements
+     r: connection with database
+    return: DataFrame with calculated basic statistic
+    """
+
+    n = """SELECT COUNT ( DISTINCT "Name_ID") FROM Patient"""
+    n = pd.read_sql(n, r)
+    n = n['count']
+
+    entity_final = "$$" + "$$,$$".join(entity) + "$$"
+    measurement = "'" + "','".join(measurement) + "'"
+
+    if not categorical_filter and not case_id and not numerical_filter_name:
+        sql = """SELECT "Key","measurement",count(DISTINCT "Name_ID") 
+                FROM examination_date
+                WHERE "Key" IN ({0}) 
+                AND "measurement" IN ({1}) 
+                GROUP BY "measurement","Key" """.format(entity_final, measurement)
+    else:
+        df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
+        sql = """SELECT "Key","measurement",count(DISTINCT "Name_ID") 
+                FROM examination_date
+                WHERE "Key" IN ({0}) 
+                AND "Name_ID" in ({4}) 
+                AND "measurement" IN ({1}) 
+                AND "Date" BETWEEN '{2}' AND '{3}' 
+                GROUP BY "Name_ID","measurement","Key" """.format(entity_final, measurement, date[0], date[1], df)
+
+    try:
+        df = pd.read_sql(sql, r)
+        df['count NaN'] = int(n) - df['count']
+        return df, None
+    except ValueError:
+        return None, "Problem with load data from database"
+
+
 def get_unit(name, r):
     """ Get number of all patients
 
@@ -512,7 +553,7 @@ def get_unit(name, r):
         return None, "Problem with load data from database"
 
 
-def get_scatter_plot(entity, subcategory, x_entity, y_entity, x_measurement,y_measurement, case_id, categorical_filter,
+def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_measurement,y_measurement, case_id, categorical_filter,
                      categorical, numerical_filter_name, from1, to1, measurement_filter, date, r):
     """
     param:
@@ -521,34 +562,39 @@ def get_scatter_plot(entity, subcategory, x_entity, y_entity, x_measurement,y_me
      r: connection with database
     return: DataFrame with calculated basic statistic
     """
-
+    subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     if not categorical_filter and not case_id and not numerical_filter_name:
-        if entity.empty:
-            sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{0}"
-                            FROM examination_numerical as "x"
-                            INNER JOIN examination_numerical as "y"
+        if add_group_by == False:
+            sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{1}"
+                            FROM examination_numerical as x
+                            INNER JOIN examination_numerical as y
                                 ON x."Name_ID" = y."Name_ID"
                             WHERE x."Key" IN ('{0}') 
-                            AND x."Key" IN ('{0}') 
-                            AND x."measurement"='{1}' 
-                            AND y."measurement"='{1}' 
-                            AND x."Date" BETWEEN '{2}' AND '{3}' 
-                            AND y."Date" BETWEEN '{2}' AND '{3}'
-                            GROUP BY x."Name_ID",y."Name_ID"  """
+                            AND y."Key" IN ('{1}') 
+                            AND x."measurement"='{2}' 
+                            AND y."measurement"='{3}' 
+                            AND x."Date" BETWEEN '{4}' AND '{5}' 
+                            AND y."Date" BETWEEN '{4}' AND '{5}'
+                            GROUP BY x."Name_ID",y."Name_ID"  """.format(x_entity, y_entity, x_measurement,
+                                                                         y_measurement, date[0], date[1])
         else:
-            sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{0}",ec.
-                            FROM examination_numerical as "x"
-                            INNER JOIN examination_numerical as "y"
+            sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{1}",STRING_AGG(distinct ec."Value",';') as "{6}" 
+                            FROM examination_numerical as x
+                            INNER JOIN examination_numerical as y
                                 ON x."Name_ID" = y."Name_ID"
+                            LEFT JOIN examination_categorical as ec
+                                ON x."Name_ID" = ec."Name_ID"
                             WHERE x."Key" IN ('{0}') 
-                            AND x."Key" IN ('{0}') 
-                            AND x."measurement"='{1}' 
-                            AND y."measurement"='{1}' 
-                            AND x."Date" BETWEEN '{2}' AND '{3}' 
-                            AND y."Date" BETWEEN '{2}' AND '{3}'
-                            GROUP BY x."Name_ID",y."Name_ID"  """
-        start_time = time.time()
-        print("--- %s seconds ---" % (time.time() - start_time))
+                            AND y."Key" IN ('{1}') 
+                            AND ec."Key" IN ('{6}')
+                            AND ec."Value" IN ({7})
+                            AND x."measurement"='{2}' 
+                            AND y."measurement"='{3}' 
+                            AND x."Date" BETWEEN '{4}' AND '{5}' 
+                            AND y."Date" BETWEEN '{4}' AND '{5}'
+                            GROUP BY x."Name_ID"  """.format(x_entity, y_entity, x_measurement,
+                                                             y_measurement, date[0], date[1], entity, subcategory)
+
 
 
     else:
@@ -574,7 +620,9 @@ def get_scatter_plot(entity, subcategory, x_entity, y_entity, x_measurement,y_me
                 ORDER BY "measurement" """.format(y_entity, y_measurement, date[0], date[1], df)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        print("--- %s seconds ---" % (time.time() - start_time))
         return df, None
     except ValueError:
         return None, None, "Problem with load data from database"
