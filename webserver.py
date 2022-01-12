@@ -43,6 +43,8 @@ class DataStore():
     csv = None
     csv_new_table = None
 
+    Name_ID_filter = None
+
 
 
 

@@ -30,7 +30,7 @@ def get_data():
                            end_date=end_date,
                            measurement_filter=session.get('measurement_filter'),
                            numerical_filter=numerical_filter,
-                           categorical_filter=categorical_filter,
+                           filter=categorical_filter,
                            df_min_max=df_min_max)
 
 
@@ -60,8 +60,11 @@ def post_data():
     elif len(entities) == 0:
         error = "Please select entities"
     else:
-        df = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter)
-        df, error = ps.get_data(entities, what_table, measurement, date, rdb)
+        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
+                                    measurement_filter,rdb)
+        data.Name_ID_filter = df_filtering
+        filter = data.Name_ID_filter
+        df, error = ps.get_data(entities, what_table, measurement, date, filter, rdb)
 
     if error:
         return render_template('data.html',
@@ -75,7 +78,7 @@ def post_data():
                                entities=entities,
                                start_date=start_date,
                                end_date=end_date,
-                               categorical_filter=categorical_filter_zip,
+                               filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
                                df_min_max=df_min_max
                                )
@@ -118,7 +121,7 @@ def post_data():
                            end_date=end_date,
                            what_table=what_table,
                            column=dict_of_column,
-                           categorical_filter=categorical_filter_zip,
+                           filter=categorical_filter_zip,
                            numerical_filter=numerical_filter,
                            df_min_max=df_min_max
                            )

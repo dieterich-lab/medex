@@ -182,9 +182,7 @@ def get_basic_stats():
         elif len(date_entities) == 0:
             error = "Please select entities"
         else:
-            df, error = ps.get_date_basic_stats(date_entities, measurement, case_ids,
-                                                           categorical_filter, categorical_names, name, from1,
-                                                           to1, measurement_filter, date, rdb)
+            df, error = ps.get_date_basic_stats(date_entities, measurement, date, rdb)
             if not error:
                 if len(df.index) == 0:
                     error = "The selected entities (" + ", ".join(date_entities) + ") do not contain any values. "

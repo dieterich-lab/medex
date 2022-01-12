@@ -42,8 +42,7 @@ def post_plots():
 
     # handling errors and load data from database
     if len(numeric_entities) > 1:
-        df, error = ps.get_heat_map(numeric_entities, case_ids, categorical_filter, categorical_names, name,from1, to1,
-                                    measurement_filter, date, rdb)
+        df, error = ps.get_heat_map(numeric_entities, case_ids, date, rdb)
         if not error:
             if len(df.index) == 0:
                 error = "This two entities don't have common values"

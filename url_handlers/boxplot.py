@@ -55,8 +55,7 @@ def post_boxplots():
         error = "Please select subcategory"
     else:
         df, error = ps.get_histogram_box_plot(numeric_entities, categorical_entities, subcategory_entities, measurement,
-                                              case_ids, categorical_filter, categorical_names, numerical_filter_name,
-                                              from1, to1, measurement_filter, date, rdb)
+                                              date, rdb)
         df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     if error:
