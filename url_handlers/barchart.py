@@ -4,6 +4,7 @@ import plotly.express as px
 import url_handlers.filtering as filtering
 from webserver import rdb, all_measurement, measurement_name, Name_ID, block, df_min_max, data
 import pandas as pd
+import textwrap
 
 barchart_page = Blueprint('barchart', __name__, template_folder='templates')
 
@@ -70,8 +71,8 @@ def post_statistics():
                                error=error
                                )
 
-    df['%'] = 100*df['count']/df.groupby(measurement_name)['count'].transform('sum')
-
+    df['%'] = 100*df['count']/df.groupby('measurement')['count'].transform('sum')
+    legend = textwrap.wrap(categorical_entities, width=20)
     # Plot figure and convert to an HTML string representation
     if block == 'none':
         if how_to_plot == 'count':
@@ -80,13 +81,14 @@ def post_statistics():
             fig = px.bar(df, x=categorical_entities, y="%", barmode='group', template="plotly_white")
     else:
         if how_to_plot == 'count':
-            fig = px.bar(df, x=measurement_name, y="count", color=categorical_entities, barmode='group',
+            fig = px.bar(df, x='measurement', y="count", color=categorical_entities, barmode='group',
                          template="plotly_white")
         else:
-            fig = px.bar(df, x=measurement_name, y="%", color=categorical_entities, barmode='group',
+            fig = px.bar(df, x='measurement', y="%", color=categorical_entities, barmode='group',
                          template="plotly_white")
 
-    fig.update_layout(font=dict(size=16))
+    fig.update_layout(font=dict(size=16),
+                      legend_title='<br>'.join(legend),)
     fig = fig.to_html()
 
     return render_template('barchart.html',

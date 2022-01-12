@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, request,session
+from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
 from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max, data
 import pandas as pd
+import textwrap
 
 histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 
@@ -59,6 +60,7 @@ def post_statistics():
                                               case_ids, categorical_filter, categorical_names, numerical_filter_name,
                                               from1, to1, measurement_filter, date, rdb)
         numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
+        df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     if error:
         return render_template('histogram.html',
@@ -103,11 +105,13 @@ def post_statistics():
                            opacity=0.7, template="plotly_white")
     else:
         fig = px.histogram(df, x=numeric_entities, facet_row=measurement_name, color=categorical_entities,
-                           barmode='overlay',nbins=bin_numbers, opacity=0.7, template="plotly_white")
+                           barmode='overlay', nbins=bin_numbers, opacity=0.7, template="plotly_white")
 
+    legend = textwrap.wrap(categorical_entities, width=20)
     fig.update_layout(
         font=dict(size=16),
-        height=800,
+        legend_title='<br>'.join(legend),
+        height=1000,
         title={
             'y': 0.9,
             'x': 0.5,

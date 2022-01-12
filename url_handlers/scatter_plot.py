@@ -87,7 +87,6 @@ def post_plots():
                                )
 
     # Plot figure and convert to an HTML string representation
-    print(categorical_entities)
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
     fig = {}
     if how_to_plot == 'linear':
@@ -148,12 +147,10 @@ def post_plots():
                                    y_measurement + "</b> ", width=100)
         xaxis = textwrap.wrap(x_axis + "</b> ")
         yaxis = textwrap.wrap(y_axis, width=40)
+        legend = textwrap.wrap(categorical_entities, width=20)
         fig.update_layout(
-            height=700,
-            legend=dict(
-                xanchor= "center",
-            yanchor= "top",
-            y=-0.2,x=0.1),
+            height=600,
+            legend_title='<br>'.join(legend),
             font=dict(size=16),
             xaxis_title='<br>'.join(xaxis),
             yaxis_title='<br>'.join(yaxis),

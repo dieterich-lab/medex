@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import rdb, df_min_max, data, block, all_measurement, measurement_name
+from webserver import rdb, df_min_max, data, block, Name_ID, all_measurement, measurement_name
 import pandas as pd
 
 boxplot_page = Blueprint('boxplot', __name__,template_folder='templates')
@@ -57,6 +57,7 @@ def post_boxplots():
         df, error = ps.get_histogram_box_plot(numeric_entities, categorical_entities, subcategory_entities, measurement,
                                               case_ids, categorical_filter, categorical_names, numerical_filter_name,
                                               from1, to1, measurement_filter, date, rdb)
+        df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     if error:
         return render_template('boxplot.html',
@@ -90,7 +91,8 @@ def post_boxplots():
             fig = px.box(df, x=measurement_name, y=numeric_entities, color=categorical_entities,
                          template="plotly_white", log_y=True)
 
-    fig.update_layout(font=dict(size=16))
+    fig.update_layout(font=dict(size=16)
+                      )
     fig = fig.to_html()
 
     return render_template('boxplot.html',

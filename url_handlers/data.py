@@ -60,8 +60,8 @@ def post_data():
     elif len(entities) == 0:
         error = "Please select entities"
     else:
-        df, error = ps.get_data(entities, what_table, measurement, case_ids, categorical_filter, categorical_names,
-                                name, from1, to1, measurement_filter, date, rdb)
+        df = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter)
+        df, error = ps.get_data(entities, what_table, measurement, date, rdb)
 
     if error:
         return render_template('data.html',

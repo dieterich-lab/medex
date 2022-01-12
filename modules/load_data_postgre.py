@@ -578,7 +578,7 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                             GROUP BY x."Name_ID",y."Name_ID"  """.format(x_entity, y_entity, x_measurement,
                                                                          y_measurement, date[0], date[1])
         else:
-            sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{1}",STRING_AGG(distinct ec."Value",';') as "{6}" 
+            sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{1}",STRING_AGG(distinct ec."Value",'<br>') as "{6}" 
                             FROM examination_numerical as x
                             INNER JOIN examination_numerical as y
                                 ON x."Name_ID" = y."Name_ID"
@@ -620,9 +620,7 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                 ORDER BY "measurement" """.format(y_entity, y_measurement, date[0], date[1], df)
 
     try:
-        start_time = time.time()
         df = pd.read_sql(sql, r)
-        print("--- %s seconds ---" % (time.time() - start_time))
         return df, None
     except ValueError:
         return None, None, "Problem with load data from database"
@@ -630,18 +628,25 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
 
 def get_bar_chart(entity, subcategory, measurement, case_id, categorical_filter, categorical,numerical_filter_name,
                   from1, to1, measurement_filter, date, r):
-    """ Get DataFrame with selected values to plot bar chart """
+    """
+    param:
+     entity: categorical entities names which should be selected from database
+     measurement: selected measurements
+     r: connection with database
+    return: DataFrame with calculated basic statistic
+    """
 
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
 
     if not categorical_filter and not case_id and not numerical_filter_name:
         sql = """SELECT "Value" AS "{0}","measurement",count("Value")
-                FROM examination_categorical 
-                WHERE "Key"='{0}'
-                AND "Value" IN ({1}) 
-                AND "Date" BETWEEN '{3}' AND '{4}'
-                AND "measurement" IN ({2})
+                FROM (SELECT STRING_AGG(distinct "Value",'<br>')  AS "Value","measurement" FROM examination_categorical 
+                        WHERE "Key"='{0}'
+                        AND "Value" IN ({1}) 
+                        AND "Date" BETWEEN '{3}' AND '{4}'
+                        AND "measurement" IN ({2})
+                        GROUP BY "Name_ID",measurement) AS foo
                 GROUP BY "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
@@ -658,13 +663,19 @@ def get_bar_chart(entity, subcategory, measurement, case_id, categorical_filter,
     try:
         df = pd.read_sql(sql, r)
         return df, None
-    except Exception:
+    except ValueError:
         return None, "Problem with load data from database"
 
 
 def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, case_id, categorical_filter, categorical,
                            numerical_filter_name, from1, to1, measurement_filter, date, r):
-    """ Get DataFrame with selected values to plot histogram or box plot """
+    """
+    param:
+     entity: categorical entities names which should be selected from database
+     measurement: selected measurements
+     r: connection with database
+    return: DataFrame with calculated basic statistic
+    """
     
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
@@ -678,8 +689,8 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, cas
                 AND ec."Value" IN ({2}) 
                 AND en."measurement" IN ({3}) 
                 AND en."Date" BETWEEN '{4}' AND '{5}'
-                GROUP BY en."Name_ID",en."measurement",ec."Value" 
-                """.format(entity_num, entity_cat, subcategory, measurement,date[0],date[1])
+                GROUP BY en."Name_ID",en."measurement",ec."Value"
+                """.format(entity_num, entity_cat, subcategory, measurement, date[0], date[1])
     else:
         df = filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement_filter)
         sql = """SELECT en."Name_ID",en."measurement",AVG(en."Value") AS "{0}",ec."Value" AS "{1}" 
@@ -698,7 +709,7 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, cas
 
     try:
         df = pd.read_sql(sql, r)
-    except Exception:
+    except ValueError:
         return None, "Problem with load data from database"
     if df.empty or len(df) == 0:
         return df, "The entity {0} or {1} wasn't measured".format(entity_num, entity_cat)
@@ -708,7 +719,13 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, cas
 
 def get_heat_map(entity, case_id, categorical_filter, categorical, numerical_filter_name, from1,
                        to1, measurement_filter, date, r):
-    """ Get DataFrame with selected values to plot heat map"""
+    """
+    param:
+     entity: categorical entities names which should be selected from database
+     measurement: selected measurements
+     r: connection with database
+    return: DataFrame with calculated basic statistic
+    """
 
     case_statement = ""
     crosstab_columns = ""
@@ -736,31 +753,14 @@ def get_heat_map(entity, case_id, categorical_filter, categorical, numerical_fil
                 AND "Date" Between '{1}' AND '{2}'
                 GROUP BY en."Name_ID","Key" """.format(entity_fin, date[0], date[1], df)
 
-    sql_case = """SELECT "Name_ID","Key",AVG(f."Value") as "Value", {3}
-            FROM examination_numerical 
-            WHERE "Key" IN ({0}) 
-            AND "Date" BETWEEN '{1}' ANd '{2}'
-            GROUP BY "Name_ID" """.format(entity_fin, date[0], date[1],case_statement)
-
-    sql_crosstab = """SELECT * FROM crosstab ('SELECT "Name_ID","Key","Value" 
-            FROM examination_numerical 
-            WHERE "Key" IN ({0}) 
-            AND "Date" BETWEEN '{1}' ANd '{2}'
-            ORDER  BY 1,2') AS ct ("Name_ID" text, {3})""".format(entity_fin, date[0], date[1], crosstab_columns)
-
-    print(sql_case)
-    print(sql_crosstab)
-
     try:
-        start_time = time.time()
         df = pd.read_sql(sql, r)
-        df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index() # should I do this sql?
-        print("--- %s seconds ---" % (time.time() - start_time))
+        df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"
         else:
             return df, None
-    except Exception:
+    except ValueError:
         return None, "Problem with load data from database"
 
 
@@ -774,5 +774,5 @@ def calculator(entity1, entity2, column_name, r):
     try:
         df = pd.read_sql(sql, r)
         return df
-    except Exception:
+    except ValueError:
         return None
