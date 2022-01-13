@@ -32,7 +32,7 @@ def post_statistics():
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
-    numerical_filter, numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
     # show/hide selector for visits
@@ -56,9 +56,13 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     else:
+        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
+                                    measurement_filter, rdb)
+        data.Name_ID_filter = df_filtering
+        filter = data.Name_ID_filter
         df, error = ps.get_histogram_box_plot(numeric_entities, categorical_entities, subcategory_entities, measurement,
-                                              date, rdb)
-        numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
+                                              date, filter, rdb)
+        #numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
         df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     if error:
@@ -98,6 +102,7 @@ def post_statistics():
                                numerical_filter=numerical_filter,
                                df_min_max=df_min_max,
                                error=error)
+
 
     if block == 'none':
         fig = px.histogram(df, x=numeric_entities, color=categorical_entities,barmode='overlay', nbins=bin_numbers,

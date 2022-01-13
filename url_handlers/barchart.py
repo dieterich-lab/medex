@@ -54,7 +54,11 @@ def post_statistics():
         error = "Please select subcategory"
     else:
         # select data from database
-        df, error = ps.get_bar_chart(categorical_entities, subcategory_entities, measurement, date, rdb)
+        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
+                                    measurement_filter, rdb)
+        data.Name_ID_filter = df_filtering
+        filter = data.Name_ID_filter
+        df, error = ps.get_bar_chart(categorical_entities, subcategory_entities, measurement, date, filter, rdb)
     if error:
         return render_template('barchart.html',
                                start_date=start_date,

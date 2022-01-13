@@ -4,6 +4,7 @@ import plotly.express as px
 import url_handlers.filtering as filtering
 from webserver import rdb, df_min_max, data, block, Name_ID, all_measurement, measurement_name
 import pandas as pd
+import textwrap
 
 boxplot_page = Blueprint('boxplot', __name__,template_folder='templates')
 
@@ -30,7 +31,7 @@ def post_boxplots():
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
-    numerical_filter, numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
     # show/hide selector for visits
@@ -54,8 +55,12 @@ def post_boxplots():
     elif not subcategory_entities:
         error = "Please select subcategory"
     else:
+        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
+                                    measurement_filter, rdb)
+        data.Name_ID_filter = df_filtering
+        filter = data.Name_ID_filter
         df, error = ps.get_histogram_box_plot(numeric_entities, categorical_entities, subcategory_entities, measurement,
-                                              date, rdb)
+                                              date, filter, rdb)
         df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     if error:
@@ -90,7 +95,9 @@ def post_boxplots():
             fig = px.box(df, x=measurement_name, y=numeric_entities, color=categorical_entities,
                          template="plotly_white", log_y=True)
 
-    fig.update_layout(font=dict(size=16)
+    legend = textwrap.wrap(categorical_entities, width=20)
+    fig.update_layout(font=dict(size=16),
+                      legend_title='<br>'.join(legend),
                       )
     fig = fig.to_html()
 

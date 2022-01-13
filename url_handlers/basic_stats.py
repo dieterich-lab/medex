@@ -53,8 +53,11 @@ def get_basic_stats():
         elif len(numeric_entities) == 0:
             error = "Please select numeric entities"
         elif numeric_entities:
-            df, error = ps.get_basic_stats(numeric_entities, measurement1, case_ids, categorical_filter,
-                                           categorical_names, name, from1, to1, measurement_filter, date, rdb)
+            df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
+                                        measurement_filter, rdb)
+            data.Name_ID_filter = df_filtering
+            filter = data.Name_ID_filter
+            df, error = ps.get_basic_stats(numeric_entities, measurement1, date, filter, rdb)
 
         # calculation basic stats
         if not 'count NaN' in request.form: df = df.drop(['count NaN'], axis=1)
@@ -122,9 +125,11 @@ def get_basic_stats():
         elif len(categorical_entities) == 0:
             error = "Please select entities"
         else:
-            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, case_ids,
-                                                           categorical_filter, categorical_names, name, from1,
-                                                           to1, measurement_filter, date, rdb)
+            df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
+                                        measurement_filter, rdb)
+            data.Name_ID_filter = df_filtering
+            filter = data.Name_ID_filter
+            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, date, filter, rdb)
             if not error:
                 if len(df.index) == 0:
                     error = "The selected entities (" + ", ".join(categorical_entities) + ") do not contain any values. "
@@ -182,7 +187,11 @@ def get_basic_stats():
         elif len(date_entities) == 0:
             error = "Please select entities"
         else:
-            df, error = ps.get_date_basic_stats(date_entities, measurement, date, rdb)
+            df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
+                                        measurement_filter, rdb)
+            data.Name_ID_filter = df_filtering
+            filter = data.Name_ID_filter
+            df, error = ps.get_date_basic_stats(date_entities, measurement, date, filter, rdb)
             if not error:
                 if len(df.index) == 0:
                     error = "The selected entities (" + ", ".join(date_entities) + ") do not contain any values. "

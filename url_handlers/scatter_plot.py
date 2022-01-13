@@ -28,7 +28,7 @@ def post_plots():
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
-    numerical_filter, numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
     # show/hide selector for visits
@@ -64,8 +64,12 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     else:
+        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
+                                    measurement_filter, rdb)
+        data.Name_ID_filter = df_filtering
+        filter = data.Name_ID_filter
         df, error = ps.get_scatter_plot(add_group_by, categorical_entities, subcategory_entities, x_axis, y_axis,
-                                        x_measurement, y_measurement, date, rdb)
+                                        x_measurement, y_measurement, date, filter, rdb)
 
     if error:
         return render_template('scatter_plot.html',
