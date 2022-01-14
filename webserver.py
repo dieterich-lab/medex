@@ -10,6 +10,7 @@ import pandas as pd
 import os
 import io
 from flask import send_from_directory
+import url_handlers.filtering as filtering
 
 # create the application object
 app = Flask(__name__)
@@ -46,10 +47,9 @@ class DataStore():
     Name_ID_filter = None
 
 
-
-
 table_builder = TableBuilder()
 data = DataStore()
+
 
 def check_for_env(key: str, default=None, cast=None):
     if key in os.environ:
@@ -95,27 +95,23 @@ else:
     block = 'block'
 
 
-
-
-
 # favicon
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='vnd.microsoft.icon')
 
-
 # information about database
 @app.context_processor
 def message_count():
     case = session.get('case_ids')
-    if case != None :
-        case_display = 'block'
-    else:
+    if case is None:
         data.case_ids = []
         case_display = 'none'
+    else:
+        case_display = 'block'
     new_column = session.get('new_column')
-    if new_column != None:
+    if new_column is not None:
         data.case_ids = []
     database_name = os.environ['POSTGRES_DB']
     database = '{} data'.format(database_name)
@@ -129,6 +125,10 @@ def message_count():
         size_numeric = 'the size of the numeric table: 0 rows'
         len_categorical = 'number of categorical entities: 0'
         size_categorical = 'the size of the categorical table: 0 rows'
+
+    start_date, end_date = filtering.date()
+    categorical_filter, categorical_names = filtering.check_for_filter_get()
+    numerical_filter = filtering.check_for_numerical_filter_get()
 
     return dict(database=database,
                 len_numeric=len_numeric,
@@ -146,7 +146,11 @@ def message_count():
                 end_date=end_date,
                 name='{}'.format(measurement_name),
                 block=block,
-                case_display=case_display)
+                case_display=case_display,
+                measurement_filter=session.get('measurement_filter'),
+                filter=categorical_filter,
+                numerical_filter=numerical_filter,
+                )
 
 
 # Urls in the 'url_handlers' directory (one file for each new url)

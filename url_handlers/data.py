@@ -19,19 +19,10 @@ def table_data():
 
 @data_page.route('/data', methods=['GET'])
 def get_data():
-    start_date, end_date = filtering.date()
-    numerical_filter = filtering.check_for_numerical_filter_get()
-    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('data.html',
                            block=block,
                            all_entities=all_entities,
-                           name=measurement_name,
-                           start_date=start_date,
-                           end_date=end_date,
-                           measurement_filter=session.get('measurement_filter'),
-                           numerical_filter=numerical_filter,
-                           filter=categorical_filter,
-                           df_min_max=df_min_max)
+                           name=measurement_name)
 
 
 @data_page.route('/data', methods=['POST'])

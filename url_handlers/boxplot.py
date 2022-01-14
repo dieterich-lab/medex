@@ -11,17 +11,7 @@ boxplot_page = Blueprint('boxplot', __name__,template_folder='templates')
 
 @boxplot_page.route('/boxplot', methods=['GET'])
 def get_boxplots():
-    start_date, end_date = filtering.date()
-    categorical_filter, categorical_names = filtering.check_for_filter_get()
-    numerical_filter = filtering.check_for_numerical_filter_get()
-    return render_template('boxplot.html',
-                           start_date=start_date,
-                           end_date=end_date,
-                           measurement_filter=session.get('measurement_filter'),
-                           filter=categorical_filter,
-                           numerical_filter=numerical_filter,
-                           df_min_max=df_min_max
-                           )
+    return render_template('boxplot.html')
 
 
 @boxplot_page.route('/boxplot', methods=['POST'])

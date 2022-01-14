@@ -9,19 +9,10 @@ basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_sta
 
 @basic_stats_page.route('/basic_stats', methods=['GET'])
 def get_statistics():
-    start_date, end_date = filtering.date()
-    numerical_filter = filtering.check_for_numerical_filter_get()
-    categorical_filter, categorical_names = filtering.check_for_filter_get()
     return render_template('basic_stats/basic_stats.html',
                            numeric_tab=True,
                            name=measurement_name,
-                           measurement_name=measurement_name,
-                           start_date=start_date,
-                           end_date=end_date,
-                           measurement_filter=session.get('measurement_filter'),
-                           filter=categorical_filter,
-                           numerical_filter=numerical_filter,
-                           df_min_max=df_min_max)
+                           measurement_name=measurement_name)
 
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
@@ -50,7 +41,7 @@ def get_basic_stats():
         error = None
         if not measurement1:
             error = "Please select number of {}".format(measurement_name)
-        elif len(numeric_entities) == 0:
+        elif not numeric_entities :
             error = "Please select numeric entities"
         elif numeric_entities:
             df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
@@ -59,19 +50,23 @@ def get_basic_stats():
             filter = data.Name_ID_filter
             df, error = ps.get_basic_stats(numeric_entities, measurement1, date, filter, rdb)
 
-        # calculation basic stats
-        if not 'count NaN' in request.form: df = df.drop(['count NaN'], axis=1)
-        if not 'count' in request.form: df = df.drop(['count'], axis=1)
-        if not 'mean' in request.form: df = df.drop(['mean'], axis=1)
-        if not 'min' in request.form: df = df.drop(['min'], axis=1)
-        if not 'max' in request.form: df = df.drop(['max'], axis=1)
-        if not 'std_dev' in request.form: df = df.drop(['stddev'], axis=1)
-        if not 'std_err' in request.form: df = df.drop(['stderr'], axis=1)
-        if not 'median' in request.form: df = df.drop(['median'], axis=1)
 
-        df = df.set_index(['Key', 'measurement'])
-        data.csv = df.to_csv()
-        result = df.to_dict()
+            # calculation basic stats
+            if not 'count NaN' in request.form: df = df.drop(['count NaN'], axis=1)
+            if not 'count' in request.form: df = df.drop(['count'], axis=1)
+            if not 'mean' in request.form: df = df.drop(['mean'], axis=1)
+            if not 'min' in request.form: df = df.drop(['min'], axis=1)
+            if not 'max' in request.form: df = df.drop(['max'], axis=1)
+            if not 'std_dev' in request.form: df = df.drop(['stddev'], axis=1)
+            if not 'std_err' in request.form: df = df.drop(['stderr'], axis=1)
+            if not 'median' in request.form: df = df.drop(['median'], axis=1)
+            n = df.shape[1]
+            if n == 2:
+                error = "Please select at least one basic statistic"
+            else:
+                df = df.set_index(['Key', 'measurement'])
+                data.csv = df.to_csv()
+                result = df.to_dict()
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
@@ -88,8 +83,7 @@ def get_basic_stats():
                                    numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
                                    error=error)
-
-        if any(df.keys()):
+        else:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
                                    name=measurement_name,
@@ -120,9 +114,9 @@ def get_basic_stats():
         # handling errors and load data from database
         df = pd.DataFrame()
 
-        if len(measurement) == 0:
+        if not measurement:
             error = "Please select number of {}".format(measurement_name)
-        elif len(categorical_entities) == 0:
+        elif not categorical_entities:
             error = "Please select entities"
         else:
             df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
@@ -182,9 +176,9 @@ def get_basic_stats():
         # handling errors and load data from database
         df = pd.DataFrame()
 
-        if len(measurement) == 0:
+        if not measurement:
             error = "Please select number of {}".format(measurement_name)
-        elif len(date_entities) == 0:
+        elif not date_entities:
             error = "Please select entities"
         else:
             df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,

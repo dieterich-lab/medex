@@ -11,15 +11,7 @@ scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlat
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
 def get_plots():
-    start_date, end_date = filtering.date()
-    categorical_filter, categorical_names = filtering.check_for_filter_get()
-    numerical_filter = filtering.check_for_numerical_filter_get()
-    return render_template('scatter_plot.html',
-                           start_date=start_date,
-                           end_date=end_date,
-                           measurement_filter=session.get('measurement_filter'),
-                           filter=categorical_filter,
-                           numerical_filter=numerical_filter)
+    return render_template('scatter_plot.html')
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
