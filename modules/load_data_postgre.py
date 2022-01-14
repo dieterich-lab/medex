@@ -192,81 +192,84 @@ def create_temp_table(case_id,rdb):
 
 def filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement, r):
 
-    cc,c,nn =0,0,0
-    print(case_id)
+    cc,c,nn=0,0,0
     # case_id filter
     if len(case_id) != 0:
         case_id_filter = """ SELECT "Name_ID" FROM temp_table_case_ids """
         cc = 1
 
     # categorical_filter
-    measurement_filter = "$$" + "$$,$$".join(measurement) + "$$"
 
+    measurement_filter = "$$" + measurement + "$$"
+
+    # categorical_filter
     category_filter = ""
+    numerical_filter = ""
+    category_filter_where = ""
+    numerical_filter_where = ""
 
     for i in range(len(categorical)):
-        filter = "$$" + categorical_filter[i][(categorical_filter[i].find(' is ') + 4):].replace(",", "$$,$$") + "$$"
-        name = 'a_{}'.format(i)
-        if i == 0:
-            cat_filter = """SELECT DISTINCT {0}."Name_ID" FROM examination_categorical AS {0} 
-                            WHERE {0}."Key"=$${1}$$ 
-                            AND {0}."Value" IN ({2}) 
-                            AND {0}.measurement IN ({3})  """.format(name, categorical[i],filter,measurement_filter)
-        else:
-            cat_filter = """UNION ALL SELECT DISTINCT {0}."Name_ID" FROM examination_categorical AS {0} 
-                                    WHERE {0}."Key"=$${1}$$ 
-                                    AND {0}."Value" IN ({2}) 
-                                    AND {0}.measurement IN ({3})""".format(name, categorical[i], filter,measurement_filter)
-        c = i
-        category_filter = category_filter + cat_filter
+        cat = categorical_filter[i]
+        cat = "$$"+cat[(cat.find(' is ') + 4):].replace(",", "$$,$$")+"$$"
+        category_m = 'a_{}'.format(i)
+        category_m0 ='a_{}'.format(i-1)
 
-    numerical_filter = ""
+        if i == 0:
+            cat_filter = """Select {0}."Name_ID" FROM examination_categorical as {0}   """.format(category_m)
+
+            cat_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value" in ({2}) and {0}.measurement in ({3}) """.format(category_m,
+                                                                                                    categorical[i], cat,
+                                                                                                    measurement_filter)
+
+        else:
+            cat_filter = """ inner join examination_categorical as {0} on {1}."Name_ID" = {0}."Name_ID"  """.format(category_m, category_m0)
+
+            cat_filter_where = """  and {3}."Key"=$${0}$$ and {3}."Value" in ({1}) and {3}.measurement in ({2}) """.format(categorical[i], cat,
+                                                                                                  measurement_filter,
+                                                                                                  category_m)
+
+        category_filter = category_filter + cat_filter
+        category_filter_where = category_filter_where + cat_filter_where
+    category_filter = category_filter + category_filter_where
 
     for i in range(len(from1)):
-        name = 'b_{}'.format(i)
+        numeric_m = 'b_{}'.format(i)
+        numeric_m0 = 'b_{}'.format(i-1)
         if i == 0:
-            num_filter = """SELECT DISTINCT {0}."Name_ID" FROM examination_numerical AS {0} 
-                            WHERE {0}."Key"=$${1}$$ 
-                            AND {0}."Value" BETWEEN '{2}' AND '{3}' 
-                            AND {0}.measurement IN ({4})  """.format(name, numerical_filter_name[i], from1[i], to1[i],
-                                                                     measurement_filter)
+            num_filter = """Select {0}."Name_ID" FROM examination_numerical as {0}   """.format(numeric_m)
+
+            num_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value" between $${2}$$ and $${3}$$ and {0}.measurement in ({4}) """.format(numeric_m,
+                                                                                   numerical_filter_name[i], from1[i],
+                                                                                   to1[i], measurement_filter,)
+
         else:
-            num_filter = """UNION ALL DISTINCT SELECT {0}."Name_ID" FROM examination_numerical AS {0} 
-                                    WHERE {0}."Key"=$${1}$$ 
-                                    AND {0}."Value" BETWEEN '{2}' AND '{3}' 
-                                    AND {0}.measurement IN ({4})  """.format(name, numerical_filter_name[i], from1[i],
-                                                                             to1[i],measurement_filter)
-        nn = i
+            num_filter = """ inner join examination_numerical as {0} on {1}."Name_ID" = {0}."Name_ID"  """.format( numeric_m, numeric_m0)
+
+            num_filter_where = """  and {4}."Key"=$${0}$$ and {4}."Value" between $${1}$$ and $${2}$$ and {4}.measurement in ({3}) """.format(numerical_filter_name[i], from1[i],
+                                                                                   to1[i], measurement_filter,numeric_m)
+
+
         numerical_filter = numerical_filter + num_filter
-    nn += 1
-    c += 1
-    n = cc + nn + c
+        numerical_filter_where = numerical_filter_where + num_filter_where
+    numerical_filter = numerical_filter + numerical_filter_where
 
     # join filters
     if categorical_filter and case_id and numerical_filter_name:
-        sql = """SELECT "Name_ID" FROM ({0} UNION ALL {1} UNION ALL {2}) foo
-                 GROUP BY "Name_ID"
-                 HAVING count("Name_ID") = {3} """.format(case_id_filter, category_filter,numerical_filter, n)
+        sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" inner join ({2}) AS c
+        on b."Name_ID" = c."Name_ID" """.format(category_filter, numerical_filter, case_id_filter)
     elif not case_id and categorical_filter and numerical_filter_name:
-        sql = """SELECT "Name_ID" FROM ({0} UNION ALL {1}) foo
-                GROUP BY "Name_ID"
-                 HAVING count("Name_ID") = {2}""".format(category_filter, numerical_filter, n)
+        sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" """.format(
+            category_filter, numerical_filter )
     elif case_id and not categorical_filter and numerical_filter_name:
-        sql = """SELECT  "Name_ID" FROM ({0} UNION ALL {1}) foo
-                 GROUP BY "Name_ID"
-                 HAVING count("Name_ID") = {2}""".format(case_id_filter, numerical_filter, n)
+        sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" """.format(
+            case_id_filter, numerical_filter)
     elif case_id and categorical_filter and not numerical_filter_name:
-        sql = """SELECT  "Name_ID" FROM ({0} UNION ALL {1}) foo
-                 GROUP BY "Name_ID"
-                 HAVING count("Name_ID") = {2}""".format(case_id_filter, category_filter, n)
+        sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" """.format(
+            case_id_filter, category_filter)
     elif not case_id and not categorical_filter and numerical_filter_name:
-        sql = """SELECT  "Name_ID" FROM ({0}) foo
-                 GROUP BY "Name_ID"
-                 HAVING count("Name_ID") = {1}""".format(numerical_filter,nn)
+        sql = numerical_filter
     elif not case_id and not numerical_filter_name and categorical_filter:
-        sql = """SELECT "Name_ID",count("Name_ID") FROM ({0}) foo
-                 GROUP BY "Name_ID" 
-                 HAVING count("Name_ID") = {1}""".format(category_filter,c)
+        sql = category_filter
     elif case_id and not categorical_filter and not numerical_filter_name:
         sql = case_id_filter
     else:
@@ -274,7 +277,6 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
 
     if sql != '':
         df_filtering = pd.read_sql(sql, r)
-        print(df_filtering)
         df_filtering = df_filtering["Name_ID"].values.tolist()
         df_filtering = "$$" + "$$,$$".join(df_filtering) + "$$"
     else:
@@ -604,7 +606,6 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, dat
         return None, "Problem with load data from database"
 
     if df.empty or len(df) == 0:
-        print(df)
         return df, "The entity {0} or {1} wasn't measured".format(entity_num, entity_cat)
     else:
         return df, None
