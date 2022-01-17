@@ -52,7 +52,7 @@
                         </thead>
                         <tbody>
                             {% for entity in date_entities %}
-                            {% for m in measurement_categorical %}
+                            {% for m in measurement_date %}
                             <tr>
                                 {% if basic_stats_d['count'][entity,m] is defined %}
                                 <td>{{ entity }}</td>

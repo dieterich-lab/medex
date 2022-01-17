@@ -124,9 +124,6 @@ def get_basic_stats():
             data.Name_ID_filter = df_filtering
             filter = data.Name_ID_filter
             df, error = ps.get_cat_basic_stats(categorical_entities, measurement, date, filter, rdb)
-            if not error:
-                if len(df.index) == 0:
-                    error = "The selected entities (" + ", ".join(categorical_entities) + ") do not contain any values. "
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -146,6 +143,7 @@ def get_basic_stats():
                                    error=error)
         df = df.set_index(['Key', 'measurement'])
         basic_stats_c = df.to_dict()
+        data.csv = df.to_csv()
 
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,
@@ -169,14 +167,14 @@ def get_basic_stats():
         # list selected data by client
         date_entities = request.form.getlist('date_entities')
         if block == 'none':
-            measurement = all_measurement.values
+            measurement_d = all_measurement.values
         else:
-            measurement = request.form.getlist('measurement_date')
+            measurement_d = request.form.getlist('measurement_date')
 
         # handling errors and load data from database
         df = pd.DataFrame()
 
-        if not measurement:
+        if not measurement_d:
             error = "Please select number of {}".format(measurement_name)
         elif not date_entities:
             error = "Please select entities"
@@ -185,10 +183,7 @@ def get_basic_stats():
                                         measurement_filter, rdb)
             data.Name_ID_filter = df_filtering
             filter = data.Name_ID_filter
-            df, error = ps.get_date_basic_stats(date_entities, measurement, date, filter, rdb)
-            if not error:
-                if len(df.index) == 0:
-                    error = "The selected entities (" + ", ".join(date_entities) + ") do not contain any values. "
+            df, error = ps.get_date_basic_stats(date_entities, measurement_d, date, filter, rdb)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -198,7 +193,7 @@ def get_basic_stats():
                                    measurement_name=measurement_name,
                                    all_measurement=all_measurement,
                                    date_entities=date_entities,
-                                   measurement_categorical=measurement,
+                                   measurement_date=measurement_d,
                                    measurement_filter=measurement_filter,
                                    start_date=start_date,
                                    end_date=end_date,
@@ -208,6 +203,7 @@ def get_basic_stats():
                                    error=error)
         df = df.set_index(['Key', 'measurement'])
         basic_stats_d = df.to_dict()
+        data.csv = df.to_csv()
 
         return render_template('basic_stats/basic_stats.html',
                                date_tab=True,
@@ -216,7 +212,7 @@ def get_basic_stats():
                                measurement_name=measurement_name,
                                all_measurement=all_measurement,
                                date_entities=date_entities,
-                               measurement_categorical=measurement,
+                               measurement_date=measurement_d,
                                measurement_filter=measurement_filter,
                                basic_stats_d=basic_stats_d,
                                start_date=start_date,

@@ -34,7 +34,7 @@ def post_plots():
                                     measurement_filter, rdb)
         data.Name_ID_filter = df_filtering
         filter = data.Name_ID_filter
-        df, error = ps.get_heat_map(numeric_entities, case_ids, date,filter, rdb)
+        df, error = ps.get_heat_map(numeric_entities, date,filter, rdb)
         if not error:
             if len(df.index) == 0:
                 error = "This two entities don't have common values"
@@ -62,7 +62,7 @@ def post_plots():
     numeric_entities_not_measured = set(numeric_entities).difference(set(new_numeric_entities))
     if len(numeric_entities_not_measured) > 0:
         error = "{} not measure during Replicate".format(numeric_entities_not_measured)
-    numeric_entities = new_numeric_entities
+
 
     dfcols = pd.DataFrame(columns=numeric_df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
@@ -89,7 +89,7 @@ def post_plots():
     corr_values = corr_values.round(decimals=2)
     corr_values = corr_values.T.values.tolist()
 
-    fig = go.Figure(data=go.Heatmap(z=corr_values, x=numeric_entities, y=numeric_entities, colorscale='Viridis'))
+    fig = go.Figure(data=go.Heatmap(z=corr_values, x=new_numeric_entities, y=new_numeric_entities, colorscale='Viridis'))
     fig.update_layout(height=600)
     fig = fig.to_html()
 

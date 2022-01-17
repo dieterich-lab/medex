@@ -81,7 +81,10 @@ def post_statistics():
                          template="plotly_white")
 
     fig.update_layout(font=dict(size=16),
-                      legend_title='<br>'.join(legend),)
+                      legend_title='<br>'.join(legend),
+                      title={'text' : categorical_entities,
+                             'x': 0.5,
+                             'xanchor': 'center'})
     fig = fig.to_html()
 
     return render_template('barchart.html',

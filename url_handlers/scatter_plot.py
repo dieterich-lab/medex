@@ -43,7 +43,7 @@ def post_plots():
 
     # handling errors and load data from database
     df = pd.DataFrame()
-    if x_measurement == "Search entity" or y_axis == "Search entity":
+    if x_measurement == "Search entity" or y_measurement == "Search entity":
         error = "Please select number of {}".format(measurement_name)
     elif x_axis == "Search entity" or y_axis == "Search entity":
         error = "Please select x_axis and y_axis"
@@ -62,6 +62,10 @@ def post_plots():
         filter = data.Name_ID_filter
         df, error = ps.get_scatter_plot(add_group_by, categorical_entities, subcategory_entities, x_axis, y_axis,
                                         x_measurement, y_measurement, date, filter, rdb)
+        x_axis_m = x_axis + '_' + x_measurement
+        y_axis_m = y_axis + '_' + y_measurement
+
+
 
     if error:
         return render_template('scatter_plot.html',
@@ -84,47 +88,51 @@ def post_plots():
     # Plot figure and convert to an HTML string representation
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
     fig = {}
+    if add_group_by:
+        df[categorical_entities] = df[categorical_entities].str.wrap(30)
+        df[categorical_entities] = df[categorical_entities].replace(to_replace=[r"\\n", "\n"],
+                                                                    value=["<br>", "<br>"], regex=True)
     if how_to_plot == 'linear':
         if add_group_by :
             df['hover_mouse'] = df[Name_ID]
-            fig = px.scatter(df, x=x_axis, y=y_axis, color=categorical_entities,
+            fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities,
                              hover_name='hover_mouse', template="plotly_white",trendline="ols")
         else:
             df['hover_mouse'] = df[Name_ID]
-            fig = px.scatter(df, x=x_axis, y=y_axis,hover_name ='hover_mouse', template="plotly_white",
+            fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name ='hover_mouse', template="plotly_white",
                              trendline="ols")
 
     else:
         if log_x == 'log_x' and log_y == 'log_y':
             if add_group_by:
                 df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis, y=y_axis, color=categorical_entities,
+                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities,
                                  hover_name='hover_mouse', template="plotly_white", trendline="ols", log_x=True,
                                  log_y=True)
 
             else:
                 df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis, y=y_axis, hover_name='hover_mouse', template="plotly_white",
+                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_x=True, log_y=True)
         elif log_x == 'log_x':
             if add_group_by:
                 df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis, y=y_axis, color=categorical_entities, hover_name='hover_mouse',
+                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols", log_x=True)
 
             else:
                 df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis, y=y_axis, hover_name='hover_mouse', template="plotly_white",
+                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_x=True)
         elif log_y == 'log_y':
             if add_group_by:
                 df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis, y=y_axis, color=categorical_entities, hover_name='hover_mouse',
+                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities, hover_name='hover_mouse',
                                  template="plotly_white", trendline="ols",  log_y=True)
 
             else:
                 df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis, y=y_axis, hover_name='hover_mouse', template="plotly_white",
+                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name='hover_mouse', template="plotly_white",
                                  trendline="ols", log_y=True)
 
     if block == 'none':
@@ -132,29 +140,25 @@ def post_plots():
             font=dict(size=16),
             title={
                 'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis,
-                'y': 0.9,
                 'x': 0.5,
-                'xanchor': 'center',
-                'yanchor': 'top'})
+                'xanchor': 'center',})
     else:
         split_text = textwrap.wrap("Compare values of <b>" + x_axis + "</b> : " + measurement_name + " <b>" +
                                    x_measurement + "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" +
                                    y_measurement + "</b> ", width=100)
-        xaxis = textwrap.wrap(x_axis + "</b> ")
-        yaxis = textwrap.wrap(y_axis, width=40)
+        xaxis = textwrap.wrap(x_axis_m)
+        yaxis = textwrap.wrap(y_axis_m, width=40)
         legend = textwrap.wrap(categorical_entities, width=20)
+
         fig.update_layout(
-            height=600,
             legend_title='<br>'.join(legend),
             font=dict(size=16),
             xaxis_title='<br>'.join(xaxis),
             yaxis_title='<br>'.join(yaxis),
             title={
                 'text': '<br>'.join(split_text),
-                'y': 0.9,
                 'x': 0.5,
-                'xanchor': 'center',
-                'yanchor': 'top'})
+                'xanchor': 'center',})
 
     fig = fig.to_html()
 

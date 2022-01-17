@@ -3,6 +3,8 @@ import numpy as np
 import datetime
 import time
 from collections import ChainMap
+import textwrap as tr
+
 
 
 def get_header(r):
@@ -192,7 +194,6 @@ def create_temp_table(case_id,rdb):
 
 def filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement, r):
 
-    cc,c,nn=0,0,0
     # case_id filter
     if len(case_id) != 0:
         case_id_filter = """ SELECT "Name_ID" FROM temp_table_case_ids """
@@ -433,8 +434,9 @@ def get_cat_basic_stats(entity, measurement, date, filter, r):
                 FROM examination_categorical
                 WHERE "Key" IN ({0}) 
                 AND "measurement" IN ({1})
-                {2} 
-                GROUP BY "measurement","Key" """.format(entity_final, measurement, filter)
+                AND "Date" BETWEEN '{2}' AND '{3}'
+                {4} 
+                GROUP BY "measurement","Key" """.format(entity_final, measurement, date[0], date[1], filter)
     try:
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
@@ -466,8 +468,9 @@ def get_date_basic_stats(entity, measurement, date, filter, r):
                 FROM examination_date
                 WHERE "Key" IN ({0}) 
                 AND "measurement" IN ({1})
-                {2} 
-                GROUP BY "measurement","Key" """.format(entity_final, measurement,filter)
+                AND "Date" BETWEEN '{2}' AND '{3}'
+                {4} 
+                GROUP BY "measurement","Key" """.format(entity_final, measurement, date[0], date[1], filter)
     try:
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
@@ -504,7 +507,7 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
     else:
         filter = 'AND x."Name_ID" in ({})'.format(filter)
     if add_group_by == False:
-        sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{1}"
+        sql = """SELECT x."Name_ID",AVG(x."Value") as "{2}_{0}",AVG(y."Value") as "{3}_{1}"
                             FROM examination_numerical as x
                             INNER JOIN examination_numerical as y
                                 ON x."Name_ID" = y."Name_ID"
@@ -518,7 +521,7 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                             GROUP BY x."Name_ID",y."Name_ID"  """.format(x_entity, y_entity, x_measurement,
                                                                          y_measurement, date[0], date[1], filter)
     else:
-        sql = """SELECT x."Name_ID",AVG(x."Value") as "{0}",AVG(y."Value") as "{1}",STRING_AGG(distinct ec."Value",'<br>') as "{6}" 
+        sql = """SELECT x."Name_ID",AVG(x."Value") as "{2}_{0}",AVG(y."Value") as "{3}_{1}",STRING_AGG(distinct ec."Value",'<br>') as "{6}" 
                             FROM examination_numerical as x
                             INNER JOIN examination_numerical as y
                                 ON x."Name_ID" = y."Name_ID"
@@ -535,11 +538,22 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                             {8}
                             GROUP BY x."Name_ID"  """.format(x_entity, y_entity, x_measurement,
                                                              y_measurement, date[0], date[1], entity, subcategory,filter)
+
     try:
         df = pd.read_sql(sql, r)
-        return df, None
+        x_axis_m = x_entity + '_' + x_measurement
+        y_axis_m = y_entity + '_' + y_measurement
+        if add_group_by == False:
+            df.columns = ['Name_ID', x_axis_m, y_axis_m]
+        else:
+            df.columns = ['Name_ID', x_axis_m, y_axis_m,entity]
+        if df.empty:
+            df, error = df, "One of the selected entities is empty"
+            return df, error
+        else:
+            return df, None
     except ValueError:
-        return None, None, "Problem with load data from database"
+        return None, "Problem with load data from database"
 
 
 def get_bar_chart(entity, subcategory, measurement, date, filter, r):
@@ -568,7 +582,13 @@ def get_bar_chart(entity, subcategory, measurement, date, filter, r):
                 GROUP BY "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1],filter)
     try:
         df = pd.read_sql(sql, r)
-        return df, None
+        if df.empty or len(df) == 0:
+            return df, "The entity wasn't measured"
+        else:
+            df.columns = [entity, 'measurement', 'count']
+            df[entity] = df[entity].str.wrap(30).replace(to_replace=[r"\\n", "\n"],
+                                                         value=["<br>", "<br>"], regex=True)
+            return df, None
     except ValueError:
         return None, "Problem with load data from database"
 
@@ -602,16 +622,18 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, dat
                 """.format(entity_num, entity_cat, subcategory, measurement, date[0], date[1],filter)
     try:
         df = pd.read_sql(sql, r)
+        if df.empty or len(df) == 0:
+            return df, "The entity {0} or {1} wasn't measured".format(entity_num, entity_cat)
+        else:
+            df.columns = ["Name", 'measurement', entity_num, entity_cat]
+            df[entity_cat] = df[entity_cat].str.wrap(30).replace(to_replace=[r"\\n", "\n"],
+                                                         value=["<br>", "<br>"], regex=True)
+            return df, None
     except ValueError:
         return None, "Problem with load data from database"
 
-    if df.empty or len(df) == 0:
-        return df, "The entity {0} or {1} wasn't measured".format(entity_num, entity_cat)
-    else:
-        return df, None
 
-
-def get_heat_map(entity, case_id, date, filter, r):
+def get_heat_map(entity, date, filter, r):
     """
     param:
      entity: categorical entities names which should be selected from database
@@ -642,6 +664,8 @@ def get_heat_map(entity, case_id, date, filter, r):
     try:
         df = pd.read_sql(sql, r)
         df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
+        new_columns = [tr.fill(x, width=20).replace("\n", "<br>") for x in df.columns.values]
+        df.columns = new_columns
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"
         else:

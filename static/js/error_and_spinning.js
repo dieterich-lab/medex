@@ -87,4 +87,5 @@ function formatCustom(state) {
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
     });
 
+
 });
