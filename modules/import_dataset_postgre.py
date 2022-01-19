@@ -2,9 +2,7 @@
     This module contains functions for creating tables in PostgreSQL database
 """
 
-import time
 import re
-import pandas as pd
 
 
 def is_date(date):
@@ -164,55 +162,59 @@ def alter_table(rdb):
 
     sql_remove_null = """DELETE FROM examination_categorical WHERE "Value" is null """
 
-    sql4 = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from 
+    sql = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from 
                         (SELECT "Name_ID","Case_ID" FROM examination_numerical
                          UNION
                          SELECT "Name_ID","Case_ID" FROM examination_date
                          UNION
                          SELECT "Name_ID","Case_ID" FROM examination_categorical) as foo"""
 
-    sql5 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
-    sql8 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Name_ID") REFERENCES 
+    sql1 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
+    sql2 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Name_ID") REFERENCES 
     patient ("Name_ID")"""
-    sql9 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n2 FOREIGN KEY ("Name_ID") REFERENCES 
+    sql3 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n2 FOREIGN KEY ("Name_ID") REFERENCES 
     patient ("Name_ID")"""
-    sql10 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c1 FOREIGN KEY ("Key") REFERENCES 
+    sql4 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c1 FOREIGN KEY ("Key") REFERENCES 
     name_type ("Key")"""
-    sql11 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n1 FOREIGN KEY ("Key") REFERENCES 
+    sql5 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n1 FOREIGN KEY ("Key") REFERENCES 
     name_type ("Key")"""
 
-    sql12 = """CREATE INDEX IF NOT EXISTS "Key_index_numerical" ON examination_numerical ("Key")"""
-    sql13 = """CREATE INDEX IF NOT EXISTS "Key_index_categorical" ON examination_categorical ("Key")"""
-    sql15 = """CREATE INDEX IF NOT EXISTS "ID_index_numerical" ON examination_numerical ("Name_ID")"""
-    sql16 = """CREATE INDEX IF NOT EXISTS "ID_index_categorical" ON examination_categorical ("Name_ID")"""
-    sql17 = """CREATE INDEX IF NOT EXISTS "case_index_patient" ON Patient ("Case_ID")"""
-    sql18 = """CREATE INDEX IF NOT EXISTS "ID_index_patient" ON Patient ("Name_ID")"""
-    sql19 = """CREATE INDEX IF NOT EXISTS "ID_index_date" ON examination_numerical ("Name_ID")"""
+    sql6 = """CREATE INDEX IF NOT EXISTS "Key_index_numerical" ON examination_numerical ("Key")"""
+    sql7 = """CREATE INDEX IF NOT EXISTS "Key_index_categorical" ON examination_categorical ("Key")"""
+    sql8 = """CREATE INDEX IF NOT EXISTS "Key_index_date" ON examination_date ("Key")"""
+
+    sql9 = """CREATE INDEX IF NOT EXISTS "ID_index_numerical" ON examination_numerical ("Name_ID")"""
+    sql10 = """CREATE INDEX IF NOT EXISTS "ID_index_categorical" ON examination_categorical ("Name_ID")"""
+    sql11 = """CREATE INDEX IF NOT EXISTS "ID_index_date" ON examination_date ("Name_ID")"""
+
+    sql12 = """CREATE INDEX IF NOT EXISTS "case_index_patient" ON Patient ("Case_ID")"""
+    sql13 = """CREATE INDEX IF NOT EXISTS "ID_index_patient" ON Patient ("Name_ID")"""
     sql14 = """CREATE EXTENSION IF NOT EXISTS tablefunc"""
 
     try:
         cur = rdb.cursor()
         cur.execute(sql_remove_null)
-        cur.execute(sql4)
+        cur.execute(sql)
     except Exception:
         return print("Problem with connection with database")
     try:
+        cur.execute(sql1)
+        cur.execute(sql2)
+        cur.execute(sql3)
+        cur.execute(sql4)
         cur.execute(sql5)
+    except Exception:
+        return print("Problem with connection with database")
+    try:
+        cur.execute(sql6)
+        cur.execute(sql7)
         cur.execute(sql8)
         cur.execute(sql9)
         cur.execute(sql10)
         cur.execute(sql11)
-    except Exception:
-        return print("Problem with connection with database")
-    try:
         cur.execute(sql12)
         cur.execute(sql13)
         cur.execute(sql14)
-        cur.execute(sql15)
-        cur.execute(sql16)
-        cur.execute(sql17)
-        cur.execute(sql18)
-        cur.execute(sql19)
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")

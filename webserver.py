@@ -2,7 +2,7 @@
 from flask import Flask, send_file, request, redirect, session
 import requests
 from modules.import_scheduler import Scheduler
-from url_handlers.models import TableBuilder
+from serverside.serverside_table import ServerSideTable
 import modules.load_data_postgre as ps
 from flask_cors import CORS
 from db import connect_db
@@ -20,6 +20,13 @@ CORS(app)
 app.secret_key = os.urandom(24)
 with app.app_context():
     rdb = connect_db()
+
+
+class TableBuilder(object):
+
+    def collect_data_serverside(self, request, DATA_SAMPLE, columns):
+        return ServerSideTable(request, DATA_SAMPLE, columns).output_result()
+
 
 # data store for filters and download
 class DataStore():
@@ -45,6 +52,8 @@ class DataStore():
     csv_new_table = None
 
     Name_ID_filter = None
+
+    information = None
 
 
 table_builder = TableBuilder()
@@ -100,6 +109,7 @@ else:
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='vnd.microsoft.icon')
+
 
 # information about database
 @app.context_processor
@@ -185,7 +195,7 @@ def login_get():
     # get selected entities
     session['start_date'] = start_date
     session['end_date'] = end_date
-    session['measurement_filter'] = '1'
+    session['measurement_filter'] = min(all_measurement)
     session['new_column'] = []
     return redirect('/data')
 

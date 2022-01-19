@@ -5,6 +5,8 @@ import url_handlers.filtering as filtering
 from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max, data
 import pandas as pd
 import textwrap
+import plotly.graph_objects as go
+import numpy as np
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
@@ -62,10 +64,6 @@ def post_plots():
         filter = data.Name_ID_filter
         df, error = ps.get_scatter_plot(add_group_by, categorical_entities, subcategory_entities, x_axis, y_axis,
                                         x_measurement, y_measurement, date, filter, rdb)
-        x_axis_m = x_axis + '_' + x_measurement
-        y_axis_m = y_axis + '_' + y_measurement
-
-
 
     if error:
         return render_template('scatter_plot.html',
@@ -87,20 +85,77 @@ def post_plots():
 
     # Plot figure and convert to an HTML string representation
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
+    x_axis_m = x_axis + '_' + x_measurement
+    y_axis_m = y_axis + '_' + y_measurement
     fig = {}
     if add_group_by:
         df[categorical_entities] = df[categorical_entities].str.wrap(30)
         df[categorical_entities] = df[categorical_entities].replace(to_replace=[r"\\n", "\n"],
                                                                     value=["<br>", "<br>"], regex=True)
+
+    fig = go.Figure()
+
+    # Create figure
+    fig = go.Figure()
+    if add_group_by:
+        for i in subcategory_entities:
+            dfu = df[df[categorical_entities] == i]
+            fig.add_trace(
+                go.Scattergl(
+                    x=dfu[x_axis_m],
+                    y=dfu[y_axis_m],
+                    mode='markers',
+                    name=i,
+                )
+            )
+    else:
+        fig.add_trace(
+            go.Scattergl(
+                x=df[x_axis_m],
+                y=df[y_axis_m],
+                mode='markers',
+                marker=dict(
+                    line=dict(
+                        width=1,
+                        color='DarkSlateGrey')
+                )
+            )
+        )
+    if block == 'none':
+        fig.update_layout(
+            font=dict(size=16),
+            title={
+                'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis,
+                'x': 0.5,
+                'xanchor': 'center', })
+    else:
+        split_text = textwrap.wrap("Compare values of <b>" + x_axis + "</b> : " + measurement_name + " <b>" +
+                                   x_measurement + "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" +
+                                   y_measurement + "</b> ", width=100)
+        xaxis = textwrap.wrap(x_axis_m)
+        yaxis = textwrap.wrap(y_axis_m, width=40)
+        legend = textwrap.wrap(categorical_entities, width=20)
+
+        fig.update_layout(
+            template="plotly_white",
+            legend_title='<br>'.join(legend),
+            font=dict(size=16),
+            xaxis_title='<br>'.join(xaxis),
+            yaxis_title='<br>'.join(yaxis),
+            title={
+                'text': '<br>'.join(split_text),
+                'x': 0.5,
+                'xanchor': 'center', })
+    fig.show()
     if how_to_plot == 'linear':
         if add_group_by :
             df['hover_mouse'] = df[Name_ID]
             fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities,
-                             hover_name='hover_mouse', template="plotly_white",trendline="ols")
+                             hover_name='hover_mouse', template="plotly_white",trendline="ols", render_mode='webgl')
         else:
             df['hover_mouse'] = df[Name_ID]
             fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name ='hover_mouse', template="plotly_white",
-                             trendline="ols")
+                             trendline="ols", render_mode='webgl')
 
     else:
         if log_x == 'log_x' and log_y == 'log_y':
@@ -108,32 +163,32 @@ def post_plots():
                 df['hover_mouse'] = df[Name_ID]
                 fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities,
                                  hover_name='hover_mouse', template="plotly_white", trendline="ols", log_x=True,
-                                 log_y=True)
+                                 log_y=True, render_mode='webgl')
 
             else:
                 df['hover_mouse'] = df[Name_ID]
                 fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name='hover_mouse', template="plotly_white",
-                                 trendline="ols", log_x=True, log_y=True)
+                                 trendline="ols", log_x=True, log_y=True, render_mode='webgl')
         elif log_x == 'log_x':
             if add_group_by:
                 df['hover_mouse'] = df[Name_ID]
                 fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities, hover_name='hover_mouse',
-                                 template="plotly_white", trendline="ols", log_x=True)
+                                 template="plotly_white", trendline="ols", log_x=True, render_mode='webgl')
 
             else:
                 df['hover_mouse'] = df[Name_ID]
                 fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name='hover_mouse', template="plotly_white",
-                                 trendline="ols", log_x=True)
+                                 trendline="ols", log_x=True, render_mode='webgl')
         elif log_y == 'log_y':
             if add_group_by:
                 df['hover_mouse'] = df[Name_ID]
                 fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities, hover_name='hover_mouse',
-                                 template="plotly_white", trendline="ols",  log_y=True)
+                                 template="plotly_white", trendline="ols",  log_y=True, render_mode='webgl')
 
             else:
                 df['hover_mouse'] = df[Name_ID]
                 fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name='hover_mouse', template="plotly_white",
-                                 trendline="ols", log_y=True)
+                                 trendline="ols", log_y=True, render_mode='webgl')
 
     if block == 'none':
         fig.update_layout(

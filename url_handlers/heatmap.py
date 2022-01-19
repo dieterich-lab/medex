@@ -90,7 +90,8 @@ def post_plots():
     corr_values = corr_values.T.values.tolist()
 
     fig = go.Figure(data=go.Heatmap(z=corr_values, x=new_numeric_entities, y=new_numeric_entities, colorscale='Viridis'))
-    fig.update_layout(height=600)
+    fig.update_layout(height=600,
+                      title='Heatmap shows Pearson correlation')
     fig = fig.to_html()
 
     return render_template('heatmap.html',

@@ -55,6 +55,7 @@ def post_data():
                                     measurement_filter,rdb)
         data.Name_ID_filter = df_filtering
         filter = data.Name_ID_filter
+        data.information = entities, what_table, measurement, date, filter, rdb
         df, error = ps.get_data(entities, what_table, measurement, date, filter, rdb)
 
     if error:

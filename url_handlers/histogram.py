@@ -107,10 +107,9 @@ def post_statistics():
         legend_title='<br>'.join(legend),
         height=1000,
         title={
-            'y': 0.9,
+            'text': '<b>' + numeric_entities + '</b> by <b>' + categorical_entities + '</b>',
             'x': 0.5,
-            'xanchor': 'center',
-            'yanchor': 'top'})
+            'xanchor': 'center'})
     fig = fig.to_html()
 
     return render_template('histogram.html',

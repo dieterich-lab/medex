@@ -88,6 +88,10 @@ def post_boxplots():
     legend = textwrap.wrap(categorical_entities, width=20)
     fig.update_layout(font=dict(size=16),
                       legend_title='<br>'.join(legend),
+                      title={
+                          'text': '<b>' + numeric_entities + '</b> by <b>' + categorical_entities + '</b>',
+                          'x': 0.5,
+                          'xanchor': 'center', }
                       )
     fig = fig.to_html()
 

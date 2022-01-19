@@ -324,7 +324,7 @@ def get_data(entity, what_table, measurement, date,filter, r):
                     AND measurement IN ({1}) 
                     AND "Date" BETWEEN '{2}' and '{3}'
                     {4}
-                    """.format(entity_final, measurement, date[0], date[1],filter)
+                    """.format(entity_final, measurement, date[0], date[1], filter)
 
     sql2 = """SELECT * FROM crosstab('SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,* 
                                             FROM (SELECT "Name_ID","measurement","Date","Key",
@@ -402,6 +402,7 @@ def get_basic_stats(entity, measurement, date, filter, r):
                     GROUP BY "Key","measurement" 
                     ORDER BY "Key","measurement" """.format(
                     entity_final, measurement, date[0], date[1], filter)
+
     try:
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
@@ -538,7 +539,6 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                             {8}
                             GROUP BY x."Name_ID"  """.format(x_entity, y_entity, x_measurement,
                                                              y_measurement, date[0], date[1], entity, subcategory,filter)
-
     try:
         df = pd.read_sql(sql, r)
         x_axis_m = x_entity + '_' + x_measurement
