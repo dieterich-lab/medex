@@ -295,8 +295,9 @@ def get_data(entity, what_table, measurement, date,filter, r):
      r: connection with database
     return: DataFrame with all selected entities
     """
-
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
+    entity_to_select =[x.replace("'","''") for x in entity]
+    entity_final_l = "$$" + "$$,$$".join(entity_to_select) + "$$"
     entity_column = '"'+'" text,"'.join(entity) + '" text'
     measurement = "'" + "','".join(measurement) + "'"
     if filter == '':
@@ -353,7 +354,8 @@ def get_data(entity, what_table, measurement, date,filter, r):
                     WHERE "Date" BETWEEN '{3}' AND '{4}' 
                     AND "measurement" IN ({1}) 
                     ORDER BY "Name_ID", measurement 
-                    """.format(entity_final, measurement, entity_column, date[0], date[1], filter)
+                    """.format(entity_final_l, measurement, entity_column, date[0], date[1], filter)
+
     try:
         if what_table == 'long':
             df = pd.read_sql(sql, r)
@@ -402,6 +404,7 @@ def get_basic_stats(entity, measurement, date, filter, r):
                     GROUP BY "Key","measurement" 
                     ORDER BY "Key","measurement" """.format(
                     entity_final, measurement, date[0], date[1], filter)
+
 
     try:
         df = pd.read_sql(sql, r)

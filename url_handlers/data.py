@@ -84,7 +84,7 @@ def post_data():
 
     # change name of entities if they have dot inside otherwise server side table doesn't work properly
     column_change_name = []
-    [column_change_name.append(i.replace('.', '_')) for i in column]
+    [column_change_name.append(i.replace('.', '_').replace("'", "")) for i in column]
     df.columns = column_change_name
 
     data.dict = df.to_dict("records")
