@@ -108,13 +108,15 @@ $('#numerical_filter').change(function () {
 
         var mag =$("#categorical_filter").val();
         var e2 =$('#subcategory_filter').val();
-        var mm = mag + " is " +e2
+        var mm = mag + " is: <br>" + e2
+        mm = mm.replace(/,/g,"<br>")
+        // if categorical filter than do nothin
 
         document.getElementById("demo0").innerHTML = '<p>Filter by visit as on:'+ visit +'</p><input type="hidden" value='+visit+'>'
         $( "#measurement_filter").change();
 
         if (mag != 'Search entity'){
-        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  style='display: block; width: 100%' class='btn btn-outline-primary'  ><span onclick='remove(this)'  class='close' > x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + mag+"'>" + mm + "</button>";
+        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML + '<br>' +"  <button class='btn btn-outline-primary text-left' style='display: block; width: 100%; word-wrap: break-word; white-space: normal;'  ><span onclick='remove(this)'  class='close' > x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + mag+"'>" + mm +"</button>";
         $("#categorical_filter").val('Search entity').change();
 
         }
@@ -122,7 +124,7 @@ $('#numerical_filter').change(function () {
         var ed = $("#numerical_filter").val();
         var mag2 = $("#range").val();
         var result = mag2.split(";");
-        var fieldvalue ='<div class="fd-box2"><span onclick="(this).closest(".fd-box2").remove()"   class="close" > x </span><input type="hidden" name="name" value="'+ed+'">'+ ed +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
+        var fieldvalue ='<div class="fd-box2" ><span onclick="(this).closest(".fd-box2").remove()"   class="close" > x </span><input type="hidden" name="name" value="'+ed+'">'+ ed +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
         if (ed != 'Search entity'){
         $(fieldvalue).appendTo($('#demo2'));
         $("#numerical_filter").val('Search entity').change();

@@ -27,14 +27,22 @@ def get_data():
 
 @data_page.route('/data', methods=['POST'])
 def post_data():
+    add = request.form.get('Add')
+    if add is not None:
+        # get filter
+        case_ids = data.case_ids
+        categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
+        numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
+        session['measurement_filter'] = measurement_filter
+        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
+                                    measurement_filter,rdb)
+        data.Name_ID_filter = df_filtering
+        return render_template('data.html',
+                               block=block,
+                               all_entities=all_entities,
+                               name=measurement_name)
 
-    # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    session['measurement_filter'] = measurement_filter
-
     # get selected entities
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
@@ -51,9 +59,6 @@ def post_data():
     elif len(entities) == 0:
         error = "Please select entities"
     else:
-        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
-                                    measurement_filter,rdb)
-        data.Name_ID_filter = df_filtering
         filter = data.Name_ID_filter
         data.information = entities, what_table, measurement, date, filter, rdb
         df, error = ps.get_data(entities, what_table, measurement, date, filter, rdb)
@@ -66,14 +71,8 @@ def post_data():
                                all_measurement=all_measurement,
                                name=measurement_name,
                                measurement=measurement,
-                               measurement_filter=measurement_filter,
                                entities=entities,
-                               start_date=start_date,
-                               end_date=end_date,
-                               filter=categorical_filter_zip,
-                               numerical_filter=numerical_filter,
-                               df_min_max=df_min_max
-                               )
+                               df_min_max=df_min_max)
 
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
@@ -105,16 +104,11 @@ def post_data():
                            block=block,
                            all_entities=all_entities,
                            measurement=measurement,
-                           measurement_filter=measurement_filter,
                            entities=entities,
                            name_column=column,
                            name=measurement_name,
-                           start_date=start_date,
-                           end_date=end_date,
                            what_table=what_table,
                            column=dict_of_column,
-                           filter=categorical_filter_zip,
-                           numerical_filter=numerical_filter,
                            df_min_max=df_min_max
                            )
 

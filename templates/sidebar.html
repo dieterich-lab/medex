@@ -79,7 +79,7 @@
         </div> -->
 
         <br>
-        <button id="Add" type="button" class="btn btn-outline-info" >Add Filter</button>
+        <button id="Add" type="button"  value="Update" name="Add" class="btn btn-outline-info" >Add Filter</button>
     </div>
 </div>
 
@@ -87,7 +87,8 @@
 <div id='id_filter_results' class="card">
     <div class="card-body">
         <label>Filters </label>
-        <button id ="clean" name='clean' type="button" class="btn btn-outline-info">Clear All</button>
+        <button id ="clean" name='clean' value= "Clean" type="button" class="btn btn-outline-info">Clear All</button>
+        <button id ="Update" name='update' value= "Update" type="button" class="btn btn-outline-info">Update filters</button>
         <div id="demo0" >
             {% if filter %}
                 <p>Filter by visit as on: {{ measurement_filter }}</p><input type="hidden" value='1'>

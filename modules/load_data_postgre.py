@@ -300,7 +300,7 @@ def get_data(entity, what_table, measurement, date,filter, r):
     entity_final_l = "$$" + "$$,$$".join(entity_to_select) + "$$"
     entity_column = '"'+'" text,"'.join(entity) + '" text'
     measurement = "'" + "','".join(measurement) + "'"
-    if filter == '':
+    if filter == '' or filter is None:
         filter =''
     else:
         filter = 'AND "Name_ID" in ({})'.format(filter)
