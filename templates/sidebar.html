@@ -89,15 +89,20 @@
         <label>Filters </label>
         <button id ="clean" name='clean' value= "Clean" type="button" class="btn btn-outline-info">Clear All</button>
         <button id ="Update" name='update' value= "Update" type="button" class="btn btn-outline-info">Update filters</button>
+
         <div id="demo0" >
             {% if filter %}
+                <script type="text/javascript">
+                    var categorical_filter_selected = {{categorical_filter|tojson}};
+                    var numerical_filter_selected = {{numerical_filter_name|tojson}};
+                </script>
                 <p>Filter by visit as on: {{ measurement_filter }}</p><input type="hidden" value='1'>
             {% endif %}
         </div>
         <div id="demo" >
             {% if filter %}
             {% for cat,filter in filter %}
-                <button  style="display: block; width: 100%" class='btn btn-outline-primary' ><span class='close' onclick="remove(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter }}</button>
+                <button  style=" type='button' display: block; width: 100%" class='btn btn-outline-primary text-left' ><span class='close' onclick="remove(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter|safe }}</button>
             {% endfor %}
             {% endif %}
         </div>

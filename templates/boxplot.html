@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 <form action="" method="POST">
-    <div id="menu">
+    <div id="menu" >
     {% include 'sidebar.html' %}
     </div>
 {# imports #}
@@ -81,12 +81,11 @@
 
         </div>
     </div>
-</div>
 
 <div class="card-header" id="results_header">
     <h5 class="mb-0">
         <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-            {% if plot %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+            {% if plot %} aria-expanded="true" {% endif %} aria-controls="numeric_results">
             Results
         </button>
     </h5>
@@ -99,6 +98,7 @@
         </div>
         {% endif %}
     </div>
+</div>
 </div>
 </div>
 </form>
