@@ -4,20 +4,16 @@ $(function () {
 function cd(start, end) {
         $('#Date span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
     }
-$('#Date').daterangepicker({
-    startDate: start,
-    endDate: end,
-},cd);
+    $('#Date').daterangepicker({
+        startDate: start,
+        endDate: end,
+    },cd);
 
-cd(start,end);
-
+    cd(start,end);
 
 var instance,
     min = 10,
     max = 100
-
-
-
 
 $('#range').ionRangeSlider({
     type: "double",
