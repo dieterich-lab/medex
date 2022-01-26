@@ -278,9 +278,21 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         sql = ''
 
     if sql != '':
+        start_time = time.time()
+        sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
+        create_table = """ CREATE TEMP TABLE temp_table_name_ids as ({0}) """.format(sql)
+        try:
+            cur = r.cursor()
+            cur.execute(sql_drop)
+            cur.execute(create_table)
+        except ValueError:
+            print('something wrong')
+        print("--- %s seconds ---" % (time.time() - start_time))
+        start_time = time.time()
         df_filtering = pd.read_sql(sql, r)
         df_filtering = df_filtering["Name_ID"].values.tolist()
         df_filtering = "$$" + "$$,$$".join(df_filtering) + "$$"
+        print("--- %s seconds ---" % (time.time() - start_time))
     else:
         df_filtering = ''
 
@@ -387,8 +399,12 @@ def get_basic_stats(entity, measurement, date, filter, r):
     measurement = "'" + "','".join(measurement) + "'"
     if filter == '':
         filter =''
+        filter2 = ''
+        filter3=''
     else:
         filter = 'AND "Name_ID" in ({})'.format(filter)
+        filter2 =""" right join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """
+        filter3 = """AND "Name_ID" in (SELECT "Name_ID" from  temp_table_name_ids)"""
     sql = """SELECT "Key","measurement",
                     count(DISTINCT "Name_ID"),
                     min("Value"),
@@ -406,9 +422,49 @@ def get_basic_stats(entity, measurement, date, filter, r):
                     ORDER BY "Key","measurement" """.format(
                     entity_final, measurement, date[0], date[1], filter)
 
+    sql3 = """SELECT "Key","measurement",
+                    count(DISTINCT en."Name_ID"),
+                    min("Value"),
+                    max("Value"),
+                    AVG("Value") AS "mean",
+                    stddev("Value"),
+                    (stddev("Value")/sqrt(count("Value"))) AS "stderr",
+                    (percentile_disc(0.5) within group (order by "Value")) AS median 
+                    FROM examination_numerical as en  
+                    WHERE "Key" IN ({0}) 
+                    {4}
+                    AND "measurement" IN ({1}) 
+                    AND "Date" BETWEEN '{2}' AND '{3}'
+                    GROUP BY "Key","measurement" 
+                    ORDER BY "Key","measurement" """.format(
+                    entity_final, measurement, date[0], date[1], filter3)
+    sql2 = """SELECT "Key","measurement",
+                    count(DISTINCT en."Name_ID"),
+                    min("Value"),
+                    max("Value"),
+                    AVG("Value") AS "mean",
+                    stddev("Value"),
+                    (stddev("Value")/sqrt(count("Value"))) AS "stderr",
+                    (percentile_disc(0.5) within group (order by "Value")) AS median 
+                    FROM examination_numerical as en  
+                    {4}
+                    WHERE "Key" IN ({0}) 
+                    AND "measurement" IN ({1}) 
+                    AND "Date" BETWEEN '{2}' AND '{3}'
+                    GROUP BY "Key","measurement" 
+                    ORDER BY "Key","measurement" """.format(
+                    entity_final, measurement, date[0], date[1], filter2)
+    start_time = time.time()
+    df2 = pd.read_sql(sql2, r)
+    print("--- %s seconds ---" % (time.time() - start_time))
+    start_time = time.time()
+    df3 = pd.read_sql(sql3, r)
+    print("--- %s seconds ---" % (time.time() - start_time))
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        print("--- %s seconds ---" % (time.time() - start_time))
         df['count NaN'] = int(n) - df['count']
         df = df.round(2)
         return df, None
