@@ -51,6 +51,8 @@ def post_plots():
                                end_date=end_date,
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
+                               categorical_filter=categorical_names,
+                               numerical_filter_name=name,
                                df_min_max=df_min_max,
                                error=error)
 
@@ -102,4 +104,6 @@ def post_plots():
                            df_min_max=df_min_max,
                            numeric_entities=numeric_entities,
                            measurement_filter=measurement_filter,
+                           categorical_filter=categorical_names,
+                           numerical_filter_name=name,
                            plot=fig)

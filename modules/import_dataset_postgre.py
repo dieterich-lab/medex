@@ -36,8 +36,8 @@ def create_table(rdb):
                                 "Name_ID" text,
                                 "Case_ID" text,
                                 measurement text,
-                                "Date" timestamp,
-                                "Time" timestamp,
+                                "Date" text,
+                                "Time" text,
                                 "Key" text,
                                 "Value" double precision)"""
 
@@ -46,8 +46,8 @@ def create_table(rdb):
                                 "Name_ID" text,
                                 "Case_ID" text,
                                 measurement text,
-                                "Date" timestamp,
-                                "Time" timestamp,
+                                "Date" text,
+                                "Time" text,
                                 "Key" text,
                                 "Value" text)"""
 
@@ -56,8 +56,8 @@ def create_table(rdb):
                                 "Name_ID" text,
                                 "Case_ID" text,
                                 measurement text,
-                                "Date" timestamp,
-                                "Time" timestamp,
+                                "Date" text,
+                                "Time" text,
                                 "Key" text,
                                 "Value" text)"""
 

@@ -67,6 +67,8 @@ def post_statistics():
                                end_date=end_date,
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
+                               categorical_filter=categorical_names,
+                               numerical_filter_name=name,
                                df_min_max=df_min_max,
                                error=error)
 
@@ -90,6 +92,8 @@ def post_statistics():
                                end_date=end_date,
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
+                               categorical_filter=categorical_names,
+                               numerical_filter_name=name,
                                df_min_max=df_min_max,
                                error=error)
 
@@ -123,6 +127,8 @@ def post_statistics():
                            end_date=end_date,
                            filter=categorical_filter_zip,
                            numerical_filter=numerical_filter,
+                           categorical_filter=categorical_names,
+                           numerical_filter_name=name,
                            df_min_max=df_min_max,
                            plot=fig,
                            )

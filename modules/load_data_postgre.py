@@ -211,7 +211,9 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
 
     for i in range(len(categorical)):
         cat = categorical_filter[i]
-        cat = "$$"+cat[(cat.find(' is: <br>') + 4):].replace(",", "$$,$$")+"$$"
+        cat = cat.replace('<br>',',')
+        cat = "$$"+cat[(cat.find(' is') + 6):].replace(",", "$$,$$")+"$$"
+        print(cat)
         category_m = 'a_{}'.format(i)
         category_m0 ='a_{}'.format(i-1)
 

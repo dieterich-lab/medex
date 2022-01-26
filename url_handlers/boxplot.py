@@ -65,6 +65,8 @@ def post_boxplots():
                                end_date=end_date,
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
+                               categorical_filter=categorical_names,
+                               numerical_filter_name=name,
                                how_to_plot=how_to_plot,
                                df_min_max=df_min_max
                                )
@@ -105,6 +107,8 @@ def post_boxplots():
                            end_date=end_date,
                            filter=categorical_filter_zip,
                            numerical_filter=numerical_filter,
+                           categorical_filter=categorical_names,
+                           numerical_filter_name=name,
                            how_to_plot=how_to_plot,
                            df_min_max=df_min_max,
                            plot=fig)
