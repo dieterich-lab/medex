@@ -23,7 +23,16 @@ def post_statistics():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
+    if categorical_filter or numerical_filter:
+        filter = 'exists'
+    else:
+        filter = ''
 
+    update = request.form.get('update')
+    if update is not None:
+
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter,rdb)
+        return render_template('barchart.html')
     # show/hide selector for visits
     if block == 'none':
         measurement = all_measurement.values
@@ -44,11 +53,6 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     else:
-        # select data from database
-        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
-                                    measurement_filter, rdb)
-        data.Name_ID_filter = df_filtering
-        filter = data.Name_ID_filter
         df, error = ps.get_bar_chart(categorical_entities, subcategory_entities, measurement, date, filter, rdb)
     if error:
         return render_template('barchart.html',

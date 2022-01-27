@@ -24,16 +24,21 @@ def post_plots():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
+    if categorical_filter or numerical_filter:
+        filter = 'exists'
+    else:
+        filter = ''
 
+    update = request.form.get('update')
+    if update is not None:
+
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter,rdb)
+        return render_template('heatmap.html')
     # get selected entities
     numeric_entities = request.form.getlist('numeric_entities_multiple')
 
     # handling errors and load data from database
     if len(numeric_entities) > 1:
-        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
-                                    measurement_filter, rdb)
-        data.Name_ID_filter = df_filtering
-        filter = data.Name_ID_filter
         df, error = ps.get_heat_map(numeric_entities, date,filter, rdb)
         if not error:
             if len(df.index) == 0:

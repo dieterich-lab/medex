@@ -25,6 +25,20 @@ def get_basic_stats():
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
+    if categorical_filter or numerical_filter:
+        filter = 'exists'
+    else:
+        filter = ''
+
+    update = request.form.get('update')
+    if update is not None:
+
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter,rdb)
+        return render_template('basic_stats/basic_stats.html',
+                               block=block,
+                               name=measurement_name,
+                               measurement_name=measurement_name)
+
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
 
@@ -44,10 +58,6 @@ def get_basic_stats():
         elif not numeric_entities :
             error = "Please select numeric entities"
         elif numeric_entities:
-            df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
-                                        measurement_filter, rdb)
-            data.Name_ID_filter = df_filtering
-            filter = data.Name_ID_filter
             df, error = ps.get_basic_stats(numeric_entities, measurement1, date, filter, rdb)
 
 

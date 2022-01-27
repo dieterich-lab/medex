@@ -42,6 +42,10 @@
         <label>Filter selection</label>
         <br>
 
+        <label>Limit selected patient number to:</label>
+        <input style="width: 30%" id="limit" type="text" class="js-input-from" value="" />
+
+        <br>
         {{ m.entity_form_single_measurement(id_single_measurement="measurement_filter",name =all_measurement,value=entity,select=measurement_filter,d="Filter by visit as on:",block=block) }}
         <label>Categorical:</label>
         <select id="categorical_filter"  name="categorical_filter" style="width: 100%" class="js-example-basic-single" >
@@ -88,6 +92,7 @@
     <div class="card-body">
         <label>Filters </label>
         <button id ="clean" name='clean' value= "Clean" type="button" class="btn btn-outline-info">Clear All</button>
+        <button id ="update" name='update' value= "Update" class="btn btn-outline-info">Update All</button>
 
         <div id="demo0" >
             {% if filter %}

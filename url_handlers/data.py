@@ -34,6 +34,21 @@ def post_data():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
+    if categorical_filter or numerical_filter:
+        filter = 'exists'
+    else:
+        filter = ''
+
+
+    update = request.form.get('update')
+    if update is not None:
+
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter,rdb)
+        return render_template('data.html',
+                               block=block,
+                               all_entities=all_entities,
+                               name=measurement_name)
+
 
     # get selected entities
     entities = request.form.getlist('entities')
@@ -51,11 +66,7 @@ def post_data():
     elif len(entities) == 0:
         error = "Please select entities"
     else:
-        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
-                                    measurement_filter,rdb)
-        data.Name_ID_filter = df_filtering
-        filter = data.Name_ID_filter
-        data.information = entities, what_table, measurement, date, filter, rdb
+        data.information = entities, what_table, measurement, date, rdb
         df, error = ps.get_data(entities, what_table, measurement, date, filter, rdb)
 
     if error:

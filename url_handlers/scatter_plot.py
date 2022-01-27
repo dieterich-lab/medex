@@ -25,6 +25,17 @@ def post_plots():
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
+    if categorical_filter or numerical_filter:
+        filter = 'exists'
+    else:
+        filter = ''
+
+    update = request.form.get('update')
+    if update is not None:
+
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter,rdb)
+        return render_template('scatter_plot.html')
+
     # show/hide selector for visits
     if block == 'none':
         x_measurement = all_measurement.values[0]
@@ -58,10 +69,6 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     else:
-        df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
-                                    measurement_filter, rdb)
-        data.Name_ID_filter = df_filtering
-        filter = data.Name_ID_filter
         df, error = ps.get_scatter_plot(add_group_by, categorical_entities, subcategory_entities, x_axis, y_axis,
                                         x_measurement, y_measurement, date, filter, rdb)
 
