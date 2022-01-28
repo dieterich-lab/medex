@@ -96,6 +96,10 @@ $('#numerical_filter').change(function () {
     $("#clean").click(function(){
         $("#demo").empty();
         $("#demo2").empty();
+        var value = parseInt(document.getElementById('Add').value, 10);
+        value = isNaN(value) ? 0 : value;
+        document.getElementById('Add').value = 0;
+
     });
 
 
@@ -103,31 +107,47 @@ $('#numerical_filter').change(function () {
 
 
 remove_categorical = function(span) {
+    var value = parseInt(document.getElementById('Add').value, 10);
+    value = isNaN(value) ? 0 : value;
     var val = $(span).closest("div.categorical_filter").find("input[name='cat']").val();
     const index = categorical_filter_selected.indexOf(val);
     if (index > -1) {
       categorical_filter_selected.splice(index, 1); // 2nd parameter means remove one item only
     }
     span.closest("div.categorical_filter").remove();
+    value -1;
+    document.getElementById('Add').value = value;
+    document.getElementById("update").click();
 
 }
 
 remove_numerical = function(span) {
+    var value = parseInt(document.getElementById('Add').value, 10);
+    value = isNaN(value) ? 0 : value;
+
     var val = $(span).closest("div.fd-box2").find("input[name='name']").val();
 
     const index = numerical_filter_selected.indexOf(val);
     if (index > -1) {
       numerical_filter_selected.splice(index, 1); // 2nd parameter means remove one item only
     }
-    console.log(numerical_filter_selected)
     span.closest("div.fd-box2").remove();
+    value -1;
+    document.getElementById('Add').value = value;
+    document.getElementById("update").click();
+
+
 
 }
 
 categorical_filter_selected  = ( typeof categorical_filter_selected  != 'undefined' && categorical_filter_selected  instanceof Array ) ? categorical_filter_selected  : []
 numerical_filter_selected  = ( typeof numerical_filter_selected  != 'undefined' && numerical_filter_selected  instanceof Array ) ? numerical_filter_selected  : []
 
+
 $("#Add").click(function() {
+        var value = parseInt(document.getElementById('Add').value, 10);
+        value = isNaN(value) ? 0 : value;
+
 
         var visit =$("#measurement_filter").val();
         document.getElementById("demo0").innerHTML = '<p>Filter by visit as on:'+ visit +'</p><input type="hidden" value='+visit+'>'
@@ -143,7 +163,8 @@ $("#Add").click(function() {
 
 
         if (mag != 'Search entity' && categorical_filter_selected.includes(mag) != true ){
-        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML  +"<div class='categorical_filter' ><button type='button' class='btn btn-outline-primary text-left' style='display: block; width: 100%; word-wrap: break-word; white-space: normal;'  ><span onclick='remove_categorical(this)'  class='close' > x </span><input  type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + mag+"'>" + mm +"</button><br></div>";
+        value++;
+        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML  +"<div  class='categorical_filter' ><button type='button' class='btn btn-outline-primary text-left' style='display: block; width: 100%; word-wrap: break-word; white-space: normal;'  ><span onclick='remove_categorical(this)'  class='close' > x </span><input  type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + mag+"'>" + mm +"</button><br></div>";
         $("#categorical_filter").val('Search entity').change();
         categorical_filter_selected.push(mag);
         }
@@ -157,6 +178,7 @@ $("#Add").click(function() {
         var fieldvalue ='<div class="fd-box2" ><span onclick="remove_numerical(this)" class="close" > x </span><input type="hidden" name="name" value="'+ed+'">'+ ed +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
 
         if (ed != 'Search entity' && numerical_filter_selected.includes(ed) != true ){
+        value++;
         numerical_filter_selected.push(ed);
         $(fieldvalue).appendTo($('#demo2'));
         $("#numerical_filter").val('Search entity').change();
@@ -168,6 +190,7 @@ $("#Add").click(function() {
             grid_num: 4,
             step: 0.001,
         });
+        document.getElementById('Add').value = value;
 
 
     });

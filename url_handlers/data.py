@@ -39,15 +39,56 @@ def post_data():
     else:
         filter = ''
 
-
-    update = request.form.get('update')
+    update = request.form.get('Add')
+    print(update)
     if update is not None:
 
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter,rdb)
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update, rdb)
         return render_template('data.html',
                                block=block,
                                all_entities=all_entities,
-                               name=measurement_name)
+                               val=update,
+                               name=measurement_name,
+                               measurement_filter=measurement_filter,
+                               start_date=start_date,
+                               end_date=end_date,
+                               categorical_filter=categorical_names,
+                               numerical_filter_name=name,
+                               filter=categorical_filter_zip,
+                               )
+    clean = request.form.get('clean')
+    print(clean)
+    if clean is not None:
+        update = clean
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update, rdb)
+        return render_template('data.html',
+                               block=block,
+                               all_entities=all_entities,
+                               val=update,
+                               name=measurement_name,
+                               measurement_filter=measurement_filter,
+                               start_date=start_date,
+                               end_date=end_date,
+                               categorical_filter=categorical_names,
+                               numerical_filter_name=name,
+                               filter=categorical_filter_zip,
+                               )
+    update = request.form.get('update')
+    print(update)
+    if update is not None:
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update, rdb)
+        return render_template('data.html',
+                               block=block,
+                               all_entities=all_entities,
+                               val=update,
+                               name=measurement_name,
+                               measurement_filter=measurement_filter,
+                               start_date=start_date,
+                               end_date=end_date,
+                               categorical_filter=categorical_names,
+                               numerical_filter_name=name,
+                               filter=categorical_filter_zip,
+                               )
 
 
     # get selected entities
@@ -85,6 +126,7 @@ def post_data():
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                filter=categorical_filter_zip,
+                               val=update,
                                numerical_filter=numerical_filter,
                                )
 
@@ -130,6 +172,7 @@ def post_data():
                            categorical_filter=categorical_names,
                            numerical_filter_name=name,
                            filter=categorical_filter_zip,
+                           val=update,
                            numerical_filter=numerical_filter,
                            )
 
