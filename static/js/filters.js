@@ -96,9 +96,12 @@ $('#numerical_filter').change(function () {
     $("#clean").click(function(){
         $("#demo").empty();
         $("#demo2").empty();
-        var value = parseInt(document.getElementById('Add').value, 10);
-        value = isNaN(value) ? 0 : value;
-        document.getElementById('Add').value = 0;
+
+        var value_n_c =$("#Add").val();
+        var value_categorical = 0;
+        var value_numeric = 0;
+        values = [value_categorical,value_numeric].join()
+        document.getElementById('Add').value = values;
 
     });
 
@@ -107,23 +110,35 @@ $('#numerical_filter').change(function () {
 
 
 remove_categorical = function(span) {
-    var value = parseInt(document.getElementById('Add').value, 10);
-    value = isNaN(value) ? 0 : value;
-    var val = $(span).closest("div.categorical_filter").find("input[name='cat']").val();
+   var value_n_c =$("#Add").val();
+   var values = value_n_c.split(" ");
+   var value_categorical = parseInt(values[0], 10);
+   var value_numeric = parseInt(values[1], 10);
+   value_categorical = isNaN(value_categorical) ? 0 : value_categorical;
+
+
+    var val = $(span).closest("div.categorical_filter").
+
+    find("input[name='cat']").val();
     const index = categorical_filter_selected.indexOf(val);
     if (index > -1) {
       categorical_filter_selected.splice(index, 1); // 2nd parameter means remove one item only
     }
     span.closest("div.categorical_filter").remove();
-    value -1;
-    document.getElementById('Add').value = value;
+    value_categorical -1;
+    values = [value_categorical,value_numeric].join()
+    document.getElementById('Add').value = values;
+    document.getElementById("update").click();
     document.getElementById("update").click();
 
 }
 
 remove_numerical = function(span) {
-    var value = parseInt(document.getElementById('Add').value, 10);
-    value = isNaN(value) ? 0 : value;
+   var value_n_c =$("#Add").val();
+   var values = value_n_c.split(" ");
+   var value_categorical = parseInt(values[0], 10);
+   var value_numeric = parseInt(values[1], 10);
+   value_numeric = isNaN(value_numeric) ? 0 : value_numeric;
 
     var val = $(span).closest("div.fd-box2").find("input[name='name']").val();
 
@@ -132,8 +147,10 @@ remove_numerical = function(span) {
       numerical_filter_selected.splice(index, 1); // 2nd parameter means remove one item only
     }
     span.closest("div.fd-box2").remove();
-    value -1;
-    document.getElementById('Add').value = value;
+
+    value_numeric -1;
+    values = [value_categorical,value_numeric].join()
+    document.getElementById('Add').value = values;
     document.getElementById("update").click();
 
 
@@ -144,54 +161,60 @@ categorical_filter_selected  = ( typeof categorical_filter_selected  != 'undefin
 numerical_filter_selected  = ( typeof numerical_filter_selected  != 'undefined' && numerical_filter_selected  instanceof Array ) ? numerical_filter_selected  : []
 
 
+
 $("#Add").click(function() {
-        var value = parseInt(document.getElementById('Add').value, 10);
-        value = isNaN(value) ? 0 : value;
+   var value_n_c =$("#Add").val();
+   var values = value_n_c.split(",");
+   var value_categorical = parseInt(values[0], 10);
+   var value_numeric = parseInt(values[1], 10);
+   value_categorical = isNaN(value_categorical) ? 0 : value_categorical;
+   value_numeric = isNaN(value_numeric) ? 0 : value_numeric;
 
 
-        var visit =$("#measurement_filter").val();
-        document.getElementById("demo0").innerHTML = '<p>Filter by visit as on:'+ visit +'</p><input type="hidden" value='+visit+'>'
-        $( "#measurement_filter").change();
+   var visit =$("#measurement_filter").val();
+   document.getElementById("demo0").innerHTML = '<p>Filter by visit as on:'+ visit +'</p><input type="hidden" value='+visit+'>'
+   $( "#measurement_filter").change();
 
-        var mag =$("#categorical_filter").val();
+   var mag =$("#categorical_filter").val();
 
-        var e2 =$('#subcategory_filter').val();
-        var mm = mag + " is: <br>" + e2
-        mm = mm.replace(/,/g,"<br>")
-        // if categorical filter than do nothing
-
-
-
-        if (mag != 'Search entity' && categorical_filter_selected.includes(mag) != true ){
-        value++;
-        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML  +"<div  class='categorical_filter' ><button type='button' class='btn btn-outline-primary text-left' style='display: block; width: 100%; word-wrap: break-word; white-space: normal;'  ><span onclick='remove_categorical(this)'  class='close' > x </span><input  type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + mag+"'>" + mm +"</button><br></div>";
-        $("#categorical_filter").val('Search entity').change();
-        categorical_filter_selected.push(mag);
-        }
+   var e2 =$('#subcategory_filter').val();
+   var mm = mag + " is: <br>" + e2
+   mm = mm.replace(/,/g,"<br>")
+   // if categorical filter than do nothing
 
 
 
+   if (mag != 'Search entity' && categorical_filter_selected.includes(mag) != true ){
+   value_categorical++;
+   document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML  +"<div  class='categorical_filter' ><button type='button' class='btn btn-outline-primary text-left' style='display: block; width: 100%; word-wrap: break-word; white-space: normal;'  ><span onclick='remove_categorical(this)'  class='close' > x </span><input  type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + mag+"'>" + mm +"</button><br></div>";
+   $("#categorical_filter").val('Search entity').change();
+   categorical_filter_selected.push(mag);
+   }
 
-        var ed = $("#numerical_filter").val();
-        var mag2 = $("#range").val();
-        var result = mag2.split(";");
-        var fieldvalue ='<div class="fd-box2" ><span onclick="remove_numerical(this)" class="close" > x </span><input type="hidden" name="name" value="'+ed+'">'+ ed +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
 
-        if (ed != 'Search entity' && numerical_filter_selected.includes(ed) != true ){
-        value++;
-        numerical_filter_selected.push(ed);
-        $(fieldvalue).appendTo($('#demo2'));
-        $("#numerical_filter").val('Search entity').change();
-        }
-        $(".range").ionRangeSlider({
-            type: "double",
-            skin: "big",
-            grid: true,
-            grid_num: 4,
-            step: 0.001,
-        });
-        document.getElementById('Add').value = value;
 
+
+   var ed = $("#numerical_filter").val();
+   var mag2 = $("#range").val();
+   var result = mag2.split(";");
+   var fieldvalue ='<div class="fd-box2" ><span onclick="remove_numerical(this)" class="close" > x </span><input type="hidden" name="name" value="'+ed+'">'+ ed +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
+
+   if (ed != 'Search entity' && numerical_filter_selected.includes(ed) != true ){
+   value_numeric++;
+   numerical_filter_selected.push(ed);
+   $(fieldvalue).appendTo($('#demo2'));
+   $("#numerical_filter").val('Search entity').change();
+   }
+   $(".range").ionRangeSlider({
+        type: "double",
+        skin: "big",
+        grid: true,
+        grid_num: 4,
+        step: 0.001,
+   });
+
+    values = [value_categorical,value_numeric].join()
+    document.getElementById('Add').value = values;
 
     });
 

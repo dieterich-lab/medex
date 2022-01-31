@@ -11,6 +11,7 @@ import os
 import io
 from flask import send_from_directory
 import url_handlers.filtering as filtering
+import json
 
 # create the application object
 app = Flask(__name__)
@@ -52,6 +53,7 @@ class DataStore():
     csv_new_table = None
 
     filter = ''
+    update_filter = "0,0"
 
     information = None
 
@@ -157,7 +159,7 @@ def message_count():
                 name='{}'.format(measurement_name),
                 block=block,
                 case_display=case_display,
-                val="0",
+                val='0,0',
                 measurement_filter=session.get('measurement_filter'),
                 filter=categorical_filter,
                 numerical_filter=numerical_filter,

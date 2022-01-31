@@ -190,8 +190,9 @@ def create_temp_table(case_id,rdb):
     except ValueError:
         print('something wrong')
 
-
+old_update = ['0','0']
 def filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement, update, r):
+
     cur = r.cursor()
     # case_id filter
     if len(case_id) != 0:
@@ -208,17 +209,30 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
     numerical_filter_where = ""
 
 
-    if categorical_filter:
-        cat = categorical_filter[int(update)-1]
+    if categorical_filter and old_update[0] != update[0]:
+        old_update[0] = update[0]
+        cat = categorical_filter[int(update[0]) - 1]
         cat = cat.replace('<br>', ',')
         cat = "$$" + cat[(cat.find(' is') + 6):].replace(",", "$$,$$") + "$$"
         query = """ SELECT "Name_ID" from examination_categorical WHERE "Key" = '{}' and "Value" in ({}) 
-                    and measurement = {} """.format(categorical[int(update)-1], cat, measurement_filter)
-    if numerical_filter:
+                    and measurement = {} """.format(categorical[int(update[0]) - 1], cat, measurement_filter)
+    if numerical_filter_name and old_update[1] != update[1]:
+        old_update[1] = update[1]
         query = """ SELECT "Name_ID" from examination_numerical WHERE "Key" = '{}' and "Value" between {} and {} 
-                    and measurement = {} """.format(numerical_filter_name[0], from1[0], to1[0], measurement_filter, )
-
-    if update == '1':
+                    and measurement = {} """.format(numerical_filter_name[int(update[1]) - 1],
+                                                    from1[int(update[1]) - 1],
+                                                    to1[int(update[1]) - 1], measurement_filter, )
+    print(update[0],update[1])
+    if update[0] == '0' and update[1] == '0':
+        old_update[0],old_update[1] = update[0],update[1]
+        sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
+        try:
+            start_time = time.time()
+            cur.execute(sql_drop)
+            print("--- %s seconds ---" % (time.time() - start_time))
+        except ValueError:
+            print('something wrong')
+    elif (update[0] == '1' and update[1] == '0') or (update[0] == '0' and update[1] == '1'):
         sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
         create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
         try:
@@ -231,15 +245,13 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
 
     else:
         update_table = """ DELETE FROM temp_table_name_ids ttni WHERE "Name_ID" NOT IN ({})""".format(query)
+        print(update_table)
         try:
             start_time = time.time()
             cur.execute(update_table)
             print("--- %s seconds ---" % (time.time() - start_time))
         except ValueError:
             print('something wrong')
-
-
-
 
 
     for i in range(len(categorical)):
@@ -309,6 +321,8 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         sql = case_id_filter
     else:
         sql = ''
+
+    print(sql)
 
 
 

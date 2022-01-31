@@ -38,17 +38,16 @@ def post_data():
         filter = 'exists'
     else:
         filter = ''
-
     update = request.form.get('Add')
-    print(update)
     if update is not None:
-
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update, rdb)
+        update_list = list(update.split(","))
+        data.update_filter = update
+        print(update)
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('data.html',
                                block=block,
                                all_entities=all_entities,
                                val=update,
-                               name=measurement_name,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
@@ -57,10 +56,11 @@ def post_data():
                                filter=categorical_filter_zip,
                                )
     clean = request.form.get('clean')
-    print(clean)
     if clean is not None:
-        update = clean
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update, rdb)
+        print(clean)
+        update = '0,0'
+        update_list = list(update.split(","))
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list, rdb)
         return render_template('data.html',
                                block=block,
                                all_entities=all_entities,
@@ -94,6 +94,7 @@ def post_data():
     # get selected entities
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
+    update = data.update_filter
 
     df = pd.DataFrame()
     if block == 'none':
