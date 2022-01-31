@@ -25,26 +25,12 @@ def post_plots():
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
 
-    if categorical_filter or numerical_filter:
-        filter = 'exists'
-    else:
-        filter = ''
-
+    # get request values
+    add = request.form.get('Add')
+    clean = request.form.get('clean')
     update = request.form.get('update')
-    if update is not None:
-
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter,rdb)
-        return render_template('scatter_plot.html')
-
-    # show/hide selector for visits
-    if block == 'none':
-        x_measurement = all_measurement.values[0]
-        y_measurement = all_measurement.values[0]
-    else:
-        x_measurement = request.form.get('x_measurement')
-        y_measurement = request.form.get('y_measurement')
-
-    # get selected entities
+    x_measurement = request.form.get('x_measurement')
+    y_measurement = request.form.get('y_measurement')
     add_group_by = request.form.get('add_group_by') is not None
     y_axis = request.form.get('y_axis')
     x_axis = request.form.get('x_axis')
@@ -54,7 +40,35 @@ def post_plots():
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
 
+    if update is not None or clean is not None or add is not None:
+        if add is not None:
+            update_list = list(add.split(","))
+            update = add
+        elif clean is not None:
+            update = '0,0'
+            update_list = list(update.split(","))
+        else:
+            update = '0,0'
+            update_list = list(update.split(","))
+            print(update)
+        data.update_filter = update
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
+        return render_template('data.html',
+                               block=block,
+                               val=update,
+                               measurement_filter=measurement_filter,
+                               start_date=start_date,
+                               end_date=end_date,
+                               categorical_filter=categorical_names,
+                               numerical_filter_name=name,
+                               filter=categorical_filter_zip,
+                               all_measurement=all_measurement,
+                               name=measurement_name,
+                               df_min_max=df_min_max
+                               )
+
     # handling errors and load data from database
+    update = data.update_filter
     df = pd.DataFrame()
     if x_measurement == "Search entity" or y_measurement == "Search entity":
         error = "Please select number of {}".format(measurement_name)
@@ -70,7 +84,7 @@ def post_plots():
         error = "Please select subcategory"
     else:
         df, error = ps.get_scatter_plot(add_group_by, categorical_entities, subcategory_entities, x_axis, y_axis,
-                                        x_measurement, y_measurement, date, filter, rdb)
+                                        x_measurement, y_measurement, date, update, rdb)
 
     if error:
         return render_template('scatter_plot.html',

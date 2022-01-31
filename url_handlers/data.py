@@ -34,15 +34,27 @@ def post_data():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
-    if categorical_filter or numerical_filter:
-        filter = 'exists'
-    else:
-        filter = ''
-    update = request.form.get('Add')
-    if update is not None:
-        update_list = list(update.split(","))
+
+    # get request values
+    add = request.form.get('Add')
+    clean = request.form.get('clean')
+    update = request.form.get('update')
+    entities = request.form.getlist('entities')
+    what_table = request.form.get('what_table')
+    measurement = request.form.getlist('measurement')
+
+    if update is not None or clean is not None or add is not None:
+        if add is not None:
+            update_list = list(add.split(","))
+            update = add
+        elif clean is not None:
+            update = '0,0'
+            update_list = list(update.split(","))
+        else:
+            update = '0,0'
+            update_list = list(update.split(","))
+            print(update)
         data.update_filter = update
-        print(update)
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('data.html',
                                block=block,
@@ -54,54 +66,15 @@ def post_data():
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                filter=categorical_filter_zip,
-                               )
-    clean = request.form.get('clean')
-    if clean is not None:
-        print(clean)
-        update = '0,0'
-        update_list = list(update.split(","))
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list, rdb)
-        return render_template('data.html',
-                               block=block,
-                               all_entities=all_entities,
-                               val=update,
+                               all_measurement=all_measurement,
                                name=measurement_name,
-                               measurement_filter=measurement_filter,
-                               start_date=start_date,
-                               end_date=end_date,
-                               categorical_filter=categorical_names,
-                               numerical_filter_name=name,
-                               filter=categorical_filter_zip,
-                               )
-    update = request.form.get('update')
-    print(update)
-    if update is not None:
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update, rdb)
-        return render_template('data.html',
-                               block=block,
-                               all_entities=all_entities,
-                               val=update,
-                               name=measurement_name,
-                               measurement_filter=measurement_filter,
-                               start_date=start_date,
-                               end_date=end_date,
-                               categorical_filter=categorical_names,
-                               numerical_filter_name=name,
-                               filter=categorical_filter_zip,
+                               measurement=measurement,
+                               entities=entities,
+                               df_min_max=df_min_max
                                )
 
-
-    # get selected entities
-    entities = request.form.getlist('entities')
-    what_table = request.form.get('what_table')
     update = data.update_filter
-
     df = pd.DataFrame()
-    if block == 'none':
-        measurement = all_measurement.values
-    else:
-        measurement = request.form.getlist('measurement')
-
     # errors
     if not measurement:
         error = "Please select number of {}".format(measurement_name)
@@ -109,7 +82,7 @@ def post_data():
         error = "Please select entities"
     else:
         data.information = entities, what_table, measurement, date, rdb
-        df, error = ps.get_data(entities, what_table, measurement, date, filter, rdb)
+        df, error = ps.get_data(entities, what_table, measurement, date, update, rdb)
 
     if error:
         return render_template('data.html',

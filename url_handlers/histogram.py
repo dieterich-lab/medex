@@ -24,29 +24,47 @@ def post_statistics():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
-    if categorical_filter or numerical_filter:
-        filter = 'exists'
-    else:
-        filter = ''
 
+    # get request values
+    add = request.form.get('Add')
+    clean = request.form.get('clean')
     update = request.form.get('update')
-    if update is not None:
-
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter,rdb)
-        return render_template('histogram.html')
-    # show/hide selector for visits
-    if block == 'none':
-        measurement = all_measurement.values
-    else:
-        measurement = request.form.getlist('measurement')
-
-    # get selected entities
+    measurement = request.form.getlist('measurement')
     numeric_entities = request.form.get('numeric_entities')
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     number_of_bins = request.form.get('number_of_bins')
 
+    if update is not None or clean is not None or add is not None:
+        if add is not None:
+            update_list = list(add.split(","))
+            update = add
+        elif clean is not None:
+            update = '0,0'
+            update_list = list(update.split(","))
+        else:
+            update = '0,0'
+            update_list = list(update.split(","))
+            print(update)
+        data.update_filter = update
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
+        return render_template('data.html',
+                               block=block,
+                               val=update,
+                               measurement_filter=measurement_filter,
+                               start_date=start_date,
+                               end_date=end_date,
+                               categorical_filter=categorical_names,
+                               numerical_filter_name=name,
+                               filter=categorical_filter_zip,
+                               all_measurement=all_measurement,
+                               name=measurement_name,
+                               measurement=measurement,
+                               df_min_max=df_min_max
+                               )
+
     # handling errors and load data from database
+    update = data.update_filter
     df = pd.DataFrame()
     if measurement == "Search entity":
         error = "Please select number of {}".format(measurement_name)
@@ -56,7 +74,7 @@ def post_statistics():
         error = "Please select subcategory"
     else:
         df, error = ps.get_histogram_box_plot(numeric_entities, categorical_entities, subcategory_entities, measurement,
-                                              date, filter, rdb)
+                                              date, update, rdb)
         df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     if error:
@@ -100,7 +118,6 @@ def post_statistics():
                                numerical_filter_name=name,
                                df_min_max=df_min_max,
                                error=error)
-
 
     if block == 'none':
         fig = px.histogram(df, x=numeric_entities, color=categorical_entities,barmode='overlay', nbins=bin_numbers,
