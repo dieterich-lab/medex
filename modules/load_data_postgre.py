@@ -240,10 +240,10 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
             print("--- %s seconds ---" % (time.time() - start_time))
         except ValueError:
             print('something wrong')
-        #finally:
-        #    start_time = time.time()
-        #    cur.execute(sql_drop_2)
-        #    print("--- %s seconds ---" % (time.time() - start_time))
+        finally:
+            start_time = time.time()
+            cur.execute(sql_drop_2)
+            print("--- %s seconds ---" % (time.time() - start_time))
     elif (update[0] == '1' and update[1] == '0') or (update[0] == '0' and update[1] == '1'):
         sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
         sql_drop_2 = "DROP TABLE IF EXISTS temp_table_ids"
@@ -258,11 +258,11 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
             print("--- %s seconds ---" % (time.time() - start_time))
         except ValueError:
             print('something wrong')
-        #finally:
-        #    start_time = time.time()
-        #    cur.execute(sql_drop_2)
-        #    cur.execute(create_table_2)
-        #    print("--- %s seconds ---" % (time.time() - start_time))
+        finally:
+            start_time = time.time()
+            cur.execute(sql_drop_2)
+            cur.execute(create_table_2)
+            print("--- %s seconds ---" % (time.time() - start_time))
 
     else:
         update_table = """ DELETE FROM temp_table_name_ids ttni WHERE "Name_ID" NOT IN ({})""".format(query)
@@ -274,10 +274,10 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
             print("--- %s seconds ---" % (time.time() - start_time))
         except ValueError:
             print('something wrong')
-        #finally:
-        #    start_time = time.time()
-        #    cur.execute(update_table_2)
-        #    print("--- %s seconds ---" % (time.time() - start_time))
+        finally:
+            start_time = time.time()
+            cur.execute(update_table_2)
+            print("--- %s seconds ---" % (time.time() - start_time))
 
     """ SELECT "Name_ID" FROM where "Key" in () group by "Name_ID" having count("Name_ID") = {} """
 
