@@ -4,6 +4,7 @@ import datetime
 import time
 from collections import ChainMap
 import textwrap as tr
+from threading import Thread
 
 
 def get_header(r):
@@ -195,6 +196,9 @@ old_update = ['0', '0']
 
 
 def filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement, update, r):
+    print(old_update)
+    print(update)
+    print(int(old_update[0]), int(update[0]), int(old_update[1]), int(update[1]))
 
     cur = r.cursor()
     # case_id filter
@@ -204,9 +208,6 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
     measurement_filter = "$$" + measurement + "$$"
 
     if categorical_filter and old_update[0] != update[0]:
-
-        old_update[0] = update[0]
-
         cat = categorical_filter[int(update[0]) - 1]
         cat = cat.replace('<br>', ',')
         cat = "$$" + cat[(cat.find(' is') + 6):].replace(",", "$$,$$") + "$$"
@@ -217,9 +218,6 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
                     and measurement = {} """.format(categorical[int(update[0]) - 1], cat, measurement_filter)
 
     if numerical_filter_name and old_update[1] != update[1]:
-
-        old_update[1] = update[1]
-
         query = """ SELECT "Name_ID" from examination_numerical WHERE "Key" = '{}' and "Value" between {} and {} 
                     and measurement = {} """.format(numerical_filter_name[int(update[1]) - 1],
                                                     from1[int(update[1]) - 1],
@@ -236,15 +234,16 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         sql_drop_2 = "DROP TABLE IF EXISTS temp_table_ids"
         try:
             start_time = time.time()
-            cur.execute(sql_drop)
+            Thread(target=cur.execute(sql_drop)).start()
+            print("--- %s seconds ---" % (time.time() - start_time))
+            start_time = time.time()
+            Thread(target=cur.execute(sql_drop_2)).start()
             print("--- %s seconds ---" % (time.time() - start_time))
         except ValueError:
             print('something wrong')
-        finally:
-            start_time = time.time()
-            cur.execute(sql_drop_2)
-            print("--- %s seconds ---" % (time.time() - start_time))
+
     elif (update[0] == '1' and update[1] == '0') or (update[0] == '0' and update[1] == '1'):
+        old_update[0], old_update[1] = update[0], update[1]
         sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
         sql_drop_2 = "DROP TABLE IF EXISTS temp_table_ids"
         create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
@@ -253,33 +252,46 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
 
         try:
             start_time = time.time()
-            cur.execute(sql_drop)
+            Thread(target=cur.execute(create_table)).start()
+            print("--- %s seconds ---" % (time.time() - start_time))
+            start_time = time.time()
+            Thread(target=cur.execute(create_table_2)).start()
+            print("--- %s seconds ---" % (time.time() - start_time))
+        except ValueError:
+            print('something wrong')
+
+    elif int(old_update[0]) < int(update[0]) or int(old_update[1]) < int(update[1]):
+        old_update[0], old_update[1] = update[0], update[1]
+        print('works')
+        update_table = """ DELETE FROM temp_table_name_ids WHERE "Name_ID" NOT IN ({})""".format(query)
+        update_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
+
+        try:
+            start_time = time.time()
+            Thread(target=cur.execute(update_table)).start()
+            print("--- %s seconds ---" % (time.time() - start_time))
+            start_time = time.time()
+            Thread(target=cur.execute(update_table_2)).start()
+            print("--- %s seconds ---" % (time.time() - start_time))
+        except ValueError:
+            print('something wrong')
+    else:
+        old_update[0], old_update[1] = update[0], update[1]
+        query = """ SELECT "Name_ID" FROM temp_table_ids where "Key" in () group by "Name_ID" having count("Name_ID") = {} """
+        sql_drop_2 = "DROP TABLE IF EXISTS temp_table_ids"
+        create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
+        update_table = """ DELETE FROM temp_table_ids WHERE "Key" not in ({}) """.format(query)
+        try:
+            start_time = time.time()
+            cur.execute(sql_drop_2)
             cur.execute(create_table)
             print("--- %s seconds ---" % (time.time() - start_time))
         except ValueError:
             print('something wrong')
         finally:
             start_time = time.time()
-            cur.execute(sql_drop_2)
-            cur.execute(create_table_2)
-            print("--- %s seconds ---" % (time.time() - start_time))
-
-    else:
-        update_table = """ DELETE FROM temp_table_name_ids ttni WHERE "Name_ID" NOT IN ({})""".format(query)
-        update_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
-
-        try:
-            start_time = time.time()
             cur.execute(update_table)
             print("--- %s seconds ---" % (time.time() - start_time))
-        except ValueError:
-            print('something wrong')
-        finally:
-            start_time = time.time()
-            cur.execute(update_table_2)
-            print("--- %s seconds ---" % (time.time() - start_time))
-
-    """ SELECT "Name_ID" FROM where "Key" in () group by "Name_ID" having count("Name_ID") = {} """
 
     # categorical_filter
     category_filter = ""
