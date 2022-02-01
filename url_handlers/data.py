@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, session
 import modules.load_data_postgre as ps
 import pandas as pd
-
+import time
 import url_handlers.filtering as filtering
 from webserver import rdb, data, Name_ID, block, table_builder, all_entities, df_min_max, measurement_name,\
     all_measurement
@@ -55,7 +55,9 @@ def post_data():
             update_list = list(update.split(","))
             print(update)
         data.update_filter = update
+        start_time = time.time()
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
+        print("--- %s seconds data ---" % (time.time() - start_time))
         return render_template('data.html',
                                block=block,
                                all_entities=all_entities,
