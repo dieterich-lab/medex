@@ -45,8 +45,7 @@ def post_statistics():
             print(update)
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
-        return render_template('data.html',
-                               block=block,
+        return render_template('barchart.html',
                                val=update,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
@@ -57,7 +56,10 @@ def post_statistics():
                                all_measurement=all_measurement,
                                name=measurement_name,
                                measurement=measurement,
-                               df_min_max=df_min_max
+                               df_min_max=df_min_max,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
+                               how_to_plot=how_to_plot,
                                )
 
     update = data.update_filter
@@ -77,10 +79,10 @@ def post_statistics():
                                end_date=end_date,
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
-                               measurement=measurement,
                                measurement_filter=measurement_filter,
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
+                               measurement=measurement,
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                how_to_plot=how_to_plot,

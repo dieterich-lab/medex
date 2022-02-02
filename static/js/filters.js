@@ -68,7 +68,7 @@ $('#input2').on("input", function () {
     });
 });
 //change subcategories if category change
-$('#numerical_filter').change(function () {
+$('#id_numerical_filter').change(function () {
     var entity =$(this).val(), values = df[entity] || [];
     var min =values['min']
     var max =values['max']
@@ -89,6 +89,8 @@ $('#numerical_filter').change(function () {
             grid: true,
             grid_num: 4,
             step: 0.001,
+            to_fixed:true,//block the top
+            from_fixed:true//block the from
         });
 
 
@@ -97,9 +99,8 @@ $('#numerical_filter').change(function () {
         $("#demo").empty();
         $("#demo2").empty();
 
-        var value_n_c =$("#Add").val();
-        var value_categorical = 0;
-        var value_numeric = 0;
+        var value_categorical = '0';
+        var value_numeric = '0';
         values = [value_categorical,value_numeric].join()
         document.getElementById('Add').value = values;
 
@@ -111,33 +112,33 @@ $('#numerical_filter').change(function () {
 
 remove_categorical = function(span) {
    var value_n_c =$("#Add").val();
-   var values = value_n_c.split(" ");
+   var values = value_n_c.split(",");
    var value_categorical = parseInt(values[0], 10);
    var value_numeric = parseInt(values[1], 10);
    value_categorical = isNaN(value_categorical) ? 0 : value_categorical;
+   value_numeric = isNaN(value_numeric) ? 0 : value_numeric;
 
 
-    var val = $(span).closest("div.categorical_filter").
-
-    find("input[name='cat']").val();
+    var val = $(span).closest("div.categorical_filter").find("input[name='cat']").val();
     const index = categorical_filter_selected.indexOf(val);
     if (index > -1) {
       categorical_filter_selected.splice(index, 1); // 2nd parameter means remove one item only
     }
     span.closest("div.categorical_filter").remove();
-    value_categorical -1;
+
+    value_categorical -=1;
     values = [value_categorical,value_numeric].join()
     document.getElementById('Add').value = values;
-    document.getElementById("update").click();
-    document.getElementById("update").click();
+    document.getElementById("Add").click();
 
 }
 
 remove_numerical = function(span) {
    var value_n_c =$("#Add").val();
-   var values = value_n_c.split(" ");
+   var values = value_n_c.split(",");
    var value_categorical = parseInt(values[0], 10);
    var value_numeric = parseInt(values[1], 10);
+   value_categorical = isNaN(value_categorical) ? 0 : value_categorical;
    value_numeric = isNaN(value_numeric) ? 0 : value_numeric;
 
     var val = $(span).closest("div.fd-box2").find("input[name='name']").val();
@@ -148,10 +149,10 @@ remove_numerical = function(span) {
     }
     span.closest("div.fd-box2").remove();
 
-    value_numeric -1;
+    value_numeric -=1;
     values = [value_categorical,value_numeric].join()
     document.getElementById('Add').value = values;
-    document.getElementById("update").click();
+    document.getElementById("Add").click();
 
 
 
@@ -194,7 +195,7 @@ $("#Add").click(function() {
 
 
 
-   var ed = $("#numerical_filter").val();
+   var ed = $("#id_numerical_filter").val();
    var mag2 = $("#range").val();
    var result = mag2.split(";");
    var fieldvalue ='<div class="fd-box2" ><span onclick="remove_numerical(this)" class="close" > x </span><input type="hidden" name="name" value="'+ed+'">'+ ed +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
@@ -203,7 +204,7 @@ $("#Add").click(function() {
    value_numeric++;
    numerical_filter_selected.push(ed);
    $(fieldvalue).appendTo($('#demo2'));
-   $("#numerical_filter").val('Search entity').change();
+   $("#id_numerical_filter").val('Search entity').change();
    }
    $(".range").ionRangeSlider({
         type: "double",
@@ -211,6 +212,8 @@ $("#Add").click(function() {
         grid: true,
         grid_num: 4,
         step: 0.001,
+        to_fixed:true,//block the top
+        from_fixed:true//block the from
    });
 
     values = [value_categorical,value_numeric].join()

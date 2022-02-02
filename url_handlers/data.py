@@ -20,9 +20,7 @@ def table_data():
 @data_page.route('/data', methods=['GET'])
 def get_data():
     return render_template('data.html',
-                           block=block,
-                           all_entities=all_entities,
-                           name=measurement_name)
+                           all_entities=all_entities)
 
 
 @data_page.route('/data', methods=['POST'])
@@ -38,41 +36,34 @@ def post_data():
     # get request values
     add = request.form.get('Add')
     clean = request.form.get('clean')
-    update = request.form.get('update')
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
     measurement = request.form.getlist('measurement')
 
-    if update is not None or clean is not None or add is not None:
+    if clean is not None or add is not None:
         if add is not None:
             update_list = list(add.split(","))
             update = add
+            print(update)
         elif clean is not None:
             update = '0,0'
             update_list = list(update.split(","))
-        else:
-            update = '0,0'
-            update_list = list(update.split(","))
-            print(update)
         data.update_filter = update
         start_time = time.time()
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         print("--- %s seconds data ---" % (time.time() - start_time))
         return render_template('data.html',
-                               block=block,
-                               all_entities=all_entities,
-                               val=update,
-                               measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
+                               val=update,
+                               measurement_filter=measurement_filter,
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                filter=categorical_filter_zip,
-                               all_measurement=all_measurement,
-                               name=measurement_name,
+                               df_min_max=df_min_max,
+                               all_entities=all_entities,
                                measurement=measurement,
-                               entities=entities,
-                               df_min_max=df_min_max
+                               entities=entities
                                )
 
     update = data.update_filter

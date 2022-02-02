@@ -48,8 +48,8 @@ def post_statistics():
             print(update)
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
-        return render_template('data.html',
-                               block=block,
+        return render_template('histogram.html',
+                               number_of_bins=number_of_bins,
                                val=update,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
@@ -60,7 +60,10 @@ def post_statistics():
                                all_measurement=all_measurement,
                                name=measurement_name,
                                measurement=measurement,
-                               df_min_max=df_min_max
+                               df_min_max=df_min_max,
+                               numeric_entities=numeric_entities,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
                                )
 
     # handling errors and load data from database

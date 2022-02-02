@@ -50,11 +50,9 @@ def post_plots():
         else:
             update = '0,0'
             update_list = list(update.split(","))
-            print(update)
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
-        return render_template('data.html',
-                               block=block,
+        return render_template('scatter_plot.html',
                                val=update,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
@@ -64,7 +62,14 @@ def post_plots():
                                filter=categorical_filter_zip,
                                all_measurement=all_measurement,
                                name=measurement_name,
-                               df_min_max=df_min_max
+                               df_min_max=df_min_max,
+                               categorical_entities=categorical_entities,
+                               subcategory_entities=subcategory_entities,
+                               add_group_by=add_group_by,
+                               x_axis=x_axis,
+                               y_axis=y_axis,
+                               x_measurement=x_measurement,
+                               y_measurement=y_measurement,
                                )
 
     # handling errors and load data from database

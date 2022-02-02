@@ -68,7 +68,7 @@
                 <br><br>
 
         <label>Numerical:</label>
-        {{ m.entity_form_single(id_single="numerical_filter",name =all_numeric_entities,value=entity,d="") }}
+        {{ m.entity_form_single(id_single="id_numerical_filter",name =all_numeric_entities,value=entity,d="") }}
         <script type="text/javascript">
         var df = {{df_min_max|safe }};
         </script>
@@ -84,8 +84,7 @@
 
         <br>
 
-        <button id="Add"  value="{{ val }}" name="Add" class="btn btn-outline-info" >Add Filter</button>
-        <button id ="update" name='update' value="update" style="display: none;" class="btn btn-outline-info">update</button>
+        <button id="Add" value="{{ val }}" name="Add" class="btn btn-outline-info" >Add Filter</button>
     </div>
 </div>
 
@@ -111,14 +110,14 @@
         <div id="demo" >
             {% if filter %}
             {% for cat,filter in filter %}
-                <div class='categorical_filter' ><button  type="button" style="  display: block; width: 100%" class='btn btn-outline-primary text-left' ><span class='close' onclick="remove_categorical(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter|safe }}</button><br></div>
+                <div class='categorical_filter' ><button  type="button" style='display: block; width: 100%; word-wrap: break-word; white-space: normal;' class='btn btn-outline-primary text-left' ><span class='close' onclick="remove_categorical(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter|safe }}</button><br></div>
             {% endfor %}
             {% endif %}
         </div>
         <div id="demo2">
             {% if numerical_filter %}
             {% for name,value1,value2,min,max in numerical_filter %}
-                <div class="fd-box2"><span onclick='remove_numerical(this)'  class='close' > x </span><input type="hidden" name="name" value='{{ name }}'/>{{ name }}<input type="text" class="range" name="loan_term"  data-min="{{ min }}" data-max="{{ max }}" data-from="{{ value1 }}" data-to="{{ value2 }}"/></div>
+                <div class="fd-box2"><span onclick='remove_numerical(this)'  class='close' > x </span><input type="hidden" name="name" value='{{ name }}'/>{{ name }}<input type="text" class="range"  name="loan_term"  data-min="{{ min }}" data-max="{{ max }}" data-from="{{ value1 }}" data-to="{{ value2 }}" /></div>
             {% endfor %}
             {% endif %}
             </div>

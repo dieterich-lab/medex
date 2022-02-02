@@ -44,7 +44,7 @@ def post_plots():
             print(update)
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
-        return render_template('data.html',
+        return render_template('heatmap.html',
                                val=update,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
@@ -52,7 +52,8 @@ def post_plots():
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                filter=categorical_filter_zip,
-                               df_min_max=df_min_max
+                               df_min_max=df_min_max,
+                               numeric_entities=numeric_entities,
                                )
 
     # handling errors and load data from database

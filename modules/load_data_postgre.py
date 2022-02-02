@@ -196,11 +196,10 @@ old_update = ['0', '0']
 
 
 def filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, measurement, update, r):
-    print(old_update)
-    print(update)
-    print(int(old_update[0]), int(update[0]), int(old_update[1]), int(update[1]))
 
     cur = r.cursor()
+    cur2 = r.cursor()
+
     # case_id filter
     if len(case_id) != 0:
         case_id_filter = """ SELECT "Name_ID" FROM temp_table_case_ids """
@@ -227,146 +226,73 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
                                                     from1[int(update[1]) - 1],
                                                     to1[int(update[1]) - 1], measurement_filter, )
 
-    if update[0] == '0' and update[1] == '0':
+    if int(old_update[0]) == int(update[0]) and int(old_update[1]) == int(update[1]):
+        print('None')
+    elif update[0] == '0' and update[1] == '0':
+        """ If clean """
+        print('clean')
         old_update[0], old_update[1] = update[0], update[1]
 
         sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
         sql_drop_2 = "DROP TABLE IF EXISTS temp_table_ids"
         try:
-            start_time = time.time()
             Thread(target=cur.execute(sql_drop)).start()
-            print("--- %s seconds ---" % (time.time() - start_time))
-            start_time = time.time()
-            Thread(target=cur.execute(sql_drop_2)).start()
-            print("--- %s seconds ---" % (time.time() - start_time))
+            Thread(target=cur2.execute(sql_drop_2)).start()
         except ValueError:
             print('something wrong')
-
-    elif (update[0] == '1' and update[1] == '0') or (update[0] == '0' and update[1] == '1'):
+    elif int(old_update[0]) > int(update[0]) or int(old_update[1]) > int(update[1]):
+        """ If filter removed """
+        print("If filter removed")
         old_update[0], old_update[1] = update[0], update[1]
-        sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
-        sql_drop_2 = "DROP TABLE IF EXISTS temp_table_ids"
+        if update[0] != '0' and update[1] != '0':
+            filter_join = '$$' + '$$,$$'.join(categorical) + '$$,$$' + '$$,$$'.join(numerical_filter_name) + '$$'
+        elif update[0] != '0' and update[1] == '0':
+            filter_join = '$$' + '$$,$$'.join(categorical) + '$$'
+        else:
+            filter_join = '$$' + '$$,$$'.join(numerical_filter_name) + '$$'
+        n = int(update[0]) + int(update[1])
+        print('work')
+
+        query = """ SELECT "Name_ID" FROM temp_table_ids where "Key" in ({}) group by "Name_ID" having count("Name_ID") = {} """.format(filter_join,n)
+        print(query)
+        sql_drop_2 = "DROP TABLE IF EXISTS temp_table_name_ids"
+        create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
+        print(create_table)
+        update_table = """ DELETE FROM temp_table_ids WHERE "Key" not in ({}) """.format(filter_join)
+        try:
+            Thread(target=cur.execute(sql_drop_2)).start()
+            Thread(target=cur.execute(create_table)).start()
+            Thread(target=cur2.execute(update_table)).start()
+            cur.execute(sql_drop_2)
+            cur.execute(create_table)
+        except ValueError:
+            print('something wrong')
+    elif (update[0] == '1' and update[1] == '0') or (update[0] == '0' and update[1] == '1'):
+        """If first filter selected"""
+        print("If first filter selected")
+        old_update[0], old_update[1] = update[0], update[1]
         create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
         create_table_2 = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_ids as ({}) """.format(query2)
 
-
         try:
-            start_time = time.time()
             Thread(target=cur.execute(create_table)).start()
-            print("--- %s seconds ---" % (time.time() - start_time))
-            start_time = time.time()
-            Thread(target=cur.execute(create_table_2)).start()
-            print("--- %s seconds ---" % (time.time() - start_time))
+            Thread(target=cur2.execute(create_table_2)).start()
         except ValueError:
             print('something wrong')
 
     elif int(old_update[0]) < int(update[0]) or int(old_update[1]) < int(update[1]):
+        """ If next filters added """
+        print(" If next filters added ")
         old_update[0], old_update[1] = update[0], update[1]
-        print('works')
+
         update_table = """ DELETE FROM temp_table_name_ids WHERE "Name_ID" NOT IN ({})""".format(query)
         update_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
 
         try:
-            start_time = time.time()
             Thread(target=cur.execute(update_table)).start()
-            print("--- %s seconds ---" % (time.time() - start_time))
-            start_time = time.time()
-            Thread(target=cur.execute(update_table_2)).start()
-            print("--- %s seconds ---" % (time.time() - start_time))
+            Thread(target=cur2.execute(update_table_2)).start()
         except ValueError:
             print('something wrong')
-    else:
-        old_update[0], old_update[1] = update[0], update[1]
-        query = """ SELECT "Name_ID" FROM temp_table_ids where "Key" in () group by "Name_ID" having count("Name_ID") = {} """
-        sql_drop_2 = "DROP TABLE IF EXISTS temp_table_ids"
-        create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
-        update_table = """ DELETE FROM temp_table_ids WHERE "Key" not in ({}) """.format(query)
-        try:
-            start_time = time.time()
-            cur.execute(sql_drop_2)
-            cur.execute(create_table)
-            print("--- %s seconds ---" % (time.time() - start_time))
-        except ValueError:
-            print('something wrong')
-        finally:
-            start_time = time.time()
-            cur.execute(update_table)
-            print("--- %s seconds ---" % (time.time() - start_time))
-
-    # categorical_filter
-    category_filter = ""
-    numerical_filter = ""
-    category_filter_where = ""
-    numerical_filter_where = ""
-
-    for i in range(len(categorical)):
-        cat = categorical_filter[i]
-        cat = cat.replace('<br>',',')
-        cat = "$$"+cat[(cat.find(' is') + 6):].replace(",", "$$,$$")+"$$"
-        category_m = 'a_{}'.format(i)
-        category_m0 = 'a_{}'.format(i-1)
-
-        if i == 0:
-            cat_filter = """Select {0}."Name_ID" FROM examination_categorical as {0}   """.format(category_m)
-
-            cat_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value" in ({2}) and 
-                                    {0}.measurement in ({3}) """.format(category_m, categorical[i], cat,
-                                                                        measurement_filter)
-        else:
-            cat_filter = """inner join examination_categorical as {0} 
-                            on {1}."Name_ID"={0}."Name_ID" """.format(category_m, category_m0)
-
-            cat_filter_where = """ and {3}."Key"=$${0}$$ and {3}."Value" in ({1}) 
-                                    and {3}.measurement in ({2}) """.format(categorical[i], cat, measurement_filter,
-                                                                            category_m)
-        category_filter = category_filter + cat_filter
-        category_filter_where = category_filter_where + cat_filter_where
-    category_filter = category_filter + category_filter_where
-
-    for i in range(len(from1)):
-        numeric_m = 'b_{}'.format(i)
-        numeric_m0 = 'b_{}'.format(i-1)
-        if i == 0:
-            num_filter = """Select {0}."Name_ID" FROM examination_numerical as {0}   """.format(numeric_m)
-
-            num_filter_where = """where {0}."Key"=$${1}$$ and {0}."Value" between $${2}$$ and $${3}$$ and 
-                                    {0}.measurement in ({4}) """.format(numeric_m, numerical_filter_name[i], from1[i],
-                                                                        to1[i], measurement_filter,)
-
-        else:
-            num_filter = """inner join examination_numerical as {0} 
-                            on {1}."Name_ID" = {0}."Name_ID" """.format(numeric_m, numeric_m0)
-
-            num_filter_where = """ and {4}."Key"=$${0}$$ and {4}."Value" between $${1}$$ and $${2}$$ 
-                                    and {4}.measurement in ({3}) """.format(numerical_filter_name[i], from1[i], to1[i],
-                                                                            measurement_filter, numeric_m)
-        numerical_filter = numerical_filter + num_filter
-        numerical_filter_where = numerical_filter_where + num_filter_where
-    numerical_filter = numerical_filter + numerical_filter_where
-
-    # join filters
-    if categorical_filter and case_id and numerical_filter_name:
-        sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" inner join ({2}) AS c
-        on b."Name_ID" = c."Name_ID" """.format(category_filter, numerical_filter, case_id_filter)
-    elif not case_id and categorical_filter and numerical_filter_name:
-        sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" """.format(
-            category_filter, numerical_filter )
-    elif case_id and not categorical_filter and numerical_filter_name:
-        sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" """.format(
-            case_id_filter, numerical_filter)
-    elif case_id and categorical_filter and not numerical_filter_name:
-        sql = """select a."Name_ID" from ({0}) AS a inner join ({1}) AS b on a."Name_ID" = b."Name_ID" """.format(
-            case_id_filter, category_filter)
-    elif not case_id and not categorical_filter and numerical_filter_name:
-        sql = numerical_filter
-    elif not case_id and not numerical_filter_name and categorical_filter:
-        sql = category_filter
-    elif case_id and not categorical_filter and not numerical_filter_name:
-        sql = case_id_filter
-    else:
-        sql = ''
-
-    print(sql)
 
     return None
 
@@ -386,7 +312,7 @@ def get_data(entity, what_table, measurement, date, update, r):
     entity_column = '"'+'" text,"'.join(entity) + '" text'
     measurement = "'" + "','".join(measurement) + "'"
 
-    if update[0] == '0' and update[1] == '0':
+    if update == '0,0':
         filter_en, filter_ec, filter_ed = '', '', ''
     else:
         filter_en = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """
@@ -473,7 +399,7 @@ def get_basic_stats(entity, measurement, date, update, r):
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update[0] == '0' and update[1] == '0':
+    if update == '0,0':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """
@@ -519,7 +445,7 @@ def get_cat_basic_stats(entity, measurement, date, update, r):
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update[0] == '0' and update[1] == '0':
+    if update == '0,0':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on ec."Name_ID"=ttni."Name_ID" """
@@ -555,7 +481,7 @@ def get_date_basic_stats(entity, measurement, date, update, r):
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update[0] == '0' and update[1] == '0':
+    if update == '0,0':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on ed."Name_ID"=ttni."Name_ID" """
@@ -600,7 +526,7 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
     """
 
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
-    if update[0] == '0' and update[1] == '0':
+    if update == '0,0':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on x."Name_ID"=ttni."Name_ID" """
@@ -665,7 +591,7 @@ def get_bar_chart(entity, subcategory, measurement, date, update, r):
 
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update[0] == '0' and update[1] == '0':
+    if update == '0,0':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on ec."Name_ID"=ttni."Name_ID" """
@@ -704,7 +630,7 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, dat
     
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update[0] == '0' and update[1] == '0':
+    if update == '0,0':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """
@@ -745,7 +671,7 @@ def get_heat_map(entity, date, update, r):
 
     case_statement = ""
     crosstab_columns = ""
-    if update[0] == '0' and update[1] == '0':
+    if update == '0,0':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """

@@ -159,7 +159,7 @@ def message_count():
                 name='{}'.format(measurement_name),
                 block=block,
                 case_display=case_display,
-                val='0,0',
+                val=data.update_filter,
                 measurement_filter=session.get('measurement_filter'),
                 filter=categorical_filter,
                 numerical_filter=numerical_filter,

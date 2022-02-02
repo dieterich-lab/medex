@@ -42,8 +42,8 @@ def get_basic_stats():
             print(update)
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
-        return render_template('data.html',
-                               block=block,
+        return render_template('basic_stats/basic_stats.html',
+                               numeric_tab=True,
                                val=update,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
@@ -145,11 +145,7 @@ def get_basic_stats():
         elif not categorical_entities:
             error = "Please select entities"
         else:
-            df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
-                                        measurement_filter, rdb)
-            data.Name_ID_filter = df_filtering
-            filter = data.Name_ID_filter
-            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, date, filter, rdb)
+            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, date, update, rdb)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -204,11 +200,8 @@ def get_basic_stats():
         elif not date_entities:
             error = "Please select entities"
         else:
-            df_filtering = ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1,
-                                        measurement_filter, rdb)
-            data.Name_ID_filter = df_filtering
-            filter = data.Name_ID_filter
-            df, error = ps.get_date_basic_stats(date_entities, measurement_d, date, filter, rdb)
+
+            df, error = ps.get_date_basic_stats(date_entities, measurement_d, date, update, rdb)
 
         if error:
             return render_template('basic_stats/basic_stats.html',

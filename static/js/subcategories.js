@@ -18,7 +18,7 @@ $(function () {
     $("#categorical_filter").select2({
     placeholder:"Search entity"
     });
-    $("#numerical_filter").select2({
+    $("#id_numerical_filter").select2({
     placeholder:"Search entity"
     });
     $("#measurement_filter").select2({
