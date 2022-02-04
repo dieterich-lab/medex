@@ -39,12 +39,15 @@
 
 <div class="card">
     <div class="card-body">
-        <label>Filter selection</label>
-        <br>
+        <label>Filter</label>
 
-        <label>Limit selected patient number to:</label>
-        <input style="width: 30%" id="limit" type="text" class="js-input-from" value="" />
-
+        <div class="form-check mt-4">
+        <input class="form-check-input" type="checkbox" title="For large data, it may take longer to display the results (maximum 1 min, if the query takes longer, the query will be killed)"  value="true" id="limit_yes" name="limit_yes">
+        <label class="form-check-label" for="limit_yes">Limit selected number to: </label>
+        <input style="width: 17%" id="limit" title="For large data, it may take longer to display the results (maximum 1 min, if the query takes longer, the query will be killed)" type="text" class="js-input-from" value="{{ limit }}" />
+        offset:
+        <input style="width: 17%" id="offset" type="text" class="js-input-from" value="{{ offset }}" />
+        </div>
         <br>
         {{ m.entity_form_single_measurement(id_single_measurement="measurement_filter",name =all_measurement,value=entity,select=measurement_filter,d="Filter by visit as on:",block=block) }}
         <label>Categorical:</label>

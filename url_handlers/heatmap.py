@@ -5,6 +5,7 @@ import modules.load_data_postgre as ps
 import plotly.graph_objects as go
 import url_handlers.filtering as filtering
 from webserver import rdb, df_min_max, data
+import time
 
 
 heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
@@ -31,21 +32,19 @@ def post_plots():
     update = request.form.get('update')
     numeric_entities = request.form.getlist('numeric_entities_multiple')
 
-    if update is not None or clean is not None or add is not None:
+    if clean is not None or add is not None:
         if add is not None:
             update_list = list(add.split(","))
             update = add
         elif clean is not None:
             update = '0,0'
             update_list = list(update.split(","))
-        else:
-            update = '0,0'
-            update_list = list(update.split(","))
-            print(update)
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('heatmap.html',
                                val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
@@ -79,10 +78,13 @@ def post_plots():
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                df_min_max=df_min_max,
+                               val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                error=error)
 
     # calculate person correlation
-
+    start_time = time.time()
     numeric_df = df.drop(columns=['Name_ID'])
     new_numeric_entities = numeric_df.columns.tolist()
 
@@ -120,7 +122,7 @@ def post_plots():
     fig.update_layout(height=600,
                       title='Heatmap shows Pearson correlation')
     fig = fig.to_html()
-
+    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('heatmap.html',
                            start_date=start_date,
                            end_date=end_date,
@@ -131,4 +133,7 @@ def post_plots():
                            measurement_filter=measurement_filter,
                            categorical_filter=categorical_names,
                            numerical_filter_name=name,
+                           val=update,
+                           limit=data.limit,
+                           offset=data.offset,
                            plot=fig)

@@ -5,6 +5,7 @@ import url_handlers.filtering as filtering
 from webserver import rdb, all_measurement, measurement_name, Name_ID, block, df_min_max, data
 import pandas as pd
 import textwrap
+import time
 
 barchart_page = Blueprint('barchart', __name__, template_folder='templates')
 
@@ -32,21 +33,19 @@ def post_statistics():
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
-    if update is not None or clean is not None or add is not None:
+    if clean is not None or add is not None:
         if add is not None:
             update_list = list(add.split(","))
             update = add
         elif clean is not None:
             update = '0,0'
             update_list = list(update.split(","))
-        else:
-            update = '0,0'
-            update_list = list(update.split(","))
-            print(update)
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('barchart.html',
                                val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
@@ -86,9 +85,13 @@ def post_statistics():
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                how_to_plot=how_to_plot,
+                               val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                error=error
                                )
 
+    start_time = time.time()
     df['%'] = 100*df['count']/df.groupby('measurement')['count'].transform('sum')
     legend = textwrap.wrap(categorical_entities, width=20)
     # Plot figure and convert to an HTML string representation
@@ -111,7 +114,7 @@ def post_statistics():
                              'x': 0.5,
                              'xanchor': 'center'})
     fig = fig.to_html()
-
+    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('barchart.html',
                            measurement=measurement,
                            measurement_filter=measurement_filter,
@@ -124,5 +127,8 @@ def post_statistics():
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            how_to_plot=how_to_plot,
+                           val=update,
+                           limit=data.limit,
+                           offset=data.offset,
                            plot=fig,
                            )

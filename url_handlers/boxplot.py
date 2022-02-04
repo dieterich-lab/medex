@@ -5,6 +5,7 @@ import url_handlers.filtering as filtering
 from webserver import rdb, df_min_max, data, block, Name_ID, all_measurement, measurement_name
 import pandas as pd
 import textwrap
+import time
 
 boxplot_page = Blueprint('boxplot', __name__,template_folder='templates')
 
@@ -27,27 +28,25 @@ def post_boxplots():
     # get request values
     add = request.form.get('Add')
     clean = request.form.get('clean')
-    update = request.form.get('update')
     measurement = request.form.getlist('measurement')
     numeric_entities = request.form.get('numeric_entities')
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
 
-    if update is not None or clean is not None or add is not None:
+    if clean is not None or add is not None:
         if add is not None:
             update_list = list(add.split(","))
             update = add
         elif clean is not None:
             update = '0,0'
             update_list = list(update.split(","))
-        else:
-            update = '0,0'
-            update_list = list(update.split(","))
-            print(update)
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('boxplot.html',
+                               val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
@@ -93,10 +92,14 @@ def post_boxplots():
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                how_to_plot=how_to_plot,
-                               df_min_max=df_min_max
+                               df_min_max=df_min_max,
+                               val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                )
 
     # Plot figure and convert to an HTML string representation
+    start_time = time.time()
     if block == 'none':
         if how_to_plot == 'linear':
             fig = px.box(df, x=categorical_entities, y=numeric_entities, color=categorical_entities,
@@ -121,7 +124,7 @@ def post_boxplots():
                           'xanchor': 'center', }
                       )
     fig = fig.to_html()
-
+    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('boxplot.html',
                            numeric_entities=numeric_entities,
                            categorical_entities=categorical_entities,
@@ -136,4 +139,7 @@ def post_boxplots():
                            numerical_filter_name=name,
                            how_to_plot=how_to_plot,
                            df_min_max=df_min_max,
+                           val=update,
+                           limit=data.limit,
+                           offset=data.offset,
                            plot=fig)

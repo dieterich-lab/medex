@@ -5,6 +5,7 @@ import url_handlers.filtering as filtering
 from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max, data
 import pandas as pd
 import textwrap
+import time
 
 histogram_page = Blueprint('histogram', __name__, template_folder='templates')
 
@@ -42,15 +43,14 @@ def post_statistics():
         elif clean is not None:
             update = '0,0'
             update_list = list(update.split(","))
-        else:
-            update = '0,0'
-            update_list = list(update.split(","))
-            print(update)
+
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('histogram.html',
                                number_of_bins=number_of_bins,
                                val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
@@ -95,6 +95,9 @@ def post_statistics():
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                df_min_max=df_min_max,
+                               val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                error=error)
 
     # handling errors if number of bins is less then 2
@@ -120,8 +123,11 @@ def post_statistics():
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                df_min_max=df_min_max,
+                               val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                error=error)
-
+    start_time = time.time()
     if block == 'none':
         fig = px.histogram(df, x=numeric_entities, color=categorical_entities,barmode='overlay', nbins=bin_numbers,
                            opacity=0.7, template="plotly_white")
@@ -139,7 +145,7 @@ def post_statistics():
             'x': 0.5,
             'xanchor': 'center'})
     fig = fig.to_html()
-
+    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('histogram.html',
                            number_of_bins=number_of_bins,
                            numeric_entities=numeric_entities,
@@ -154,5 +160,8 @@ def post_statistics():
                            categorical_filter=categorical_names,
                            numerical_filter_name=name,
                            df_min_max=df_min_max,
+                           val=update,
+                           limit=data.limit,
+                           offset=data.offset,
                            plot=fig,
                            )

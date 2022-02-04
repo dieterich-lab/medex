@@ -371,13 +371,18 @@ def get_data(entity, what_table, measurement, date, update, r):
                     ORDER BY "Name_ID", measurement 
                     """.format(entity_final_l, measurement, entity_column, date[0], date[1], filter_en, filter_ec,
                                filter_ed)
+    print(sql)
 
     try:
         if what_table == 'long':
+            start_time = time.time()
             df = pd.read_sql(sql, r)
+            print("--- %s seconds data ---" % (time.time() - start_time))
         else:
+            start_time = time.time()
             df = pd.read_sql(sql2, r)
             df = df.drop(['row_name'], axis=1)
+            print("--- %s seconds data ---" % (time.time() - start_time))
         return df, None
     except ValueError:
         df = pd.DataFrame()
@@ -420,11 +425,14 @@ def get_basic_stats(entity, measurement, date, update, r):
                     GROUP BY "Key","measurement" 
                     ORDER BY "Key","measurement" """.format(
                     entity_final, measurement, date[0], date[1], filter)
+    print(sql)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
         df = df.round(2)
+        print("--- %s seconds data ---" % (time.time() - start_time))
         return df, None
     except ValueError:
         return None, "Problem with load data from database"
@@ -457,10 +465,13 @@ def get_cat_basic_stats(entity, measurement, date, update, r):
                 AND "measurement" IN ({1})
                 AND "Date" BETWEEN '{2}' AND '{3}'
                 GROUP BY "measurement","Key" """.format(entity_final, measurement, date[0], date[1], filter)
+    print(sql)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
+        print("--- %s seconds data ---" % (time.time() - start_time))
         return df, None
     except ValueError:
         return None, "Problem with load data from database"
@@ -493,10 +504,13 @@ def get_date_basic_stats(entity, measurement, date, update, r):
                 AND "measurement" IN ({1})
                 AND "Date" BETWEEN '{2}' AND '{3}'
                 GROUP BY "measurement","Key" """.format(entity_final, measurement, date[0], date[1], filter)
+    print(sql)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
+        print("--- %s seconds data ---" % (time.time() - start_time))
         return df, None
     except ValueError:
         return None, "Problem with load data from database"
@@ -563,7 +577,10 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                             AND y."Date" BETWEEN '{4}' AND '{5}'
                             GROUP BY x."Name_ID"  """.format(x_entity, y_entity, x_measurement,
                                                              y_measurement, date[0], date[1], entity, subcategory,filter)
+
+    print(sql)
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
         x_axis_m = x_entity + '_' + x_measurement
         y_axis_m = y_entity + '_' + y_measurement
@@ -571,6 +588,7 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
             df.columns = ['Name_ID', x_axis_m, y_axis_m]
         else:
             df.columns = ['Name_ID', x_axis_m, y_axis_m,entity]
+        print("--- %s seconds data ---" % (time.time() - start_time))
         if df.empty:
             df, error = df, "One of the selected entities is empty"
             return df, error
@@ -605,9 +623,12 @@ def get_bar_chart(entity, subcategory, measurement, date, update, r):
                         AND "measurement" IN ({2})
                         GROUP BY ec."Name_ID",measurement) AS foo
                 GROUP BY "Value","measurement" """.format(entity, subcategory, measurement, date[0], date[1],filter)
+    print(sql)
 
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        print("--- %s seconds data ---" % (time.time() - start_time))
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"
         else:
@@ -647,8 +668,11 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, dat
                 AND en."Date" BETWEEN '{4}' AND '{5}'
                 GROUP BY en."Name_ID",en."measurement",ec."Value"
                 """.format(entity_num, entity_cat, subcategory, measurement, date[0], date[1],filter)
+    print(sql)
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
+        print("--- %s seconds data ---" % (time.time() - start_time))
         if df.empty or len(df) == 0:
             return df, "The entity {0} or {1} wasn't measured".format(entity_num, entity_cat)
         else:
@@ -688,11 +712,14 @@ def get_heat_map(entity, date, update, r):
                 WHERE "Key" IN ({0}) 
                 AND "Date" BETWEEN '{1}' AND '{2}'
                 GROUP BY en."Name_ID","Key" """.format(entity_fin, date[0], date[1],filter)
+    print(sql)
     try:
+        start_time = time.time()
         df = pd.read_sql(sql, r)
         df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
         new_columns = [tr.fill(x, width=20).replace("\n", "<br>") for x in df.columns.values]
         df.columns = new_columns
+        print("--- %s seconds data ---" % (time.time() - start_time))
         if df.empty or len(df) == 0:
             return df, "The entity wasn't measured"
         else:

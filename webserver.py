@@ -52,8 +52,9 @@ class DataStore():
     csv = None
     csv_new_table = None
 
-    filter = ''
     update_filter = "0,0"
+    limit = '10000'
+    offset = '0'
 
     information = None
 
@@ -160,6 +161,8 @@ def message_count():
                 block=block,
                 case_display=case_display,
                 val=data.update_filter,
+                limit=data.limit,
+                offset=data.offset,
                 measurement_filter=session.get('measurement_filter'),
                 filter=categorical_filter,
                 numerical_filter=numerical_filter,

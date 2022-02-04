@@ -3,6 +3,7 @@ import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
 from webserver import rdb,  all_measurement, data, measurement_name, block, df_min_max
 import pandas as pd
+import time
 
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
 
@@ -28,23 +29,21 @@ def get_basic_stats():
     # get request values
     add = request.form.get('Add')
     clean = request.form.get('clean')
-    update = request.form.get('update')
-    if update is not None or clean is not None or add is not None:
+    if clean is not None or add is not None:
         if add is not None:
             update_list = list(add.split(","))
             update = add
         elif clean is not None:
             update = '0,0'
             update_list = list(update.split(","))
-        else:
-            update = '0,0'
-            update_list = list(update.split(","))
-            print(update)
+
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('basic_stats/basic_stats.html',
                                numeric_tab=True,
                                val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
@@ -58,7 +57,7 @@ def get_basic_stats():
 
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
-
+        start_time = time.time()
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities_multiple')
         measurement1 = request.form.getlist('measurement_numeric')
@@ -91,6 +90,7 @@ def get_basic_stats():
                 df = df.set_index(['Key', 'measurement'])
                 data.csv = df.to_csv()
                 result = df.to_dict()
+        print("--- %s seconds data ---" % (time.time() - start_time))
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
@@ -108,6 +108,9 @@ def get_basic_stats():
                                    filter=categorical_filter_zip,
                                    numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
+                                   val=update,
+                                   limit=data.limit,
+                                   offset=data.offset,
                                    error=error)
         else:
             return render_template('basic_stats/basic_stats.html',
@@ -126,7 +129,10 @@ def get_basic_stats():
                                    numerical_filter_name =name,
                                    filter=categorical_filter_zip,
                                    numerical_filter=numerical_filter,
-                                   df_min_max=df_min_max
+                                   df_min_max=df_min_max,
+                                   val=update,
+                                   limit=data.limit,
+                                   offset=data.offset,
                                    )
 
     if 'basic_stats_c' in request.form:
@@ -163,6 +169,9 @@ def get_basic_stats():
                                    filter=categorical_filter_zip,
                                    numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
+                                   val=update,
+                                   limit=data.limit,
+                                   offset=data.offset,
                                    error=error)
         df = df.set_index(['Key', 'measurement'])
         basic_stats_c = df.to_dict()
@@ -182,6 +191,9 @@ def get_basic_stats():
                                end_date=end_date,
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
+                               val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                df_min_max=df_min_max)
 
     if 'basic_stats_d' in request.form:
@@ -218,6 +230,9 @@ def get_basic_stats():
                                    filter=categorical_filter_zip,
                                    numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
+                                   val=update,
+                                   limit=data.limit,
+                                   offset=data.offset,
                                    error=error)
         df = df.set_index(['Key', 'measurement'])
         basic_stats_d = df.to_dict()
@@ -237,6 +252,9 @@ def get_basic_stats():
                                end_date=end_date,
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
+                               val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                df_min_max=df_min_max)
 
 

@@ -44,7 +44,6 @@ def post_data():
         if add is not None:
             update_list = list(add.split(","))
             update = add
-            print(update)
         elif clean is not None:
             update = '0,0'
             update_list = list(update.split(","))
@@ -56,6 +55,8 @@ def post_data():
                                start_date=start_date,
                                end_date=end_date,
                                val=update,
+                               limit=limit,
+                               offset=offset,
                                measurement_filter=measurement_filter,
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
@@ -94,9 +95,11 @@ def post_data():
                                numerical_filter_name=name,
                                filter=categorical_filter_zip,
                                val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                numerical_filter=numerical_filter,
                                )
-
+    start_time = time.time()
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     data.table_browser_entities = entities
@@ -121,7 +124,7 @@ def post_data():
     data.table_browser_column = column
     data.table_browser_what_table = what_table
     data.table_browser_column2 = dict_of_column
-
+    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('data.html',
                            error=error,
                            block=block,
@@ -140,6 +143,8 @@ def post_data():
                            numerical_filter_name=name,
                            filter=categorical_filter_zip,
                            val=update,
+                           limit=data.limit,
+                           offset=data.offset,
                            numerical_filter=numerical_filter,
                            )
 

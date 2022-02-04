@@ -7,6 +7,8 @@ import pandas as pd
 import textwrap
 import plotly.graph_objects as go
 import numpy as np
+import time
+
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
@@ -28,7 +30,6 @@ def post_plots():
     # get request values
     add = request.form.get('Add')
     clean = request.form.get('clean')
-    update = request.form.get('update')
     x_measurement = request.form.get('x_measurement')
     y_measurement = request.form.get('y_measurement')
     add_group_by = request.form.get('add_group_by') is not None
@@ -40,20 +41,19 @@ def post_plots():
     log_x = request.form.get('log_x')
     log_y = request.form.get('log_y')
 
-    if update is not None or clean is not None or add is not None:
+    if clean is not None or add is not None:
         if add is not None:
             update_list = list(add.split(","))
             update = add
         elif clean is not None:
             update = '0,0'
             update_list = list(update.split(","))
-        else:
-            update = '0,0'
-            update_list = list(update.split(","))
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('scatter_plot.html',
                                val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
@@ -88,6 +88,7 @@ def post_plots():
     elif not subcategory_entities and add_group_by:
         error = "Please select subcategory"
     else:
+
         df, error = ps.get_scatter_plot(add_group_by, categorical_entities, subcategory_entities, x_axis, y_axis,
                                         x_measurement, y_measurement, date, update, rdb)
 
@@ -108,69 +109,52 @@ def post_plots():
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                df_min_max=df_min_max,
+                               val=update,
+                               limit=data.limit,
+                               offset=data.offset,
                                error=error,
                                )
 
     # Plot figure and convert to an HTML string representation
+    start_time = time.time()
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
     x_axis_m = x_axis + '_' + x_measurement
     y_axis_m = y_axis + '_' + y_measurement
-    fig = {}
+
+    fig = go.Figure()
     if add_group_by:
-        df[categorical_entities] = df[categorical_entities].str.wrap(30)
-        df[categorical_entities] = df[categorical_entities].replace(to_replace=[r"\\n", "\n"],
-                                                                    value=["<br>", "<br>"], regex=True)
-
-    if how_to_plot == 'linear':
-        if add_group_by :
-            df['hover_mouse'] = df[Name_ID]
-            fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities,
-                             hover_name='hover_mouse', template="plotly_white",trendline="ols", render_mode='webgl')
-        else:
-            df['hover_mouse'] = df[Name_ID]
-            fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name ='hover_mouse', template="plotly_white",
-                             trendline="ols", render_mode='webgl')
-
+        for i in subcategory_entities:
+            dfu = df[df[categorical_entities] == i]
+            x = dfu[x_axis_m]
+            y = dfu[y_axis_m]
+            fig.add_trace(
+                go.Scattergl(
+                    x=x,
+                    y=y,
+                    mode='markers',
+                    name=i,
+                )
+            )
     else:
-        if log_x == 'log_x' and log_y == 'log_y':
-            if add_group_by:
-                df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities,
-                                 hover_name='hover_mouse', template="plotly_white", trendline="ols", log_x=True,
-                                 log_y=True, render_mode='webgl')
-
-            else:
-                df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name='hover_mouse', template="plotly_white",
-                                 trendline="ols", log_x=True, log_y=True, render_mode='webgl')
-        elif log_x == 'log_x':
-            if add_group_by:
-                df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities, hover_name='hover_mouse',
-                                 template="plotly_white", trendline="ols", log_x=True, render_mode='webgl')
-
-            else:
-                df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name='hover_mouse', template="plotly_white",
-                                 trendline="ols", log_x=True, render_mode='webgl')
-        elif log_y == 'log_y':
-            if add_group_by:
-                df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, color=categorical_entities, hover_name='hover_mouse',
-                                 template="plotly_white", trendline="ols",  log_y=True, render_mode='webgl')
-
-            else:
-                df['hover_mouse'] = df[Name_ID]
-                fig = px.scatter(df, x=x_axis_m, y=y_axis_m, hover_name='hover_mouse', template="plotly_white",
-                                 trendline="ols", log_y=True, render_mode='webgl')
-
+        fig.add_trace(
+            go.Scattergl(
+                x=df[x_axis_m],
+                y =df[y_axis_m],
+                mode='markers',
+                marker=dict(
+                    line=dict(
+                        width=1,
+                        color='DarkSlateGrey')
+                )
+            )
+        )
     if block == 'none':
         fig.update_layout(
             font=dict(size=16),
             title={
                 'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis,
                 'x': 0.5,
-                'xanchor': 'center',})
+                'xanchor': 'center', })
     else:
         split_text = textwrap.wrap("Compare values of <b>" + x_axis + "</b> : " + measurement_name + " <b>" +
                                    x_measurement + "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" +
@@ -180,6 +164,7 @@ def post_plots():
         legend = textwrap.wrap(categorical_entities, width=20)
 
         fig.update_layout(
+            template="plotly_white",
             legend_title='<br>'.join(legend),
             font=dict(size=16),
             xaxis_title='<br>'.join(xaxis),
@@ -187,10 +172,14 @@ def post_plots():
             title={
                 'text': '<br>'.join(split_text),
                 'x': 0.5,
-                'xanchor': 'center',})
+                'xanchor': 'center', })
+    if log_x == 'log_x':
+        fig.update_xaxes(type="log")
+    if log_y == 'log_y':
+        fig.update_yaxes(type="log")
 
     fig = fig.to_html()
-
+    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('scatter_plot.html',
                            subcategory_entities=subcategory_entities,
                            categorical_entities=categorical_entities,
@@ -210,6 +199,9 @@ def post_plots():
                            filter=categorical_filter_zip,
                            numerical_filter=numerical_filter,
                            df_min_max=df_min_max,
+                           val=update,
+                           limit=data.limit,
+                           offset=data.offset,
                            plot=fig
                            )
 
