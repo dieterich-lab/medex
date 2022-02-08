@@ -42,7 +42,7 @@
         <label>Filter</label>
 
         <div class="form-check mt-4">
-        <input class="form-check-input" type="checkbox" title="For large data, it may take longer to display the results (maximum 1 min, if the query takes longer, the query will be killed)"  value="true" id="limit_yes" name="limit_yes">
+        <input class="form-check-input" type="checkbox" title="For large data, it may take longer to display the results (maximum 1 min, if the query takes longer, the query will be killed)"  value="true" id="limit_yes" name="limit_yes" checked="{% if basic_stats and 'count' not in basic_stats%}false{% else %}true{% endif %}" >
         <label class="form-check-label" for="limit_yes">Limit selected number to: </label>
         <input style="width: 17%" id="limit" title="For large data, it may take longer to display the results (maximum 1 min, if the query takes longer, the query will be killed)" type="text" class="js-input-from" value="{{ limit }}" />
         offset:

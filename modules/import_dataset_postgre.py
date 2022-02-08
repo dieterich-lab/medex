@@ -191,6 +191,22 @@ def alter_table(rdb):
     sql13 = """CREATE INDEX IF NOT EXISTS "ID_index_patient" ON Patient ("Name_ID")"""
     sql14 = """CREATE EXTENSION IF NOT EXISTS tablefunc"""
 
+    # Vacuum analyze
+    sql15 = """ VACUUM ANALYZE"""
+
+    # CLUSTER tables
+    sql16 = """ CLUSTER examination_date USING "Key_index_date" """
+    sql17 = """ CLUSTER examination_numerical USING "Key_index_numerical" """
+    sql18 = """ CLUSTER examination_categorical USING "Key_index_categorical" """
+
+    # Analyze
+    sql19 = """ ANALYZE examination_numerical"""
+    sql20 = """ ANALYZE examination_categorical"""
+    sql21 = """ ANALYZE examination_date"""
+
+    sql22 = """ ALTER SYSTEM SET work_mem='2GB' """
+    sql23 = """ ALTER SYSTEM SET max_parallel_workers_per_gather=7 """
+
     try:
         cur = rdb.cursor()
         cur.execute(sql_remove_null)
@@ -215,13 +231,25 @@ def alter_table(rdb):
         cur.execute(sql12)
         cur.execute(sql13)
         cur.execute(sql14)
+        cur.execute(sql15)
+        cur.execute(sql16)
+        cur.execute(sql17)
+        cur.execute(sql18)
+        cur.execute(sql19)
+        cur.execute(sql20)
+        cur.execute(sql21)
+        cur.execute(sql22)
+        cur.execute(sql23)
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")
 
 
+def create_index(rdb):
+    return None
 
-
+def cluster_table(rdb):
+    return None
 
 
 

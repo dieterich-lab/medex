@@ -57,7 +57,7 @@ def get_basic_stats():
 
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
-        start_time = time.time()
+
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities_multiple')
         measurement1 = request.form.getlist('measurement_numeric')
@@ -73,7 +73,7 @@ def get_basic_stats():
         elif numeric_entities:
             df, error = ps.get_basic_stats(numeric_entities, measurement1, date, update, rdb)
 
-
+            start_time = time.time()
             # calculation basic stats
             if not 'count NaN' in request.form: df = df.drop(['count NaN'], axis=1)
             if not 'count' in request.form: df = df.drop(['count'], axis=1)
@@ -90,7 +90,7 @@ def get_basic_stats():
                 df = df.set_index(['Key', 'measurement'])
                 data.csv = df.to_csv()
                 result = df.to_dict()
-        print("--- %s seconds data ---" % (time.time() - start_time))
+            print("--- %s seconds data ---" % (time.time() - start_time))
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,

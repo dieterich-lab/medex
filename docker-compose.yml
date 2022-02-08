@@ -24,6 +24,7 @@ services:
   database:
     image: postgres
     container_name: database
+    shm_size: 1g
     ports:
       - "127.0.0.1:5428:5432"
     environment:
