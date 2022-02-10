@@ -26,6 +26,13 @@ def post_plots():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
+    limit_selected = request.form.get('limit_yes')
+    print('limit_s',limit_selected)
+    data.limit_selected = limit_selected
+    limit = request.form.get('limit')
+    offset = request.form.get('offset')
+    data.limit = limit
+    data.offset = offset
 
     # get request values
     add = request.form.get('Add')
@@ -52,6 +59,7 @@ def post_plots():
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('scatter_plot.html',
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                measurement_filter=measurement_filter,
@@ -90,7 +98,7 @@ def post_plots():
     else:
 
         df, error = ps.get_scatter_plot(add_group_by, categorical_entities, subcategory_entities, x_axis, y_axis,
-                                        x_measurement, y_measurement, date, update, rdb)
+                                        x_measurement, y_measurement, date, limit_selected, limit, offset, update, rdb)
 
     if error:
         return render_template('scatter_plot.html',
@@ -110,6 +118,7 @@ def post_plots():
                                numerical_filter_name=name,
                                df_min_max=df_min_max,
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                error=error,
@@ -200,6 +209,7 @@ def post_plots():
                            numerical_filter=numerical_filter,
                            df_min_max=df_min_max,
                            val=update,
+                           limit_yes=data.limit_selected,
                            limit=data.limit,
                            offset=data.offset,
                            plot=fig

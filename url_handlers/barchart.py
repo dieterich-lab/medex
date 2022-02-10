@@ -24,6 +24,12 @@ def post_statistics():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
+    limit_selected = request.form.get('limit_yes')
+    data.limit_selected = limit_selected
+    limit = request.form.get('limit')
+    offset = request.form.get('offset')
+    data.limit = limit
+    data.offset = offset
 
     # get request values
     add = request.form.get('Add')
@@ -44,6 +50,7 @@ def post_statistics():
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('barchart.html',
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                measurement_filter=measurement_filter,
@@ -71,7 +78,7 @@ def post_statistics():
     elif not subcategory_entities:
         error = "Please select subcategory"
     else:
-        df, error = ps.get_bar_chart(categorical_entities, subcategory_entities, measurement, date, update, rdb)
+        df, error = ps.get_bar_chart(categorical_entities, subcategory_entities, measurement, date, limit_selected, limit, offset, update, rdb)
     if error:
         return render_template('barchart.html',
                                start_date=start_date,
@@ -86,6 +93,7 @@ def post_statistics():
                                subcategory_entities=subcategory_entities,
                                how_to_plot=how_to_plot,
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                error=error
@@ -128,6 +136,7 @@ def post_statistics():
                            subcategory_entities=subcategory_entities,
                            how_to_plot=how_to_plot,
                            val=update,
+                           limit_yes=data.limit_selected,
                            limit=data.limit,
                            offset=data.offset,
                            plot=fig,

@@ -25,6 +25,12 @@ def get_basic_stats():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
+    limit_selected = request.form.get('limit_yes')
+    data.limit_selected = limit_selected
+    limit = request.form.get('limit')
+    offset = request.form.get('offset')
+    data.limit = limit
+    data.offset = offset
 
     # get request values
     add = request.form.get('Add')
@@ -42,6 +48,7 @@ def get_basic_stats():
         return render_template('basic_stats/basic_stats.html',
                                numeric_tab=True,
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                measurement_filter=measurement_filter,
@@ -71,7 +78,7 @@ def get_basic_stats():
         elif not numeric_entities :
             error = "Please select numeric entities"
         elif numeric_entities:
-            df, error = ps.get_basic_stats(numeric_entities, measurement1, date, update, rdb)
+            df, error = ps.get_basic_stats(numeric_entities, measurement1, date, limit_selected, limit, offset, update, rdb)
 
             start_time = time.time()
             # calculation basic stats
@@ -109,6 +116,7 @@ def get_basic_stats():
                                    numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
                                    val=update,
+                                   limit_yes=data.limit_selected,
                                    limit=data.limit,
                                    offset=data.offset,
                                    error=error)
@@ -131,6 +139,7 @@ def get_basic_stats():
                                    numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
                                    val=update,
+                                   limit_yes=data.limit_selected,
                                    limit=data.limit,
                                    offset=data.offset,
                                    )
@@ -151,7 +160,7 @@ def get_basic_stats():
         elif not categorical_entities:
             error = "Please select entities"
         else:
-            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, date, update, rdb)
+            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, date, limit_selected, limit, offset, update, rdb)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -170,6 +179,7 @@ def get_basic_stats():
                                    numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
                                    val=update,
+                                   limit_yes=data.limit_selected,
                                    limit=data.limit,
                                    offset=data.offset,
                                    error=error)
@@ -192,6 +202,7 @@ def get_basic_stats():
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                df_min_max=df_min_max)
@@ -213,7 +224,7 @@ def get_basic_stats():
             error = "Please select entities"
         else:
 
-            df, error = ps.get_date_basic_stats(date_entities, measurement_d, date, update, rdb)
+            df, error = ps.get_date_basic_stats(date_entities, measurement_d, date, limit_selected, limit, offset, update, rdb)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -231,6 +242,7 @@ def get_basic_stats():
                                    numerical_filter=numerical_filter,
                                    df_min_max=df_min_max,
                                    val=update,
+                                   limit_yes=data.limit_selected,
                                    limit=data.limit,
                                    offset=data.offset,
                                    error=error)
@@ -253,6 +265,7 @@ def get_basic_stats():
                                filter=categorical_filter_zip,
                                numerical_filter=numerical_filter,
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                df_min_max=df_min_max)

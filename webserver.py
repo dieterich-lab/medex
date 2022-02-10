@@ -55,6 +55,7 @@ class DataStore():
     update_filter = "0,0"
     limit = '10000'
     offset = '0'
+    limit_selected = True
 
     information = None
 
@@ -92,6 +93,9 @@ all_entities = ps.get_entities(rdb)
 size_numerical_table, all_numeric_entities, df_min_max = ps.get_numeric_entities(rdb)
 size_timestamp_table, all_timestamp_entities = ps.get_timestamp_entities(rdb)
 size_categorical_table, all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
+list_all_numeric_entities = all_numeric_entities['Key'].tolist()
+list_all_categorical_entities = all_categorical_entities['Key'].tolist()
+list_all_date_entities = all_timestamp_entities['Key'].tolist()
 all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
 all_categorical_entities = all_categorical_entities.to_dict('index')
@@ -161,6 +165,7 @@ def message_count():
                 block=block,
                 case_display=case_display,
                 val=data.update_filter,
+                limit_yes=data.limit_selected,
                 limit=data.limit,
                 offset=data.offset,
                 measurement_filter=session.get('measurement_filter'),

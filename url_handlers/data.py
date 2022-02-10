@@ -4,7 +4,7 @@ import pandas as pd
 import time
 import url_handlers.filtering as filtering
 from webserver import rdb, data, Name_ID, block, table_builder, all_entities, df_min_max, measurement_name,\
-    all_measurement
+    all_measurement, list_all_categorical_entities, list_all_date_entities, list_all_numeric_entities
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -32,6 +32,13 @@ def post_data():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
+    limit_selected = request.form.get('limit_yes')
+    data.limit_selected = limit_selected
+    limit = request.form.get('limit')
+    offset = request.form.get('offset')
+    data.limit = limit
+    data.offset = offset
+
 
     # get request values
     add = request.form.get('Add')
@@ -39,6 +46,12 @@ def post_data():
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
     measurement = request.form.getlist('measurement')
+    start_time = time.time()
+    categorical_entities = list(set(entities)-set(list_all_numeric_entities)-set(list_all_date_entities))
+    numerical_entities = list(set(entities) - set(list_all_categorical_entities) - set(list_all_date_entities))
+    date_entities = list(set(entities) - set(list_all_numeric_entities) - set(list_all_categorical_entities))
+    print(categorical_entities)
+    print("--- %s seconds data ---" % (time.time() - start_time))
 
     if clean is not None or add is not None:
         if add is not None:
@@ -55,8 +68,9 @@ def post_data():
                                start_date=start_date,
                                end_date=end_date,
                                val=update,
-                               limit=limit,
-                               offset=offset,
+                               limit_yes=data.limit_selected,
+                               limit=data.limit,
+                               offset=data.offset,
                                measurement_filter=measurement_filter,
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
@@ -76,7 +90,7 @@ def post_data():
         error = "Please select entities"
     else:
         data.information = entities, what_table, measurement, date, rdb
-        df, error = ps.get_data(entities, what_table, measurement, date, update, rdb)
+        df, error = ps.get_data(entities, categorical_entities, numerical_entities, date_entities, what_table, measurement, date, limit_selected, limit, offset, update, rdb)
 
     if error:
         return render_template('data.html',
@@ -95,6 +109,7 @@ def post_data():
                                numerical_filter_name=name,
                                filter=categorical_filter_zip,
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                numerical_filter=numerical_filter,
@@ -143,6 +158,7 @@ def post_data():
                            numerical_filter_name=name,
                            filter=categorical_filter_zip,
                            val=update,
+                           limit_yes=data.limit_selected,
                            limit=data.limit,
                            offset=data.offset,
                            numerical_filter=numerical_filter,

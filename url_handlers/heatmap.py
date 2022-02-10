@@ -25,6 +25,12 @@ def post_plots():
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
+    limit_selected = request.form.get('limit_yes')
+    data.limit_selected = limit_selected
+    limit = request.form.get('limit')
+    offset = request.form.get('offset')
+    data.limit = limit
+    data.offset = offset
 
     # get request values
     add = request.form.get('Add')
@@ -43,6 +49,7 @@ def post_plots():
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('heatmap.html',
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                measurement_filter=measurement_filter,
@@ -58,7 +65,7 @@ def post_plots():
     # handling errors and load data from database
     update = data.update_filter
     if len(numeric_entities) > 1:
-        df, error = ps.get_heat_map(numeric_entities, date, update, rdb)
+        df, error = ps.get_heat_map(numeric_entities, date, limit_selected, limit, offset, update, rdb)
         if not error:
             if len(df.index) == 0:
                 error = "This two entities don't have common values"
@@ -79,6 +86,7 @@ def post_plots():
                                numerical_filter_name=name,
                                df_min_max=df_min_max,
                                val=update,
+                               limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
                                error=error)
@@ -134,6 +142,7 @@ def post_plots():
                            categorical_filter=categorical_names,
                            numerical_filter_name=name,
                            val=update,
+                           limit_yes=data.limit_selected,
                            limit=data.limit,
                            offset=data.offset,
                            plot=fig)
