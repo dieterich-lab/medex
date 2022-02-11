@@ -327,11 +327,11 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
         group_by_d = """ GROUP BY ed."Name_ID", "measurement", "Date", "Key" """
 
     if limit_selected:
-        sql_n = ""
-        sql_c = ""
-        sql_d = ""
+        sql_n, sql_c, sql_d = "", "", ""
+        join_n, join_c, join_d = "", "", ""
+        select = """ SELECT "Name_ID",measurement,"Date" """
         if numerical_entities:
-            for e in numerical_entities:
+            for i, e in enumerate(numerical_entities):
                 sql_part_n = """(SELECT en."Name_ID","measurement","Date","Key",{6}
                                FROM examination_numerical as en
                                {7}
@@ -341,11 +341,22 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                                {8} 
                                LIMIT {3} 
                                OFFSET {4}) UNION """.format(e, date[0], date[1], limit, offset, measurement,value, filter_en,group_by_n)
-
                 sql_n = sql_n + sql_part_n
+                if what_table != 'long':
+                    tab = 'a_{}'.format(i)
+                    cte_table_n = """{0} as (SELECT "Name_ID",measurement,"Date","Value"::text "{1}" FROM examination_numerical
+                                        WHERE "Key" = $${1}$$
+                                        AND {0}.measurement IN ({2})
+                                        AND {0}."Date" BETWEEN '{3}' AND '{4}'
+                                        GROUP BY "Name_ID","Key","measurement"
+                                        LIMIT {5} OFFSET {6})""".format(tab, e, measurement, date[0], date[1],limit, offset)
+                    join = """ 
+                                FULL OUTER JOIN {0} 
+                                USING("Name_ID",measurement,"Date") """.format(tab)
+                    join_n = join_n + join
 
         if categorical_entities:
-            for e in categorical_entities:
+            for i, e in enumerate(categorical_entities):
                 sql_part_c = """(SELECT ec."Name_ID","measurement","Date","Key",{6}
                                FROM examination_categorical as ec
                                {7}
@@ -355,10 +366,22 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                                {8} 
                                LIMIT {3} 
                                OFFSET {4}) UNION """.format(e, date[0], date[1], limit, offset, measurement,value, filter_ec,group_by_c)
-
                 sql_c = sql_c + sql_part_c
+                if what_table != 'long':
+                    tab = 'a_{}'.format(len(numerical_entities) + i)
+                    value = """,{0}."Value"::text "{1}" """.format(tab, e)
+                    value_c = value_c + value
+                    join = """ 
+                                FULL OUTER JOIN examination_categorical as {0} 
+                                USING("Name_ID",measurement) """.format(tab, 'a_{}'.format(len(numerical_entities) + i-1))
+                    join_c = join_c + join
+                    where = """AND {0}."Key" = $${1}$$ 
+                       AND {0}.measurement IN ({2})
+                       AND {0}."Date" BETWEEN '{3}' AND '{4}' """.format(tab,e, measurement, date[0], date[1])
+                    where_c = where_c + where
+
         if date_entities:
-            for e in date_entities:
+            for i,e in enumerate(date_entities):
                 sql_part_d = """(SELECT ed."Name_ID","measurement","Date","Key",{6}
                                FROM examination_date as ed 
                                {7}
@@ -369,8 +392,25 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                                LIMIT {3} 
                                OFFSET {4}) UNION """.format(e, date[0], date[1], limit, offset, measurement,value, filter_ed,group_by_d)
                 sql_d = sql_d + sql_part_d
+                if what_table != 'long':
+                    tab = 'a_{}'.format(len(numerical_entities) + len(categorical_entities) + i)
+                    value = """,{0}."Value"::text "{1}" """.format(tab,e)
+                    value_d = value_d + value
+                    join = """
+                                FULL OUTER JOIN examination_numerical as {0} 
+                                USING("Name_ID",measurement) """.format(tab, 'a_{}'.format(len(numerical_entities) + len(categorical_entities) + i-1))
+                    join_c = join_c + join
+                    where = """AND {0}."Key" = $${1}$$ 
+                       AND {0}.measurement IN ({2})
+                       AND {0}."Date" BETWEEN '{3}' AND '{4}' """.format(tab, e, measurement, date[0], date[1])
+                    where_d = where_d + where
         sql = sql_n + sql_c + sql_d
         sql = sql[:-6]
+        sql2 = select + value_n + value_c + value_d + " FROM examination_numerical a_0" + join_n + join_c + join_d + \
+                "WHERE " + where_n + where_c + where_d
+        start = sql2.find('FULL')
+        start_where = sql2.find('WHERE')
+        sql2 = sql2[0:start] + sql2[start+110:start_where+6] + sql2[start_where+10::]
 
     else:
         sql = """(SELECT en."Name_ID","measurement","Date","Key",{7}
@@ -399,19 +439,17 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                         """.format(entity_final, measurement, date[0], date[1], filter_en, filter_ec, filter_ed, value,group_by_n,group_by_c,group_by_d)
 
 
-
-    """SELECT """
     if what_table != 'long':
-        sql2 = """SELECT * FROM crosstab('WITH table_browser as ({2}) 
-        SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,* 
-                                                        FROM table_browser ORDER BY row_name',
-                                                        'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) ORDER BY "order"') 
-                                                        AS ct (row_name text,"Name_ID" text,"measurement" text,"Date" text,{1}) 
-                                ORDER BY "Name_ID", measurement 
-                        """.format(entity_final, entity_column, sql)
+        #sql2 = """SELECT * FROM crosstab('WITH table_browser as ({2})
+        #SELECT dense_rank() OVER (ORDER BY "measurement","Name_ID")::text AS row_name,*
+        #                                                FROM table_browser ORDER BY row_name',
+        #                                                'SELECT "Key" FROM name_type WHERE "Key" IN ({0}) ORDER BY "order"')
+        #                                                AS ct (row_name text,"Name_ID" text,"measurement" text,"Date" text,{1})
+        #                        ORDER BY "Name_ID", measurement
+        #                """.format(entity_final, entity_column, sql)
         print(sql2)
 
-    print(sql)
+    #print(sql)
     try:
         if what_table == 'long':
             start_time = time.time()
@@ -420,7 +458,7 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
         else:
             start_time = time.time()
             df = pd.read_sql(sql2, r)
-            df = df.drop(['row_name'], axis=1)
+            #df = df.drop(['row_name'], axis=1)
             print("--- %s seconds data ---" % (time.time() - start_time))
         return df, None
     except ValueError:
