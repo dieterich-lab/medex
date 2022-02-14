@@ -344,12 +344,15 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                 sql_n = sql_n + sql_part_n
                 if what_table != 'long':
                     tab = 'a_{}'.format(i)
-                    cte_table_n = """{0} as (SELECT "Name_ID",measurement,"Date","Value"::text "{1}" FROM examination_numerical
+                    cte_table = """,
+                                        {0} as (SELECT "Name_ID",measurement,"Date","Value"::text "{1}" 
+                                        FROM examination_numerical
                                         WHERE "Key" = $${1}$$
                                         AND {0}.measurement IN ({2})
                                         AND {0}."Date" BETWEEN '{3}' AND '{4}'
                                         GROUP BY "Name_ID","Key","measurement"
                                         LIMIT {5} OFFSET {6})""".format(tab, e, measurement, date[0], date[1],limit, offset)
+                    cte_table_n = cte_table_n + cte_table
                     join = """ 
                                 FULL OUTER JOIN {0} 
                                 USING("Name_ID",measurement,"Date") """.format(tab)
@@ -369,16 +372,19 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                 sql_c = sql_c + sql_part_c
                 if what_table != 'long':
                     tab = 'a_{}'.format(len(numerical_entities) + i)
-                    value = """,{0}."Value"::text "{1}" """.format(tab, e)
-                    value_c = value_c + value
+                    cte_table = """,
+                                    {0} as (SELECT "Name_ID",measurement,"Date","Value"::text "{1}" 
+                                    FROM examination_categorical
+                                        WHERE "Key" = $${1}$$
+                                        AND {0}.measurement IN ({2})
+                                        AND {0}."Date" BETWEEN '{3}' AND '{4}'
+                                        GROUP BY "Name_ID","Key","measurement"
+                                        LIMIT {5} OFFSET {6})""".format(tab, e, measurement, date[0], date[1],limit, offset)
                     join = """ 
-                                FULL OUTER JOIN examination_categorical as {0} 
-                                USING("Name_ID",measurement) """.format(tab, 'a_{}'.format(len(numerical_entities) + i-1))
+                                FULL OUTER JOIN {0} 
+                                USING("Name_ID",measurement,"Date") """.format(tab)
                     join_c = join_c + join
-                    where = """AND {0}."Key" = $${1}$$ 
-                       AND {0}.measurement IN ({2})
-                       AND {0}."Date" BETWEEN '{3}' AND '{4}' """.format(tab,e, measurement, date[0], date[1])
-                    where_c = where_c + where
+
 
         if date_entities:
             for i,e in enumerate(date_entities):
@@ -394,8 +400,12 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                 sql_d = sql_d + sql_part_d
                 if what_table != 'long':
                     tab = 'a_{}'.format(len(numerical_entities) + len(categorical_entities) + i)
-                    value = """,{0}."Value"::text "{1}" """.format(tab,e)
-                    value_d = value_d + value
+                    cte_table_d = """{0} as (SELECT "Name_ID",measurement,"Date","Value"::text "{1}" FROM examination_numerical
+                                        WHERE "Key" = $${1}$$
+                                        AND {0}.measurement IN ({2})
+                                        AND {0}."Date" BETWEEN '{3}' AND '{4}'
+                                        GROUP BY "Name_ID","Key","measurement"
+                                        LIMIT {5} OFFSET {6})""".format(tab, e, measurement, date[0], date[1],limit, offset)
                     join = """
                                 FULL OUTER JOIN examination_numerical as {0} 
                                 USING("Name_ID",measurement) """.format(tab, 'a_{}'.format(len(numerical_entities) + len(categorical_entities) + i-1))
@@ -406,7 +416,7 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                     where_d = where_d + where
         sql = sql_n + sql_c + sql_d
         sql = sql[:-6]
-        sql2 = select + value_n + value_c + value_d + " FROM examination_numerical a_0" + join_n + join_c + join_d + \
+        sql2 = "WITH" + select + value_n + value_c + value_d + " FROM examination_numerical a_0" + join_n + join_c + join_d + \
                 "WHERE " + where_n + where_c + where_d
         start = sql2.find('FULL')
         start_where = sql2.find('WHERE')
