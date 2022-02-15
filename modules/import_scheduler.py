@@ -56,6 +56,7 @@ class ImportSettings():
             return False
         return True
 
+
 def start_import(rdb):
     """ Import data from entities and dataset files"""
 
@@ -84,6 +85,10 @@ def start_import(rdb):
         idp.load_data(entities, dataset, header, rdb)
         print("Start alter table ")
         idp.alter_table(rdb)
+        print("Start create_index ")
+        idp.create_index(rdb)
+        print("Start cluster_table ")
+        idp.cluster_table(rdb)
 
         settings.update(dataset_path=dataset, entities_path=entities)
         settings.save()
