@@ -414,19 +414,19 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                             FULL OUTER JOIN {0} 
                             USING("Name_ID","Date",measurement) """.format(tab, 'a_{}'.format(len(numerical_entities) + len(categorical_entities) + i-1))
                     join_c = join_c + join
-            if what_table != 'long':
-                sql2_part1 = "WITH" + cte_table_n + cte_table_c + cte_table_d + """ SELECT "Name_ID","Date",measurement, """ + \
+        if what_table != 'long':
+            sql2_part1 = "WITH" + cte_table_n + cte_table_c + cte_table_d + """ SELECT "Name_ID","Date",measurement, """ + \
                        entity_column_n + entity_column_c + entity_column_d
-                sql2_part2 = " From a_0" + join_n + join_c + join_d
-                sql2 = sql2_part1[:-1]+sql2_part2
-                start = sql2.find(',')
-                start_full = sql2.find('FULL')
-                sql2 = sql2[0:start] + sql2[start+1:start_full] + sql2[start_full+100::]
-                print(sql2)
-            else:
-                sql = sql_n + sql_c + sql_d
-                sql = sql[:-6]
-                print(sql)
+            sql2_part2 = " From a_0" + join_n + join_c + join_d
+            sql2 = sql2_part1[:-1]+sql2_part2
+            start = sql2.find(',')
+            start_full = sql2.find('FULL')
+            sql2 = sql2[0:start] + sql2[start+1:start_full] + sql2[start_full+100::]
+            print(sql2)
+        else:
+            sql = sql_n + sql_c + sql_d
+            sql = sql[:-6]
+            print(sql)
 
     try:
         if what_table == 'long':
@@ -561,7 +561,7 @@ def get_cat_basic_stats(entity, measurement, date, limit_selected, limit, offset
                     WHERE "Key" = $${0}$$ 
                     AND "measurement" IN ({1}) 
                     AND "Date" BETWEEN '{2}' AND '{3}'
-                    GROUP BY "Name_ID","Key","measurement"
+                    GROUP BY ec."Name_ID","Key","measurement"
                     LIMIT {5} OFFSET {6})
                     UNION """.format(e, measurement, date[0], date[1], filter, limit, offset)
             sql_part = sql_part + s
@@ -616,13 +616,13 @@ def get_date_basic_stats(entity, measurement, date, limit_selected, limit, offse
     if limit_selected:
         sql_part = ""
         for e in entity:
-            s = """ (SELECT "Key","measurement",ec."Name_ID"
+            s = """ (SELECT "Key","measurement",ed."Name_ID"
                     FROM examination_date as ed 
                     {4}
                     WHERE "Key" = $${0}$$ 
                     AND "measurement" IN ({1}) 
                     AND "Date" BETWEEN '{2}' AND '{3}'
-                    GROUP BY "Name_ID","Key","measurement"
+                    GROUP BY ed."Name_ID","Key","measurement"
                     LIMIT {5} OFFSET {6})
                     UNION """.format(e, measurement, date[0], date[1], filter, limit, offset)
             sql_part = sql_part + s
@@ -803,8 +803,8 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, dat
         limit_selected = ''
 
     sql = """SELECT en."Name_ID",en."measurement",AVG(en."Value") AS "{0}",ec."Value" AS "{1}"
-                FROM examination_numerical AS en
-                {6} 
+                FROM examination_numerical AS en 
+                {6}
                 LEFT JOIN examination_categorical AS ec 
                 ON en."Name_ID" = ec."Name_ID"
                 WHERE en."Key" = '{0}' 
