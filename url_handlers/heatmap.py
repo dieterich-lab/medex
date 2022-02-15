@@ -92,7 +92,6 @@ def post_plots():
                                error=error)
 
     # calculate person correlation
-    start_time = time.time()
     numeric_df = df.drop(columns=['Name_ID'])
     new_numeric_entities = numeric_df.columns.tolist()
 
@@ -130,7 +129,6 @@ def post_plots():
     fig.update_layout(height=600,
                       title='Heatmap shows Pearson correlation')
     fig = fig.to_html()
-    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('heatmap.html',
                            start_date=start_date,
                            end_date=end_date,

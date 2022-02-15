@@ -50,8 +50,7 @@ def post_data():
     categorical_entities = list(set(entities)-set(list_all_numeric_entities)-set(list_all_date_entities))
     numerical_entities = list(set(entities) - set(list_all_categorical_entities) - set(list_all_date_entities))
     date_entities = list(set(entities) - set(list_all_numeric_entities) - set(list_all_categorical_entities))
-    print(categorical_entities)
-    print("--- %s seconds data ---" % (time.time() - start_time))
+
 
     if clean is not None or add is not None:
         if add is not None:
@@ -61,9 +60,7 @@ def post_data():
             update = '0,0'
             update_list = list(update.split(","))
         data.update_filter = update
-        start_time = time.time()
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
-        print("--- %s seconds data ---" % (time.time() - start_time))
         return render_template('data.html',
                                start_date=start_date,
                                end_date=end_date,
@@ -114,7 +111,7 @@ def post_data():
                                offset=data.offset,
                                numerical_filter=numerical_filter,
                                )
-    start_time = time.time()
+
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
 
     data.table_browser_entities = entities
@@ -139,7 +136,6 @@ def post_data():
     data.table_browser_column = column
     data.table_browser_what_table = what_table
     data.table_browser_column2 = dict_of_column
-    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('data.html',
                            error=error,
                            block=block,

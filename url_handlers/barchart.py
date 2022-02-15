@@ -99,7 +99,6 @@ def post_statistics():
                                error=error
                                )
 
-    start_time = time.time()
     df['%'] = 100*df['count']/df.groupby('measurement')['count'].transform('sum')
     legend = textwrap.wrap(categorical_entities, width=20)
     # Plot figure and convert to an HTML string representation
@@ -122,7 +121,7 @@ def post_statistics():
                              'x': 0.5,
                              'xanchor': 'center'})
     fig = fig.to_html()
-    print("--- %s seconds data ---" % (time.time() - start_time))
+
     return render_template('barchart.html',
                            measurement=measurement,
                            measurement_filter=measurement_filter,

@@ -136,7 +136,6 @@ def post_statistics():
                                limit=data.limit,
                                offset=data.offset,
                                error=error)
-    start_time = time.time()
     if block == 'none':
         fig = px.histogram(df, x=numeric_entities, color=categorical_entities,barmode='overlay', nbins=bin_numbers,
                            opacity=0.7, template="plotly_white")
@@ -154,7 +153,6 @@ def post_statistics():
             'x': 0.5,
             'xanchor': 'center'})
     fig = fig.to_html()
-    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('histogram.html',
                            number_of_bins=number_of_bins,
                            numeric_entities=numeric_entities,

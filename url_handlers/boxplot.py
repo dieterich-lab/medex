@@ -107,7 +107,6 @@ def post_boxplots():
                                )
 
     # Plot figure and convert to an HTML string representation
-    start_time = time.time()
     if block == 'none':
         if how_to_plot == 'linear':
             fig = px.box(df, x=categorical_entities, y=numeric_entities, color=categorical_entities,
@@ -132,7 +131,7 @@ def post_boxplots():
                           'xanchor': 'center', }
                       )
     fig = fig.to_html()
-    print("--- %s seconds data ---" % (time.time() - start_time))
+
     return render_template('boxplot.html',
                            numeric_entities=numeric_entities,
                            categorical_entities=categorical_entities,

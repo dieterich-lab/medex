@@ -27,7 +27,6 @@ def post_plots():
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     session['measurement_filter'] = measurement_filter
     limit_selected = request.form.get('limit_yes')
-    print('limit_s',limit_selected)
     data.limit_selected = limit_selected
     limit = request.form.get('limit')
     offset = request.form.get('offset')
@@ -188,7 +187,6 @@ def post_plots():
         fig.update_yaxes(type="log")
 
     fig = fig.to_html()
-    print("--- %s seconds data ---" % (time.time() - start_time))
     return render_template('scatter_plot.html',
                            subcategory_entities=subcategory_entities,
                            categorical_entities=categorical_entities,
