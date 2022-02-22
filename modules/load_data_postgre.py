@@ -21,6 +21,24 @@ def get_header(r):
     return name_id, measurement_name
 
 
+def database_size(r):
+    """
+    :param r: connection with database
+    :return: data from header table
+    """
+    try:
+        examination_numerical_size = "SELECT pg_relation_size('examination_numerical')"
+        examination_categorical_size = "SELECT pg_relation_size('examination_categorical')"
+        examination_date_size = "SELECT pg_relation_size('examination_date')"
+        df_1 = pd.read_sql(examination_numerical_size, r)
+        df_2 = pd.read_sql(examination_categorical_size, r)
+        df_3 = pd.read_sql(examination_date_size, r)
+        df_1, df_2, df_3 = df_1['pg_relation_size'][0], df_2['pg_relation_size'][0], df_3['pg_relation_size'][0]
+    except ValueError:
+        df_1, df_2, df_3 = 0, 0, 0
+    return df_1, df_2, df_3
+
+
 def get_date(r):
     """
     :param r: connection with database

@@ -102,6 +102,8 @@ all_categorical_entities = all_categorical_entities.to_dict('index')
 all_timestamp_entities = all_timestamp_entities.to_dict('index')
 df_min_max = df_min_max.to_dict('index')
 all_measurement = ps.get_measurement(rdb)
+df_1, df_2, df_3 = ps.database_size(rdb)
+print(df_1,df_2,df_3)
 
 
 # show all hide measurement selector when was only one measurement for all entities
@@ -148,6 +150,11 @@ def message_count():
     s_date, e_date = filtering.date()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
+    if df_1 < 5368709120 and df_2 < 5368709120 and df_3 < 5368709120:
+        limit_block = 'none'
+        data.limit_selected = False
+    else:
+        limit_block = 'block'
     if start_date == end_date:
         date_block = 'none'
     else:
@@ -170,6 +177,7 @@ def message_count():
                 name='{}'.format(measurement_name),
                 block=block,
                 date_block=date_block,
+                limit_block= limit_block,
                 case_display=case_display,
                 val=data.update_filter,
                 limit_yes=data.limit_selected,
