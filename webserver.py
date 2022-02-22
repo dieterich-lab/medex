@@ -130,8 +130,10 @@ def message_count():
     new_column = session.get('new_column')
     if new_column is not None:
         data.case_ids = []
+
     database_name = os.environ['POSTGRES_DB']
     database = '{} data'.format(database_name)
+
     if all_numeric_entities:
         len_numeric = 'number of numerical entities: ' + str(len(all_numeric_entities))
         size_numeric = 'the size of the numeric table: ' + str(size_numerical_table) + ' rows'
@@ -143,9 +145,13 @@ def message_count():
         len_categorical = 'number of categorical entities: 0'
         size_categorical = 'the size of the categorical table: 0 rows'
 
-    start_date, end_date = filtering.date()
+    s_date, e_date = filtering.date()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
+    if start_date == end_date:
+        date_block = 'none'
+    else:
+        date_block = 'block'
 
     return dict(database=database,
                 len_numeric=len_numeric,
@@ -159,10 +165,11 @@ def message_count():
                 all_timestamp_entities=all_timestamp_entities,
                 all_measurement=all_measurement,
                 df_min_max=df_min_max,
-                start_date=start_date,
-                end_date=end_date,
+                start_date=s_date,
+                end_date=e_date,
                 name='{}'.format(measurement_name),
                 block=block,
+                date_block=date_block,
                 case_display=case_display,
                 val=data.update_filter,
                 limit_yes=data.limit_selected,
@@ -208,6 +215,7 @@ def login_get():
     session['end_date'] = end_date
     session['measurement_filter'] = min(all_measurement)
     session['new_column'] = []
+    session['change_date'] = 0
     return redirect('/data')
 
 

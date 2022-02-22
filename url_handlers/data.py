@@ -27,7 +27,7 @@ def get_data():
 def post_data():
 
     # get filter
-    start_date, end_date, date = filtering.check_for_date_filter_post()
+    s_date, e_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
     categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
@@ -46,11 +46,9 @@ def post_data():
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
     measurement = request.form.getlist('measurement')
-    start_time = time.time()
     categorical_entities = list(set(entities)-set(list_all_numeric_entities)-set(list_all_date_entities))
     numerical_entities = list(set(entities) - set(list_all_categorical_entities) - set(list_all_date_entities))
     date_entities = list(set(entities) - set(list_all_numeric_entities) - set(list_all_categorical_entities))
-
 
     if clean is not None or add is not None:
         if add is not None:
@@ -62,8 +60,8 @@ def post_data():
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
         return render_template('data.html',
-                               start_date=start_date,
-                               end_date=end_date,
+                               start_date=s_date,
+                               end_date=e_date,
                                val=update,
                                limit_yes=data.limit_selected,
                                limit=data.limit,
@@ -100,8 +98,8 @@ def post_data():
                                entities=entities,
                                df_min_max=df_min_max,
                                measurement_filter=measurement_filter,
-                               start_date=start_date,
-                               end_date=end_date,
+                               start_date=s_date,
+                               end_date=e_date,
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                filter=categorical_filter_zip,
@@ -148,8 +146,8 @@ def post_data():
                            column=dict_of_column,
                            df_min_max=df_min_max,
                            measurement_filter=measurement_filter,
-                           start_date=start_date,
-                           end_date=end_date,
+                           start_date=s_date,
+                           end_date=e_date,
                            categorical_filter=categorical_names,
                            numerical_filter_name=name,
                            filter=categorical_filter_zip,

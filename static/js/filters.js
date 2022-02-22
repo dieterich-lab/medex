@@ -42,12 +42,7 @@ function updateInputs (data) {
 $('#input1').on("input", function () {
     var val = $(this).prop("value");
 
-    // validate
-    if (val < min) {
-        val = min;
-    } else if (val > to) {
-        val = to;
-    }
+
 
     instance.update({
         from: val
@@ -56,17 +51,13 @@ $('#input1').on("input", function () {
 
 $('#input2').on("input", function () {
     var val = $(this).prop("value");
-    // validate
-    if (val < from) {
-        val = from;
-    } else if (val > max) {
-        val = max;
-    }
+
 
     instance.update({
         to: val
     });
 });
+
 //change subcategories if category change
 $('#id_numerical_filter').change(function () {
     var entity =$(this).val(), values = df[entity] || [];

@@ -307,28 +307,33 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
         limit = """ LIMIT {0} OFFSET {1}""".format(limit, offset)
     else:
         limit = ''
+
+    if date[2] !=0:
+        date_value = 'AND "Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+    else:
+        date_value = ''
     if not limit_selected and what_table == 'long':
         sql = """(SELECT en."Name_ID","measurement","Date","Key","Value"::text
                          FROM examination_numerical as en
-                         {4}
+                         {3}
                          WHERE "Key" IN ({0})  
                          AND measurement IN ({1}) 
-                         AND "Date" BETWEEN $${2}$$ AND $${3}$$)
+                         {2})
                          UNION
                          (SELECT ec."Name_ID","measurement","Date","Key","Value"::text
                          FROM examination_categorical as ec
-                         {5}
+                         {4}
                          WHERE "Key" IN ({0}) 
                          AND measurement IN ({1}) 
-                         AND "Date" BETWEEN $${2}$$ and $${3}$$)
+                         {2})
                          UNION
                          (SELECT ed."Name_ID","measurement","Date","Key","Value"::text
                          FROM examination_date as ed
-                         {6}
+                         {5}
                          WHERE "Key" IN ({0}) 
                          AND measurement IN ({1}) 
-                         AND "Date" BETWEEN $${2}$$ and $${3}$$)
-                         """.format(entity_final, measurement, date[0], date[1], filter_en, filter_ec, filter_ed)
+                         {2})
+                         """.format(entity_final, measurement, date_value, filter_en, filter_ec, filter_ed)
     else:
         if numerical_entities:
             entity_column_n = '"' + '","'.join(numerical_entities) + '",'
@@ -336,23 +341,23 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                 if limit_selected:
                     sql_part_n = """(SELECT en."Name_ID","measurement","Date","Key","Value"::text
                                    FROM examination_numerical as en
-                                   {5}
+                                   {4}
                                    WHERE "Key" = $${0}$$  
                                    AND measurement IN ({1}) 
-                                   AND "Date" BETWEEN $${2}$$ AND $${3}$$
-                                    {4}) UNION """.format(e, measurement, date[0], date[1], limit,filter_en)
+                                   {2}
+                                   {3}) UNION """.format(e, measurement, date_value, limit,filter_en)
                     sql_n = sql_n + sql_part_n
                 if what_table != 'long':
                     tab = 'a_{}'.format(i)
                     cte_table = """,
                                     {0} as (SELECT en."Name_ID","Date",measurement,STRING_AGG("Value"::text, ';') "{1}"
                                     FROM examination_numerical en
-                                    {6}
+                                    {5}
                                     WHERE "Key" = $${1}$$
                                     AND measurement IN ({2})
-                                    AND "Date" BETWEEN '{3}' AND '{4}'
+                                    {3}
                                     GROUP BY en."Name_ID","Date","Key","measurement"
-                                    {5})""".format(tab, e, measurement, date[0], date[1],limit, filter_en)
+                                    {4})""".format(tab, e, measurement, date_value, limit, filter_en)
                     cte_table_n = cte_table_n + cte_table
                     join = """ 
                             FULL OUTER JOIN {0} 
@@ -364,23 +369,23 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                 if limit_selected:
                     sql_part_c = """(SELECT ec."Name_ID","measurement","Date","Key","Value"::text
                                     FROM examination_categorical as ec
-                                    {5}
+                                    {4}
                                     WHERE "Key" = $${0}$$  
                                     AND measurement IN ({1}) 
-                                    AND "Date" BETWEEN $${2}$$ AND $${3}$$
-                                    {4}) UNION """.format(e, measurement, date[0], date[1], limit, filter_ec)
+                                    {2}
+                                    {3}) UNION """.format(e, measurement, date_value, limit, filter_ec)
                     sql_c = sql_c + sql_part_c
                 if what_table != 'long':
                     tab = 'a_{}'.format(len(numerical_entities) + i)
                     cte_table = """,
                                     {0} as (SELECT ec."Name_ID","Date",measurement,STRING_AGG("Value"::text, ';') "{1}"
                                     FROM examination_categorical ec
-                                    {6}
+                                    {5}
                                     WHERE "Key" = $${1}$$
                                     AND measurement IN ({2})
-                                    AND "Date" BETWEEN '{3}' AND '{4}'
+                                    {3}
                                     GROUP BY ec."Name_ID","Date","Key","measurement"
-                                    {5})""".format(tab, e, measurement, date[0], date[1],limit, filter_ec)
+                                    {4})""".format(tab, e, measurement, date_value, limit, filter_ec)
                     cte_table_c = cte_table_c + cte_table
                     join = """ 
                                 FULL OUTER JOIN {0} 
@@ -392,11 +397,11 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                 if limit_selected:
                     sql_part_d = """(SELECT ed."Name_ID","date","measurement","Date","Key","Value"::text
                                     FROM examination_date as ed 
-                                    {5}
+                                    {4}
                                     WHERE "Key" = $${0}$$  
                                     AND measurement IN ({1}) 
-                                    AND "Date" BETWEEN $${2}$$ AND $${3}$$
-                                    {4}) UNION """.format(e, measurement,  date[0], date[1], limit, filter_ed)
+                                    {2}
+                                    {3}) UNION """.format(e, measurement,  date_value, limit, filter_ed)
                     sql_d = sql_d + sql_part_d
                 if what_table != 'long':
                     tab = 'a_{}'.format(len(numerical_entities) + len(categorical_entities) + i)
@@ -406,9 +411,9 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                                     {5}
                                     WHERE "Key" = $${1}$$
                                     AND measurement IN ({2})
-                                    AND "Date" BETWEEN '{3}' AND '{4}'
+                                    {3}
                                     GROUP BY "Name_ID","Date","Key","measurement"
-                                    {5} )""".format(tab, e, measurement, date[0], date[1],limit, filter_ed)
+                                    {4} )""".format(tab, e, measurement, date_value, limit, filter_ed)
                     cte_table_d = cte_table_d + cte_table
                     join = """
                             FULL OUTER JOIN {0} 
@@ -456,13 +461,16 @@ def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, up
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """
-
+    if date[2] !=0:
+        date_value = 'AND "Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+    else:
+        date_value = ''
     sql = """ WITH basic_stats as (SELECT en."Name_ID","Key","measurement",AVG("Value") as "Value" 
                                    FROM examination_numerical en 
-                                   {4}
+                                   {3}
                                    WHERE "Key" IN ({0})
                                    AND "measurement" IN ({1}) 
-                                   AND "Date" BETWEEN '{2}' AND '{3}'
+                                   {2}
                                    GROUP BY "Name_ID","Key","measurement")
                 SELECT "Key","measurement",
                                 count("Name_ID"),
@@ -476,19 +484,19 @@ def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, up
                                 GROUP BY "Key","measurement" 
                                 ORDER BY "Key","measurement"
                                 """.format(
-                                entity_final, measurement, date[0], date[1], filter, limit_selected)
+                                entity_final, measurement, date_value, filter)
     if limit_selected:
         sql_part = ""
         for e in entity:
             s = """ (SELECT "Key","measurement",en."Name_ID", AVG("Value") as "Value"
                     FROM examination_numerical as en  
-                    {4}
+                    {3}
                     WHERE "Key" = $${0}$$ 
                     AND "measurement" IN ({1}) 
-                    AND "Date" BETWEEN '{2}' AND '{3}'
+                    {2}
                     GROUP BY en."Name_ID","Key","measurement"
-                    LIMIT {5} OFFSET {6})
-                    UNION """.format(e, measurement, date[0], date[1], filter, limit, offset)
+                    LIMIT {4} OFFSET {5})
+                    UNION """.format(e, measurement, date_value, filter, limit, offset)
             sql_part = sql_part + s
         sql_part = sql_part[:-6]
         sql = """ WITH basic_stats AS ({})
@@ -531,29 +539,32 @@ def get_cat_basic_stats(entity, measurement, date, limit_selected, limit, offset
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on ec."Name_ID"= ttni."Name_ID" """
-
+    if date[2] !=0:
+        date_value = 'AND "Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+    else:
+        date_value = ''
     sql = """WITH basic_stats as (SELECT ec."Name_ID","Key","measurement"
                                    FROM examination_categorical as ec
-                                   {4}
+                                   {3}
                                    WHERE "Key" IN ({0})
                                    AND "measurement" IN ({1}) 
-                                   AND "Date" BETWEEN '{2}' AND '{3}'
+                                   {2}
                                    GROUP BY "Name_ID","Key","measurement")
             SELECT "Key","measurement",count("Name_ID") 
                         FROM basic_stats
-                        GROUP BY "measurement","Key" """.format(entity_final, measurement, date[0], date[1], filter)
+                        GROUP BY "measurement","Key" """.format(entity_final, measurement, date_value, filter)
     if limit_selected:
         sql_part = ""
         for e in entity:
             s = """ (SELECT "Key","measurement",ec."Name_ID"
                     FROM examination_categorical as ec 
-                    {4}
+                    {3}
                     WHERE "Key" = $${0}$$ 
                     AND "measurement" IN ({1}) 
-                    AND "Date" BETWEEN '{2}' AND '{3}'
+                    {2}
                     GROUP BY ec."Name_ID","Key","measurement"
-                    LIMIT {5} OFFSET {6})
-                    UNION """.format(e, measurement, date[0], date[1], filter, limit, offset)
+                    LIMIT {4} OFFSET {5})
+                    UNION """.format(e, measurement, date_value, filter, limit, offset)
             sql_part = sql_part + s
         sql_part = sql_part[:-6]
         sql = """ WITH basic_stats AS ({})
@@ -587,29 +598,32 @@ def get_date_basic_stats(entity, measurement, date, limit_selected, limit, offse
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on ed."Name_ID"=ttni."Name_ID" """
-
+    if date[2] !=0:
+        date_value = 'AND "Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+    else:
+        date_value = ''
     sql = """WITH basic_stats as (SELECT ec."Name_ID","Key","measurement"
                                    FROM examination_date as ed
-                                   {4}
+                                   {3}
                                    WHERE "Key" IN ({0})
                                    AND "measurement" IN ({1}) 
-                                   AND "Date" BETWEEN '{2}' AND '{3}'
+                                   {2}
                                    GROUP BY "Name_ID","Key","measurement")
             SELECT "Key","measurement",count("Name_ID") 
                         FROM basic_stats
-                        GROUP BY "measurement","Key" """.format(entity_final, measurement, date[0], date[1], filter)
+                        GROUP BY "measurement","Key" """.format(entity_final, measurement, date_value, filter)
     if limit_selected:
         sql_part = ""
         for e in entity:
             s = """ (SELECT "Key","measurement",ed."Name_ID"
                     FROM examination_date as ed 
-                    {4}
+                    {3}
                     WHERE "Key" = $${0}$$ 
                     AND "measurement" IN ({1}) 
-                    AND "Date" BETWEEN '{2}' AND '{3}'
+                    {2}
                     GROUP BY ed."Name_ID","Key","measurement"
-                    LIMIT {5} OFFSET {6})
-                    UNION """.format(e, measurement, date[0], date[1], filter, limit, offset)
+                    LIMIT {4} OFFSET {5})
+                    UNION """.format(e, measurement, date_value, filter, limit, offset)
             sql_part = sql_part + s
         sql_part = sql_part[:-6]
         sql = """ WITH basic_stats AS ({})
@@ -655,7 +669,12 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
         limit_selected = """ LIMIT {} OFFSET {} """.format(limit, offset)
     else:
         limit_selected = ''
-
+    if date[2] !=0:
+        date_value1 = 'AND x."Date" BETWEEN $${0}$$ AND $${1}$$ '.format(date[0], date[1])
+        date_value2 = 'AND y."Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+    else:
+        date_value1 = ''
+        date_value2 = ''
     if add_group_by == False:
         sql = """SELECT x."Name_ID",AVG(x."Value") as "{2}_{0}",AVG(y."Value") as "{3}_{1}"
                             FROM examination_numerical as x
@@ -666,11 +685,11 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                             AND y."Key" IN ('{1}') 
                             AND x."measurement"='{2}' 
                             AND y."measurement"='{3}' 
-                            AND x."Date" BETWEEN '{4}' AND '{5}' 
-                            AND y."Date" BETWEEN '{4}' AND '{5}'
+                            {4}
+                            {5}
                             GROUP BY x."Name_ID",y."Name_ID"
                             {7}""".format(x_entity, y_entity, x_measurement,
-                                                                         y_measurement, date[0], date[1], filter, limit_selected)
+                                                                         y_measurement, date_value1,date_value2, filter, limit_selected)
     else:
         sql = """SELECT * FROM (SELECT x."Name_ID",AVG(x."Value") as "{2}_{0}",AVG(y."Value") as "{3}_{1}",STRING_AGG(distinct ec."Value",'<br>') as "{6}" 
                             FROM examination_numerical as x
@@ -684,13 +703,13 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                             AND ec."Key" IN ('{6}')
                             AND x."measurement"='{2}' 
                             AND y."measurement"='{3}' 
-                            AND x."Date" BETWEEN '{4}' AND '{5}' 
-                            AND y."Date" BETWEEN '{4}' AND '{5}'
+                            {4}
+                            {5}
                             GROUP BY x."Name_ID"
                             {9}) foo
                             WHERE foo."{6}" IN ({7})
                             """.format(x_entity, y_entity, x_measurement,
-                                                             y_measurement, date[0], date[1], entity, subcategory,filter,limit_selected)
+                                                             y_measurement, date_value1,date_value2, entity, subcategory,filter,limit_selected)
 
 
     try:
@@ -729,18 +748,21 @@ def get_bar_chart(entity, subcategory, measurement, date, limit_selected, limit,
         limit_selected = """ LIMIT {} OFFSET {} """.format(limit, offset)
     else:
         limit_selected = ''
-
+    if date[2] !=0:
+        date_value = 'AND "Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+    else:
+        date_value = ''
     sql = """SELECT "Value" AS "{0}","measurement",count("Value")
                 FROM (SELECT STRING_AGG(distinct "Value",'<br>')  AS "Value","measurement" FROM examination_categorical as ec
-                        {5} 
+                        {4} 
                         WHERE "Key"='{0}'
                         AND "Value" IN ({1}) 
-                        AND "Date" BETWEEN '{3}' AND '{4}'
+                        {3}
                         AND "measurement" IN ({2})
                         GROUP BY ec."Name_ID",measurement
-                        {6}) AS foo
+                        {5}) AS foo
                 GROUP BY "Value","measurement"
-                """.format(entity, subcategory, measurement, date[0], date[1],filter, limit_selected)
+                """.format(entity, subcategory, measurement, date_value, filter, limit_selected)
     try:
         df = pd.read_sql(sql, r)
         if df.empty or len(df) == 0:
@@ -773,20 +795,23 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, dat
         limit_selected = """ LIMIT {} OFFSET {} """.format(limit, offset)
     else:
         limit_selected = ''
-
+    if date[2] !=0:
+        date_value = 'AND en."Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+    else:
+        date_value = ''
     sql = """SELECT en."Name_ID",en."measurement",AVG(en."Value") AS "{0}",ec."Value" AS "{1}"
                 FROM examination_numerical AS en 
-                {6}
+                {5}
                 LEFT JOIN examination_categorical AS ec 
                 ON en."Name_ID" = ec."Name_ID"
                 WHERE en."Key" = '{0}' 
                 AND ec."Key" = '{1}' 
                 AND ec."Value" IN ({2}) 
                 AND en."measurement" IN ({3}) 
-                AND en."Date" BETWEEN '{4}' AND '{5}'
+                {4}
                 GROUP BY en."Name_ID",en."measurement",ec."Value"
-                {7}
-                """.format(entity_num, entity_cat, subcategory, measurement, date[0], date[1],filter,limit_selected)
+                {6}
+                """.format(entity_num, entity_cat, subcategory, measurement, date_value, filter, limit_selected)
     try:
         df = pd.read_sql(sql, r)
         if df.empty or len(df) == 0:
@@ -820,27 +845,31 @@ def get_heat_map(entity, date, limit_selected, limit, offset, update, r):
         case_statement = case_statement + ',' + create_case_statement
         create_crosstab_columns = '"{}" double precision'.format(ent)
         crosstab_columns = crosstab_columns + ',' + create_crosstab_columns
-
+    if date[2] !=0:
+        date_value = 'AND en."Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+    else:
+        date_value = ''
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
     sql = """SELECT en."Name_ID","Key",AVG("Value") as "Value" 
                 FROM examination_numerical as en
-                {3} 
+                {2} 
                 WHERE "Key" IN ({0}) 
-                AND "Date" BETWEEN '{1}' AND '{2}'
-                GROUP BY en."Name_ID","Key" """.format(entity_fin, date[0], date[1],filter)
+                {1}
+                GROUP BY en."Name_ID","Key" """.format(entity_fin, date_value, filter)
 
     if limit_selected:
         sql = ""
         for e in entity:
             sql_part = """(SELECT en."Name_ID","Key","Value" 
                            FROM examination_numerical as en 
-                           {3}
+                           {2}
                            WHERE "Key" = $${0}$$  
-                           AND "Date" BETWEEN '{1}' AND '{2}' 
-                           LIMIT {4} 
-                           OFFSET {5}) UNION """.format(e, date[0], date[1],filter, limit, offset)
+                           {1}
+                           LIMIT {3} 
+                           OFFSET {4}) UNION """.format(e, date_value, filter, limit, offset)
             sql = sql + sql_part
-        sql = """ SELECT "Name_ID","Key",AVG("Value") as "Value" FROM (""" + sql[:-6] + """) foo GROUP BY en."Name_ID","Key" """
+        sql = """ SELECT "Name_ID","Key",AVG("Value") as "Value" FROM (""" + sql[:-6] + """) foo GROUP BY "Name_ID","Key" """
+
     try:
         df = pd.read_sql(sql, r)
         df = df.pivot_table(index=["Name_ID"], columns="Key", values="Value", aggfunc=np.mean).reset_index()
