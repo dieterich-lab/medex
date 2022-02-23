@@ -70,7 +70,7 @@ def create_table(rdb):
         cur.execute(examination_categorical)
         cur.execute(examination_date)
         rdb.commit()
-    except ValueError:
+    except Exception:
         return print("Problem with connection with database")
 
 
@@ -164,7 +164,7 @@ def alter_table(rdb):
         cur.execute(sql_remove_null)
         cur.execute(sql)
         rdb.commit()
-    except ValueError:
+    except Exception:
         return print("Problem with connection with database")
     try:
         cur.execute(sql1)
@@ -173,7 +173,7 @@ def alter_table(rdb):
         cur.execute(sql4)
         cur.execute(sql5)
         rdb.commit()
-    except ValueError:
+    except Exception:
         return print("Problem with connection with database")
 
 
@@ -202,7 +202,7 @@ def create_index(rdb):
         cur.execute(sql8)
         cur.execute(sql9)
         rdb.commit()
-    except ValueError:
+    except Exception:
         return print("Problem with connection with database")
 
 
@@ -234,7 +234,7 @@ def cluster_table(rdb):
         cur.execute(sql8)
         cur.execute(sql9)
         rdb.commit()
-    except ValueError:
+    except Exception:
         return print("Problem with connection with database")
 
 

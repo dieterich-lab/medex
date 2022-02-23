@@ -42,14 +42,20 @@
         <label>Filter</label>
 
         <div class="form-check mt-4" style="display: {{ limit_block }}">
-        <input class="form-check-input" type="checkbox" title="For large data, it may take longer to display the results (maximum 1 min, if the query takes longer, the query will be killed)"  value="true" id="limit_yes" name="limit_yes" {% if limit_yes %} checked {% endif %} >
+        <input class="form-check-input" type="checkbox" title="For large data, it may take longer to display the results
+         (maximum 1 min, if the query takes longer, the query will be killed)"  value="true" id="limit_yes"
+               name="limit_yes" {% if limit_yes %} checked {% endif %} >
         <label class="form-check-label" for="limit_yes">Limit selected number to: </label>
-        <input style="width: 17%" id="limit" name="limit" title="For large data, it may take longer to display the results (maximum 1 min, if the query takes longer, the query will be killed)" type="text" class="js-input-from" value="{{ limit }}" />
+        <input style="width: 17%" id="limit" name="limit" title="For large data, it may take longer to display the results
+        (maximum 1 min, if the query takes longer, the query will be killed)" type="text" class="js-input-from"
+               value="{{ limit }}" />
         offset:
         <input style="width: 17%" id="offset" name="offset" type="text" class="js-input-from" value="{{ offset }}" />
         </div>
-        <br>
+        
         {{ m.entity_form_single_measurement(id_single_measurement="measurement_filter",name =all_measurement,value=entity,select=measurement_filter,d="Filter by visit as on:",block=block) }}
+
+        <input class="form-check-input" type="checkbox"   checked  >
         <label>Categorical:</label>
         <select id="categorical_filter"  name="categorical_filter" style="width: 100%" class="js-example-basic-single" >
             <option>Search entity</option>
@@ -70,8 +76,9 @@
         </select>
                 <br><br>
 
-        <label>Numerical:</label>
-        {{ m.entity_form_single(id_single="id_numerical_filter",name =all_numeric_entities,value=entity,d="") }}
+
+        <input class="form-check-input" type="checkbox" id="cat_filter"  checked >
+        {{ m.entity_form_single(id_single="id_numerical_filter",name =all_numeric_entities,value=entity,d="Numerical:") }}
         <script type="text/javascript">
         var df = {{df_min_max|safe }};
         </script>

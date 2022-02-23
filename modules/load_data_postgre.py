@@ -16,7 +16,7 @@ def get_header(r):
         sql = "SELECT * FROM header"
         df = pd.read_sql(sql, r)
         name_id, measurement_name = df['Name_ID'][0], df['measurement'][0]
-    except ValueError:
+    except Exception:
         name_id, measurement_name = 'Name_ID', 'measurement'
     return name_id, measurement_name
 
@@ -30,11 +30,14 @@ def database_size(r):
         examination_numerical_size = "SELECT pg_relation_size('examination_numerical')"
         examination_categorical_size = "SELECT pg_relation_size('examination_categorical')"
         examination_date_size = "SELECT pg_relation_size('examination_date')"
+        set_time = "SET statement_timeout to 6000"
+        cur = r.cursor()
+        cur.execute(set_time)
         df_1 = pd.read_sql(examination_numerical_size, r)
         df_2 = pd.read_sql(examination_categorical_size, r)
         df_3 = pd.read_sql(examination_date_size, r)
         df_1, df_2, df_3 = df_1['pg_relation_size'][0], df_2['pg_relation_size'][0], df_3['pg_relation_size'][0]
-    except ValueError:
+    except Exception:
         df_1, df_2, df_3 = 0, 0, 0
     return df_1, df_2, df_3
 
@@ -49,7 +52,7 @@ def get_date(r):
         df = pd.read_sql(sql, r)
         start_date = datetime.datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
         end_date = datetime.datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
-    except ValueError:
+    except Exception:
         now = datetime.datetime.now()
         start_date = datetime.datetime.timestamp(now - datetime.timedelta(days=365.24*100)) * 1000
         end_date = datetime.datetime.timestamp(now) * 1000
@@ -65,7 +68,7 @@ def patient(r):
         sql = """SELECT * FROM Patient"""
         df = pd.read_sql(sql, r)
         return df['Name_ID'], None
-    except ValueError:
+    except Exception:
         return None, "Problem with load data from database"
 
 
@@ -79,7 +82,7 @@ def get_entities(r):
     try:
         all_entities = pd.read_sql(all_entities, r)
         all_entities = all_entities.replace([None], ' ')
-    except ValueError:
+    except Exception:
         all_entities = pd.DataFrame(columns=["Key", "description", "synonym"])
     return all_entities
 
@@ -107,7 +110,7 @@ def get_numeric_entities(r):
         df_min_max = pd.read_sql(min_max, r)
         df_min_max = df_min_max.set_index('Key')
 
-    except ValueError:
+    except Exception:
         size = 0
         entities = pd.DataFrame(columns=["Key", "description", "synonym"])
         df_min_max = pd.DataFrame()
@@ -132,7 +135,7 @@ def get_timestamp_entities(r):
         entities = pd.read_sql(all_timestamp_entities, r)
         entities = entities.replace([None], ' ')
 
-    except ValueError:
+    except Exception:
         size = 0
         entities = pd.DataFrame(columns=["Key", "description", "synonym"])
     return size, entities
@@ -173,7 +176,7 @@ def get_categorical_entities(r):
         df_subcategories = dict(ChainMap(*array))
 
         return size, entities, df_subcategories
-    except ValueError:
+    except Exception:
         array = []
         size = 0
         entities = pd.DataFrame(columns=["Key", "description", "synonym"])
@@ -192,7 +195,7 @@ def get_measurement(r):
         df = pd.read_sql(sql, r)
         df['measurement'] = df['measurement'].astype(str)
         return df['measurement']
-    except ValueError:
+    except Exception:
         return ["No data"]
 
 
@@ -206,7 +209,7 @@ def create_temp_table(case_id,rdb):
         cur = rdb.cursor()
         cur.execute(sql_drop)
         cur.execute(create_table)
-    except ValueError:
+    except Exception:
         print('something wrong')
 
 
@@ -248,7 +251,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         try:
             Thread(target=cur.execute(sql_drop)).start()
             Thread(target=cur2.execute(sql_drop_2)).start()
-        except ValueError:
+        except Exception:
             print('something wrong')
     elif int(old_update[0]) > int(update[0]) or int(old_update[1]) > int(update[1]):
         """ If filter removed """
@@ -271,7 +274,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
             Thread(target=cur2.execute(update_table)).start()
             cur.execute(sql_drop_2)
             cur.execute(create_table)
-        except ValueError:
+        except Exception:
             print('something wrong')
     elif (update[0] == '1' and update[1] == '0') or (update[0] == '0' and update[1] == '1'):
         """If first filter selected"""
@@ -281,7 +284,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         try:
             Thread(target=cur.execute(create_table)).start()
             Thread(target=cur2.execute(create_table_2)).start()
-        except ValueError:
+        except Exception:
             print('something wrong')
     elif int(old_update[0]) < int(update[0]) or int(old_update[1]) < int(update[1]):
         """ If next filters added """
@@ -291,7 +294,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         try:
             Thread(target=cur.execute(update_table)).start()
             Thread(target=cur2.execute(update_table_2)).start()
-        except ValueError:
+        except Exception:
             print('something wrong')
     return None
 
@@ -455,9 +458,9 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
         else:
             df = pd.read_sql(sql2, r)
         return df, None
-    except ValueError:
+    except Exception:
         df = pd.DataFrame()
-        return df, "Problem with load data from database"
+        return df,"Problem with load data from database"
 
 
 def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, update, r):
@@ -534,7 +537,7 @@ def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, up
         df['count NaN'] = int(n) - df['count']
         df = df.round(2)
         return df, None
-    except ValueError:
+    except Exception:
         return None, "Problem with load data from database"
 
 
@@ -593,7 +596,7 @@ def get_cat_basic_stats(entity, measurement, date, limit_selected, limit, offset
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
         return df, None
-    except ValueError:
+    except Exception:
         return None, "Problem with load data from database"
 
 
@@ -652,7 +655,7 @@ def get_date_basic_stats(entity, measurement, date, limit_selected, limit, offse
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
         return df, None
-    except ValueError:
+    except Exception:
         return None, "Problem with load data from database"
 
 
@@ -666,7 +669,7 @@ def get_unit(name, r):
         sql = """SELECT "Key","unit" FROM name_type WHERE "Key"='{}' """.format(name)
         df = pd.read_sql(sql, r)
         return df['unit'][0], None
-    except ValueError:
+    except Exception:
         return None, "Problem with load data from database"
 
 
@@ -743,7 +746,7 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
             return df, error
         else:
             return df, None
-    except ValueError:
+    except Exception:
         return None, "Problem with load data from database"
 
 
@@ -790,7 +793,7 @@ def get_bar_chart(entity, subcategory, measurement, date, limit_selected, limit,
             df[entity] = df[entity].str.wrap(30).replace(to_replace=[r"\\n", "\n"],
                                                          value=["<br>", "<br>"], regex=True)
             return df, None
-    except ValueError:
+    except Exception:
         return None, "Problem with load data from database"
 
 
@@ -839,7 +842,7 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, dat
             df[entity_cat] = df[entity_cat].str.wrap(30).replace(to_replace=[r"\\n", "\n"],
                                                          value=["<br>", "<br>"], regex=True)
             return df, None
-    except ValueError:
+    except Exception:
         return None, "Problem with load data from database"
 
 
@@ -897,7 +900,7 @@ def get_heat_map(entity, date, limit_selected, limit, offset, update, r):
             return df, "The entity wasn't measured"
         else:
             return df, None
-    except ValueError:
+    except Exception:
         return None, "Problem with load data from database"
 
 
@@ -911,5 +914,5 @@ def calculator(entity1, entity2, column_name, r):
     try:
         df = pd.read_sql(sql, r)
         return df
-    except ValueError:
+    except Exception:
         return None
