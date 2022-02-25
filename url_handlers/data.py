@@ -29,9 +29,8 @@ def post_data():
     # get filter
     s_date, e_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    session['measurement_filter'] = measurement_filter
     limit_selected = request.form.get('limit_yes')
     data.limit_selected = limit_selected
     limit = request.form.get('limit')
@@ -58,7 +57,7 @@ def post_data():
             update = '0,0'
             update_list = list(update.split(","))
         data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
         return render_template('data.html',
                                start_date=s_date,
                                end_date=e_date,
@@ -66,7 +65,6 @@ def post_data():
                                limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
-                               measurement_filter=measurement_filter,
                                categorical_filter=categorical_names,
                                numerical_filter_name=name,
                                filter=categorical_filter_zip,
@@ -97,7 +95,6 @@ def post_data():
                                measurement=measurement,
                                entities=entities,
                                df_min_max=df_min_max,
-                               measurement_filter=measurement_filter,
                                start_date=s_date,
                                end_date=e_date,
                                categorical_filter=categorical_names,
@@ -145,7 +142,6 @@ def post_data():
                            what_table=what_table,
                            column=dict_of_column,
                            df_min_max=df_min_max,
-                           measurement_filter=measurement_filter,
                            start_date=s_date,
                            end_date=e_date,
                            categorical_filter=categorical_names,

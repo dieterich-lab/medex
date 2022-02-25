@@ -14,6 +14,22 @@ function cd(start, end) {
 var instance,
     min = 10,
     max = 100
+//change subcategories if category change
+$('#id_numerical_filter').change(function () {
+    var entity =$(this).val(), values = df[entity] || [];
+    min =values['min']
+    max =values['max']
+
+    $('#input1').prop("value", min);
+    $('#input2').prop("value", max);
+    instance.update({
+        min: min,
+        max: max,
+        from: min,
+        to: max
+    });
+
+});
 
 $('#range').ionRangeSlider({
     type: "double",
@@ -30,20 +46,24 @@ instance = $('#range').data("ionRangeSlider");
 
 
 function updateInputs (data) {
+
 	from = data.from;
     to = data.to;
     min = data.min;
     max = data.max;
-
     $('#input1').prop("value", from);
     $('#input2').prop("value", to);
+
 }
 
 $('#input1').on("input", function () {
     var val = $(this).prop("value");
-
-
-
+    // validate
+    if (val > to ) {
+        val = to;
+    } else if (val < min) {
+        val = min;
+    }
     instance.update({
         from: val
     });
@@ -51,38 +71,27 @@ $('#input1').on("input", function () {
 
 $('#input2').on("input", function () {
     var val = $(this).prop("value");
-
-
+    // validate
+    if (val < from) {
+        val = from;
+    } else if (val > max) {
+        val = max;
+    }
     instance.update({
         to: val
     });
 });
 
-//change subcategories if category change
-$('#id_numerical_filter').change(function () {
-    var entity =$(this).val(), values = df[entity] || [];
-    var min =values['min']
-    var max =values['max']
 
-    $('#input1').prop("value", min);
-    $('#input2').prop("value", max);
-    instance.update({
-        min: min,
-        max: max,
-        from: min,
-        to: max
-    });
-
+$(".range").ionRangeSlider({
+    type: "double",
+    skin: "big",
+    grid: true,
+    grid_num: 4,
+    step: 0.001,
+    to_fixed:true,//block the top
+    from_fixed:true//block the from
 });
-        $(".range").ionRangeSlider({
-            type: "double",
-            skin: "big",
-            grid: true,
-            grid_num: 4,
-            step: 0.001,
-            to_fixed:true,//block the top
-            from_fixed:true//block the from
-        });
 
 
 

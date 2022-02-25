@@ -87,5 +87,20 @@ function formatCustom(state) {
         $(this).html('<span class="spinner-border spinner-border0sm" role="status" aria-hidden="true"></span> Loading ...');
     });
 
+    $(document).on('change', '#categorical_filter_check', function() {
+        if(this.checked == false) {
+          $('#categorical_filter_check_block').addClass('d-none');
+        } else {
+            $('#categorical_filter_check_block').removeClass('d-none');
+        }
+    });
+    $(document).on('change', '#numerical_filter_check', function() {
+        if(this.checked == false) {
+          $('#numerical_filter_check_block').addClass('d-none');
+        } else {
+            $('#numerical_filter_check_block').removeClass('d-none');
+        }
+    });
+
 
 });

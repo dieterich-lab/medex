@@ -5,6 +5,8 @@ import modules.load_data_postgre as ps
 import plotly.graph_objects as go
 import url_handlers.filtering as filtering
 from webserver import rdb, df_min_max, data
+import plotly.express as px
+import plotly.figure_factory as ff
 import time
 
 
@@ -22,9 +24,8 @@ def post_plots():
     # get filters
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
+    categorical_filter, categorical_names, categorical_filter_zip, = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    session['measurement_filter'] = measurement_filter
     limit_selected = request.form.get('limit_yes')
     data.limit_selected = limit_selected
     limit = request.form.get('limit')
@@ -46,13 +47,12 @@ def post_plots():
             update = '0,0'
             update_list = list(update.split(","))
         data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
         return render_template('heatmap.html',
                                val=update,
                                limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
-                               measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
                                categorical_filter=categorical_names,
@@ -77,7 +77,6 @@ def post_plots():
     if error:
         return render_template('heatmap.html',
                                numeric_entities=numeric_entities,
-                               measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -99,10 +98,10 @@ def post_plots():
     if len(numeric_entities_not_measured) > 0:
         error = "{} not measure during Replicate".format(numeric_entities_not_measured)
 
-
     dfcols = pd.DataFrame(columns=numeric_df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
     corr_values = dfcols.transpose().join(dfcols, how='outer')
+    number_of_values = dfcols.transpose().join(dfcols, how='outer')
 
     for r in numeric_df.columns:
         for c in numeric_df.columns:
@@ -112,8 +111,8 @@ def post_plots():
                 df_corr = numeric_df[[r, c]].dropna()
             if len(df_corr) < 2:
                 corr_values[r][c], pvalues[r][c] = None,None
-
             else:
+                number_of_values[r][c] = len(df_corr)
                 corr_values[r][c], pvalues[r][c] = pearsonr(df_corr[r], df_corr[c])
 
     # currently don't use
@@ -125,7 +124,9 @@ def post_plots():
     corr_values = corr_values.round(decimals=2)
     corr_values = corr_values.T.values.tolist()
 
+    number_of_values = number_of_values.T.values.tolist()
     fig = go.Figure(data=go.Heatmap(z=corr_values, x=new_numeric_entities, y=new_numeric_entities, colorscale='Viridis'))
+    fig.update_traces(text=number_of_values, texttemplate="%{text}")
     fig.update_layout(height=600,
                       title='Heatmap shows Pearson correlation')
     fig = fig.to_html()
@@ -136,7 +137,6 @@ def post_plots():
                            numerical_filter=numerical_filter,
                            df_min_max=df_min_max,
                            numeric_entities=numeric_entities,
-                           measurement_filter=measurement_filter,
                            categorical_filter=categorical_names,
                            numerical_filter_name=name,
                            val=update,

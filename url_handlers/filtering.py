@@ -32,7 +32,6 @@ def check_for_numerical_filter_get():
 
 def check_for_filter_post():
 
-    measurement_filter = request.form.get("measurement_filter")
     categorical_filter = request.form.getlist('filter')
     categorical_names = request.form.getlist('cat')
     session['categorical_filter'] = categorical_filter
@@ -42,7 +41,7 @@ def check_for_filter_post():
     if categorical_filter is not None:
         categorical_filter_zip = zip(categorical_names, categorical_filter)
 
-    return categorical_filter, categorical_names, categorical_filter_zip, measurement_filter
+    return categorical_filter, categorical_names, categorical_filter_zip
 
 
 def check_for_date_filter_post():

@@ -146,6 +146,9 @@ def message_count():
         len_categorical = 'number of categorical entities: 0'
         size_categorical = 'the size of the categorical table: 0 rows'
 
+    session['start_date'] = start_date
+    session['end_date'] = end_date
+    session['new_column'] = []
     s_date, e_date = filtering.date()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
@@ -158,6 +161,7 @@ def message_count():
         date_block = 'none'
     else:
         date_block = 'block'
+    session['change_date'] = 0
 
     return dict(database=database,
                 len_numeric=len_numeric,
@@ -190,6 +194,7 @@ def message_count():
 
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
+from url_handlers.information_page import information_page
 from url_handlers.data import data_page
 from url_handlers.basic_stats import basic_stats_page
 from url_handlers.histogram import histogram_page
@@ -201,7 +206,9 @@ from url_handlers.logout import logout_page
 from url_handlers.tutorial import tutorial_page
 from url_handlers.calculator import calculator_page
 
+
 # register blueprints here:\
+app.register_blueprint(information_page)
 app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
 app.register_blueprint(tutorial_page)
@@ -220,7 +227,6 @@ def login_get():
     # get selected entities
     session['start_date'] = start_date
     session['end_date'] = end_date
-    session['measurement_filter'] = min(all_measurement)
     session['new_column'] = []
     session['change_date'] = 0
     return redirect('/data')

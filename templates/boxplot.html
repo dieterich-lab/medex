@@ -94,6 +94,7 @@
     <div class="card-body">
         {% if plot %}
         <div id="box_plot" >
+            {{table | safe}}
             {{plot | safe}}
         </div>
         {% endif %}

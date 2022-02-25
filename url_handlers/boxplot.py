@@ -21,9 +21,8 @@ def post_boxplots():
     # get filters
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
+    categorical_filter, categorical_names, categorical_filter_zip, = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    session['measurement_filter'] = measurement_filter
     limit_selected = request.form.get('limit_yes')
     data.limit_selected = limit_selected
     limit = request.form.get('limit')
@@ -48,13 +47,12 @@ def post_boxplots():
             update = '0,0'
             update_list = list(update.split(","))
         data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
         return render_template('boxplot.html',
                                val=update,
                                limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
-                               measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
                                categorical_filter=categorical_names,
@@ -91,7 +89,6 @@ def post_boxplots():
                                categorical_entities=categorical_entities,
                                subcategory_entities=subcategory_entities,
                                measurement=measurement,
-                               measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -107,6 +104,17 @@ def post_boxplots():
                                )
 
     # Plot figure and convert to an HTML string representation
+    table = df.groupby([measurement_name,categorical_entities]).size().reset_index(name='counts')
+
+    table = table.pivot(index=measurement_name, columns = categorical_entities,values='counts').reset_index()
+    print(table)
+    import plotly.graph_objects as go
+
+    fig_table = go.Figure(data=[go.Table(header=dict(values=list(table.columns)),
+                                   cells=dict(values=table.transpose().values.tolist()))
+                          ])
+
+    #len()
     if block == 'none':
         if how_to_plot == 'linear':
             fig = px.box(df, x=categorical_entities, y=numeric_entities, color=categorical_entities,
@@ -130,6 +138,9 @@ def post_boxplots():
                           'x': 0.5,
                           'xanchor': 'center', }
                       )
+    height = 30 + len(table) * 30
+    fig_table.update_layout(height=height, margin=dict(r=5, l=5, t=5, b=5))
+    fig_table = fig_table.to_html()
     fig = fig.to_html()
 
     return render_template('boxplot.html',
@@ -137,7 +148,6 @@ def post_boxplots():
                            categorical_entities=categorical_entities,
                            subcategory_entities=subcategory_entities,
                            measurement=measurement,
-                           measurement_filter=measurement_filter,
                            start_date=start_date,
                            end_date=end_date,
                            filter=categorical_filter_zip,
@@ -150,4 +160,5 @@ def post_boxplots():
                            limit_yes=data.limit_selected,
                            limit=data.limit,
                            offset=data.offset,
+                           table=fig_table,
                            plot=fig)

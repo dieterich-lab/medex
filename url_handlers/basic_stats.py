@@ -22,9 +22,8 @@ def get_basic_stats():
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
+    categorical_filter, categorical_names, categorical_filter_zip, = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    session['measurement_filter'] = measurement_filter
     limit_selected = request.form.get('limit_yes')
     data.limit_selected = limit_selected
     limit = request.form.get('limit')
@@ -44,14 +43,13 @@ def get_basic_stats():
             update_list = list(update.split(","))
 
         data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
         return render_template('basic_stats/basic_stats.html',
                                numeric_tab=True,
                                val=update,
                                limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
-                               measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
                                categorical_filter=categorical_names,
@@ -107,7 +105,6 @@ def get_basic_stats():
                                    all_measurement=all_measurement,
                                    numeric_entities=numeric_entities,
                                    measurement_numeric=measurement1,
-                                   measurement_filter=measurement_filter,
                                    start_date=start_date,
                                    end_date=end_date,
                                    categorical_filter=categorical_names,
@@ -129,7 +126,6 @@ def get_basic_stats():
                                    numeric_entities=numeric_entities,
                                    basic_stats=result,
                                    measurement_numeric=measurement1,
-                                   measurement_filter=measurement_filter,
                                    first_value=list(result.keys())[0],
                                    start_date=start_date,
                                    end_date=end_date,
@@ -171,7 +167,6 @@ def get_basic_stats():
                                    all_measurement=all_measurement,
                                    categorical_entities=categorical_entities,
                                    measurement_categorical=measurement,
-                                   measurement_filter=measurement_filter,
                                    start_date=start_date,
                                    end_date=end_date,
                                    categorical_filter=categorical_filter,
@@ -195,7 +190,6 @@ def get_basic_stats():
                                all_measurement=all_measurement,
                                categorical_entities=categorical_entities,
                                measurement_categorical=measurement,
-                               measurement_filter=measurement_filter,
                                basic_stats_c=basic_stats_c,
                                start_date=start_date,
                                end_date=end_date,
@@ -235,7 +229,6 @@ def get_basic_stats():
                                    all_measurement=all_measurement,
                                    date_entities=date_entities,
                                    measurement_date=measurement_d,
-                                   measurement_filter=measurement_filter,
                                    start_date=start_date,
                                    end_date=end_date,
                                    filter=categorical_filter_zip,
@@ -258,7 +251,6 @@ def get_basic_stats():
                                all_measurement=all_measurement,
                                date_entities=date_entities,
                                measurement_date=measurement_d,
-                               measurement_filter=measurement_filter,
                                basic_stats_d=basic_stats_d,
                                start_date=start_date,
                                end_date=end_date,

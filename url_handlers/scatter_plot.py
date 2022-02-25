@@ -23,9 +23,8 @@ def post_plots():
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    session['measurement_filter'] = measurement_filter
     limit_selected = request.form.get('limit_yes')
     data.limit_selected = limit_selected
     limit = request.form.get('limit')
@@ -55,13 +54,12 @@ def post_plots():
             update = '0,0'
             update_list = list(update.split(","))
         data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, measurement_filter, update_list,rdb)
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
         return render_template('scatter_plot.html',
                                val=update,
                                limit_yes=data.limit_selected,
                                limit=data.limit,
                                offset=data.offset,
-                               measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
                                categorical_filter=categorical_names,
@@ -108,7 +106,6 @@ def post_plots():
                                y_axis=y_axis,
                                x_measurement=x_measurement,
                                y_measurement=y_measurement,
-                               measurement_filter=measurement_filter,
                                start_date=start_date,
                                end_date=end_date,
                                filter=categorical_filter_zip,
@@ -124,11 +121,10 @@ def post_plots():
                                )
 
     # Plot figure and convert to an HTML string representation
-    start_time = time.time()
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
     x_axis_m = x_axis + '_' + x_measurement
     y_axis_m = y_axis + '_' + y_measurement
-
+    number_of_points = len(df.index)
     fig = go.Figure()
     if add_group_by:
         for i in subcategory_entities:
@@ -160,13 +156,13 @@ def post_plots():
         fig.update_layout(
             font=dict(size=16),
             title={
-                'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis,
+                'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "<br> Number of Points: " + str(number_of_points),
                 'x': 0.5,
                 'xanchor': 'center', })
     else:
         split_text = textwrap.wrap("Compare values of <b>" + x_axis + "</b> : " + measurement_name + " <b>" +
                                    x_measurement + "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" +
-                                   y_measurement + "</b> ", width=100)
+                                   y_measurement + "</b>" + "<br> Number of Points: " + str(number_of_points), width=100)
         xaxis = textwrap.wrap(x_axis_m)
         yaxis = textwrap.wrap(y_axis_m, width=40)
         legend = textwrap.wrap(categorical_entities, width=20)
@@ -198,7 +194,6 @@ def post_plots():
                            how_to_plot=how_to_plot,
                            x_measurement=x_measurement,
                            y_measurement=y_measurement,
-                           measurement_filter=measurement_filter,
                            categorical_filter=categorical_names,
                            numerical_filter_name=name,
                            start_date=start_date,
