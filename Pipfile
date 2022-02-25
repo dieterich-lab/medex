@@ -6,11 +6,10 @@ name = "pypi"
 [packages]
 numpy = "*"
 scipy = "*"
-pandas = "*"
+pandas = "==1.3.1"
 click = "*"
 flask = "*"
 flask-redis = "*"
-sklearn = "*"
 jinja2 = "*"
 flask-login = "*"
 plotly = "*"
@@ -24,9 +23,11 @@ gower = "*"
 umap = "*"
 flask_cors="*"
 requests = "*"
+scikit-learn = "==0.24.2"
+
 
 [dev-packages]
 pylint = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
