@@ -20,7 +20,7 @@ def post_boxplots():
 
     # get filters
     start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip, = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     limit_selected = request.form.get('limit_yes')
@@ -69,7 +69,7 @@ def post_boxplots():
                                )
 
     # handling errors and load data from database
-    update = data.update_filter
+    update = data.update_filter + ',' + case_ids
     df = pd.DataFrame()
     if measurement == "Search entity":
         error = "Please select number of measurement"
@@ -107,7 +107,7 @@ def post_boxplots():
     table = df.groupby([measurement_name,categorical_entities]).size().reset_index(name='counts')
 
     table = table.pivot(index=measurement_name, columns = categorical_entities,values='counts').reset_index()
-    print(table)
+
     import plotly.graph_objects as go
 
     fig_table = go.Figure(data=[go.Table(header=dict(values=list(table.columns)),

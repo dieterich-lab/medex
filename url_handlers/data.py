@@ -28,7 +28,7 @@ def post_data():
 
     # get filter
     s_date, e_date, date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     limit_selected = request.form.get('limit_yes')
@@ -71,10 +71,13 @@ def post_data():
                                df_min_max=df_min_max,
                                all_entities=all_entities,
                                measurement=measurement,
-                               entities=entities
+                               entities=entities,
+                               what_table=what_table,
                                )
 
-    update = data.update_filter
+    print(data.update_filter,case_ids)
+    update = data.update_filter + ',' + case_ids
+
     df = pd.DataFrame()
     # errors
     if not measurement:
@@ -105,6 +108,7 @@ def post_data():
                                limit=data.limit,
                                offset=data.offset,
                                numerical_filter=numerical_filter,
+                               what_table=what_table,
                                )
 
     df = filtering.checking_for_block(block, df, Name_ID, measurement_name)

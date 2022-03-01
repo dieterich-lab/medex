@@ -23,7 +23,7 @@ def post_plots():
 
     # get filters
     start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip, = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     limit_selected = request.form.get('limit_yes')
@@ -36,7 +36,6 @@ def post_plots():
     # get request values
     add = request.form.get('Add')
     clean = request.form.get('clean')
-    update = request.form.get('update')
     numeric_entities = request.form.getlist('numeric_entities_multiple')
 
     if clean is not None or add is not None:
@@ -63,7 +62,7 @@ def post_plots():
                                )
 
     # handling errors and load data from database
-    update = data.update_filter
+    update = data.update_filter + ',' + case_ids
     if len(numeric_entities) > 1:
         df, error = ps.get_heat_map(numeric_entities, date, limit_selected, limit, offset, update, rdb)
         if not error:

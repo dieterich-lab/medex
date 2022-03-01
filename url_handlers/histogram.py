@@ -21,7 +21,7 @@ def get_statistics():
 def post_statistics():
     # get filters
     start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip, = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     limit_selected = request.form.get('limit_yes')
@@ -34,14 +34,13 @@ def post_statistics():
     # get request values
     add = request.form.get('Add')
     clean = request.form.get('clean')
-    update = request.form.get('update')
     measurement = request.form.getlist('measurement')
     numeric_entities = request.form.get('numeric_entities')
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     number_of_bins = request.form.get('number_of_bins')
 
-    if update is not None or clean is not None or add is not None:
+    if clean is not None or add is not None:
         if add is not None:
             update_list = list(add.split(","))
             update = add
@@ -72,7 +71,7 @@ def post_statistics():
                                )
 
     # handling errors and load data from database
-    update = data.update_filter
+    update = data.update_filter + ',' + case_ids
     df = pd.DataFrame()
     if measurement == "Search entity":
         error = "Please select number of {}".format(measurement_name)

@@ -10,7 +10,7 @@
 {%- endmacro %}
 
 <!-- multiple selector entity -->
-{%- macro entity_form_multiple(id_multiple,name,name_date,class,value,select,d) %}
+{%- macro entity_form_multiple(id_multiple,name,class,value,select,d) %}
     <div class="form-group">
         <label for="{{ id_multiple }}">{{ d }}</label>
         <select multiple name="{{ id_multiple }}" id="{{ id_multiple }}" class="{{ class }}" class="form-control" style="width: 100%">
@@ -23,7 +23,7 @@
 {%- endmacro %}
 
 <!-- single selector entity -->
-{%- macro entity_form_single(id_single,name,name_date,class,value,select,d) %}
+{%- macro entity_form_single(id_single,name,class,value,select,d) %}
     <div class="form-group">
         <label for="{{ id_single }}">{{ d }}</label>
         <select name="{{ id_single }}" id="{{ id_single }}" class="{{ class }}" class="js-example-basic-single" style="width: 100%">

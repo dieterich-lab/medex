@@ -200,15 +200,25 @@ def get_measurement(r):
 
 
 def create_temp_table(case_id,rdb):
+    cur = rdb.cursor()
+    cur1 = rdb.cursor()
+    cur2 = rdb.cursor()
     case_id_all = "$$" + "$$,$$".join(case_id) + "$$"
     sql_drop = "DROP TABLE IF EXISTS temp_table_case_ids"
     create_table = """ CREATE TEMP TABLE temp_table_case_ids as (SELECT "Name_ID" FROM patient where 
-    "Case_ID" in ({0})) """.format(case_id_all)
+                    "Case_ID" in ({0})) """.format(case_id_all)
+
+    alter_table = """ ALTER TABLE temp_table_case_ids ADD COLUMN "Key" text DEFAULT 'case_id' """
+
+    create_table1 = """CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as (SELECT "Name_ID" FROM temp_table_case_ids)  """
+    create_table2 = """CREATE TEMP TABLE IF NOT EXISTS temp_table_ids as (SELECT "Name_ID","Key" FROM temp_table_case_ids)  """
 
     try:
-        cur = rdb.cursor()
-        cur.execute(sql_drop)
-        cur.execute(create_table)
+        Thread(target=cur.execute(sql_drop)).start()
+        Thread(target=cur.execute(create_table)).start()
+        Thread(target=cur.execute(alter_table)).start()
+        Thread(target=cur1.execute(create_table1)).start()
+        Thread(target=cur2.execute(create_table2)).start()
     except Exception:
         print('something wrong')
 
@@ -245,10 +255,16 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         """ If clean """
         old_update[0], old_update[1] = update[0], update[1]
         sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
-        sql_drop_2 = "DROP TABLE IF EXISTS temp_table_ids"
+        if case_id == 'No':
+            sql_drop_2 = "DROP TABLE IF EXISTS temp_table_ids"
+        elif case_id == 'Yes':
+            create_table = """CREATE TEMP TABLE temp_table_name_ids as (SELECT "Name_ID" FROM temp_table_case_ids)  """
+            sql_drop_2 = """ DELETE FROM temp_table_ids WHERE "Key" != 'case_id' """
         try:
             Thread(target=cur.execute(sql_drop)).start()
             Thread(target=cur2.execute(sql_drop_2)).start()
+            if case_id == 'Yes':
+                Thread(target=cur.execute(create_table)).start()
         except Exception:
             print('something wrong')
     elif int(old_update[0]) > int(update[0]) or int(old_update[1]) > int(update[1]):
@@ -261,24 +277,30 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         else:
             filter_join = '$$' + '$$,$$'.join(numerical_filter_name) + '$$'
         n = int(update[0]) + int(update[1])
+        if case_id == 'Yes':
+            filter_join = filter_join + ',$$case_id$$'
+            n = n+1
+
         query = """ SELECT "Name_ID" FROM temp_table_ids WHERE "Key" IN ({}) GROUP BY "Name_ID" 
-                    HAVING count("Name_ID") = {} """.format(filter_join, n)
+                        HAVING count("Name_ID") = {} """.format(filter_join, n)
         sql_drop_2 = "DROP TABLE IF EXISTS temp_table_name_ids"
-        create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
+        create_table = """ CREATE TEMP TABLE temp_table_name_ids as ({}) """.format(query)
         update_table = """ DELETE FROM temp_table_ids WHERE "Key" not in ({}) """.format(filter_join)
         try:
             Thread(target=cur.execute(sql_drop_2)).start()
             Thread(target=cur.execute(create_table)).start()
             Thread(target=cur2.execute(update_table)).start()
-            cur.execute(sql_drop_2)
-            cur.execute(create_table)
         except Exception:
             print('something wrong')
     elif (update[0] == '1' and update[1] == '0') or (update[0] == '0' and update[1] == '1'):
         """If first filter selected"""
         old_update[0], old_update[1] = update[0], update[1]
-        create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
-        create_table_2 = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_ids as ({}) """.format(query2)
+        if case_id == 'No':
+            create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
+            create_table_2 = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_ids as ({}) """.format(query2)
+        elif case_id == 'Yes':
+            create_table = """ DELETE FROM temp_table_name_ids WHERE "Name_ID" NOT IN ({})""".format(query)
+            create_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
         try:
             Thread(target=cur.execute(create_table)).start()
             Thread(target=cur2.execute(create_table_2)).start()
@@ -287,7 +309,7 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
     elif int(old_update[0]) < int(update[0]) or int(old_update[1]) < int(update[1]):
         """ If next filters added """
         old_update[0], old_update[1] = update[0], update[1]
-        update_table = """ NSERT INTO temp_table_name_ids WHERE "Name_ID" NOT IN ({})""".format(query)
+        update_table = """ DELETE FROM temp_table_name_ids WHERE "Name_ID" NOT IN ({})""".format(query)
         update_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
         try:
             Thread(target=cur.execute(update_table)).start()
@@ -307,18 +329,13 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
      r: connection with database
     return: DataFrame with all selected entities
     """
-    if len(measurement) > 1:
-        meas_date = ",measurement"
-        measurement = "$$" + "$$,$$".join(measurement) + "$$"
-        meas = "AND measurement IN ({0})".format(measurement)
-    else:
-        meas_date = ""
-        meas = ""
+
+    measurement = "$$" + "$$,$$".join(measurement) + "$$"
 
     if date[0] == date[1] and date[2] == 0:
-        meas_date = meas_date
+        meas_date = ""
     else:
-        meas_date = meas_date + ',"Date"'
+        meas_date = ',"Date"'
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     entity_column_n, entity_column_c, entity_column_d = '', '', ''
@@ -326,7 +343,7 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
     join_n, join_c, join_d = "", "", ""
     cte_table_n, cte_table_c, cte_table_d = "", "", ""
 
-    if update == '0,0':
+    if update == '0,0,No':
         filter_en, filter_ec, filter_ed = "", "", ""
     else:
         filter_en = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """
@@ -344,129 +361,128 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
         date_value = ''
 
     if not limit_selected and what_table == 'long':
-        sql = """(SELECT en."Name_ID" {6},"Key","Value"::text
+        sql = """(SELECT en."Name_ID" {6},measurement,"Key","Value"::text
                          FROM examination_numerical as en
                          {3}
                          WHERE "Key" IN ({0})  
-                         {1}
+                         AND measurement IN ({1})
                          {2})
                          UNION
-                         (SELECT ec."Name_ID" {6},"Key","Value"::text
+                         (SELECT ec."Name_ID" {6},measurement,"Key","Value"::text
                          FROM examination_categorical as ec
                          {4}
                          WHERE "Key" IN ({0}) 
-                         {1}
+                         AND measurement IN ({1})
                          {2})
                          UNION
-                         (SELECT ed."Name_ID" {6},"Key","Value"::text
+                         (SELECT ed."Name_ID" {6},measurement,"Key","Value"::text
                          FROM examination_date as ed
                          {5}
                          WHERE "Key" IN ({0}) 
-                         {1}
+                         AND measurement IN ({1})
                          {2})
-                         """.format(entity_final, meas, date_value, filter_en, filter_ec, filter_ed,meas_date)
+                         """.format(entity_final, measurement,date_value, filter_en, filter_ec, filter_ed,meas_date)
     else:
         if numerical_entities:
             entity_column_n = '"' + '","'.join(numerical_entities) + '",'
             for i, e in enumerate(numerical_entities):
                 if limit_selected:
-                    sql_part_n = """(SELECT en."Name_ID" {5},"Key","Value"::text
+                    sql_part_n = """(SELECT en."Name_ID" {5},measurement,"Key","Value"::text
                                    FROM examination_numerical as en
                                    {4}
                                    WHERE "Key" = $${0}$$  
-                                   {1}
+                                   AND measurement IN ({1})
                                    {2}
-                                   {3}) UNION """.format(e, meas, date_value, limit,filter_en, meas_date)
+                                   {3}) UNION """.format(e, measurement, date_value, limit,filter_en, meas_date)
                     sql_n = sql_n + sql_part_n
                 if what_table != 'long':
                     tab = 'a_{}'.format(i)
                     cte_table = """,
-                                    {0} as (SELECT en."Name_ID" {6},STRING_AGG("Value"::text, ';') "{1}"
+                                    {0} as (SELECT en."Name_ID" {6},measurement,STRING_AGG("Value"::text, ';') "{1}"
                                     FROM examination_numerical en
                                     {5}
                                     WHERE "Key" = $${1}$$
-                                    {2}
+                                    AND measurement IN ({2})
                                     {3}
-                                    GROUP BY en."Name_ID" {6},"Key"
-                                    {4})""".format(tab, e, meas, date_value, limit, filter_en,meas_date)
+                                    GROUP BY en."Name_ID" {6},measurement,"Key"
+                                    {4})""".format(tab, e, measurement, date_value, limit, filter_en,meas_date)
                     cte_table_n = cte_table_n + cte_table
                     join = """ 
                             FULL OUTER JOIN {0} 
-                            USING("Name_ID" {1}) """.format(tab,meas_date)
+                            USING("Name_ID" {1},measurement) """.format(tab,meas_date)
                     join_n = join_n + join
         if categorical_entities:
             entity_column_c = '"' + '","'.join(categorical_entities) + '",'
             for i, e in enumerate(categorical_entities):
                 if limit_selected:
-                    sql_part_c = """(SELECT ec."Name_ID" {5},"Key","Value"::text
+                    sql_part_c = """(SELECT ec."Name_ID" {5},measurement,"Key","Value"::text
                                     FROM examination_categorical as ec
                                     {4}
                                     WHERE "Key" = $${0}$$  
-                                    {1} 
+                                    AND measurement IN ({1}) 
                                     {2}
-                                    {3}) UNION """.format(e, meas, date_value, limit, filter_ec, meas_date)
+                                    {3}) UNION """.format(e, measurement, date_value, limit, filter_ec, meas_date)
                     sql_c = sql_c + sql_part_c
                 if what_table != 'long':
                     tab = 'a_{}'.format(len(numerical_entities) + i)
                     cte_table = """,
-                                    {0} as (SELECT ec."Name_ID" {6},STRING_AGG("Value"::text, ';') "{1}"
+                                    {0} as (SELECT ec."Name_ID" {6},measurement,STRING_AGG("Value"::text, ';') "{1}"
                                     FROM examination_categorical ec
                                     {5}
                                     WHERE "Key" = $${1}$$
-                                    {2}
+                                    AND measurement IN ({2})
                                     {3}
-                                    GROUP BY ec."Name_ID","Date","Key","measurement"
-                                    {4})""".format(tab, e, meas, date_value, limit, filter_ec, meas_date)
+                                    GROUP BY ec."Name_ID" {6},"measurement","Key"
+                                    {4})""".format(tab, e, measurement, date_value, limit, filter_ec, meas_date)
                     cte_table_c = cte_table_c + cte_table
                     join = """ 
                                 FULL OUTER JOIN {0} 
-                                USING("Name_ID" {1}) """.format(tab,meas_date)
+                                USING("Name_ID" {1},measurement) """.format(tab,meas_date)
                     join_c = join_c + join
         if date_entities:
             entity_column_d = '"' + '","'.join(date_entities) + '",'
             for i,e in enumerate(date_entities):
                 if limit_selected:
-                    sql_part_d = """(SELECT ed."Name_ID" {5},"Key","Value"::text
+                    sql_part_d = """(SELECT ed."Name_ID" {5},measurement, "Key","Value"::text
                                     FROM examination_date as ed 
                                     {4}
                                     WHERE "Key" = $${0}$$  
-                                    {1} 
+                                    AND measurement IN ({1}) 
                                     {2}
-                                    {3}) UNION """.format(e, meas,  date_value, limit, filter_ed, meas_date)
+                                    {3}) UNION """.format(e, measurement,  date_value, limit, filter_ed, meas_date)
                     sql_d = sql_d + sql_part_d
                 if what_table != 'long':
                     tab = 'a_{}'.format(len(numerical_entities) + len(categorical_entities) + i)
                     cte_table = """,
-                                    {0} as (SELECT ed."Name_ID" {6},STRING_AGG("Value"::text, ';') "{1}"
+                                    {0} as (SELECT ed."Name_ID" {6},measurement,STRING_AGG("Value"::text, ';') "{1}"
                                     FROM examination_date ed
                                     {5}
                                     WHERE "Key" = $${1}$$
-                                    {2}
+                                    AND measurement IN ({1})
                                     {3}
-                                    GROUP BY "Name_ID","Date","Key","measurement"
-                                    {4} )""".format(tab, e, meas, date_value, limit, filter_ed, meas_date)
+                                    GROUP BY "Name_ID" {6},"measurement","Key"
+                                    {4} )""".format(tab, e, measurement, date_value, limit, filter_ed, meas_date)
                     cte_table_d = cte_table_d + cte_table
                     join = """
                             FULL OUTER JOIN {0} 
-                            USING("Name_ID" {1}) """.format(tab, meas_date)
+                            USING("Name_ID" {1},measurement) """.format(tab, meas_date)
                     join_c = join_c + join
         if what_table != 'long':
-            sql2_part1 = "WITH" + cte_table_n + cte_table_c + cte_table_d + """ SELECT "Name_ID" {}, """.format(meas_date) + \
+            sql2_part1 = "WITH" + cte_table_n + cte_table_c + cte_table_d + """ SELECT "Name_ID" {},measurement, """.format(meas_date) + \
                        entity_column_n + entity_column_c + entity_column_d
             sql2_part2 = " From a_0" + join_n + join_c + join_d
             sql2 = sql2_part1[:-1]+sql2_part2
             start = sql2.find(',')
             start_full = sql2.find('FULL')
-            sql2 = sql2[0:start] + sql2[start+1:start_full] + sql2[start_full+100::]
+
+            sql2 = sql2[0:start] + sql2[start+1:start_full] + sql2[start_full+97::]
         else:
             sql = sql_n + sql_c + sql_d
             sql = sql[:-6]
-
     try:
         if what_table == 'long':
             df = pd.read_sql(sql, r)
         else:
-            print(sql2)
             df = pd.read_sql(sql2, r)
         return df, None
     except Exception:
@@ -489,7 +505,7 @@ def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, up
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0':
+    if update == '0,0,No':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """
@@ -503,7 +519,7 @@ def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, up
                                    WHERE "Key" IN ({0})
                                    AND "measurement" IN ({1}) 
                                    {2}
-                                   GROUP BY "Name_ID","Key","measurement")
+                                   GROUP BY en."Name_ID","Key","measurement")
                 SELECT "Key","measurement",
                                 count("Name_ID"),
                                 min("Value"),
@@ -543,6 +559,9 @@ def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, up
                                     FROM basic_stats as en  
                                     GROUP BY "Key","measurement" 
                                     ORDER BY "Key","measurement" """.format(sql_part)
+    df = pd.read_sql(sql, r)
+    df['count NaN'] = int(n) - df['count']
+    df = df.round(2)
     try:
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
@@ -561,13 +580,9 @@ def get_cat_basic_stats(entity, measurement, date, limit_selected, limit, offset
     return: DataFrame with calculated basic statistic
     """
 
-    n = """SELECT COUNT ( DISTINCT "Name_ID") FROM Patient"""
-    n = pd.read_sql(n, r)
-    n = n['count']
-
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0':
+    if update == '0,0,No':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on ec."Name_ID"= ttni."Name_ID" """
@@ -581,7 +596,7 @@ def get_cat_basic_stats(entity, measurement, date, limit_selected, limit, offset
                                    WHERE "Key" IN ({0})
                                    AND "measurement" IN ({1}) 
                                    {2}
-                                   GROUP BY "Name_ID","Key","measurement")
+                                   GROUP BY ec."Name_ID","Key","measurement")
             SELECT "Key","measurement",count("Name_ID") 
                         FROM basic_stats
                         GROUP BY "measurement","Key" """.format(entity_final, measurement, date_value, filter)
@@ -604,6 +619,9 @@ def get_cat_basic_stats(entity, measurement, date, limit_selected, limit, offset
                         FROM basic_stats
                         GROUP BY "measurement","Key" """.format(sql_part)
     try:
+        n = """SELECT COUNT ( DISTINCT "Name_ID") FROM Patient"""
+        n = pd.read_sql(n, r)
+        n = n['count']
         df = pd.read_sql(sql, r)
         df['count NaN'] = int(n) - df['count']
         return df, None
@@ -626,7 +644,7 @@ def get_date_basic_stats(entity, measurement, date, limit_selected, limit, offse
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0':
+    if update == '0,0,No':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on ed."Name_ID"=ttni."Name_ID" """
@@ -634,13 +652,13 @@ def get_date_basic_stats(entity, measurement, date, limit_selected, limit, offse
         date_value = 'AND "Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
     else:
         date_value = ''
-    sql = """WITH basic_stats as (SELECT ec."Name_ID","Key","measurement"
+    sql = """WITH basic_stats as (SELECT ed."Name_ID","Key","measurement"
                                    FROM examination_date as ed
                                    {3}
                                    WHERE "Key" IN ({0})
                                    AND "measurement" IN ({1}) 
                                    {2}
-                                   GROUP BY "Name_ID","Key","measurement")
+                                   GROUP BY ed."Name_ID","Key","measurement")
             SELECT "Key","measurement",count("Name_ID") 
                         FROM basic_stats
                         GROUP BY "measurement","Key" """.format(entity_final, measurement, date_value, filter)
@@ -693,7 +711,7 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
     return: DataFrame with calculated basic statistic
     """
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
-    if update == '0,0':
+    if update == '0,0,No':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on x."Name_ID"=ttni."Name_ID" """
@@ -772,7 +790,7 @@ def get_bar_chart(entity, subcategory, measurement, date, limit_selected, limit,
 
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0':
+    if update == '0,0,No':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on ec."Name_ID"=ttni."Name_ID" """
@@ -819,7 +837,7 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, dat
     
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0':
+    if update == '0,0,No':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """
@@ -868,7 +886,7 @@ def get_heat_map(entity, date, limit_selected, limit, offset, update, r):
 
     case_statement = ""
     crosstab_columns = ""
-    if update == '0,0':
+    if update == '0,0,No':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """

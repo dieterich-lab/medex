@@ -123,15 +123,12 @@ def favicon():
 @app.context_processor
 def message_count():
     case = session.get('case_ids')
-    if case is None:
+    if case is None or case == 'No':
         data.case_ids = []
         case_display = 'none'
+        session['case_ids'] = 'No'
     else:
         case_display = 'block'
-    new_column = session.get('new_column')
-    if new_column is not None:
-        data.case_ids = []
-
     database_name = os.environ['POSTGRES_DB']
     database = '{} data'.format(database_name)
 
@@ -148,7 +145,7 @@ def message_count():
 
     session['start_date'] = start_date
     session['end_date'] = end_date
-    session['new_column'] = []
+    session['change_date'] = 0
     s_date, e_date = filtering.date()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
@@ -161,15 +158,12 @@ def message_count():
         date_block = 'none'
     else:
         date_block = 'block'
-    session['change_date'] = 0
-
     return dict(database=database,
                 len_numeric=len_numeric,
                 size_numeric=size_numeric,
                 len_categorical=len_categorical,
                 size_categorical=size_categorical,
                 all_numeric_entities=all_numeric_entities,
-                all_numeric_entities2=session.get('new_column'),
                 all_categorical_entities=all_categorical_entities,
                 all_subcategory_entities=all_subcategory_entities,
                 all_timestamp_entities=all_timestamp_entities,
@@ -227,8 +221,12 @@ def login_get():
     # get selected entities
     session['start_date'] = start_date
     session['end_date'] = end_date
-    session['new_column'] = []
     session['change_date'] = 0
+    case = session.get('case_ids')
+    if case is None:
+        session['case_ids'] = 'No'
+    else:
+        session['case_ids'] = 'Yes'
     return redirect('/data')
 
 
@@ -245,7 +243,9 @@ def get_cases():
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL, json=session_id_json)
     case_ids = cases_get.json()
     data.case_ids = case_ids['cases_ids']
+    ps.create_temp_table(case_ids['cases_ids'],rdb)
     data.table_case_ids = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
+
     session['case_ids'] = 'Yes'
     return redirect('/')
 

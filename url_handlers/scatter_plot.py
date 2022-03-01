@@ -22,7 +22,7 @@ def get_plots():
 def post_plots():
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     limit_selected = request.form.get('limit_yes')
@@ -78,7 +78,7 @@ def post_plots():
                                )
 
     # handling errors and load data from database
-    update = data.update_filter
+    update = data.update_filter + ',' + case_ids
     df = pd.DataFrame()
     if x_measurement == "Search entity" or y_measurement == "Search entity":
         error = "Please select number of {}".format(measurement_name)

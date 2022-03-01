@@ -1,6 +1,7 @@
 from flask import g
 import psycopg2.extras
 import os
+#from sqlalchemy import create_engine
 import time
 
 user = os.environ['POSTGRES_USER']
@@ -18,6 +19,7 @@ def connect_db():
     while db is None:
         try:
             db = psycopg2.connect(DATABASE_URL)
+            #engine = create_engine(URL_string, echo=False)
             return db
         except Exception:
             time.sleep(0.1)

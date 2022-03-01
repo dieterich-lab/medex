@@ -21,7 +21,7 @@ def get_basic_stats():
 
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
+    case_ids = session.get('case_ids')
     categorical_filter, categorical_names, categorical_filter_zip, = filtering.check_for_filter_post()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     limit_selected = request.form.get('limit_yes')
@@ -41,7 +41,6 @@ def get_basic_stats():
         elif clean is not None:
             update = '0,0'
             update_list = list(update.split(","))
-
         data.update_filter = update
         ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
         return render_template('basic_stats/basic_stats.html',
@@ -68,7 +67,9 @@ def get_basic_stats():
         measurement1 = request.form.getlist('measurement_numeric')
 
         # handling errors and load data from database
-        update = data.update_filter
+
+        update = data.update_filter + ',' + case_ids
+
         df = pd.DataFrame()
         error = None
         if not measurement1:
@@ -78,7 +79,6 @@ def get_basic_stats():
         elif numeric_entities:
             df, error = ps.get_basic_stats(numeric_entities, measurement1, date, limit_selected, limit, offset, update, rdb)
 
-            start_time = time.time()
             # calculation basic stats
             if not 'count NaN' in request.form: df = df.drop(['count NaN'], axis=1)
             if not 'count' in request.form: df = df.drop(['count'], axis=1)
@@ -95,7 +95,6 @@ def get_basic_stats():
                 df = df.set_index(['Key', 'measurement'])
                 data.csv = df.to_csv()
                 result = df.to_dict()
-            print("--- %s seconds data ---" % (time.time() - start_time))
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
@@ -148,7 +147,7 @@ def get_basic_stats():
         measurement = request.form.getlist('measurement_categorical')
 
         # handling errors and load data from database
-        update = data.update_filter
+        update = data.update_filter + ',' + case_ids
         df = pd.DataFrame()
 
         if not measurement:
@@ -209,7 +208,7 @@ def get_basic_stats():
         measurement_d = request.form.getlist('measurement_date')
 
         # handling errors and load data from database
-        update = data.update_filter
+        update = data.update_filter + ',' + case_ids
         df = pd.DataFrame()
 
         if not measurement_d:
