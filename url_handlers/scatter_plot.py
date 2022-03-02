@@ -35,8 +35,12 @@ def post_plots():
     # get request values
     add = request.form.get('Add')
     clean = request.form.get('clean')
-    x_measurement = request.form.get('x_measurement')
-    y_measurement = request.form.get('y_measurement')
+    if block == 'none':
+        x_measurement = all_measurement[0]
+        y_measurement = all_measurement[0]
+    else:
+        x_measurement = request.form.get('x_measurement')
+        y_measurement = request.form.get('y_measurement')
     add_group_by = request.form.get('add_group_by') is not None
     y_axis = request.form.get('y_axis')
     x_axis = request.form.get('x_axis')
@@ -121,7 +125,6 @@ def post_plots():
                                )
 
     # Plot figure and convert to an HTML string representation
-    df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
     x_axis_m = x_axis + '_' + x_measurement
     y_axis_m = y_axis + '_' + y_measurement
     number_of_points = len(df.index)
@@ -153,30 +156,26 @@ def post_plots():
             )
         )
     if block == 'none':
-        fig.update_layout(
-            font=dict(size=16),
-            title={
-                'text': "Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "<br> Number of Points: " + str(number_of_points),
-                'x': 0.5,
-                'xanchor': 'center', })
+        split_text = textwrap.wrap("Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "<br> Number of Points: " + str(number_of_points))
+
     else:
         split_text = textwrap.wrap("Compare values of <b>" + x_axis + "</b> : " + measurement_name + " <b>" +
                                    x_measurement + "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" +
                                    y_measurement + "</b>" + "<br> Number of Points: " + str(number_of_points), width=100)
-        xaxis = textwrap.wrap(x_axis_m)
-        yaxis = textwrap.wrap(y_axis_m, width=40)
-        legend = textwrap.wrap(categorical_entities, width=20)
+    xaxis = textwrap.wrap(x_axis_m)
+    yaxis = textwrap.wrap(y_axis_m, width=40)
+    legend = textwrap.wrap(categorical_entities, width=20)
 
-        fig.update_layout(
-            template="plotly_white",
-            legend_title='<br>'.join(legend),
-            font=dict(size=16),
-            xaxis_title='<br>'.join(xaxis),
-            yaxis_title='<br>'.join(yaxis),
-            title={
-                'text': '<br>'.join(split_text),
-                'x': 0.5,
-                'xanchor': 'center', })
+    fig.update_layout(
+        template="plotly_white",
+        legend_title='<br>'.join(legend),
+        font=dict(size=16),
+        xaxis_title='<br>'.join(xaxis),
+        yaxis_title='<br>'.join(yaxis),
+        title={
+            'text': '<br>'.join(split_text),
+            'x': 0.5,
+            'xanchor': 'center', })
     if log_x == 'log_x':
         fig.update_xaxes(type="log")
     if log_y == 'log_y':

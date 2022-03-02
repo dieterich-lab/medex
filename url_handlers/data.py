@@ -4,7 +4,7 @@ import pandas as pd
 import time
 import url_handlers.filtering as filtering
 from webserver import rdb, data, Name_ID, block, table_builder, all_entities, df_min_max, measurement_name,\
-    all_measurement, list_all_categorical_entities, list_all_date_entities, list_all_numeric_entities
+    all_measurement, list_all_categorical_entities, list_all_date_entities, list_all_numeric_entities,block
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -44,7 +44,11 @@ def post_data():
     clean = request.form.get('clean')
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
-    measurement = request.form.getlist('measurement')
+    if block == 'none':
+        measurement = all_measurement[0]
+    else:
+        measurement = request.form.getlist('measurement')
+
     categorical_entities = list(set(entities)-set(list_all_numeric_entities)-set(list_all_date_entities))
     numerical_entities = list(set(entities) - set(list_all_categorical_entities) - set(list_all_date_entities))
     date_entities = list(set(entities) - set(list_all_numeric_entities) - set(list_all_categorical_entities))
@@ -75,7 +79,6 @@ def post_data():
                                what_table=what_table,
                                )
 
-    print(data.update_filter,case_ids)
     update = data.update_filter + ',' + case_ids
 
     df = pd.DataFrame()

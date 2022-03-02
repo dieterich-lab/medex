@@ -64,7 +64,10 @@ def get_basic_stats():
 
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities_multiple')
-        measurement1 = request.form.getlist('measurement_numeric')
+        if block == 'none':
+            measurement1 = all_measurement[0]
+        else:
+            measurement1 = request.form.getlist('measurement_numeric')
 
         # handling errors and load data from database
 
@@ -144,7 +147,10 @@ def get_basic_stats():
 
         # list selected data by client
         categorical_entities = request.form.getlist('categorical_entities')
-        measurement = request.form.getlist('measurement_categorical')
+        if block == 'none':
+            measurement = all_measurement[0]
+        else:
+            measurement = request.form.getlist('measurement_categorical')
 
         # handling errors and load data from database
         update = data.update_filter + ',' + case_ids
@@ -205,7 +211,10 @@ def get_basic_stats():
 
         # list selected data by client
         date_entities = request.form.getlist('date_entities')
-        measurement_d = request.form.getlist('measurement_date')
+        if block == 'none':
+            measurement_d = all_measurement[0]
+        else:
+            measurement_d = request.form.getlist('measurement_date')
 
         # handling errors and load data from database
         update = data.update_filter + ',' + case_ids

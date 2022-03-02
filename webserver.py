@@ -104,7 +104,6 @@ df_min_max = df_min_max.to_dict('index')
 all_measurement = ps.get_measurement(rdb)
 df_1, df_2, df_3 = ps.database_size(rdb)
 
-
 # show all hide measurement selector when was only one measurement for all entities
 if len(all_measurement) < 2:
     block = 'none'

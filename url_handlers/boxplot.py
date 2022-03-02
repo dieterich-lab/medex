@@ -33,7 +33,10 @@ def post_boxplots():
     # get request values
     add = request.form.get('Add')
     clean = request.form.get('clean')
-    measurement = request.form.getlist('measurement')
+    if block == 'none':
+        measurement = all_measurement[0]
+    else:
+        measurement = request.form.getlist('measurement')
     numeric_entities = request.form.get('numeric_entities')
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
@@ -104,14 +107,17 @@ def post_boxplots():
                                )
 
     # Plot figure and convert to an HTML string representation
-    table = df.groupby([measurement_name,categorical_entities]).size().reset_index(name='counts')
-
-    table = table.pivot(index=measurement_name, columns = categorical_entities,values='counts').reset_index()
+    if block == 'none':
+        table = df.groupby([categorical_entities]).size().reset_index(name='counts')
+        print(table)
+    else:
+        table = df.groupby([measurement_name,categorical_entities]).size().reset_index(name='counts')
+        table = table.pivot(index=measurement_name, columns = categorical_entities,values='counts').reset_index()
 
     import plotly.graph_objects as go
 
-    fig_table = go.Figure(data=[go.Table(header=dict(values=list(table.columns)),
-                                   cells=dict(values=table.transpose().values.tolist()))
+    fig_table = go.Figure(data=[go.Table(header=dict(values=list(table[categorical_entities].values)),
+                                   cells=dict(values=table['counts'].transpose().values.tolist()))
                           ])
 
     #len()

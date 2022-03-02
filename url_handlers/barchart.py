@@ -33,7 +33,10 @@ def post_statistics():
     # get request values
     add = request.form.get('Add')
     clean = request.form.get('clean')
-    measurement = request.form.getlist('measurement')
+    if block == 'none':
+        measurement = all_measurement[0]
+    else:
+        measurement = request.form.getlist('measurement')
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')

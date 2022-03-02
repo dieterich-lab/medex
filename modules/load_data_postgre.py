@@ -458,7 +458,7 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                                     FROM examination_date ed
                                     {5}
                                     WHERE "Key" = $${1}$$
-                                    AND measurement IN ({1})
+                                    AND measurement IN ({2})
                                     {3}
                                     GROUP BY "Name_ID" {6},"measurement","Key"
                                     {4} )""".format(tab, e, measurement, date_value, limit, filter_ed, meas_date)
@@ -479,6 +479,10 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
         else:
             sql = sql_n + sql_c + sql_d
             sql = sql[:-6]
+    if what_table == 'long':
+        df = pd.read_sql(sql, r)
+    else:
+        df = pd.read_sql(sql2, r)
     try:
         if what_table == 'long':
             df = pd.read_sql(sql, r)
