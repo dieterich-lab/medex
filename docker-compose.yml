@@ -10,6 +10,7 @@ services:
       - database
     environment:
       - EXPRESS_MEDEX_MEDDUSA_URL=http://localhost:3500/result/cases/get
+      - MEDDUSA_URL = http://localhost:600
       - PYTHONUNBUFFERED=1
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test

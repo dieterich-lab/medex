@@ -111,6 +111,12 @@ if len(all_measurement) < 2:
 else:
     block = 'block'
 
+try:
+    EXPRESS_MEDEX_MEDDUSA_URL = os.environ['EXPRESS_MEDEX_MEDDUSA_URL']
+    MEDUSA_URL = os.environ['MEDDUSA_URLL']
+except Exception:
+    EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500/result/cases/get'
+    MEDDUSA_URL = 'http://localhost:600'
 
 # favicon
 @app.route('/favicon.ico')
@@ -159,6 +165,7 @@ def message_count():
     else:
         date_block = 'block'
     return dict(database=database,
+                meddusa_url = MEDDUSA_URL,
                 len_numeric=len_numeric,
                 size_numeric=size_numeric,
                 len_categorical=len_categorical,
@@ -230,10 +237,7 @@ def login_get():
     return redirect('/data')
 
 
-try:
-    EXPRESS_MEDEX_MEDDUSA_URL = os.environ['EXPRESS_MEDEX_MEDDUSA_URL']
-except Exception:
-    EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500/result/cases/get'
+
 
 
 @app.route('/_session', methods=['GET'])
