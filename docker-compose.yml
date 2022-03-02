@@ -5,12 +5,12 @@ services:
     container_name: medex
     build: .
     ports:
-      - "700:700"
+      - "127.0.0.1:700:700"
     depends_on: # other containers it needs in order to run
       - database
     environment:
       - EXPRESS_MEDEX_MEDDUSA_URL=http://localhost:3500/result/cases/get
-      - MEDDUSA_URL = http://localhost:600
+      - MEDDUSA_URL=http://localhost:3000
       - PYTHONUNBUFFERED=1
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
