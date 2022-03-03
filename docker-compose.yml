@@ -5,7 +5,7 @@ services:
     container_name: medex
     build: .
     ports:
-      - "127.0.0.1:700:700"
+      - "7000:7000"
     depends_on: # other containers it needs in order to run
       - database
     environment:

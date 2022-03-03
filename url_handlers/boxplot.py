@@ -109,7 +109,6 @@ def post_boxplots():
     # Plot figure and convert to an HTML string representation
     if block == 'none':
         table = df.groupby([categorical_entities]).size().reset_index(name='counts')
-        print(table)
     else:
         table = df.groupby([measurement_name,categorical_entities]).size().reset_index(name='counts')
         table = table.pivot(index=measurement_name, columns = categorical_entities,values='counts').reset_index()

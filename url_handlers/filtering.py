@@ -14,7 +14,7 @@ def date():
 
 def check_for_filter_get():
     categorical_filter = session.get('categorical_filter')
-    categorical_names = session.get('categorical_names')
+    categorical_names = session.get('categorical_filter')
     if categorical_filter:
         categorical_filter = zip(categorical_names, categorical_filter)
     return categorical_filter, categorical_names

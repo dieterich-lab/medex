@@ -205,6 +205,8 @@ def create_temp_table(case_id,rdb):
     cur2 = rdb.cursor()
     case_id_all = "$$" + "$$,$$".join(case_id) + "$$"
     sql_drop = "DROP TABLE IF EXISTS temp_table_case_ids"
+    sql_drop1 = "DROP TABLE IF EXISTS temp_table_name_ids"
+    sql_drop2 = "DROP TABLE IF EXISTS temp_table_ids"
     create_table = """ CREATE TEMP TABLE temp_table_case_ids as (SELECT "Name_ID" FROM patient where 
                     "Case_ID" in ({0})) """.format(case_id_all)
 
@@ -217,7 +219,9 @@ def create_temp_table(case_id,rdb):
         Thread(target=cur.execute(sql_drop)).start()
         Thread(target=cur.execute(create_table)).start()
         Thread(target=cur.execute(alter_table)).start()
+        Thread(target=cur1.execute(sql_drop1)).start()
         Thread(target=cur1.execute(create_table1)).start()
+        Thread(target=cur2.execute(sql_drop2)).start()
         Thread(target=cur2.execute(create_table2)).start()
     except Exception:
         print('something wrong')
@@ -460,7 +464,7 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                                     WHERE "Key" = $${1}$$
                                     AND measurement IN ({2})
                                     {3}
-                                    GROUP BY "Name_ID" {6},"measurement","Key"
+                                    GROUP BY ed."Name_ID" {6},"measurement","Key"
                                     {4} )""".format(tab, e, measurement, date_value, limit, filter_ed, meas_date)
                     cte_table_d = cte_table_d + cte_table
                     join = """

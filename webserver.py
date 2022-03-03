@@ -112,11 +112,13 @@ else:
 
 try:
     EXPRESS_MEDEX_MEDDUSA_URL = os.environ['EXPRESS_MEDEX_MEDDUSA_URL']
-    MEDDUSA_URL = os.environ['MEDDUSA_URL']
 except Exception:
     EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500/result/cases/get'
-    MEDDUSA_URL = 'http://localhost:3000'
 
+try:
+    MEDDUSA_URL = os.environ['MEDDUSA_URL']
+except Exception:
+    MEDDUSA_URL = 'http://localhost:3000'
 
 # favicon
 @app.route('/favicon.ico')
@@ -197,7 +199,6 @@ def message_count():
 
 # Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
-from url_handlers.information_page import information_page
 from url_handlers.data import data_page
 from url_handlers.basic_stats import basic_stats_page
 from url_handlers.histogram import histogram_page
@@ -211,7 +212,6 @@ from url_handlers.calculator import calculator_page
 
 
 # register blueprints here:\
-app.register_blueprint(information_page)
 app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
 app.register_blueprint(tutorial_page)
@@ -231,15 +231,17 @@ def login_get():
     session['start_date'] = start_date
     session['end_date'] = end_date
     session['change_date'] = 0
+    session['categorical_filter'] = None
+    session['categorical_filter'] = None
+    session['name'],session['from'], session['to'], session['min'], session['get']= None,None,None,None,None
     case = session.get('case_ids')
-    if case is None:
+    data.update_filter = '0,0'
+    if case is None or case == 'No':
         session['case_ids'] = 'No'
+        ps.filtering('No', None, None, None, None, None, ['0', '0'], rdb)
     else:
         session['case_ids'] = 'Yes'
     return redirect('/data')
-
-
-
 
 
 @app.route('/_session', methods=['GET'])
