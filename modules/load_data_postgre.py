@@ -5,6 +5,7 @@ import time
 from collections import ChainMap
 import textwrap as tr
 from threading import Thread
+import io
 
 
 def get_header(r):
@@ -483,15 +484,14 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
         else:
             sql = sql_n + sql_c + sql_d
             sql = sql[:-6]
-    if what_table == 'long':
-        df = pd.read_sql(sql, r)
-    else:
-        df = pd.read_sql(sql2, r)
     try:
         if what_table == 'long':
             df = pd.read_sql(sql, r)
+            print(sql)
         else:
             df = pd.read_sql(sql2, r)
+            print(sql2)
+            print(df)
         return df, None
     except Exception:
         df = pd.DataFrame()
@@ -799,7 +799,7 @@ def get_bar_chart(entity, subcategory, measurement, date, limit_selected, limit,
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
     if update == '0,0,No':
-        filter =''
+        filter = ''
     else:
         filter = """ inner join temp_table_name_ids as ttni on ec."Name_ID"=ttni."Name_ID" """
     if limit_selected:
@@ -941,15 +941,43 @@ def get_heat_map(entity, date, limit_selected, limit, offset, update, r):
         return None, "Problem with load data from database"
 
 
-def calculator(entity1, entity2, column_name, r):
+def calculator(entity1, entity2, date_first_measurement, date_second_measurement, column_name, r):
 
-    sql = """ SELECT a."Name_ID",a."measurement",
-                DATE_PART('year',a."Value"::timestamp) - DATE_PART('year',b."Value"::timestamp) as "{2}" 
-                FROM examination_date as a FULL JOIN examination_date as b on a."Name_ID" = b."Name_ID" 
-                and a."measurement" = b."measurement" where a."Key"='{0}' and b."Key"='{1}' """.format(entity1, entity2, column_name)
+    sql = """ SELECT a."Name_ID",a."Date",DATE_PART('year',a."Value"::timestamp) - DATE_PART('year',b."Value"::timestamp) as {4}
+                FROM (SELECT "Name_ID","Date","measurement","Value" from examination_date WHERE "Key"='{0}' and "measurement"='{2}' group by "Name_ID","Date","measurement","Value") as a 
+                LEFT JOIN (SELECT "Name_ID","measurement","Value" from examination_date WHERE "Key"='{1}' and "measurement"='{3}' group by "Name_ID","measurement","Value") as b 
+                ON a."Name_ID" = b."Name_ID" 
+                """.format(entity1, entity2, date_first_measurement, date_second_measurement, column_name)
 
     try:
         df = pd.read_sql(sql, r)
+        df = df.dropna()
+        df.reset_index(drop=True, inplace=True)
+        df.sort_index(inplace=True)
         return df
+    except Exception:
+        return None
+
+
+def push_to_numerical_table(column_name,df, r):
+    cur = r.cursor()
+    cur2 = r.cursor()
+    sql_order = """ select "order" from name_type order by "order" desc limit 1 """
+    sql_ID = """ select "ID" from examination_numerical order by "ID" desc limit 1 """
+
+    try:
+        df_order = pd.read_sql(sql_order, r)
+        order = df_order['order'][0] +1
+        row = [order, column_name, 'Double']
+        cur.execute(""" INSERT INTO name_type("order","Key",type) VALUES (%s,%s, %s) ON CONFLICT DO NOTHING """, row)
+
+        output = io.StringIO()
+        df_ID = pd.read_sql(sql_ID, r)
+        ID = df_ID['ID'][0] +1
+        df["ID"] = df["ID"] + ID
+        df.to_csv(output, sep=',', header=False, index=False)
+        output.seek(0)
+        cur.copy_from(output, 'examination_numerical', null="", sep=',')  # null values become ''
+        r.commit()
     except Exception:
         return None
