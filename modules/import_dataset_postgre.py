@@ -3,6 +3,7 @@
 """
 
 import re
+import pandas as pd
 
 
 def is_date(date):
@@ -106,6 +107,9 @@ def load_data(entities, dataset, header, rdb):
                     cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
     rdb.commit()
     in_file.close()
+    df = pd.read_csv('entities.csv')
+    numerical_entities = df[df['type'] == 'Double']['Key']
+    date_entities = df[df['type'] == 'Date']['Key']
     with open(dataset, 'r', encoding="utf8", errors='ignore') as in_file:
         i = 0
         for row in in_file:
@@ -121,9 +125,9 @@ def load_data(entities, dataset, header, rdb):
             else:
                 try:
                     line[6] = line[6].replace("  ", " ")
-                    if line[7].lstrip('-').replace('.', '', 1).isdigit():
+                    if line[7].replace('.', '', 1).isdigit() and line[6] in numerical_entities:
                         cur.execute("INSERT INTO examination_numerical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
-                    elif is_date(line[7]):
+                    elif line[6] in date_entities:
                         cur.execute("INSERT INTO examination_date VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                     else:
                         cur.execute("INSERT INTO examination_categorical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
@@ -149,7 +153,7 @@ def alter_table(rdb):
                          UNION
                          SELECT "Name_ID","Case_ID" FROM examination_categorical) as foo"""
 
-    sql1 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
+    #sql1 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
     sql2 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Name_ID") REFERENCES 
     patient ("Name_ID")"""
     sql3 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n2 FOREIGN KEY ("Name_ID") REFERENCES 
@@ -167,7 +171,7 @@ def alter_table(rdb):
     except Exception:
         return print("Problem with connection with database")
     try:
-        cur.execute(sql1)
+        #cur.execute(sql1)
         cur.execute(sql2)
         cur.execute(sql3)
         cur.execute(sql4)

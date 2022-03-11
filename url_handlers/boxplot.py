@@ -107,17 +107,21 @@ def post_boxplots():
                                )
 
     # Plot figure and convert to an HTML string representation
+    import plotly.graph_objects as go
     if block == 'none':
         table = df.groupby([categorical_entities]).size().reset_index(name='counts')
+        fig_table = go.Figure(data=[go.Table(header=dict(values=list(table[categorical_entities].values)),
+                                             cells=dict(values=table['counts'].transpose().values.tolist()))])
     else:
         table = df.groupby([measurement_name,categorical_entities]).size().reset_index(name='counts')
         table = table.pivot(index=measurement_name, columns = categorical_entities,values='counts').reset_index()
+        fig_table = go.Figure(data=[go.Table(header=dict(values=list(table.columns)),
+                                             cells=dict(values=table.transpose().values.tolist()))
+                                    ])
 
-    import plotly.graph_objects as go
 
-    fig_table = go.Figure(data=[go.Table(header=dict(values=list(table[categorical_entities].values)),
-                                   cells=dict(values=table['counts'].transpose().values.tolist()))
-                          ])
+
+
 
     #len()
     if block == 'none':
