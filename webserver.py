@@ -34,6 +34,9 @@ class DataStore():
 
     case_ids = []
     table_case_ids = None
+    df = None
+    column = None
+    dict = None
 
     # for table browser server side
     table_schema = None

@@ -980,4 +980,5 @@ def push_to_numerical_table(column_name,df, r):
         cur.copy_from(output, 'examination_numerical', null="", sep=',')  # null values become ''
         r.commit()
     except Exception:
+        print('Problem')
         return None

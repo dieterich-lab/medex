@@ -28,6 +28,8 @@ def post_data():
     # get selected entities
     entities1 = request.form.get('timestamp_entities1')
     entities2 = request.form.get('timestamp_entities2')
+    push = request.form.get('Push')
+
     if block == 'none':
         date_first_measurement = all_measurement[0]
         date_second_measurement = all_measurement[0]
@@ -39,18 +41,19 @@ def post_data():
 
     # errors
     error = None
-    if entities1 == 'Search entity' or entities2 == 'Search entity':
-        error = "Please select entities "
-    elif date_first_measurement == 'Search entity' or date_second_measurement == 'Search entity':
+    if push is None:
+        if entities1 == 'Search entity' or entities2 == 'Search entity':
             error = "Please select entities "
-    elif entities1 == entities2 and date_first_measurement == date_second_measurement:
-        error = "Please select different entities"
-    elif not column_name:
-        error = "Please write new column name"
-    else:
-       df = ps.calculator(entities1, entities2, date_first_measurement, date_second_measurement, column_name, rdb)
-       date = df['Date'][0]
-       df.drop(columns=['Date'])
+        elif date_first_measurement == 'Search entity' or date_second_measurement == 'Search entity':
+                error = "Please select entities "
+        elif entities1 == entities2 and date_first_measurement == date_second_measurement:
+            error = "Please select different entities"
+        elif not column_name:
+            error = "Please write new column name"
+        else:
+           df = ps.calculator(entities1, entities2, date_first_measurement, date_second_measurement, column_name, rdb)
+           date = df['Date'][0]
+           df.drop(columns=['Date'])
     if error:
         return render_template('calculator.html',
                                error=error,
@@ -61,25 +64,31 @@ def post_data():
                                date_second_measurement=date_second_measurement,
                                column_name=column_name
                                )
+    if push is None:
+        data.csv_new_table = df.to_csv(index=False)
 
-    data.csv_new_table = df.to_csv(index=False)
+        column = df.columns.tolist()
+        data.column =column
+        data.new_table_dict = df.to_dict("records")
+        table_schema = []
+        dict_of_column = []
 
-    column = df.columns.tolist()
-    data.new_table_dict = df.to_dict("records")
-    table_schema = []
-    dict_of_column = []
+        [dict_of_column.append({'data': column[i]}) for i in range(0, len(column))]
+        [table_schema.append({'data_name':column[i], 'column_name': column[i], "default": "",
+                              "order": 1, "searchable": True}) for i in range(0, len(column))]
 
-    [dict_of_column.append({'data': column[i]}) for i in range(0, len(column))]
-    [table_schema.append({'data_name':column[i], 'column_name': column[i], "default": "",
-                          "order": 1, "searchable": True}) for i in range(0, len(column))]
-
-    data.new_table_schema = table_schema
-    df['Case_ID'], df['measurement'], df['Date'], df['Time'], df['Key'] = '', all_measurement[
-        0], date, '', column_name
-    df = df.rename(columns={column_name: 'Value'})
-    df['ID'] = df.index
-    df = df[["ID", "Name_ID", "Case_ID","measurement","Date","Time","Key","Value"]]
-    ps.push_to_numerical_table(column_name,df,rdb)
+        df['Case_ID'], df['measurement'], df['Date'], df['Time'], df['Key'] = '', all_measurement[
+            0], date, '', column_name
+        df = df.rename(columns={column_name: 'Value'})
+        df['ID'] = df.index
+        df = df[["ID", "Name_ID", "Case_ID", "measurement", "Date", "Time", "Key", "Value"]]
+        data.dict =dict_of_column
+        data.new_table_schema = table_schema
+        data.df = df
+    else:
+        column = data.column
+        dict_of_column = data.dict
+        ps.push_to_numerical_table(column_name, data.df, rdb)
 
     return render_template('calculator.html',
                            entities1=entities1,
