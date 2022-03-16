@@ -324,20 +324,6 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
     return None
 
 
-def select_data_from_calculate_table(r,update, date):
-    if update == '0,0,No':
-        filter = ""
-    else:
-        filter = """ inner join temp_table_name_ids as ttni on ct."Name_ID"=ttni."Name_ID" """
-
-    if date[0] == date[1] and date[2] == 0:
-        meas_date = ""
-    else:
-        meas_date = ',"Date"'
-
-    sql = """ SELECT "Name_ID" {0},measurement,"Key","Value"::text""".format(meas_date)
-
-
 def get_data(entity, categorical_entities, numerical_entities, date_entities, what_table, measurement, date,
              limit_selected, limit, offset, update, r):
     """
@@ -374,7 +360,7 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
     else:
         limit = ''
 
-    if date[2] != 0:
+    if date[2] !=0:
         date_value = 'AND "Date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
     else:
         date_value = ''
@@ -906,12 +892,15 @@ def get_heat_map(entity, date, limit_selected, limit, offset, update, r):
     return: DataFrame with calculated basic statistic
     """
 
+    case_statement = ""
     crosstab_columns = ""
     if update == '0,0,No':
         filter =''
     else:
         filter = """ inner join temp_table_name_ids as ttni on en."Name_ID"=ttni."Name_ID" """
     for ent in entity:
+        create_case_statement = """CASE WHEN "Key" = '{0}' THEN "Value" END AS "{0}" """.format(ent)
+        case_statement = case_statement + ',' + create_case_statement
         create_crosstab_columns = '"{}" double precision'.format(ent)
         crosstab_columns = crosstab_columns + ',' + create_crosstab_columns
     if date[2] !=0:
@@ -972,24 +961,23 @@ def calculator(entity1, entity2, date_first_measurement, date_second_measurement
 
 def push_to_numerical_table(column_name,df, r):
     cur = r.cursor()
+    cur2 = r.cursor()
     sql_order = """ select "order" from name_type order by "order" desc limit 1 """
+    sql_ID = """ select "ID" from examination_numerical order by "ID" desc limit 1 """
 
     try:
         df_order = pd.read_sql(sql_order, r)
         order = df_order['order'][0] +1
         row = [order, column_name, 'Double']
-        cur.execute("""CREATE TABLE IF NOT EXISTS table_calculator(                                
-                                "ID" numeric PRIMARY KEY,
-                                "Name_ID" text,
-                                measurement text,
-                                "Key" text,
-                                "Value" double precision)""")
         cur.execute(""" INSERT INTO name_type("order","Key",type) VALUES (%s,%s, %s) ON CONFLICT DO NOTHING """, row)
-        r.commit()
+
         output = io.StringIO()
+        df_ID = pd.read_sql(sql_ID, r)
+        ID = df_ID['ID'][0] +1
+        df["ID"] = df["ID"] + ID
         df.to_csv(output, sep=',', header=False, index=False)
         output.seek(0)
-        cur.copy_from(output, 'table_calculator', null="", sep=',')  # null values become ''
+        cur.copy_from(output, 'examination_numerical', null="", sep=',')  # null values become ''
         r.commit()
     except Exception:
         print('Problem')
