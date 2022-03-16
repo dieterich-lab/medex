@@ -77,11 +77,10 @@ def post_data():
         [table_schema.append({'data_name':column[i], 'column_name': column[i], "default": "",
                               "order": 1, "searchable": True}) for i in range(0, len(column))]
 
-        df['Case_ID'], df['measurement'], df['Date'], df['Time'], df['Key'] = '', all_measurement[
-            0], date, '', column_name
+        df['measurement'],df['Key'] = all_measurement[0], column_name
         df = df.rename(columns={column_name: 'Value'})
         df['ID'] = df.index
-        df = df[["ID", "Name_ID", "Case_ID", "measurement", "Date", "Time", "Key", "Value"]]
+        df = df[["ID", "Name_ID", "measurement", "Key", "Value"]]
         data.dict =dict_of_column
         data.new_table_schema = table_schema
         data.df = df
