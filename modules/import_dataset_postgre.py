@@ -196,7 +196,6 @@ def create_index(rdb):
     sql7 = """CREATE INDEX IF NOT EXISTS "case_index_patient" ON Patient ("Case_ID")"""
     sql8 = """CREATE INDEX IF NOT EXISTS "ID_index_patient" ON Patient ("Name_ID")"""
     sql9 = """CREATE EXTENSION IF NOT EXISTS tablefunc"""
-    sql10 = """ VACUUM ANALYZE"""
     try:
         cur = rdb.cursor()
         cur.execute(sql1)
@@ -208,7 +207,6 @@ def create_index(rdb):
         cur.execute(sql7)
         cur.execute(sql8)
         cur.execute(sql9)
-        #cur.execute(sql10)
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")
@@ -216,7 +214,7 @@ def create_index(rdb):
 
 def cluster_table(rdb):
     # Vacuum analyze
-
+    sql1 = """ VACUUM """
 
     # CLUSTER tables
     sql2 = """ CLUSTER examination_date USING "Key_index_date" """
@@ -232,6 +230,8 @@ def cluster_table(rdb):
     sql9 = """ ALTER SYSTEM SET max_parallel_workers_per_gather=7 """
     try:
         cur = rdb.cursor()
+        rdb.autocommit = True
+        cur.execute(sql1)
         cur.execute(sql2)
         cur.execute(sql3)
         cur.execute(sql4)
