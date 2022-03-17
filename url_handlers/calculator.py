@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, request, jsonify, session
+from flask import Blueprint, render_template, request, jsonify, session, g
+from flask import render_template as real_render_template
 import modules.load_data_postgre as ps
 import pandas as pd
 
 import url_handlers.filtering as filtering
-from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_entities, df_min_max, measurement_name,\
-    all_measurement
+from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_entities, df_min_max, measurement_name, \
+    all_measurement, all_numeric_entities
 
 calculator_page = Blueprint('calculator', __name__, template_folder='templates')
 
@@ -19,16 +20,19 @@ def table_data():
 
 @calculator_page.route('/calculator', methods=['GET'])
 def get_data():
-    return render_template('calculator.html')
+    return render_template('calculator.html',
+                           value_push=0 )
 
 
 @calculator_page.route('/calculator', methods=['POST'])
 def post_data():
 
+
     # get selected entities
     entities1 = request.form.get('timestamp_entities1')
     entities2 = request.form.get('timestamp_entities2')
     push = request.form.get('Push')
+    result = request.form.get('Result')
 
     if block == 'none':
         date_first_measurement = all_measurement[0]
@@ -37,11 +41,11 @@ def post_data():
         date_first_measurement = request.form.get('date_first_measurement')
         date_second_measurement = request.form.get('date_second_measurement')
     column_name = request.form.get('column_name')
-
+    #session['column_names'] =
 
     # errors
     error = None
-    if push is None:
+    if result is not None:
         if entities1 == 'Search entity' or entities2 == 'Search entity':
             error = "Please select entities "
         elif date_first_measurement == 'Search entity' or date_second_measurement == 'Search entity':
@@ -56,6 +60,7 @@ def post_data():
            df.drop(columns=['Date'])
     if error:
         return render_template('calculator.html',
+                               value_push=0,
                                error=error,
                                name=measurement_name,
                                entities1=entities1,
@@ -64,7 +69,7 @@ def post_data():
                                date_second_measurement=date_second_measurement,
                                column_name=column_name
                                )
-    if push is None:
+    if result is not None:
         data.csv_new_table = df.to_csv(index=False)
 
         column = df.columns.tolist()
@@ -85,12 +90,16 @@ def post_data():
         data.dict =dict_of_column
         data.new_table_schema = table_schema
         data.df = df
+        push = 0
+
     else:
         column = data.column
         dict_of_column = data.dict
-        ps.push_to_numerical_table(column_name, data.df, rdb)
-
+        push = int(push) + 1
+        if push == 1:
+            ps.push_to_numerical_table(column_name, data.df, rdb)
     return render_template('calculator.html',
+                           value_push=push,
                            entities1=entities1,
                            entities2=entities2,
                            column_name=column_name,
@@ -102,6 +111,10 @@ def post_data():
 
 @calculator_page.context_processor
 def numerical_all():
-    size_numerical_table, all_numeric_entities, df_min_max = ps.get_numeric_entities(rdb)
-    all_numeric_entities = all_numeric_entities.to_dict('index')
-    return dict(all_numeric_entities=all_numeric_entities)
+    column_name = request.form.get('column_name')
+    push = request.form.get('Push')
+    if push == '0':
+        all_numeric_entities[len(all_numeric_entities)+1] = {"Key": column_name, 'description': ' ', 'synonym': ' '}
+        all_entities[len(all_entities) + 1] = {"Key": column_name, 'description': ' ', 'synonym': ' '}
+    return dict(all_numeric_entities=all_numeric_entities,
+                all_entities=all_entities)

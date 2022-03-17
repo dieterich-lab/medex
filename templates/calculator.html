@@ -79,7 +79,7 @@
             </table>
 
 
-            <button id="Plot" name="Result" class="btn btn-outline-info">Result</button>
+            <button id="Plot" name="Result" value="result" class="btn btn-outline-info">Result</button>
         </div>
     </div>
 </div>
@@ -98,7 +98,7 @@
     <div class="card-body">
         {% if name_column %}
         <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
-        <button id="Push" name="Push" class="btn btn-outline-info" style="float: right" value="push">Insert values to PostgreSQL table</button>
+        <button id="Push" name="Push" class="btn btn-outline-info" style="float: right" value = "{{ value_push }}" >Insert values to PostgreSQL table</button>
         <br><br>
         <div id="tab"  column="{{ column }}"></div>
         <table id="serverside_table" class="display" width="100%">

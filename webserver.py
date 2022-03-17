@@ -1,5 +1,5 @@
 # import the Flask class from the flask module
-from flask import Flask, send_file, request, redirect, session
+from flask import Flask, send_file, request, redirect, session, g
 import requests
 from modules.import_scheduler import Scheduler
 from serverside.serverside_table import ServerSideTable
@@ -171,6 +171,7 @@ def message_count():
     else:
         date_block = 'block'
     meddusa_url_session = MEDDUSA_URL + '/_session?sessionid=' +str(session.get('session_id'))
+
     return dict(database=database,
                 meddusa_url=MEDDUSA_URL,
                 meddusa_url_session=meddusa_url_session,
