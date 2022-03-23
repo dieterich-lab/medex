@@ -9,7 +9,7 @@ services:
     depends_on: # other containers it needs in order to run
       - database
     environment:
-      - EXPRESS_MEDEX_MEDDUSA_URL=http://localhost:3500/result/cases/get
+      - EXPRESS_MEDEX_MEDDUSA_URL=http://localhost:3500
       - MEDDUSA_URL=http://localhost:3000
       - PYTHONUNBUFFERED=1
       - POSTGRES_USER=test

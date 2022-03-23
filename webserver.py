@@ -114,15 +114,19 @@ if len(all_measurement) < 2:
 else:
     block = 'block'
 
+Meddusa = 'none'
 try:
     EXPRESS_MEDEX_MEDDUSA_URL = os.environ['EXPRESS_MEDEX_MEDDUSA_URL']
+    Meddusa = 'block'
 except Exception:
-    EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500/result/cases/get'
+    EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500'
+    Meddusa = 'block'
 
 try:
     MEDDUSA_URL = os.environ['MEDDUSA_URL']
 except Exception:
     MEDDUSA_URL = 'http://localhost:3000'
+
 
 # favicon
 @app.route('/favicon.ico')
@@ -170,11 +174,10 @@ def message_count():
         date_block = 'none'
     else:
         date_block = 'block'
-    meddusa_url_session = MEDDUSA_URL + '/_session?sessionid=' +str(session.get('session_id'))
 
     return dict(database=database,
+                meddusa=Meddusa,
                 meddusa_url=MEDDUSA_URL,
-                meddusa_url_session=meddusa_url_session,
                 len_numeric=len_numeric,
                 size_numeric=size_numeric,
                 len_categorical=len_categorical,
@@ -238,7 +241,7 @@ def login_get():
     session['change_date'] = 0
     session['categorical_filter'] = None
     session['categorical_filter'] = None
-    session['name'],session['from'], session['to'], session['min'], session['get']= None,None,None,None,None
+    session['name'], session['from'], session['to'], session['min'], session['get'] = None, None, None, None, None
     case = session.get('case_ids')
     data.update_filter = '0,0'
     if case is None or case == 'No':
@@ -254,10 +257,10 @@ def get_cases():
     session_id = request.args.get('sessionid')
     session_id_json = {"session_id": "{}".format(session_id)}
     session['session_id'] = session_id
-    cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL, json=session_id_json)
+    cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/get', json=session_id_json)
     case_ids = cases_get.json()
     data.case_ids = case_ids['cases_ids']
-    ps.create_temp_table(case_ids['cases_ids'],rdb)
+    ps.create_temp_table(case_ids['cases_ids'], rdb)
     data.table_case_ids = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
 
     session['case_ids'] = 'Yes'

@@ -4,6 +4,9 @@ $(function () {
     if (column !== undefined){
     var column =  JSON.parse($('#tab').attr('column').replace(/'/g, '"')); //"));
     $('#serverside_table').DataTable({
+            select: {
+            style: 'multi'
+        },
     bProcessing: true,
     bServerSide: true,
     scrollX: true,
@@ -12,6 +15,7 @@ $(function () {
     bjQueryUI: true,
     sAjaxSource: '/data/data1',
     columns: column
+
   });
   }
 

@@ -51,11 +51,14 @@
           <li class="nav-item">
             <a class="nav-link" href="/calculator">Calculator</a>
           </li>
+          <!-- <li class="nav-item">
+            <a class="nav-link" href="/categorical_vale">Create new categorical value</a>
+          </li> -->
           <li class="nav-item">
             <a class="nav-link" href="/logout">Logout</a>
           </li>
           </ul>
-          <button onclick="location.href='{{ meddusa_url }}'" type="button" class="btn btn-outline-info" > Meddusa </button>
+          <button onclick="location.href='{{ meddusa_url }}'" type="button" class="btn btn-outline-info" style="display: {{ meddusa }}"> Meddusa </button>
         </nav>
     {% block body %}
     {% endblock %}

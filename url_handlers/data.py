@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, request, jsonify, session
 import modules.load_data_postgre as ps
 import pandas as pd
+import requests
 import time
 import url_handlers.filtering as filtering
 from webserver import rdb, data, Name_ID, block, table_builder, all_entities, df_min_max, measurement_name,\
-    all_measurement, list_all_categorical_entities, list_all_date_entities, list_all_numeric_entities,block
+    all_measurement, list_all_categorical_entities, list_all_date_entities, list_all_numeric_entities,block, Meddusa, \
+    EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -37,7 +39,6 @@ def post_data():
     offset = request.form.get('offset')
     data.limit = limit
     data.offset = offset
-
 
     # get request values
     add = request.form.get('Add')
@@ -90,7 +91,9 @@ def post_data():
     else:
         data.information = entities, what_table, measurement, date, rdb
         df, error = ps.get_data(entities, categorical_entities, numerical_entities, date_entities, what_table, measurement, date, limit_selected, limit, offset, update, rdb)
-
+        case_ids_medex = df["Case_ID"].tolist()
+        case_ids_medex = list(set(case_ids_medex))
+        df = df.drop(['Case_ID'], axis=1)
     if error:
         return render_template('data.html',
                                error=error,
@@ -138,9 +141,26 @@ def post_data():
     data.table_browser_column = column
     data.table_browser_what_table = what_table
     data.table_browser_column2 = dict_of_column
+    meddusa_url_session = ''
+
+    if Meddusa == 'block':
+        meddusa_url_open = EXPRESS_MEDEX_MEDDUSA_URL + '/session/create'
+        session_id = requests.post(meddusa_url_open)
+        session_id = session_id.json()
+        session_id = session_id['session_id']
+
+        meddusa_url_send = EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/set'
+        meddusa_url_session = MEDDUSA_URL + '/_session?sessionid='+str(session_id)
+
+        case_id_json = {"session_id": session_id,
+                        "cases_ids": case_ids_medex}
+
+        requests.post(meddusa_url_send, json=case_id_json)
     return render_template('data.html',
                            error=error,
                            block=block,
+                           meddusa=Meddusa,
+                           meddusa_url_session=meddusa_url_session,
                            all_entities=all_entities,
                            measurement=measurement,
                            entities=entities,
