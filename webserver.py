@@ -120,7 +120,6 @@ try:
     Meddusa = 'block'
 except Exception:
     EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500'
-    Meddusa = 'block'
 
 try:
     MEDDUSA_URL = os.environ['MEDDUSA_URL']
