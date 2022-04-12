@@ -3,8 +3,8 @@ from configparser import ConfigParser
 import os
 import sys
 from datetime import datetime
-from apscheduler.schedulers.background import BackgroundScheduler
-
+from apscheduler.schedulers.background import BackgroundScheduler,BlockingScheduler
+import tzlocal
 
 class ImportSettings():
     """
@@ -102,7 +102,7 @@ class Scheduler():
     """
 
     def __init__(self,rdb, day_of_week, hour, minute):
-        self.bgs = BackgroundScheduler()
+        self.bgs = BackgroundScheduler(timezone=str(tzlocal.get_localzone()))
         start_import(rdb)
         self.bgs.add_job(start_import,'cron',[rdb], day_of_week=day_of_week, hour=hour, minute=minute)
 

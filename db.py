@@ -1,8 +1,10 @@
-from flask import g
+from flask import g, session
 import psycopg2.extras
 import os
-#from sqlalchemy import create_engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
 import time
+from sqlalchemy.ext.declarative import declarative_base
 
 user = os.environ['POSTGRES_USER']
 password = os.environ['POSTGRES_PASSWORD']
@@ -18,8 +20,8 @@ def connect_db():
     db = getattr(g, '_database', None)
     while db is None:
         try:
-            db = psycopg2.connect(DATABASE_URL)
-            #engine = create_engine(URL_string, echo=False)
+            db = create_engine(DATABASE_URL, echo=False)
+            db = db.raw_connection()
             return db
         except Exception:
             time.sleep(0.1)
@@ -27,6 +29,7 @@ def connect_db():
 
 def close_db(e=None):
     db = g.pop('db', None)
+
 
 
 

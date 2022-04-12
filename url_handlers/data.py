@@ -144,8 +144,7 @@ def post_data():
     meddusa_url_session = ''
 
     if Meddusa == 'block':
-        meddusa_url_open = EXPRESS_MEDEX_MEDDUSA_URL + '/session/create'
-        session_id = requests.post(meddusa_url_open)
+        session_id = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/session/create')
         session_id = session_id.json()
         session_id = session_id['session_id']
 
@@ -156,6 +155,7 @@ def post_data():
                         "cases_ids": case_ids_medex}
 
         requests.post(meddusa_url_send, json=case_id_json)
+
     return render_template('data.html',
                            error=error,
                            block=block,

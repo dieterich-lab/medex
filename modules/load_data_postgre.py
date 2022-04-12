@@ -484,7 +484,10 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
         else:
             sql = sql_n + sql_c + sql_d
             sql = sql[:-6]
-
+    if what_table == 'long':
+        df = pd.read_sql(sql, r)
+    else:
+        df = pd.read_sql(sql2, r)
     try:
         if what_table == 'long':
             df = pd.read_sql(sql, r)

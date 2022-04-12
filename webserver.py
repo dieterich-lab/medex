@@ -5,7 +5,7 @@ from modules.import_scheduler import Scheduler
 from serverside.serverside_table import ServerSideTable
 import modules.load_data_postgre as ps
 from flask_cors import CORS
-from db import connect_db
+from db import connect_db,close_db
 import pandas as pd
 import os
 import io
@@ -19,6 +19,8 @@ app = Flask(__name__)
 CORS(app)
 
 app.secret_key = os.urandom(24)
+
+#session['Token'] = os.unrandom(30)
 with app.app_context():
     rdb = connect_db()
 
@@ -117,7 +119,6 @@ else:
 Meddusa = 'none'
 try:
     EXPRESS_MEDEX_MEDDUSA_URL = os.environ['EXPRESS_MEDEX_MEDDUSA_URL']
-    Meddusa = 'block'
 except Exception:
     EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500'
 
@@ -125,6 +126,14 @@ try:
     MEDDUSA_URL = os.environ['MEDDUSA_URL']
 except Exception:
     MEDDUSA_URL = 'http://localhost:3000'
+
+try:
+    session_id = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/session/create')
+    Meddusa ='block'
+except Exception:
+    Meddusa = 'none'
+
+
 
 
 # favicon
@@ -164,6 +173,7 @@ def message_count():
     s_date, e_date = filtering.date()
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
+
     if df_1 < 5368709120 and df_2 < 5368709120 and df_3 < 5368709120:
         limit_block = 'none'
         data.limit_selected = False
