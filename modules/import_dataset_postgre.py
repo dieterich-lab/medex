@@ -4,10 +4,14 @@
 
 import re
 import pandas as pd
+import logging
+
+logging.basicConfig()
 
 
 def is_date(date):
-    if re.match("^(0[0-9]{2}[1-9]|[1-9][0-9]{3})-((0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01])|02-(0[1-9]|1[0-9]|2[0-9])|(0[469]|11)-(0[1-9]|[12][0-9]|30))$",date) is None:
+    if re.match("^(0[0-9]{2}[1-9]|[1-9][0-9]{3})-((0[13578]|10|12)-(0[1-9]|[12][0-9]|3[01])|02-(0[1-9]|1[0-9]|2[0-9])"
+                "|(0[469]|11)-(0[1-9]|[12][0-9]|30))$", date) is None:
         return False
     else:
         return True
@@ -94,7 +98,7 @@ def load_data(entities, dataset, header, rdb):
             row = row.replace("\n", "").split(",")
             if 'order' not in head:
                 i += 1
-                row = [i] + row[:]
+                row = [str(i)] + row
                 if len(row) == 3:
                     cur.execute("INSERT INTO name_type VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", row)
                 elif len(row) == 4:
@@ -119,9 +123,9 @@ def load_data(entities, dataset, header, rdb):
             row = row.rstrip().replace('"', "").replace("\n", "").split(",")
             # insert data from dataset.csv to table examination
             if 'Visit' in header:
-                line = [i] + row[0:6] + [";".join([str(x) for x in row[6:]])]
+                line = [str(i)] + row[0:6] + [";".join([str(x) for x in row[6:]])]
             else:
-                line = [i] + row[0:2] + [1] + row[2:5] + [";".join([str(x) for x in row[5:]])]
+                line = [str(i)] + row[0:2] + ['1'] + row[2:5] + [";".join([str(x) for x in row[5:]])]
             if len(line) < 7:
                 print("This line doesn't have appropriate format:", line)
             else:
@@ -133,7 +137,7 @@ def load_data(entities, dataset, header, rdb):
                         cur.execute("INSERT INTO examination_date VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                     else:
                         cur.execute("INSERT INTO examination_categorical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
-                except:
+                except Exception:
                     print(line)
 
     rdb.commit()
@@ -155,11 +159,6 @@ def alter_table(rdb):
                          UNION
                          SELECT "Name_ID","Case_ID" FROM examination_categorical) as foo"""
 
-    #sql1 = """ALTER TABLE patient ADD CONSTRAINT patient_pkey PRIMARY KEY ("Name_ID")"""
-    sql2 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c2 FOREIGN KEY ("Name_ID") REFERENCES 
-    patient ("Name_ID")"""
-    sql3 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n2 FOREIGN KEY ("Name_ID") REFERENCES 
-    patient ("Name_ID")"""
     sql4 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c1 FOREIGN KEY ("Key") REFERENCES 
     name_type ("Key")"""
     sql5 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n1 FOREIGN KEY ("Key") REFERENCES 
@@ -173,9 +172,6 @@ def alter_table(rdb):
     except Exception:
         return print("Problem with connection with database")
     try:
-        #cur.execute(sql1)
-        #cur.execute(sql2)
-        #cur.execute(sql3)
         cur.execute(sql4)
         cur.execute(sql5)
         rdb.commit()
@@ -243,18 +239,3 @@ def cluster_table(rdb):
         rdb.commit()
     except Exception:
         return print("Problem with connection with database")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

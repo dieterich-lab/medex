@@ -3,8 +3,9 @@ from configparser import ConfigParser
 import os
 import sys
 from datetime import datetime
-from apscheduler.schedulers.background import BackgroundScheduler,BlockingScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 import tzlocal
+
 
 class ImportSettings():
     """
