@@ -1,38 +1,43 @@
-# import the Flask class from the flask module
 from flask import Flask, send_file, request, redirect, session, g
 import requests
 from modules.import_scheduler import Scheduler
+from modules.database_sessions import DatabaseSessionFactory
 from serverside.serverside_table import ServerSideTable
 import modules.load_data_postgre as ps
 from flask_cors import CORS
-from db import connect_db,close_db
+from db import connect_db, close_db
 import pandas as pd
 import os
 import io
 from flask import send_from_directory
 import url_handlers.filtering as filtering
-import json
+
 
 # create the application object
 app = Flask(__name__)
-
 CORS(app)
-
 app.secret_key = os.urandom(24)
 
-#session['Token'] = os.unrandom(30)
 with app.app_context():
-    rdb = connect_db()
+    connect_db()
+    rdb = g.db
+    rdb2 = g.db2
 
+
+@app.teardown_appcontext
+def teardown_db(exception):
+    close_db()
+
+
+factory = DatabaseSessionFactory(rdb)
 
 class TableBuilder(object):
-
     def collect_data_serverside(self, request, DATA_SAMPLE, columns):
         return ServerSideTable(request, DATA_SAMPLE, columns).output_result()
 
 
 # data store for filters and download
-class DataStore():
+class DataStore:
 
     case_ids = []
     table_case_ids = None
@@ -43,7 +48,6 @@ class DataStore():
     # for table browser server side
     table_schema = None
     table_browser_column = None
-    dict = None
     table_browser_entities = None
     table_browser_what_table = None
     table_browser_column2 = None
@@ -91,7 +95,6 @@ if os.environ.get('IMPORT_DISABLED') is None:
 
 
 # get all numeric and categorical entities from database
-
 Name_ID, measurement_name = ps.get_header(rdb)
 start_date, end_date = ps.get_date(rdb)
 all_patient = ps.patient(rdb)
@@ -119,21 +122,12 @@ else:
 Meddusa = 'none'
 try:
     EXPRESS_MEDEX_MEDDUSA_URL = os.environ['EXPRESS_MEDEX_MEDDUSA_URL']
-except Exception:
-    EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500'
-
-try:
     MEDDUSA_URL = os.environ['MEDDUSA_URL']
-except Exception:
+    Meddusa = 'block'
+except (Exception,):
+    EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500'
     MEDDUSA_URL = 'http://localhost:3000'
-
-try:
-    session_id = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/session/create')
-    Meddusa ='block'
-except Exception:
     Meddusa = 'none'
-
-
 
 
 # favicon
@@ -146,6 +140,7 @@ def favicon():
 # information about database
 @app.context_processor
 def message_count():
+
     case = session.get('case_ids')
     if case is None or case == 'No':
         data.case_ids = []
@@ -174,7 +169,7 @@ def message_count():
     categorical_filter, categorical_names = filtering.check_for_filter_get()
     numerical_filter = filtering.check_for_numerical_filter_get()
 
-    if df_1 < 5368709120 and df_2 < 5368709120 and df_3 < 5368709120:
+    if df_1 < 5368709120 and df_2 < 5368709120 and df_3 < 5368709120:  # What is that ?
         limit_block = 'none'
         data.limit_selected = False
     else:
@@ -202,7 +197,7 @@ def message_count():
                 name='{}'.format(measurement_name),
                 block=block,
                 date_block=date_block,
-                limit_block= limit_block,
+                limit_block=limit_block,
                 case_display=case_display,
                 val=data.update_filter,
                 limit_yes=data.limit_selected,
@@ -214,7 +209,6 @@ def message_count():
                 )
 
 
-# Urls in the 'url_handlers' directory (one file for each new url)
 # import a Blueprint
 from url_handlers.data import data_page
 from url_handlers.basic_stats import basic_stats_page
@@ -227,7 +221,6 @@ from url_handlers.logout import logout_page
 from url_handlers.tutorial import tutorial_page
 from url_handlers.calculator import calculator_page
 
-
 # register blueprints here:\
 app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
@@ -239,26 +232,6 @@ app.register_blueprint(scatter_plot_page)
 app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(calculator_page)
-
-
-# Direct to Data browser website during opening the program.
-@app.route('/', methods=['GET'])
-def login_get():
-    # get selected entities
-    session['start_date'] = start_date
-    session['end_date'] = end_date
-    session['change_date'] = 0
-    session['categorical_filter'] = None
-    session['categorical_filter'] = None
-    session['name'], session['from'], session['to'], session['min'], session['get'] = None, None, None, None, None
-    case = session.get('case_ids')
-    data.update_filter = '0,0'
-    if case is None or case == 'No':
-        session['case_ids'] = 'No'
-        ps.filtering('No', None, None, None, None, None, ['0', '0'], rdb)
-    else:
-        session['case_ids'] = 'Yes'
-    return redirect('/data')
 
 
 @app.route('/_session', methods=['GET'])
@@ -276,12 +249,36 @@ def get_cases():
     return redirect('/')
 
 
+# Direct to Data browser website during opening the program.
+@app.route('/', methods=['GET'])
+def login_get():
+    # get selected entities
+    session['session_id'] = os.urandom(10)
+    a = factory.get_session(session.get('session_id'))
+
+    session['date_update'] = {start_date, end_date}
+    session['change_date'] = 0
+    session['categorical_filter'] = None
+    session['name'], session['from'], session['to'], session['min'], session['get'] = None, None, None, None, None
+
+    case = session.get('case_ids')
+    data.update_filter = '0,0'
+    if case is None or case == 'No':
+        session['case_ids'] = 'No'
+        ps.filtering('No', None, None, None, None, None, ['0', '0'], rdb)
+    else:
+        session['case_ids'] = 'Yes'
+    return redirect('/data')
+
+
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])
 def download(filename):
     if filename == 'data.csv':
         csv = data.csv
     elif filename == 'case_ids.csv':
         csv = data.table_case_ids
+    else:
+        csv = ''
     # Create a string buffer
     buf_str = io.StringIO(csv)
 
@@ -294,5 +291,5 @@ def download(filename):
                      attachment_filename=filename)
 
 
-def main():
-    return app
+if __name__ == 'main':
+    app.run()

@@ -48,7 +48,7 @@ def post_statistics():
             update = '0,0'
             update_list = list(update.split(","))
         data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list, rdb)
         return render_template('barchart.html',
                                val=update,
                                limit_yes=data.limit_selected,

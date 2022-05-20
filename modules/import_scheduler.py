@@ -7,7 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import tzlocal
 
 
-class ImportSettings():
+class ImportSettings:
     """
     Class which create file dev_import necessary to import data.
     Inside the file we have two unique cods for files dataset and entities.
@@ -73,7 +73,7 @@ def start_import(rdb):
         return print("Data set not changed", file=sys.stderr)
     else:
         if not os.path.isfile(header):
-            header = ['Name_ID','Case_ID', 'measurement']
+            header = ['Name_ID', 'Case_ID', 'measurement']
         else:
             with open(header, 'r') as in_file:
                 for row in in_file:
@@ -96,16 +96,16 @@ def start_import(rdb):
         print("End load data")
 
 
-class Scheduler():
+class Scheduler:
     """
     BackgroundScheduler runs in a thread inside existing application.
     Importing data check the data. Import data every day at 05.05 if the program see any changes.
     """
 
-    def __init__(self,rdb, day_of_week, hour, minute):
+    def __init__(self, rdb, day_of_week, hour, minute):
         self.bgs = BackgroundScheduler(timezone=str(tzlocal.get_localzone()))
         start_import(rdb)
-        self.bgs.add_job(start_import,'cron',[rdb], day_of_week=day_of_week, hour=hour, minute=minute)
+        self.bgs.add_job(start_import, 'cron', [rdb], day_of_week=day_of_week, hour=hour, minute=minute)
 
     def start(self):
         self.bgs.start()

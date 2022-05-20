@@ -32,8 +32,8 @@ def database_size(r):
         examination_categorical_size = "SELECT pg_relation_size('examination_categorical')"
         examination_date_size = "SELECT pg_relation_size('examination_date')"
         set_time = "SET statement_timeout to 6000"
-        cur = r.cursor()
-        cur.execute(set_time)
+        #cur = r.cursor()
+        #cur.execute(set_time)
         df_1 = pd.read_sql(examination_numerical_size, r)
         df_2 = pd.read_sql(examination_categorical_size, r)
         df_3 = pd.read_sql(examination_date_size, r)
@@ -201,9 +201,9 @@ def get_measurement(r):
 
 
 def create_temp_table(case_id,rdb):
-    cur = rdb.cursor()
-    cur1 = rdb.cursor()
-    cur2 = rdb.cursor()
+    #cur = rdb.cursor()
+    #cur1 = rdb.cursor()
+    #cur2 = rdb.cursor()
     case_id_all = "$$" + "$$,$$".join(case_id) + "$$"
     sql_drop = "DROP TABLE IF EXISTS temp_table_case_ids"
     sql_drop1 = "DROP TABLE IF EXISTS temp_table_name_ids"
@@ -216,16 +216,16 @@ def create_temp_table(case_id,rdb):
     create_table1 = """CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as (SELECT "Name_ID" FROM temp_table_case_ids)  """
     create_table2 = """CREATE TEMP TABLE IF NOT EXISTS temp_table_ids as (SELECT "Name_ID","Key" FROM temp_table_case_ids)  """
 
-    try:
-        Thread(target=cur.execute(sql_drop)).start()
-        Thread(target=cur.execute(create_table)).start()
-        Thread(target=cur.execute(alter_table)).start()
-        Thread(target=cur1.execute(sql_drop1)).start()
-        Thread(target=cur1.execute(create_table1)).start()
-        Thread(target=cur2.execute(sql_drop2)).start()
-        Thread(target=cur2.execute(create_table2)).start()
-    except Exception:
-        print('something wrong')
+    #try:
+    #    Thread(target=cur.execute(sql_drop)).start()
+    #    Thread(target=cur.execute(create_table)).start()
+    #    Thread(target=cur.execute(alter_table)).start()
+    #    Thread(target=cur1.execute(sql_drop1)).start()
+    #    Thread(target=cur1.execute(create_table1)).start()
+    #    Thread(target=cur2.execute(sql_drop2)).start()
+    #    Thread(target=cur2.execute(create_table2)).start()
+    #except Exception:
+    #    print('something wrong')
 
 
 old_update = ['0', '0']
@@ -233,8 +233,8 @@ old_update = ['0', '0']
 
 def filtering(case_id, categorical_filter, categorical, numerical_filter_name, from1, to1, update, r):
 
-    cur = r.cursor()
-    cur2 = r.cursor()
+    #cur = r.cursor()
+    #cur2 = r.cursor()
 
     if categorical_filter and old_update[0] != update[0]:
         cat = categorical_filter[int(update[0]) - 1]
@@ -265,13 +265,13 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         elif case_id == 'Yes':
             create_table = """CREATE TEMP TABLE temp_table_name_ids as (SELECT "Name_ID" FROM temp_table_case_ids)  """
             sql_drop_2 = """ DELETE FROM temp_table_ids WHERE "Key" != 'case_id' """
-        try:
-            Thread(target=cur.execute(sql_drop)).start()
-            Thread(target=cur2.execute(sql_drop_2)).start()
-            if case_id == 'Yes':
-                Thread(target=cur.execute(create_table)).start()
-        except Exception:
-            print('something wrong')
+        #try:
+        #    Thread(target=cur.execute(sql_drop)).start()
+        #    Thread(target=cur2.execute(sql_drop_2)).start()
+        #    if case_id == 'Yes':
+        #        Thread(target=cur.execute(create_table)).start()
+        #except Exception:
+        #    print('something wrong')
     elif int(old_update[0]) > int(update[0]) or int(old_update[1]) > int(update[1]):
         """ If filter removed """
         old_update[0], old_update[1] = update[0], update[1]
@@ -291,12 +291,12 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         sql_drop_2 = "DROP TABLE IF EXISTS temp_table_name_ids"
         create_table = """ CREATE TEMP TABLE temp_table_name_ids as ({}) """.format(query)
         update_table = """ DELETE FROM temp_table_ids WHERE "Key" not in ({}) """.format(filter_join)
-        try:
-            Thread(target=cur.execute(sql_drop_2)).start()
-            Thread(target=cur.execute(create_table)).start()
-            Thread(target=cur2.execute(update_table)).start()
-        except Exception:
-            print('something wrong')
+        #try:
+        #    Thread(target=cur.execute(sql_drop_2)).start()
+        #    Thread(target=cur.execute(create_table)).start()
+        #    Thread(target=cur2.execute(update_table)).start()
+        #except Exception:
+        #    print('something wrong')
     elif (update[0] == '1' and update[1] == '0') or (update[0] == '0' and update[1] == '1'):
         """If first filter selected"""
         old_update[0], old_update[1] = update[0], update[1]
@@ -306,21 +306,21 @@ def filtering(case_id, categorical_filter, categorical, numerical_filter_name, f
         elif case_id == 'Yes':
             create_table = """ DELETE FROM temp_table_name_ids WHERE "Name_ID" NOT IN ({})""".format(query)
             create_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
-        try:
-            Thread(target=cur.execute(create_table)).start()
-            Thread(target=cur2.execute(create_table_2)).start()
-        except Exception:
-            print('something wrong')
+        #try:
+        #    Thread(target=cur.execute(create_table)).start()
+        #    Thread(target=cur2.execute(create_table_2)).start()
+        #except Exception:
+        #    print('something wrong')
     elif int(old_update[0]) < int(update[0]) or int(old_update[1]) < int(update[1]):
         """ If next filters added """
         old_update[0], old_update[1] = update[0], update[1]
         update_table = """ DELETE FROM temp_table_name_ids WHERE "Name_ID" NOT IN ({})""".format(query)
         update_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
-        try:
-            Thread(target=cur.execute(update_table)).start()
-            Thread(target=cur2.execute(update_table_2)).start()
-        except Exception:
-            print('something wrong')
+        #try:
+        #    Thread(target=cur.execute(update_table)).start()
+        #    Thread(target=cur2.execute(update_table_2)).start()
+        #except Exception:
+        #    print('something wrong')
     return None
 
 
@@ -484,10 +484,7 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
         else:
             sql = sql_n + sql_c + sql_d
             sql = sql[:-6]
-    if what_table == 'long':
-        df = pd.read_sql(sql, r)
-    else:
-        df = pd.read_sql(sql2, r)
+
     try:
         if what_table == 'long':
             df = pd.read_sql(sql, r)
@@ -961,8 +958,8 @@ def calculator(entity1, entity2, date_first_measurement, date_second_measurement
 
 
 def push_to_numerical_table(column_name,df, r):
-    cur = r.cursor()
-    cur2 = r.cursor()
+    #cur = r.cursor()
+    #cur2 = r.cursor()
     sql_order = """ select "order" from name_type order by "order" desc limit 1 """
     sql_ID = """ select "ID" from examination_numerical order by "ID" desc limit 1 """
 
@@ -970,7 +967,7 @@ def push_to_numerical_table(column_name,df, r):
         df_order = pd.read_sql(sql_order, r)
         order = df_order['order'][0] +1
         row = [order, column_name, 'Double']
-        cur.execute(""" INSERT INTO name_type("order","Key",type) VALUES (%s,%s, %s) ON CONFLICT DO NOTHING """, row)
+        #cur.execute(""" INSERT INTO name_type("order","Key",type) VALUES (%s,%s, %s) ON CONFLICT DO NOTHING """, row)
 
         output = io.StringIO()
         df_ID = pd.read_sql(sql_ID, r)
@@ -978,7 +975,7 @@ def push_to_numerical_table(column_name,df, r):
         df["ID"] = df["ID"] + ID
         df.to_csv(output, sep=',', header=False, index=False)
         output.seek(0)
-        cur.copy_from(output, 'examination_numerical', null="", sep=',')  # null values become ''
+        #cur.copy_from(output, 'examination_numerical', null="", sep=',')  # null values become ''
         r.commit()
     except Exception:
         print('Problem')

@@ -25,6 +25,7 @@ flask_cors = "*"
 requests = "*"
 scikit-learn = "==0.24.2"
 sqlalchemy = "*"
+pytest-mock = "*"
 
 [dev-packages]
 pylint = "*"

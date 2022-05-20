@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, request, jsonify, session
+from flask import Blueprint, render_template, request, jsonify, session, g
 import modules.load_data_postgre as ps
 import pandas as pd
 import requests
 import time
 import url_handlers.filtering as filtering
 from webserver import rdb, data, Name_ID, block, table_builder, all_entities, df_min_max, measurement_name,\
-    all_measurement, list_all_categorical_entities, list_all_date_entities, list_all_numeric_entities,block, Meddusa, \
+    all_measurement, list_all_categorical_entities, list_all_date_entities, list_all_numeric_entities, block, Meddusa, \
     EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL
 
 data_page = Blueprint('data', __name__, template_folder='templates')
@@ -62,7 +62,7 @@ def post_data():
             update = '0,0'
             update_list = list(update.split(","))
         data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
+        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list, g.db)
         return render_template('data.html',
                                start_date=s_date,
                                end_date=e_date,
@@ -91,9 +91,9 @@ def post_data():
     else:
         data.information = entities, what_table, measurement, date, rdb
         df, error = ps.get_data(entities, categorical_entities, numerical_entities, date_entities, what_table, measurement, date, limit_selected, limit, offset, update, rdb)
-        case_ids_medex = df["Case_ID"].tolist()
-        case_ids_medex = list(set(case_ids_medex))
-        df = df.drop(['Case_ID'], axis=1)
+        #case_ids_medex = df["Case_ID"].tolist()
+        #case_ids_medex = list(set(case_ids_medex))
+        #df = df.drop(['Case_ID'], axis=1)
     if error:
         return render_template('data.html',
                                error=error,
