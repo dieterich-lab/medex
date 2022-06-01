@@ -16,7 +16,7 @@ Currently setup for deployment and not development
 #### Usage ####
 * `docker-compose up`
 
-### Setup Instructions Development [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/PostgreSQL/documentation) ### 
+### Setup Instructions Development [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/master/documentation) ### 
 Not recommended for pure deployment.
 
 #### Requirements ####
@@ -34,7 +34,7 @@ Not recommended for pure deployment.
 * Develop
 
 
-### Data Import   [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/time-series/dataset_examples/Data_import.md)
+### Data Import   [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/master/documentation)
 * Database imports run every night at 5:05 and at startup.
 * The database is only updated if there is new data to import.
 * In order to add new data add a new `entities.csv` and `dataset.csv` to the `./import` folder.

@@ -5,7 +5,7 @@ services:
     container_name: medex
     build: .
     ports:
-      - "127.0.0.1:80:80"
+      - "80:80"
     depends_on: # other containers it needs in order to run
       - database
     environment:
@@ -25,7 +25,7 @@ services:
     image: postgres
     container_name: database
     ports:
-      - "127.0.0.1:5428:5432"
+      - "5428:5432"
     environment:
       - POSTGRES_USER=test
       - POSTGRES_PASSWORD=test
