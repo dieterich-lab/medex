@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request,session
 import plotly.express as px
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, Name_ID, measurement_name, block, df_min_max, data
+from webserver import rdb, all_measurement, Name_ID, measurement_name, block_measurement, df_min_max, data
 import pandas as pd
 import textwrap
 import plotly.graph_objects as go
@@ -23,7 +23,7 @@ def post_plots():
     # get filter
     start_date, end_date, date = filtering.check_for_date_filter_post()
     case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.filter_categorical()
     numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
     limit_selected = request.form.get('limit_yes')
     data.limit_selected = limit_selected

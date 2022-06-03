@@ -2,10 +2,9 @@ from flask import Blueprint, render_template, request, jsonify, session, g
 import modules.load_data_postgre as ps
 import pandas as pd
 import requests
-import time
 import url_handlers.filtering as filtering
-from webserver import rdb, data, Name_ID, block, table_builder, all_entities, df_min_max, measurement_name,\
-    all_measurement, list_all_categorical_entities, list_all_date_entities, list_all_numeric_entities, block, Meddusa, \
+from webserver import rdb, data, Name_ID, collect_data_server_side, block_measurement, all_entities, df_min_max, measurement_name,\
+    all_measurement, all_num_entities_list, all_cat_entities_list, all_date_entities_list, Meddusa, \
     EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL
 
 data_page = Blueprint('data', __name__, template_folder='templates')
@@ -14,8 +13,8 @@ data_page = Blueprint('data', __name__, template_folder='templates')
 @data_page.route('/data/data1', methods=['GET', 'POST'])
 def table_data():
     df = data.dict
-    table_schema = data.table_schema
-    dat = table_builder.collect_data_serverside(request, df, table_schema)
+    table_schema = session.get('table_schema')
+    dat = collect_data_server_side(df, table_schema)
     return jsonify(dat)
 
 
@@ -28,59 +27,23 @@ def get_data():
 @data_page.route('/data', methods=['POST'])
 def post_data():
 
-    # get filter
-    s_date, e_date, date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.check_for_filter_post()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    limit_selected = request.form.get('limit_yes')
-    data.limit_selected = limit_selected
-    limit = request.form.get('limit')
-    offset = request.form.get('offset')
-    data.limit = limit
-    data.offset = offset
-
     # get request values
-    add = request.form.get('Add')
-    clean = request.form.get('clean')
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
-    if block == 'none':
+
+    if block_measurement == 'none':
         measurement = all_measurement[0]
     else:
         measurement = request.form.getlist('measurement')
 
-    categorical_entities = list(set(entities)-set(list_all_numeric_entities)-set(list_all_date_entities))
-    numerical_entities = list(set(entities) - set(list_all_categorical_entities) - set(list_all_date_entities))
-    date_entities = list(set(entities) - set(list_all_numeric_entities) - set(list_all_categorical_entities))
+    categorical_filter, categorical_names, categorical_filter_zip = filtering.filter_categorical()
+    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
 
-    if clean is not None or add is not None:
-        if add is not None:
-            update_list = list(add.split(","))
-            update = add
-        elif clean is not None:
-            update = '0,0'
-            update_list = list(update.split(","))
-        data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list, g.db)
-        return render_template('data.html',
-                               start_date=s_date,
-                               end_date=e_date,
-                               val=update,
-                               limit_yes=data.limit_selected,
-                               limit=data.limit,
-                               offset=data.offset,
-                               categorical_filter=categorical_names,
-                               numerical_filter_name=name,
-                               filter=categorical_filter_zip,
-                               df_min_max=df_min_max,
-                               all_entities=all_entities,
-                               measurement=measurement,
-                               entities=entities,
-                               what_table=what_table,
-                               )
-
-    update = data.update_filter + ',' + case_ids
+    categorical_entities = list(set(entities)-set(all_num_entities_list)-set(all_date_entities_list))
+    numerical_entities = list(set(entities) - set(all_cat_entities_list) - set(all_date_entities_list))
+    date_entities = list(set(entities) - set(all_num_entities_list) - set(all_cat_entities_list))
+    dict_entities = {'entities': entities, 'categorical_entities': categorical_entities,
+                     'numerical_entities': numerical_entities, 'data_entities' : date_entities}
 
     df = pd.DataFrame()
     # errors
@@ -89,37 +52,24 @@ def post_data():
     elif len(entities) == 0:
         error = "Please select entities"
     else:
-        data.information = entities, what_table, measurement, date, rdb
-        df, error = ps.get_data(entities, categorical_entities, numerical_entities, date_entities, what_table, measurement, date, limit_selected, limit, offset, update, rdb)
-        #case_ids_medex = df["Case_ID"].tolist()
-        #case_ids_medex = list(set(case_ids_medex))
-        #df = df.drop(['Case_ID'], axis=1)
+        df, error = ps.get_data(dict_entities, what_table, measurement, rdb)
     if error:
         return render_template('data.html',
                                error=error,
-                               block=block,
+                               from_nu = from1,
+                               to_num = to1,
+                               block=block_measurement,
                                all_entities=all_entities,
-                               all_measurement=all_measurement,
                                name=measurement_name,
                                measurement=measurement,
                                entities=entities,
                                df_min_max=df_min_max,
-                               start_date=s_date,
-                               end_date=e_date,
-                               categorical_filter=categorical_names,
-                               numerical_filter_name=name,
-                               filter=categorical_filter_zip,
-                               val=update,
-                               limit_yes=data.limit_selected,
-                               limit=data.limit,
-                               offset=data.offset,
-                               numerical_filter=numerical_filter,
                                what_table=what_table,
                                )
 
-    df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
+    df = filtering.checking_for_block(block_measurement, df, Name_ID, measurement_name)
 
-    data.table_browser_entities = entities
+    session['table_browser_entities'] = entities
     data.csv = df.to_csv(index=False)
     df = df.fillna("missing data")
     column = df.columns.tolist()
@@ -137,28 +87,11 @@ def post_data():
     [table_schema.append({'data_name': column_change_name[i], 'column_name': column_change_name[i], "default": "",
                           "order": 1, "searchable": True}) for i in range(0, len(column_change_name))]
 
-    data.table_schema = table_schema
-    data.table_browser_column = column
-    data.table_browser_what_table = what_table
-    data.table_browser_column2 = dict_of_column
-    meddusa_url_session = ''
-
-    if Meddusa == 'block':
-        session_id = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/session/create')
-        session_id = session_id.json()
-        session_id = session_id['session_id']
-
-        meddusa_url_send = EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/set'
-        meddusa_url_session = MEDDUSA_URL + '/_session?sessionid='+str(session_id)
-
-        case_id_json = {"session_id": session_id,
-                        "cases_ids": case_ids_medex}
-
-        requests.post(meddusa_url_send, json=case_id_json)
+    session['table_schema'] = table_schema
 
     return render_template('data.html',
                            error=error,
-                           block=block,
+                           block=block_measurement,
                            meddusa=Meddusa,
                            meddusa_url_session=meddusa_url_session,
                            all_entities=all_entities,

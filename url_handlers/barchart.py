@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, measurement_name, Name_ID, block, df_min_max, data
+from webserver import rdb, all_measurement, measurement_name, Name_ID, block_measurement, df_min_max, data
 import pandas as pd
 import textwrap
 import time

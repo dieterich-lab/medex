@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request,session
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import rdb,  all_measurement, data, measurement_name, block, df_min_max
+from webserver import rdb,  all_measurement, data, measurement_name, block_measurement, df_min_max
 import pandas as pd
 import time
 

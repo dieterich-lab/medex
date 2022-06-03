@@ -4,8 +4,8 @@ import modules.load_data_postgre as ps
 import pandas as pd
 
 import url_handlers.filtering as filtering
-from webserver import rdb, data, Name_ID, measurement_name, block, table_builder, all_entities, df_min_max, measurement_name, \
-    all_measurement, all_numeric_entities
+from webserver import rdb, data, Name_ID, measurement_name, block_measurement, collect_data_server_side, all_entities, df_min_max, measurement_name, \
+    all_measurement, all_num_entities
 
 calculator_page = Blueprint('calculator', __name__, template_folder='templates')
 

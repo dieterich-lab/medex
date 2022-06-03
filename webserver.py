@@ -1,8 +1,7 @@
-from flask import Flask, send_file, request, redirect, session, g
+from flask import Flask, send_file, request, redirect, session, g, jsonify
 import requests
 from modules.import_scheduler import Scheduler
 from modules.database_sessions import DatabaseSessionFactory
-from serverside.serverside_table import ServerSideTable
 import modules.load_data_postgre as ps
 from flask_cors import CORS
 from db import connect_db, close_db
@@ -10,7 +9,7 @@ import pandas as pd
 import os
 import io
 from flask import send_from_directory
-import url_handlers.filtering as filtering
+from serverside.serverside_table import ServerSideTable
 
 
 # create the application object
@@ -21,7 +20,6 @@ app.secret_key = os.urandom(24)
 with app.app_context():
     connect_db()
     rdb = g.db
-    rdb2 = g.db2
 
 
 @app.teardown_appcontext
@@ -31,12 +29,12 @@ def teardown_db(exception):
 
 factory = DatabaseSessionFactory(rdb)
 
-class TableBuilder(object):
-    def collect_data_serverside(self, request, DATA_SAMPLE, columns):
-        return ServerSideTable(request, DATA_SAMPLE, columns).output_result()
+
+def collect_data_server_side(data_sample, columns):
+    return ServerSideTable(request, data_sample, columns).output_result()
 
 
-# data store for filters and download
+# I have to remove this
 class DataStore:
 
     case_ids = []
@@ -61,15 +59,9 @@ class DataStore:
     csv = None
     csv_new_table = None
 
-    update_filter = "0,0"
-    limit = '10000'
-    offset = '0'
-    limit_selected = True
-
     information = None
 
 
-table_builder = TableBuilder()
 data = DataStore()
 
 
@@ -96,28 +88,15 @@ if os.environ.get('IMPORT_DISABLED') is None:
 
 # get all numeric and categorical entities from database
 Name_ID, measurement_name = ps.get_header(rdb)
+size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information(rdb)
 start_date, end_date = ps.get_date(rdb)
 all_patient = ps.patient(rdb)
-all_entities = ps.get_entities(rdb)
-size_numerical_table, all_numeric_entities, df_min_max = ps.get_numeric_entities(rdb)
-size_timestamp_table, all_timestamp_entities = ps.get_timestamp_entities(rdb)
-size_categorical_table, all_categorical_entities, all_subcategory_entities = ps.get_categorical_entities(rdb)
-list_all_numeric_entities = all_numeric_entities['Key'].tolist()
-list_all_categorical_entities = all_categorical_entities['Key'].tolist()
-list_all_date_entities = all_timestamp_entities['Key'].tolist()
-all_entities = all_entities.to_dict('index')
-all_numeric_entities = all_numeric_entities.to_dict('index')
-all_categorical_entities = all_categorical_entities.to_dict('index')
-all_timestamp_entities = all_timestamp_entities.to_dict('index')
-df_min_max = df_min_max.to_dict('index')
-all_measurement = ps.get_measurement(rdb)
-df_1, df_2, df_3 = ps.database_size(rdb)
+all_entities, all_num_entities, all_cat_entities, all_date_entities,  all_num_entities_list, all_cat_entities_list, all_date_entities_list, all_entities_list = ps.get_entities(rdb)
+df_min_max = ps.min_max_value_numeric_entities(rdb)
+all_subcategory_entities = ps.get_subcategories_from_categorical_entities(rdb)
+all_measurement, block_measurement = ps.get_measurement(rdb)
 
-# show all hide measurement selector when was only one measurement for all entities
-if len(all_measurement) < 2:
-    block = 'none'
-else:
-    block = 'block'
+
 
 Meddusa = 'none'
 try:
@@ -139,6 +118,27 @@ def favicon():
 
 # information about database
 @app.context_processor
+def data_information():
+
+    database_name = os.environ['POSTGRES_DB']
+    database = '{} data'.format(database_name)
+
+    len_numeric = 'number of numerical entities: ' + str(len(all_num_entities_list))
+    size_numeric = 'the size of the numeric table: ' + str(size_num_tab) + ' rows'
+    len_categorical = 'number of categorical entities: ' + str(len(all_cat_entities_list))
+    size_categorical = 'the size of the categorical table: ' + str(size_cat_tab) + ' rows'
+
+    return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical),
+                entities=(all_num_entities, all_cat_entities, all_subcategory_entities, all_date_entities),
+                measurement=(all_measurement, '{}'.format(measurement_name), block_measurement),
+                df_min_max=df_min_max,
+                meddusa=(Meddusa, MEDDUSA_URL),
+                limit_offset=(True, 1000, 0),
+                )
+
+
+# information about database
+@app.context_processor
 def message_count():
 
     case = session.get('case_ids')
@@ -148,64 +148,18 @@ def message_count():
         session['case_ids'] = 'No'
     else:
         case_display = 'block'
-    database_name = os.environ['POSTGRES_DB']
-    database = '{} data'.format(database_name)
-
-    if all_numeric_entities:
-        len_numeric = 'number of numerical entities: ' + str(len(all_numeric_entities))
-        size_numeric = 'the size of the numeric table: ' + str(size_numerical_table) + ' rows'
-        len_categorical = 'number of categorical entities: ' + str(len(all_categorical_entities))
-        size_categorical = 'the size of the categorical table: ' + str(size_categorical_table) + ' rows'
-    else:
-        len_numeric = 'number of numerical entities: 0'
-        size_numeric = 'the size of the numeric table: 0 rows'
-        len_categorical = 'number of categorical entities: 0'
-        size_categorical = 'the size of the categorical table: 0 rows'
 
     session['start_date'] = start_date
     session['end_date'] = end_date
     session['change_date'] = 0
-    s_date, e_date = filtering.date()
-    categorical_filter, categorical_names = filtering.check_for_filter_get()
-    numerical_filter = filtering.check_for_numerical_filter_get()
 
-    if df_1 < 5368709120 and df_2 < 5368709120 and df_3 < 5368709120:  # What is that ?
-        limit_block = 'none'
-        data.limit_selected = False
-    else:
-        limit_block = 'block'
     if start_date == end_date:
         date_block = 'none'
     else:
         date_block = 'block'
 
-    return dict(database=database,
-                meddusa=Meddusa,
-                meddusa_url=MEDDUSA_URL,
-                len_numeric=len_numeric,
-                size_numeric=size_numeric,
-                len_categorical=len_categorical,
-                size_categorical=size_categorical,
-                all_numeric_entities=all_numeric_entities,
-                all_categorical_entities=all_categorical_entities,
-                all_subcategory_entities=all_subcategory_entities,
-                all_timestamp_entities=all_timestamp_entities,
-                all_measurement=all_measurement,
-                df_min_max=df_min_max,
-                start_date=s_date,
-                end_date=e_date,
-                name='{}'.format(measurement_name),
-                block=block,
-                date_block=date_block,
-                limit_block=limit_block,
+    return dict(date_block=date_block,
                 case_display=case_display,
-                val=data.update_filter,
-                limit_yes=data.limit_selected,
-                limit=data.limit,
-                offset=data.offset,
-                measurement_filter=session.get('measurement_filter'),
-                filter=categorical_filter,
-                numerical_filter=numerical_filter,
                 )
 
 
@@ -242,7 +196,7 @@ def get_cases():
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/get', json=session_id_json)
     case_ids = cases_get.json()
     data.case_ids = case_ids['cases_ids']
-    ps.create_temp_table(case_ids['cases_ids'], rdb)
+    ps.create_temp_table_case_id(case_ids['cases_ids'], rdb)
     data.table_case_ids = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
 
     session['case_ids'] = 'Yes'
@@ -256,19 +210,28 @@ def login_get():
     session['session_id'] = os.urandom(10)
     a = factory.get_session(session.get('session_id'))
 
-    session['date_update'] = {start_date, end_date}
-    session['change_date'] = 0
-    session['categorical_filter'] = None
-    session['name'], session['from'], session['to'], session['min'], session['get'] = None, None, None, None, None
+    session['date_update'] = {'start': start_date, 'end': end_date, 'update': 0}
+    session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': True}
+    session['filter'] = {'categorical_filter': None, 'numerical_filter_name': None, 'numerical_filter_from': None,
+                         'numerical_filter_to': None, 'numerical_filter_min': None, 'numerical_filter_get': None,
+                         'update': '0,0'}
 
-    case = session.get('case_ids')
-    data.update_filter = '0,0'
-    if case is None or case == 'No':
+    if session.get('case_ids') is None or session.get('case_ids') == 'No':
         session['case_ids'] = 'No'
-        ps.filtering('No', None, None, None, None, None, ['0', '0'], rdb)
     else:
         session['case_ids'] = 'Yes'
     return redirect('/data')
+
+
+@app.route('/filtering', methods=['POST', 'GET'])
+def filter_data():
+    if request.is_json:
+        qtc_data = request.get_json()
+        print('done',qtc_data)
+
+
+    results = {'processed': 'true'}
+    return jsonify(results)
 
 
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])
@@ -291,5 +254,5 @@ def download(filename):
                      attachment_filename=filename)
 
 
-if __name__ == 'main':
-    app.run()
+def main():
+    return app

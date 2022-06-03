@@ -15,7 +15,7 @@
         <label for="{{ id_multiple }}">{{ d }}</label>
         <select multiple name="{{ id_multiple }}" id="{{ id_multiple }}" class="{{ class }}" class="form-control" style="width: 100%">
         {% for entity in name %}
-            <option title="{{ name[entity].description }}" data ="{{ name[entity].synonym }}" value="{{ name[entity].Key }}"  {% if select and name[entity].Key in select %} selected {% endif %}>{{ name[entity].Key }}</option>
+            <option title="{{ name[entity].description }}" data ="{{ name[entity].synonym }}" value="{{ name[entity].key }}"  {% if select and name[entity].key in select %} selected {% endif %}>{{ name[entity].key }}</option>
         {% endfor %}
 
         </select>
@@ -29,7 +29,7 @@
         <select name="{{ id_single }}" id="{{ id_single }}" class="{{ class }}" class="js-example-basic-single" style="width: 100%">
             <option data="" {% if not select %} selected {% endif %}>Search entity</option>
             {% for entity in name %}
-                <option title="{{ name[entity].description }}" data ="{{ name[entity].synonym }}" value="{{ name[entity].Key }}" {% if name[entity].Key == select %}selected{% endif %}>{{ name[entity].Key }}</option>
+                <option title="{{ name[entity].description }}" data ="{{ name[entity].synonym }}" value="{{ name[entity].key }}" {% if name[entity].key == select %}selected{% endif %}>{{ name[entity].key }}</option>
             {% endfor %}
 
         </select>

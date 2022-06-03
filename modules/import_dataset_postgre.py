@@ -25,57 +25,56 @@ def create_table(rdb):
     sql_drop = "DROP TABLE IF EXISTS header,name_type,examination,examination_categorical,examination_numerical," \
                "examination_date,patient"
 
-    statement_header = """CREATE TABLE header ("Name_ID" text Primary key,
-                                                "measurement" text)"""
+    statement_header = """CREATE TABLE header (name_id text Primary key,
+                                                measurement text)"""
 
-    statement_entities = """CREATE TABLE name_type ("order" numeric,
-                                                    "Key" text Primary key,
-                                                    "type" text,
-                                                    "synonym" text,
-                                                    "description" text,
-                                                    "unit" text,
-                                                    "show" text)"""
+    statement_entities = """CREATE TABLE name_type (orders numeric,
+                                                    key text Primary key,
+                                                    type text,
+                                                    synonym text,
+                                                    description text,
+                                                    unit text,
+                                                    show text)"""
 
     examination_numerical = """CREATE TABLE examination_numerical (
-                                "ID" numeric PRIMARY KEY,
-                                "Name_ID" text,
-                                "Case_ID" text,
+                                id numeric PRIMARY key,
+                                name_id text,
+                                case_id text,
                                 measurement text,
-                                "Date" text,
-                                "Time" text,
-                                "Key" text,
-                                "Value" double precision)"""
+                                date text,
+                                time text,
+                                key text,
+                                value double precision)"""
 
     examination_date = """CREATE TABLE examination_date (
-                                "ID" numeric PRIMARY KEY,
-                                "Name_ID" text,
-                                "Case_ID" text,
+                                id numeric PRIMARY key,
+                                name_id text,
+                                case_id text,
                                 measurement text,
-                                "Date" text,
-                                "Time" text,
-                                "Key" text,
-                                "Value" text)"""
+                                date text,
+                                time text,
+                                key text,
+                                value text)"""
 
     examination_categorical = """CREATE TABLE examination_categorical (
-                                "ID" numeric PRIMARY KEY,
-                                "Name_ID" text,
-                                "Case_ID" text,
+                                id numeric PRIMARY key,
+                                name_id text,
+                                case_id text,
                                 measurement text,
-                                "Date" text,
-                                "Time" text,
-                                "Key" text,
-                                "Value" text)"""
+                                date text,
+                                time text,
+                                key text,
+                                value text)"""
 
     try:
-        cur = rdb.cursor()
-        cur.execute(sql_drop)
-        cur.execute(statement_header)
-        cur.execute(statement_entities)
-        cur.execute(examination_numerical)
-        cur.execute(examination_categorical)
-        cur.execute(examination_date)
-        rdb.commit()
-    except Exception:
+        with rdb.connect() as conn:
+            conn.execute(sql_drop)
+            conn.execute(statement_header)
+            conn.execute(statement_entities)
+            conn.execute(examination_numerical)
+            conn.execute(examination_categorical)
+            conn.execute(examination_date)
+    except (Exception,):
         return print("Problem with connection with database")
 
 
@@ -84,128 +83,120 @@ def load_data(entities, dataset, header, rdb):
     Load data from entities.csv, data.csv,header.csv files into examination table in Postgresql
     """
 
-    cur = rdb.cursor()
 
     # load data from header.csv file to header table
-    cur.execute("INSERT INTO header VALUES (%s, %s) ON CONFLICT DO NOTHING", [header[0], header[2]])
+    with rdb.connect() as conn:
+        conn.execute("INSERT INTO header values (%s, %s) ON CONFLICT DO NOTHING", [header[0], header[2]])
 
-    # load data from entities.csv file to name_type table
-    with open(entities, 'r') as in_file:
-        head = next(in_file)
-        i = 0
-        for row in in_file:
-            row = row.replace("  ", " ")
-            row = row.replace("\n", "").split(",")
-            if 'order' not in head:
+        # load data from entities.csv file to name_type table
+        with open(entities, 'r') as in_file:
+            head = next(in_file)
+            i = 0
+            for row in in_file:
+                row = row.replace("  ", " ").replace("\n", "").split(",")
+                if 'order' not in head:
+                    i += 1
+                    row = [str(i)] + row
+                    if len(row) == 3:
+                        conn.execute("INSERT INTO name_type values (%s, %s, %s) ON CONFLICT DO NOTHING", row)
+                    elif len(row) == 4:
+                        conn.execute("INSERT INTO name_type values (%s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
+                    elif len(row) == 5:
+                        conn.execute("INSERT INTO name_type values (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
+                    elif len(row) == 6:
+                        conn.execute("INSERT INTO name_type values (%s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
+                    elif len(row) == 7:
+                        conn.execute("INSERT INTO name_type values (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
+        in_file.close()
+        df = pd.read_csv(entities)
+        numerical_entities = df[df['type'] == 'Double']['Key']
+        numerical_entities = numerical_entities.to_list()
+        date_entities = df[df['type'] == 'date']['Key']
+        date_entities = date_entities.to_list()
+        with open(dataset, 'r', encoding="utf8", errors='ignore') as in_file:
+            i = 0
+            for row in in_file:
                 i += 1
-                row = [str(i)] + row
-                if len(row) == 3:
-                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s) ON CONFLICT DO NOTHING", row)
-                elif len(row) == 4:
-                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
-                elif len(row) == 5:
-                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
-                elif len(row) == 6:
-                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
-                elif len(row) == 7:
-                    cur.execute("INSERT INTO name_type VALUES (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
-    rdb.commit()
-    in_file.close()
-    df = pd.read_csv(entities)
-    numerical_entities = df[df['type'] == 'Double']['Key']
-    numerical_entities = numerical_entities.to_list()
-    date_entities = df[df['type'] == 'Date']['Key']
-    date_entities = date_entities.to_list()
-    with open(dataset, 'r', encoding="utf8", errors='ignore') as in_file:
-        i = 0
-        for row in in_file:
-            i += 1
-            row = row.rstrip().replace('"', "").replace("\n", "").split(",")
-            # insert data from dataset.csv to table examination
-            if 'Visit' in header:
-                line = [str(i)] + row[0:6] + [";".join([str(x) for x in row[6:]])]
-            else:
-                line = [str(i)] + row[0:2] + ['1'] + row[2:5] + [";".join([str(x) for x in row[5:]])]
-            if len(line) < 7:
-                print("This line doesn't have appropriate format:", line)
-            else:
-                try:
-                    line[6] = line[6].replace("  ", " ")
-                    if line[7].replace('.', '', 1).isdigit() and line[6] in numerical_entities:
-                        cur.execute("INSERT INTO examination_numerical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
-                    elif line[6] in date_entities:
-                        cur.execute("INSERT INTO examination_date VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
-                    else:
-                        cur.execute("INSERT INTO examination_categorical VALUES (%s,%s,%s,%s,%s,%s,%s,%s)", line)
-                except Exception:
-                    print(line)
+                row = row.rstrip().replace('"', "").replace("\n", "").split(",")
+                if 'Visit' in header:
+                    line = [str(i)] + row[0:6] + [";".join([str(x) for x in row[6:]])]
+                else:
+                    line = [str(i)] + row[0:2] + ['1'] + row[2:5] + [";".join([str(x) for x in row[5:]])]
+                if len(line) < 7:
+                    print("This line doesn't have appropriate format:", line)
+                else:
+                    try:
+                        line[6] = line[6].replace("  ", " ")
+                        if line[7].replace('.', '', 1).isdigit() and line[6] in numerical_entities:
+                            conn.execute("INSERT INTO examination_numerical values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+                        elif line[6] in date_entities:
+                            conn.execute("INSERT INTO examination_date values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+                        else:
+                            conn.execute("INSERT INTO examination_categorical values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+                    except (Exception,):
+                        print(line)
 
-    rdb.commit()
-    in_file.close()
+        in_file.close()
 
 
 def alter_table(rdb):
     """
-    Divide table examination on categorical and numerical, create index for "Key" column in categorical and numerical
+    Divide table examination on categorical and numerical, create index for "key" column in categorical and numerical
     tables
     """
 
-    sql_remove_null = """DELETE FROM examination_categorical WHERE "Value" is null """
+    sql_remove_null = """DELETE FROM examination_categorical WHERE value is null """
 
-    sql = """CREATE TABLE Patient AS select distinct "Name_ID","Case_ID" from 
-                        (SELECT "Name_ID","Case_ID" FROM examination_numerical
+    sql = """CREATE TABLE Patient AS select distinct name_id,case_id from 
+                        (SELECT name_id,case_id FROM examination_numerical
                          UNION
-                         SELECT "Name_ID","Case_ID" FROM examination_date
+                         SELECT name_id,"case_id" FROM examination_date
                          UNION
-                         SELECT "Name_ID","Case_ID" FROM examination_categorical) as foo"""
+                         SELECT name_id,case_id FROM examination_categorical) as foo"""
 
-    sql4 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c1 FOREIGN KEY ("Key") REFERENCES 
-    name_type ("Key")"""
-    sql5 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n1 FOREIGN KEY ("Key") REFERENCES 
-    name_type ("Key")"""
-
-    try:
-        cur = rdb.cursor()
-        cur.execute(sql_remove_null)
-        cur.execute(sql)
-        rdb.commit()
-    except Exception:
-        return print("Problem with connection with database")
-    try:
-        cur.execute(sql4)
-        cur.execute(sql5)
-        rdb.commit()
-    except Exception:
-        return print("Problem with connection with database")
+    sql4 = """ALTER TABLE examination_categorical ADD CONSTRAINT forgein_key_c1 FOREIGN key (key) REFERENCES 
+    name_type (key)"""
+    sql5 = """ALTER TABLE examination_numerical ADD CONSTRAINT forgein_key_n1 FOREIGN key (key) REFERENCES 
+    name_type (key)"""
+    with rdb.connect() as conn:
+        try:
+            conn.execute(sql_remove_null)
+            conn.execute(sql)
+        except (Exception,):
+            return print("Problem with connection with database")
+        try:
+            conn.execute(sql4)
+            conn.execute(sql5)
+        except (Exception,):
+            return print("Problem with connection with database")
 
 
 def create_index(rdb):
 
-    sql1 = """CREATE INDEX IF NOT EXISTS "Key_index_numerical" ON examination_numerical ("Key")"""
-    sql2 = """CREATE INDEX IF NOT EXISTS "Key_index_categorical" ON examination_categorical ("Key")"""
-    sql3 = """CREATE INDEX IF NOT EXISTS "Key_index_date" ON examination_date ("Key")"""
+    sql1 = """CREATE INDEX IF NOT EXISTS key_index_numerical ON examination_numerical (key)"""
+    sql2 = """CREATE INDEX IF NOT EXISTS key_index_categorical ON examination_categorical (key)"""
+    sql3 = """CREATE INDEX IF NOT EXISTS key_index_date ON examination_date (key)"""
 
-    sql4 = """CREATE INDEX IF NOT EXISTS "ID_index_numerical" ON examination_numerical ("Name_ID")"""
-    sql5 = """CREATE INDEX IF NOT EXISTS "ID_index_categorical" ON examination_categorical ("Name_ID")"""
-    sql6 = """CREATE INDEX IF NOT EXISTS "ID_index_date" ON examination_date ("Name_ID")"""
+    sql4 = """CREATE INDEX IF NOT EXISTS id_index_numerical ON examination_numerical (name_id)"""
+    sql5 = """CREATE INDEX IF NOT EXISTS id_index_categorical ON examination_categorical (name_id)"""
+    sql6 = """CREATE INDEX IF NOT EXISTS id_index_date ON examination_date (name_id)"""
 
-    sql7 = """CREATE INDEX IF NOT EXISTS "case_index_patient" ON Patient ("Case_ID")"""
-    sql8 = """CREATE INDEX IF NOT EXISTS "ID_index_patient" ON Patient ("Name_ID")"""
+    sql7 = """CREATE INDEX IF NOT EXISTS case_index_patient ON Patient (case_id)"""
+    sql8 = """CREATE INDEX IF NOT EXISTS id_index_patient ON Patient (name_id)"""
     sql9 = """CREATE EXTENSION IF NOT EXISTS tablefunc"""
-    try:
-        cur = rdb.cursor()
-        cur.execute(sql1)
-        cur.execute(sql2)
-        cur.execute(sql3)
-        cur.execute(sql4)
-        cur.execute(sql5)
-        cur.execute(sql6)
-        cur.execute(sql7)
-        cur.execute(sql8)
-        cur.execute(sql9)
-        rdb.commit()
-    except Exception:
-        return print("Problem with connection with database")
+    with rdb.connect() as conn:
+        try:
+            conn.execute(sql1)
+            conn.execute(sql2)
+            conn.execute(sql3)
+            conn.execute(sql4)
+            conn.execute(sql5)
+            conn.execute(sql6)
+            conn.execute(sql7)
+            conn.execute(sql8)
+            conn.execute(sql9)
+        except (Exception,):
+            return print("Problem with connection with database")
 
 
 def cluster_table(rdb):
@@ -213,9 +204,9 @@ def cluster_table(rdb):
     sql1 = """ VACUUM """
 
     # CLUSTER tables
-    sql2 = """ CLUSTER examination_date USING "Key_index_date" """
-    sql3 = """ CLUSTER examination_numerical USING "Key_index_numerical" """
-    sql4 = """ CLUSTER examination_categorical USING "Key_index_categorical" """
+    sql2 = """ CLUSTER examination_date USING key_index_date """
+    sql3 = """ CLUSTER examination_numerical USING key_index_numerical """
+    sql4 = """ CLUSTER examination_categorical USING key_index_categorical """
 
     # Analyze
     sql5 = """ ANALYZE examination_numerical"""
@@ -224,18 +215,17 @@ def cluster_table(rdb):
 
     sql8 = """ ALTER SYSTEM SET work_mem='2GB' """
     sql9 = """ ALTER SYSTEM SET max_parallel_workers_per_gather=7 """
-    try:
-        cur = rdb.cursor()
-        rdb.autocommit = True
-        cur.execute(sql1)
-        cur.execute(sql2)
-        cur.execute(sql3)
-        cur.execute(sql4)
-        cur.execute(sql5)
-        cur.execute(sql6)
-        cur.execute(sql7)
-        cur.execute(sql8)
-        cur.execute(sql9)
-        rdb.commit()
-    except Exception:
-        return print("Problem with connection with database")
+    with rdb.connect() as conn:
+        try:
+            conn.autocommit = True
+            conn.execute(sql1)
+            conn.execute(sql2)
+            conn.execute(sql3)
+            conn.execute(sql4)
+            conn.execute(sql5)
+            conn.execute(sql6)
+            conn.execute(sql7)
+            conn.execute(sql8)
+            conn.execute(sql9)
+        except (Exception,):
+            return print("Problem with connection with database")

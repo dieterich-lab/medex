@@ -3,6 +3,8 @@
 <script src="{{ url_for('static', filename='js/subcategories.js') }}"></script>
 <script src="{{ url_for('static', filename='js/filters.js') }}"></script>
 
+
+
 {# pretty multiselect inputs #}
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
@@ -13,6 +15,7 @@
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
+
 
 {% import 'macro_template.html' as m %}
 
@@ -54,18 +57,20 @@
         </div>
         
         <div class="form-check mt-4" >
-            <input class="form-check-input" type="checkbox"  id="categorical_filter_check" name="categorical_filter_check">
+            <input class="form-check-input" type="checkbox"  id="categorical_filter_check" name="categorical_filter_check" value="categorical">
             <label style = "margin-right:30px">Categorical</label>
-            <input class="form-check-input" type="checkbox" id="numerical_filter_check" name="numerical_filter_check">
+
+            <input class="form-check-input" type="checkbox" id="numerical_filter_check" name="numerical_filter_check" value="numerical">
             <label>Numerical</label>
         </div>
+
         <div class="col ml-6 {% if not categorical_filter_check %}d-none {% endif %}"  id="categorical_filter_check_block" >
             <label>Categorical:</label>
             <select id="categorical_filter"  name="categorical_filter" style="width: 100%" class="js-example-basic-single" >
                 <option>Search entity</option>
                 {% for entity in all_categorical_entities %}
                     <option title="{{ all_categorical_entities[entity].description }}"
-                            value="{{ all_categorical_entities[entity].Key }}">{{ all_categorical_entities[entity].Key }}</option>
+                            value="{{ all_categorical_entities[entity].key }}">{{ all_categorical_entities[entity].key }}</option>
                 {% endfor %}
             </select>
             <br>
@@ -92,16 +97,12 @@
             </div>
             <br>
             <div class="extra-controls">
-            from    <input style="width: 30%" id="input1" type="text" class="js-input-from" value="" />
-            to  <input style="width: 30%" id="input2" type="text" class="js-input-to" value="" />
+            from    <input style="width: 30%" id="input1" type="text" class="js-input-from" value="{{ from_num }}" />
+            to  <input style="width: 30%" id="input2" type="text" class="js-input-to" value="{{ to_num }}" />
             </div>
         </div>
-
-        <!-- <div class="form-check mt-4" >
-        {{ m.entity_form_single_measurement(id_single_measurement="measurement_filter",name =all_measurement,value=entity,select=measurement_filter,d="based on visit:",block=block) }}
-        </div> -->
         <br>
-        <button id="Add" value="{{ val }}" name="Add" class="btn btn-outline-info" >Add Filter</button>
+        <button id="add_filter" type="button" class="btn btn-outline-info" >Add Filter</button>
     </div>
 </div>
 
@@ -124,6 +125,7 @@
                 </script>
             {% endif %}
         </div>
+
         <div id="demo" >
             {% if filter %}
             {% for cat,filter in filter %}
@@ -131,6 +133,7 @@
             {% endfor %}
             {% endif %}
         </div>
+
         <div id="demo2">
             {% if numerical_filter %}
             {% for name,value1,value2,min,max in numerical_filter %}
@@ -139,6 +142,7 @@
             {% endif %}
             </div>
         </div>
+
     </div>
 </div>
 <script type="text/javascript">

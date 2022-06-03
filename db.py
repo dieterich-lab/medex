@@ -15,7 +15,6 @@ DATABASE_URL = f'postgresql://{user}:{password}@{host}:{port}/{database}'
 def connect_db():
     if 'db' not in g:
         g.db = create_engine(DATABASE_URL, echo=False, poolclass=NullPool)
-        g.db2 = create_engine(DATABASE_URL, echo=False)
 
 
 def close_db():
