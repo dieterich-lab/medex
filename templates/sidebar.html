@@ -44,23 +44,25 @@
     <div class="card-body">
         <label>Filter</label>
 
-        <div class="form-check mt-4" style="display: {{ limit_block }}">
+        <div class="form-check mt-4" style="display: {{ limit_offset[0] }}">
             <input class="form-check-input" type="checkbox" title="For large data, it may take longer to display the results
                     (maximum 1 min, if the query takes longer, the query will be killed)"  value="true" id="limit_yes"
                     name="limit_yes" {% if limit_yes %} checked {% endif %} >
             <label class="form-check-label" for="limit_yes">Limit selected number to: </label>
             <input style="width: 17%" id="limit" name="limit" title="For large data, it may take longer to display the results
                     (maximum 1 min, if the query takes longer, the query will be killed)" type="text" class="js-input-from"
-                    value="{{ limit }}" />
+                    value="{{ limit_offset[1] }}" />
             offset:
-            <input style="width: 17%" id="offset" name="offset" type="text" class="js-input-from" value="{{ offset }}" >
+            <input style="width: 17%" id="offset" name="offset" type="text" class="js-input-from" value="{{ limit_offset[2] }}" >
         </div>
         
         <div class="form-check mt-4" >
-            <input class="form-check-input" type="checkbox"  id="categorical_filter_check" name="categorical_filter_check" value="categorical">
+            <input class="form-check-input" type="radio"  id="categorical_filter_check" name="categorical_filter_check" value="categorical"
+            {% if categorical_filter_check =="categorical" %}checked{% endif %}>
             <label style = "margin-right:30px">Categorical</label>
 
-            <input class="form-check-input" type="checkbox" id="numerical_filter_check" name="numerical_filter_check" value="numerical">
+            <input class="form-check-input" type="radio" id="numerical_filter_check" name="categorical_filter_check" value="numerical"
+                {% if categorical_filter_check =="numerical" %}checked{% endif %}>
             <label>Numerical</label>
         </div>
 
@@ -68,9 +70,9 @@
             <label>Categorical:</label>
             <select id="categorical_filter"  name="categorical_filter" style="width: 100%" class="js-example-basic-single" >
                 <option>Search entity</option>
-                {% for entity in all_categorical_entities %}
-                    <option title="{{ all_categorical_entities[entity].description }}"
-                            value="{{ all_categorical_entities[entity].key }}">{{ all_categorical_entities[entity].key }}</option>
+                {% for entity in entities[1] %}
+                    <option title="{{ entities[1][entity].description }}"
+                            value="{{ entities[1][entity].key }}">{{ entities[1][entity].key }}</option>
                 {% endfor %}
             </select>
             <br>
@@ -81,14 +83,14 @@
             <select multiple id="subcategory_filter"  name="subcategory_entities" style="width: 100%" class="form-control" >
                 <option value="Select all">Select all</option>
                 {% for entity in all_subcategory_entities[categorical_filter] %}
-                <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+                <option value="{{ entity }}" {% if entity in all_subcategory_entities %}selected{% endif %}>{{ entity }}</option>
                 {% endfor %}
             </select>
                 <br><br>
         </div>
 
         <div class="col ml-6 {% if not numerical_filter_check %}d-none {% endif %}" id="numerical_filter_check_block">
-            {{ m.entity_form_single(id_single="id_numerical_filter",name =all_numeric_entities,value=entity,d="Numerical:") }}
+            {{ m.entity_form_single(id_single="id_numerical_filter",name =entities[0],value=entity,d="Numerical:") }}
             <script type="text/javascript">
                 var df = {{df_min_max|safe }};
             </script>
@@ -110,39 +112,30 @@
 <div id='id_filter_results' class="card" style="display: block ">
     <div class="card-body">
         <label>Filters:</label>
-        <button id ="clean" name='clean' value="clean" class="btn btn-outline-info" style="float: right">Clear All</button>
-        <br>
-        <br>
-        <div id="demo0" >
-            {% if filter %}
-                <script type="text/javascript">
-                    {% if categorical_filter %}
-                    var categorical_filter_selected = {{categorical_filter|tojson}};
-                    {% endif %}
-                    {% if numerical_filter_name %}
-                    var numerical_filter_selected = {{numerical_filter_name|tojson}};
-                    {% endif %}
-                </script>
-            {% endif %}
-        </div>
-
+        <button id ="clean" type="button" name='clean' value="clean" class="btn btn-outline-info" style="float: right">Clear All</button>
         <div id="demo" >
             {% if filter %}
             {% for cat,filter in filter %}
-                <div class='categorical_filter' ><button  type="button" style='display: block; width: 100%; word-wrap: break-word; white-space: normal;' class='btn btn-outline-primary text-left' ><span class='close' onclick="remove_categorical(this)" >x </span><input type='hidden' name='filter' value='{{ filter }}'><input type='hidden' name='cat' value='{{ cat }}'>{{ filter|safe }}</button><br></div>
+                <div class='categorical_filter'>
+                    <button  type='button' style='width: 100%; word-wrap: break-word; white-space: normal;' class='btn btn-outline-primary text-left' >{{ filter|safe }}
+                        <span class='close' onclick='remove_filter(this)' >x </span>
+                    </button>
+                </div>
             {% endfor %}
             {% endif %}
         </div>
-
         <div id="demo2">
             {% if numerical_filter %}
             {% for name,value1,value2,min,max in numerical_filter %}
-                <div class="fd-box2"><span onclick='remove_numerical(this)'  class='close' > x </span><input type="hidden" name="name" value='{{ name }}'/>{{ name }}<input type="text" class="range"  name="loan_term"  data-min="{{ min }}" data-max="{{ max }}" data-from="{{ value1 }}" data-to="{{ value2 }}" /></div>
+                <div class="fd-box2">
+                    <span onclick='remove_numerical(this)'  class='close'> x </span>
+                    <label type='hidden' name='name' value='{{ name }}'/>{{ name }}
+                    <input type='text' class='range'  name='loan_term'  data-min="{{ min }}" data-max='{{ max }}' data-from='{{ value1 }}' data-to='{{ value2 }}' />
+                </div>
             {% endfor %}
             {% endif %}
             </div>
         </div>
-
     </div>
 </div>
 <script type="text/javascript">

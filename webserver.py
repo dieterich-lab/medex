@@ -130,7 +130,7 @@ def data_information():
 
     return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical),
                 entities=(all_num_entities, all_cat_entities, all_subcategory_entities, all_date_entities),
-                measurement=(all_measurement, '{}'.format(measurement_name), block_measurement),
+                measurement_tuple=(all_measurement, '{}'.format(measurement_name), block_measurement),
                 df_min_max=df_min_max,
                 meddusa=(Meddusa, MEDDUSA_URL),
                 limit_offset=(True, 1000, 0),
@@ -212,9 +212,8 @@ def login_get():
 
     session['date_update'] = {'start': start_date, 'end': end_date, 'update': 0}
     session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': True}
-    session['filter'] = {'categorical_filter': None, 'numerical_filter_name': None, 'numerical_filter_from': None,
-                         'numerical_filter_to': None, 'numerical_filter_min': None, 'numerical_filter_get': None,
-                         'update': '0,0'}
+    session['filter_cat'] = {}
+    session['filter_num'] = {}
 
     if session.get('case_ids') is None or session.get('case_ids') == 'No':
         session['case_ids'] = 'No'
@@ -225,12 +224,35 @@ def login_get():
 
 @app.route('/filtering', methods=['POST', 'GET'])
 def filter_data():
+    # update database
+    # if exists already do nothing print error
     if request.is_json:
-        qtc_data = request.get_json()
-        print('done',qtc_data)
+        filters = request.get_json()
+        print(filters)
+        filter_cat, filter_num = session.get('filter_cat'), session.get('filter_num')
 
+        if filter_num or filter_cat:
+            add_filter = 'yes'
+        else:
+            add_filter = 'create'
 
-    results = {'processed': 'true'}
+        if "cat" in filters[0]:
+            filter_cat.update({filters[0].get('cat'): filters[1].get('sub')})
+            session['filter_cat'] = filter_cat
+            query, query2 = ps.add_categorical_filter(filters)
+        elif "num" in filters[0]:
+            filter_num.update({filters[0].get('num'): filters[1].get('from_to')})
+            session['filter_num'] = filter_num
+            query, query2 = ps.add_numerical_filter(filters)
+        elif 'clean' in filters[0]:
+            ps.clean_filter()
+            print('clean')
+
+        if add_filter == 'yes':
+            ps.next_filter(query, query2)
+        else:
+            ps.first_filter(query, query2)
+    results = {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub')}
     return jsonify(results)
 
 

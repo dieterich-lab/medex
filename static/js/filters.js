@@ -15,22 +15,7 @@ var instance,
     min = 10,
     max = 100
 
-//change subcategories if category change
-$('#id_numerical_filter').change(function () {
-    var entity =$(this).val(), values = df[entity] || [];
-    min =values['min']
-    max =values['max']
 
-    $('#input1').prop("value", min);
-    $('#input2').prop("value", max);
-    instance.update({
-        min: min,
-        max: max,
-        from: min,
-        to: max
-    });
-
-});
 
 $('#range').ionRangeSlider({
     type: "double",
@@ -60,15 +45,15 @@ function updateInputs (data) {
 $('#input1').on("input", function () {
     var val = $(this).prop("value");
     // validate
-    if (val > to ) {
-        val = to;
-    } else if (val < min) {
+    if (val < min ) {
         val = min;
+    } else if (val > to) {
+        val = to;
     }
     instance.update({
         from: val
     });
-    document.getElementById('input1').value = val;
+
 });
 
 $('#input2').on("input", function () {
@@ -82,9 +67,25 @@ $('#input2').on("input", function () {
     instance.update({
         to: val
     });
-    document.getElementById('input2').value = val;
+
 });
 
+//change subcategories if category change
+$('#id_numerical_filter').change(function () {
+    var entity =$(this).val(), values = df[entity] || [];
+    min =values['min']
+    max =values['max']
+
+    $('#input1').prop("value", min);
+    $('#input2').prop("value", max);
+    instance.update({
+        min: min,
+        max: max,
+        from: min,
+        to: max
+    });
+
+});
 
 $(".range").ionRangeSlider({
     type: "double",
@@ -98,109 +99,88 @@ $(".range").ionRangeSlider({
 
 
 
-$("#clean").click(function(){
-    $("#demo").empty();
-    $("#demo2").empty();
+    $("#clean").click(function(){
+        var clean = document.getElementById("categorical_filter").value;
+        $.ajax({
+            type: "POST",
+            url: "/filtering",
+            data: JSON.stringify({'clean':'clean'}),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(response) {
+                    $("#demo").empty();
+                    $("#demo2").empty();
+                }
+            });
+    });
 
-});
-
-
-
-
-
-remove_categorical = function(span) {
-   var value_n_c =$("#Add").val();
-   var values = value_n_c.split(",");
-   var value_categorical = parseInt(values[0], 10);
-   var value_numeric = parseInt(values[1], 10);
-   value_categorical = isNaN(value_categorical) ? 0 : value_categorical;
-   value_numeric = isNaN(value_numeric) ? 0 : value_numeric;
-
-
-    var val = $(span).closest("div.categorical_filter").find("input[name='cat']").val();
-    const index = categorical_filter_selected.indexOf(val);
-    if (index > -1) {
-      categorical_filter_selected.splice(index, 1); // 2nd parameter means remove one item only
+    remove_filter = function(span) {
+        var val = $(span).closest("div").find("button.btn").val();
+        span.closest("div").remove();
+            $.ajax({
+            type: "POST",
+            url: "/filtering",
+            data: JSON.stringify({'clean': val}),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(response) {
+                    $("#demo").empty();
+                    $("#demo2").empty();
+                }
+            });
     }
-    span.closest("div.categorical_filter").remove();
-
-    value_categorical -=1;
-    values = [value_categorical,value_numeric].join()
-    document.getElementById('Add').value = values;
-    document.getElementById("Add").click();
-
-}
-
-remove_numerical = function(span) {
-   var value_n_c =$("#Add").val();
-   var values = value_n_c.split(",");
-   var value_categorical = parseInt(values[0], 10);
-   var value_numeric = parseInt(values[1], 10);
-   value_categorical = isNaN(value_categorical) ? 0 : value_categorical;
-   value_numeric = isNaN(value_numeric) ? 0 : value_numeric;
-
-    var val = $(span).closest("div.fd-box2").find("input[name='name']").val();
-
-    const index = numerical_filter_selected.indexOf(val);
-    if (index > -1) {
-      numerical_filter_selected.splice(index, 1); // 2nd parameter means remove one item only
-    }
-    span.closest("div.fd-box2").remove();
-
-    value_numeric -=1;
-    values = [value_categorical,value_numeric].join()
-    document.getElementById('Add').value = values;
-    document.getElementById("Add").click();
-
-
-
-}
-
-categorical_filter_selected  = ( typeof categorical_filter_selected  != 'undefined' && categorical_filter_selected  instanceof Array ) ? categorical_filter_selected  : []
-numerical_filter_selected  = ( typeof numerical_filter_selected  != 'undefined' && numerical_filter_selected  instanceof Array ) ? numerical_filter_selected  : []
-
-
 
 
     $("#add_filter").click(function() {
-          var filter_cat = document.getElementById("categorical_filter").value;
-      var filter_sub_cat = document.getElementById("subcategory_filter").value;
-      var filter_num = document.getElementsByName("id_numerical_filter").value;
-
-       var mag =filter_cat = document.getElementById("categorical_filter").value;
-
-   var e2 = document.getElementById("subcategory_filter").value;
-   var mm = mag + " is: <br>" + e2
-   mm = mm.replace(/,/g,"<br>")
-   // if categorical filter than do nothing
-
-
-
-        if (mag != 'Search entity'){
-        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  style='display: block; width: 100%' class='btn btn-outline-primary'  ><span onclick='remove(this)'  class='close' > x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + mag+"'>" + mm + "</button>";
-        $("#categorical_filter").val('Search entity').change();
-
-        }
-
-        var filters = [
+        if (document.getElementById("categorical_filter_check").checked) {
+            var filter_cat = document.getElementById("categorical_filter").value;
+            var filter_sub_cat = $('#subcategory_filter').val();
+            var filters = [
             {"cat": filter_cat},
             {"sub": filter_sub_cat},
-            {"num": filter_num},
             ];
+            $.ajax({
+              type: "POST",
+              url: "/filtering",
+              data: JSON.stringify(filters),
+              contentType: "application/json",
+              dataType: 'json',
+              success: function(response) {
+                var content = "<div class='categorical_filter'>"
+                content += "<button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;' class='btn btn-outline-primary text-left' value = '"+ response.filter +"'>"
+                content += "<span class='close' onclick='remove_filter(this)' >x </span>"
+                content += response.filter + ' is ' + response.subcategory
+                content += "</button></div>"
 
-        $.ajax({
-          type: "POST",
-          url: "/filtering",
-          data: JSON.stringify(filters),
-          contentType: "application/json",
-          dataType: 'json',
-          success: function(response) {
-                $('#add_filter').text('done')
-          }
+                $("#demo").append(content)
+                }
+            });
+        }
+        else{
+            var filter_num = document.getElementById("id_numerical_filter").value;
+            var num_from_to = document.getElementById("range").value;
+            var filters = [
+            {"num": filter_num},
+            {"from_to": num_from_to},
+            ];
+            $.ajax({
+              type: "POST",
+              url: "/filtering",
+              data: JSON.stringify(filters),
+              contentType: "application/json",
+              dataType: 'json',
+              success: function(response) {
+                var content = "<div class='categorical_filter'>"
+                content += "<button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;' class='btn btn-outline-primary text-left' value = '"+ response.filter +"'>"
+                content += "<span class='close' onclick='remove_filter(this)' >x </span>"
+                content += response.filter + ' is ' + response.subcategory
+                content += "</button></div>"
+
+                $("#demo").append(content)
+                }
+            });
+        }
+
+
     });
-
-
-    });
-
-
 });

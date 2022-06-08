@@ -1,11 +1,9 @@
-from flask import Blueprint, render_template, request, jsonify, session, g
+from flask import Blueprint, render_template, request, jsonify, session
 import modules.load_data_postgre as ps
 import pandas as pd
-import requests
 import url_handlers.filtering as filtering
-from webserver import rdb, data, Name_ID, collect_data_server_side, block_measurement, all_entities, df_min_max, measurement_name,\
-    all_measurement, all_num_entities_list, all_cat_entities_list, all_date_entities_list, Meddusa, \
-    EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL
+from webserver import rdb, data, Name_ID, collect_data_server_side, block_measurement, all_entities, measurement_name,\
+    all_measurement, all_num_entities_list, all_cat_entities_list, all_date_entities_list
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -36,14 +34,11 @@ def post_data():
     else:
         measurement = request.form.getlist('measurement')
 
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.filter_categorical()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-
     categorical_entities = list(set(entities)-set(all_num_entities_list)-set(all_date_entities_list))
     numerical_entities = list(set(entities) - set(all_cat_entities_list) - set(all_date_entities_list))
     date_entities = list(set(entities) - set(all_num_entities_list) - set(all_cat_entities_list))
     dict_entities = {'entities': entities, 'categorical_entities': categorical_entities,
-                     'numerical_entities': numerical_entities, 'data_entities' : date_entities}
+                     'numerical_entities': numerical_entities, 'data_entities': date_entities}
 
     df = pd.DataFrame()
     # errors
@@ -56,14 +51,9 @@ def post_data():
     if error:
         return render_template('data.html',
                                error=error,
-                               from_nu = from1,
-                               to_num = to1,
-                               block=block_measurement,
                                all_entities=all_entities,
-                               name=measurement_name,
-                               measurement=measurement,
                                entities=entities,
-                               df_min_max=df_min_max,
+                               measurement=measurement,
                                what_table=what_table,
                                )
 
@@ -91,27 +81,10 @@ def post_data():
 
     return render_template('data.html',
                            error=error,
-                           block=block_measurement,
-                           meddusa=Meddusa,
-                           meddusa_url_session=meddusa_url_session,
                            all_entities=all_entities,
-                           measurement=measurement,
                            entities=entities,
-                           name_column=column,
-                           name=measurement_name,
+                           measurement=measurement,
                            what_table=what_table,
+                           name_column=column,
                            column=dict_of_column,
-                           df_min_max=df_min_max,
-                           start_date=s_date,
-                           end_date=e_date,
-                           categorical_filter=categorical_names,
-                           numerical_filter_name=name,
-                           filter=categorical_filter_zip,
-                           val=update,
-                           limit_yes=data.limit_selected,
-                           limit=data.limit,
-                           offset=data.offset,
-                           numerical_filter=numerical_filter,
                            )
-
-

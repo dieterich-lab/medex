@@ -17,11 +17,11 @@
     <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
 
         <div class="w3-bar w3-border w3-light-blue">
-          <div class="w3-bar-item">{{ database }}</div>
-          <div class="w3-bar-item">{{ len_numeric }}</div>
-          <div class="w3-bar-item">{{ size_numeric }}</div>
-            <div class="w3-bar-item">{{ len_categorical }}</div>
-          <div class="w3-bar-item">{{ size_categorical }}</div>
+          <div class="w3-bar-item">{{ database_information[0] }}</div>
+          <div class="w3-bar-item">{{ database_information[1] }}</div>
+          <div class="w3-bar-item">{{ database_information[2] }}</div>
+          <div class="w3-bar-item">{{ database_information[3] }}</div>
+          <div class="w3-bar-item">{{ database_information[4] }}</div>
         </div>
 <div id="page" class="mx-4">
       <nav class="navbar navbar-light bg-light  ">

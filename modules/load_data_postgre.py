@@ -131,31 +131,44 @@ def create_temp_table_case_id(case_id):
                         CREATE TEMP TABLE IF NOT EXISTS temp_table_case_ids 
                         AS (SELECT name_id FROM patient WHERE case_id in ({0})) """.format(case_id_all)
 
-#class filtering:
 
-
-def clean_filter(r):
+def clean_filter():
     sql = "DROP TABLE IF EXISTS temp_table_ids"
     sql_drop = "DROP TABLE IF EXISTS temp_table_with_name_ids"
 
 
-def add_categorical_filter(filter,r):
-    cat = cat.replace('<br>', ',')
-    cat = "$$" + cat[(cat.find(' is') + 6):].replace(",", "$$,$$") + "$$"
+def add_categorical_filter(filters):
+    subcategory = "$$" + "$$,$$".join(filters[1].get('sub')) + '$$'
 
-    query = """ SELECT DISTINCT name_id FROM examination_categorical WHERE key = '{}' AND value IN ({}) 
-            """.format(categorical[int(update[0]) - 1], cat)
-    query2 = """ SELECT DISTINCT name_id,key FROM examination_categorical WHERE key = '{}' AND value IN ({}) 
-             """.format(categorical[int(update[0]) - 1], cat)
+    query = """SELECT DISTINCT name_id FROM examination_categorical WHERE key = '{}' AND value IN ({}) 
+    """.format(filters[0].get('cat'), subcategory)
+    query2 = """SELECT DISTINCT name_id,key FROM examination_categorical WHERE key = '{}' AND value IN ({}) 
+    """.format(filters[0].get('cat'), subcategory)
+
+    return query, query2
 
 
-def add_numerical_filter(filter, r):
+def add_numerical_filter(filters):
+    from_to = filters[1].get('from_to').split(";")
     query = """ SELECT DISTINCT name_id FROM examination_numerical WHERE key = '{}' 
-                AND value BETWEEN {} AND {}""".format(numerical_filters_name[int(update[1]) - 1],
-                                                      from1[int(update[1]) - 1], to1[int(update[1]) - 1])
+                AND value BETWEEN {} AND {}""".format(filters[0].get('num'), from_to[0], from_to[1])
     query2 = """ SELECT DISTINCT name_id,key FROM examination_numerical WHERE key = '{}' 
-                AND value BETWEEN {} AND {} """.format(numerical_filters_name[int(update[1]) - 1],
-                                                       from1[int(update[1]) - 1], to1[int(update[1]) - 1])
+                AND value BETWEEN {} AND {} """.format(filters[0].get('num'), from_to[0], from_to[1])
+
+    return query, query2
+
+
+def first_filter(query, query2):
+
+    create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
+    create_table_2 = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_ids as ({}) """.format(query2)
+    print('works_create')
+
+
+def next_filter(query, query2):
+    create_table = """ DELETE FROM temp_table_name_ids WHERE "Name_ID" NOT IN ({})""".format(query)
+    create_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
+    print('works_add')
 
     
 def remove_filter(filter, r):
