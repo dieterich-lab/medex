@@ -140,26 +140,21 @@ def data_information():
 # information about database
 @app.context_processor
 def message_count():
-
-    case = session.get('case_ids')
-    if case is None or case == 'No':
-        data.case_ids = []
+    if session.get('case_ids') is None:
         case_display = 'none'
-        session['case_ids'] = 'No'
     else:
         case_display = 'block'
-
-    session['start_date'] = start_date
-    session['end_date'] = end_date
-    session['change_date'] = 0
 
     if start_date == end_date:
         date_block = 'none'
     else:
         date_block = 'block'
 
+    session['date_filter'] = (start_date, end_date, 0)
+
     return dict(date_block=date_block,
                 case_display=case_display,
+                filter_update=session.get('filter_update')
                 )
 
 
@@ -210,15 +205,12 @@ def login_get():
     session['session_id'] = os.urandom(10)
     a = factory.get_session(session.get('session_id'))
 
-    session['date_update'] = {'start': start_date, 'end': end_date, 'update': 0}
+    session['date_filter'] = {'start': start_date, 'end': end_date, 'update': 0}
     session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': True}
     session['filter_cat'] = {}
     session['filter_num'] = {}
+    session['filter_update'] = 0
 
-    if session.get('case_ids') is None or session.get('case_ids') == 'No':
-        session['case_ids'] = 'No'
-    else:
-        session['case_ids'] = 'Yes'
     return redirect('/data')
 
 
@@ -228,31 +220,38 @@ def filter_data():
     # if exists already do nothing print error
     if request.is_json:
         filters = request.get_json()
-        print(filters)
-        filter_cat, filter_num = session.get('filter_cat'), session.get('filter_num')
-
-        if filter_num or filter_cat:
-            add_filter = 'yes'
-        else:
-            add_filter = 'create'
-
-        if "cat" in filters[0]:
-            filter_cat.update({filters[0].get('cat'): filters[1].get('sub')})
-            session['filter_cat'] = filter_cat
-            query, query2 = ps.add_categorical_filter(filters)
-        elif "num" in filters[0]:
-            filter_num.update({filters[0].get('num'): filters[1].get('from_to')})
-            session['filter_num'] = filter_num
-            query, query2 = ps.add_numerical_filter(filters)
-        elif 'clean' in filters[0]:
+        print(filters[0])
+        if 'clean' in filters[0]:
             ps.clean_filter()
-            print('clean')
-
-        if add_filter == 'yes':
-            ps.next_filter(query, query2)
-        else:
-            ps.first_filter(query, query2)
-    results = {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub')}
+            session['filter_update'] = 0
+            results = {'filter': 'cleaned'}
+        elif 'clean_one_filter' in filters[0]:
+            ps.remove_one_filter(filters, 1)
+            # CLEAN THISE ONe filter
+            session['filter_update'] = session.get('filter_update') - 1
+            results = {'filter': 'removed'}
+        elif 'cat' in filters[0]:
+            filter_cat = session.get('filter_cat')
+            # if filter is already
+            if filters[0].get('cat') in filter_cat:
+                results = {'filter': 'error'}
+            else:
+                filter_cat.update({filters[0].get('cat'): filters[1].get('sub')})
+                session['filter_cat'] = filter_cat
+                session['filter_update'] = session.get('filter_update') + 1
+                ps.add_categorical_filter(filters, session.get('filter_update'))
+                results = {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub')}
+        elif "num" in filters[0]:
+            filter_num = session.get('filter_num')
+            if filters[0].get('num') in filter_num:
+                results = {'filter': 'error'}
+            else:
+                filter_num.update({filters[0].get('num'): filters[1].get('from_to')})
+                from_to = filters[1].get('from_to').split(";")
+                session['filter_num'] = filter_num
+                session['filter_update'] = session.get('filter_update') + 1
+                ps.add_numerical_filter(filters, session.get('filter_update'))
+                results = {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1]}
     return jsonify(results)
 
 

@@ -137,7 +137,7 @@ def clean_filter():
     sql_drop = "DROP TABLE IF EXISTS temp_table_with_name_ids"
 
 
-def add_categorical_filter(filters):
+def add_categorical_filter(filters,n):
     subcategory = "$$" + "$$,$$".join(filters[1].get('sub')) + '$$'
 
     query = """SELECT DISTINCT name_id FROM examination_categorical WHERE key = '{}' AND value IN ({}) 
@@ -148,7 +148,7 @@ def add_categorical_filter(filters):
     return query, query2
 
 
-def add_numerical_filter(filters):
+def add_numerical_filter(filters,n):
     from_to = filters[1].get('from_to').split(";")
     query = """ SELECT DISTINCT name_id FROM examination_numerical WHERE key = '{}' 
                 AND value BETWEEN {} AND {}""".format(filters[0].get('num'), from_to[0], from_to[1])
@@ -171,7 +171,7 @@ def next_filter(query, query2):
     print('works_add')
 
     
-def remove_filter(filter, r):
+def remove_one_filter(filter, r):
     query = """ SELECT name_id FROM temp_table_ids WHERE key IN ({}) GROUP BY name_id 
                     HAVING count(name_id) = {} """.format(filters_join, n)
     sql_drop_2 = "DROP TABLE IF EXISTS temp_table_name_ids"
