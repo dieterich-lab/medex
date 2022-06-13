@@ -18,61 +18,19 @@ def get_boxplots():
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
 
-    # get filters
-    start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip, = filtering.check_for_filter_post()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    limit_selected = request.form.get('limit_yes')
-    data.limit_selected = limit_selected
-    limit = request.form.get('limit')
-    offset = request.form.get('offset')
-    data.limit = limit
-    data.offset = offset
 
-    # get request values
-    add = request.form.get('Add')
-    clean = request.form.get('clean')
-    if block == 'none':
+    if block_measurement == 'none':
         measurement = all_measurement[0]
     else:
         measurement = request.form.getlist('measurement')
-    numeric_entities = request.form.get('numeric_entities')
+    numeric_entities = (request.form.get('numeric_entities'),request.form.get('numeric_entities'))
+    print(numeric_entities)
     categorical_entities = request.form.get('categorical_entities')
     subcategory_entities = request.form.getlist('subcategory_entities')
     how_to_plot = request.form.get('how_to_plot')
 
-    if clean is not None or add is not None:
-        if add is not None:
-            update_list = list(add.split(","))
-            update = add
-        elif clean is not None:
-            update = '0,0'
-            update_list = list(update.split(","))
-        data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
-        return render_template('boxplot.html',
-                               val=update,
-                               limit_yes=data.limit_selected,
-                               limit=data.limit,
-                               offset=data.offset,
-                               start_date=start_date,
-                               end_date=end_date,
-                               categorical_filter=categorical_names,
-                               numerical_filter_name=name,
-                               filter=categorical_filter_zip,
-                               all_measurement=all_measurement,
-                               name=measurement_name,
-                               measurement=measurement,
-                               df_min_max=df_min_max,
-                               how_to_plot=how_to_plot,
-                               numeric_entities=numeric_entities,
-                               categorical_entities=categorical_entities,
-                               subcategory_entities=subcategory_entities,
-                               )
 
     # handling errors and load data from database
-    update = data.update_filter + ',' + case_ids
     df = pd.DataFrame()
     if measurement == "Search entity":
         error = "Please select number of measurement"

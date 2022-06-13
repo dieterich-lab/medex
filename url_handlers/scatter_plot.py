@@ -1,14 +1,9 @@
-from flask import Blueprint, render_template, request,session
-import plotly.express as px
+from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
-import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, Name_ID, measurement_name, block_measurement, df_min_max, data
+from webserver import all_measurement, measurement_name, block_measurement,session_db
 import pandas as pd
 import textwrap
 import plotly.graph_objects as go
-import numpy as np
-import time
-
 
 scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
 
@@ -20,117 +15,64 @@ def get_plots():
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
-    # get filter
-    start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = session.get('case_ids')
-    categorical_filter, categorical_names, categorical_filter_zip = filtering.filter_categorical()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    limit_selected = request.form.get('limit_yes')
-    data.limit_selected = limit_selected
-    limit = request.form.get('limit')
-    offset = request.form.get('offset')
-    data.limit = limit
-    data.offset = offset
 
     # get request values
-    add = request.form.get('Add')
-    clean = request.form.get('clean')
-    if block == 'none':
-        x_measurement = all_measurement[0]
-        y_measurement = all_measurement[0]
+    if block_measurement == 'none':
+        measurement = (all_measurement[0], all_measurement[0])
     else:
-        x_measurement = request.form.get('x_measurement')
-        y_measurement = request.form.get('y_measurement')
-    add_group_by = request.form.get('add_group_by') is not None
-    y_axis = request.form.get('y_axis')
-    x_axis = request.form.get('x_axis')
-    categorical_entities = request.form.get('categorical_entities')
-    subcategory_entities = request.form.getlist('subcategory_entities')
-    how_to_plot = request.form.get('how_to_plot')
-    log_x = request.form.get('log_x')
-    log_y = request.form.get('log_y')
+        measurement = (request.form.get('x_measurement'), request.form.get('y_measurement'))
 
-    if clean is not None or add is not None:
-        if add is not None:
-            update_list = list(add.split(","))
-            update = add
-        elif clean is not None:
-            update = '0,0'
-            update_list = list(update.split(","))
-        data.update_filter = update
-        ps.filtering(case_ids, categorical_filter, categorical_names, name, from1, to1, update_list,rdb)
-        return render_template('scatter_plot.html',
-                               val=update,
-                               limit_yes=data.limit_selected,
-                               limit=data.limit,
-                               offset=data.offset,
-                               start_date=start_date,
-                               end_date=end_date,
-                               categorical_filter=categorical_names,
-                               numerical_filter_name=name,
-                               filter=categorical_filter_zip,
-                               all_measurement=all_measurement,
-                               name=measurement_name,
-                               df_min_max=df_min_max,
-                               categorical_entities=categorical_entities,
-                               subcategory_entities=subcategory_entities,
-                               add_group_by=add_group_by,
-                               x_axis=x_axis,
-                               y_axis=y_axis,
-                               x_measurement=x_measurement,
-                               y_measurement=y_measurement,
-                               )
+    add_group_by = request.form.get('add_group_by') is not None
+    axis = (str(request.form.get('x_axis')), str(request.form.get('y_axis')))
+    cc = (request.form.get("id_numerical_filter"),request.form.get("id_numerical_filter"))
+    print(cc)
+    x_axis, y_axis = request.form.get('x_axis'), request.form.get('y_axis')
+    axis = (x_axis, y_axis)
+    print(axis)
+    categorical_entities = (request.form.get('categorical_entities'), request.form.getlist('subcategory_entities'))
+    how_to_plot = request.form.get('how_to_plot')
+    log = (request.form.get('log_x'), request.form.get('log_y'))
+
+    # get_filter
+    date_filter = session.get('date_filter')
+    limit_filter = session.get('limit_offset')
+    update_filter = session.get('filter_update')
+    print(update_filter)
 
     # handling errors and load data from database
-    update = data.update_filter + ',' + case_ids
     df = pd.DataFrame()
-    if x_measurement == "Search entity" or y_measurement == "Search entity":
+    if measurement[0] == "Search entity" or measurement[1] == "Search entity":
         error = "Please select number of {}".format(measurement_name)
-    elif x_axis == "Search entity" or y_axis == "Search entity":
+    elif axis[0] == "Search entity" or axis[1] == "Search entity":
         error = "Please select x_axis and y_axis"
-    elif x_axis == y_axis and x_measurement == y_measurement:
+    elif axis[0] == axis[1] and measurement[0] == measurement[1]:
         error = "You can't compare the same entity"
-    elif how_to_plot == 'log' and not log_x and not log_y:
+    elif how_to_plot == 'log' and not log[0] and not log[1]:
         error = "Please select type of log"
-    elif add_group_by and categorical_entities == "Search entity":
+    elif add_group_by and categorical_entities[0] == "Search entity":
         error = "Please select a categorical value to group by"
-    elif not subcategory_entities and add_group_by:
+    elif not categorical_entities[1] and add_group_by:
         error = "Please select subcategory"
     else:
-
-        df, error = ps.get_scatter_plot(add_group_by, categorical_entities, subcategory_entities, x_axis, y_axis,
-                                        x_measurement, y_measurement, date, limit_selected, limit, offset, update, rdb)
-
+        print(add_group_by, axis, measurement, categorical_entities, date_filter,
+        limit_filter, update_filter)
+        df, error = ps.get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date_filter,
+                                        limit_filter, update_filter, session_db)
     if error:
         return render_template('scatter_plot.html',
                                categorical_entities=categorical_entities,
-                               subcategory_entities=subcategory_entities,
                                add_group_by=add_group_by,
-                               x_axis=x_axis,
-                               y_axis=y_axis,
-                               x_measurement=x_measurement,
-                               y_measurement=y_measurement,
-                               start_date=start_date,
-                               end_date=end_date,
-                               filter=categorical_filter_zip,
-                               numerical_filter=numerical_filter,
-                               categorical_filter=categorical_names,
-                               numerical_filter_name=name,
-                               df_min_max=df_min_max,
-                               val=update,
-                               limit_yes=data.limit_selected,
-                               limit=data.limit,
-                               offset=data.offset,
-                               error=error,
-                               )
+                               axis=axis,
+                               measurement=measurement,
+                               error=error)
 
     # Plot figure and convert to an HTML string representation
-    x_axis_m = x_axis + '_' + x_measurement
-    y_axis_m = y_axis + '_' + y_measurement
+    x_axis_m = axis[0] + '_' + measurement[0]
+    y_axis_m = axis[1] + '_' + measurement[1]
     number_of_points = len(df.index)
     fig = go.Figure()
     if add_group_by:
-        for i in subcategory_entities:
+        for i in categorical_entities[1]:
             dfu = df[df[categorical_entities] == i]
             x = dfu[x_axis_m]
             y = dfu[y_axis_m]
@@ -146,7 +88,7 @@ def post_plots():
         fig.add_trace(
             go.Scattergl(
                 x=df[x_axis_m],
-                y =df[y_axis_m],
+                y=df[y_axis_m],
                 mode='markers',
                 marker=dict(
                     line=dict(
@@ -155,13 +97,15 @@ def post_plots():
                 )
             )
         )
-    if block == 'none':
-        split_text = textwrap.wrap("Compare values of <b>" + x_axis + "</b> and <b>" + y_axis + "<br> Number of Points: " + str(number_of_points))
+    if block_measurement == 'none':
+        split_text = textwrap.wrap("Compare values of <b>" + axis[0] + "</b> and <b>" + axis[1] +
+                                   "<br> Number of Points: " + str(number_of_points))
 
     else:
-        split_text = textwrap.wrap("Compare values of <b>" + x_axis + "</b> : " + measurement_name + " <b>" +
-                                   x_measurement + "</b> and <b>" + y_axis + "</b> : " + measurement_name + " <b>" +
-                                   y_measurement + "</b>" + "<br> Number of Points: " + str(number_of_points), width=100)
+        split_text = textwrap.wrap("Compare values of <b>" + axis[0] + "</b> : " + measurement_name + " <b>" +
+                                   measurement[0] + "</b> and <b>" + axis[1] + "</b> : " + measurement_name + " <b>" +
+                                   measurement[1] + "</b>" + "<br> Number of Points: " + str(number_of_points),
+                                   width=100)
     xaxis = textwrap.wrap(x_axis_m)
     yaxis = textwrap.wrap(y_axis_m, width=40)
     legend = textwrap.wrap(categorical_entities, width=20)
@@ -176,51 +120,18 @@ def post_plots():
             'text': '<br>'.join(split_text),
             'x': 0.5,
             'xanchor': 'center', })
-    if log_x == 'log_x':
+    if log[0] == 'log_x':
         fig.update_xaxes(type="log")
-    if log_y == 'log_y':
+    if log[1] == 'log_y':
         fig.update_yaxes(type="log")
 
     fig = fig.to_html()
     return render_template('scatter_plot.html',
-                           subcategory_entities=subcategory_entities,
                            categorical_entities=categorical_entities,
                            add_group_by=add_group_by,
-                           x_axis=x_axis,
-                           y_axis=y_axis,
-                           log_x=log_x,
-                           log_y=log_y,
+                           axis=axis,
+                           log=log,
                            how_to_plot=how_to_plot,
-                           x_measurement=x_measurement,
-                           y_measurement=y_measurement,
-                           categorical_filter=categorical_names,
-                           numerical_filter_name=name,
-                           start_date=start_date,
-                           end_date=end_date,
-                           filter=categorical_filter_zip,
-                           numerical_filter=numerical_filter,
-                           df_min_max=df_min_max,
-                           val=update,
-                           limit_yes=data.limit_selected,
-                           limit=data.limit,
-                           offset=data.offset,
+                           measurement=measurement,
                            plot=fig
                            )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

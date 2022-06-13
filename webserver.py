@@ -10,6 +10,7 @@ import os
 import io
 from flask import send_from_directory
 from serverside.serverside_table import ServerSideTable
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 
 # create the application object
@@ -20,6 +21,10 @@ app.secret_key = os.urandom(24)
 with app.app_context():
     connect_db()
     rdb = g.db
+
+Session = sessionmaker()
+Session.configure(bind=rdb)
+session_db = Session()
 
 
 @app.teardown_appcontext
@@ -96,7 +101,8 @@ df_min_max = ps.min_max_value_numeric_entities(rdb)
 all_subcategory_entities = ps.get_subcategories_from_categorical_entities(rdb)
 all_measurement, block_measurement = ps.get_measurement(rdb)
 
-
+size_numerical_table, all_numeric_entities= ps.get_numeric_entities(rdb)
+all_numeric_entities = all_numeric_entities.to_dict('index')
 
 Meddusa = 'none'
 try:
@@ -227,7 +233,7 @@ def filter_data():
             results = {'filter': 'cleaned'}
         elif 'clean_one_filter' in filters[0]:
             ps.remove_one_filter(filters, 1)
-            # CLEAN THISE ONe filter
+            # CLEAN THIS ONe filter
             session['filter_update'] = session.get('filter_update') - 1
             results = {'filter': 'removed'}
         elif 'cat' in filters[0]:

@@ -3,8 +3,7 @@
 <form action="" method="POST">
 
 
-
-{# imports #}
+    {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
     <script src="{{ url_for('static', filename='js/new_table.js') }}"></script>
@@ -21,99 +20,110 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.css"/>
     <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+            integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+            crossorigin="anonymous"></script>
 
 
+    {# end of imports #}
+    <div class="card">
+        <div class="card-header" id="settings_header">
+            <h5 class="mb-0">
+                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                        aria-expanded="true" aria-controls="settings">
+                    Settings
+                </button>
+            </h5>
+        </div>
+        <div id="settings" class="collapse show "
+             aria-labelledby="c_settings_header" data-parent="#accordion">
+            <div class="card-body">
+                {% import 'macro_template.html' as m %}
 
-{# end of imports #}
-<div class="card">
-    <div class="card-header" id="settings_header">
+                {% if error %}
+                {{ m.show_error(error) }}
+                {% endif %}
+
+
+                <table>
+                    <tr>
+                        <td>
+                            {{ m.entity_form_single_measurement(id_single_measurement= "date_first_measurement",name
+                            =all_measurement,value=entity,select=date_first_measurement,d=name,block=block) }}
+                        </td>
+                        <td>
+                            {{ m.entity_form_single(id_single= "timestamp_entities1",name
+                            =all_timestamp_entities,value=entity,select=entities1,d="Date entity:") }}
+                        </td>
+                        <td>
+                            <br>
+                            <span style="font-size:3em; margin: 35px;">  &minus;  </span>
+                            <br>
+                        </td>
+                        <td>
+                            {{ m.entity_form_single_measurement(id_single_measurement= "date_second_measurement",name
+                            =all_measurement,value=entity,select=date_second_measurement,d=name,block=block) }}
+                        </td>
+                        <td>
+                            {{ m.entity_form_single(id_single= "timestamp_entities2",name
+                            =all_timestamp_entities,value=entity,select=entities2,d="Date entity:") }}
+                        </td>
+                        <td>
+                            <br>
+                            <span style="font-size:3em;  margin: 35px;">  &equals;  </span>
+
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                <label for="name">New column's name:</label><br>
+                                <input type="text" id="name" name="column_name" value="{{ column_name }}">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+
+                <button id="Plot" name="Result" value="result" class="btn btn-outline-info">Result</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card-header" id="results_header">
         <h5 class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
-                Settings
+            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                    {% if entities %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                Results
             </button>
         </h5>
     </div>
-    <div id="settings" class="collapse show "
-         aria-labelledby="c_settings_header" data-parent="#accordion">
+
+    <div id="numeric_results" class="collapse show " aria-labelledby="n_results_header"
+         data-parent="#numeric_accordion">
         <div class="card-body">
-            {% import 'macro_template.html' as m %}
-
-            {% if error %}
-            {{ m.show_error(error) }}
-            {% endif %}
-
-
-            <table >
+            {% if name_column %}
+            <a href="{{url_for('download', filename = 'data.csv')}}" id="download"
+               class="btn btn-outline-info">Download</a>
+            <button id="Push" name="Push" class="btn btn-outline-info" style="float: right" value="{{ value_push }}">
+                Insert values to PostgreSQL table
+            </button>
+            <br><br>
+            <div id="tab" column="{{ column }}"></div>
+            <table id="serverside_table" class="display" width="100%">
+                <thead>
                 <tr>
-                    <td>
-                        {{ m.entity_form_single_measurement(id_single_measurement= "date_first_measurement",name =all_measurement,value=entity,select=date_first_measurement,d=name,block=block) }}
-                    </td>
-                    <td>
-                        {{ m.entity_form_single(id_single= "timestamp_entities1",name =all_timestamp_entities,value=entity,select=entities1,d="Date entity:") }}
-                    </td>
-                    <td>
-                        <br>
-                        <span style="font-size:3em; margin: 35px;">  &minus;  </span>
-                        <br>
-                    </td>
-                    <td>
-                        {{ m.entity_form_single_measurement(id_single_measurement= "date_second_measurement",name =all_measurement,value=entity,select=date_second_measurement,d=name,block=block) }}
-                    </td>
-                    <td>
-                        {{ m.entity_form_single(id_single= "timestamp_entities2",name =all_timestamp_entities,value=entity,select=entities2,d="Date entity:") }}
-                    </td>
-                    <td>
-                        <br>
-                        <span style="font-size:3em;  margin: 35px;">  &equals;  </span>
-
-                    </td>
-                    <td>
-                        <div class="form-group">
-                        <label for="name">New column's name:</label><br>
-                        <input type="text" id="name" name="column_name" value="{{ column_name }}">
-                        </div>
-                    </td>
+                    {% for i in name_column %}
+                    <th>{{ i }}</th>
+                    {% endfor %}
                 </tr>
+                </thead>
             </table>
-
-
-            <button id="Plot" name="Result" value="result" class="btn btn-outline-info">Result</button>
-        </div>
-    </div>
-</div>
-
-
-<div class="card-header" id="results_header">
-    <h5 class="mb-0">
-        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-            {% if entities  %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
-            Results
-        </button>
-    </h5>
-</div>
-
-<div id="numeric_results" class="collapse show " aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-    <div class="card-body">
-        {% if name_column %}
-        <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
-        <button id="Push" name="Push" class="btn btn-outline-info" style="float: right" value = "{{ value_push }}" >Insert values to PostgreSQL table</button>
-        <br><br>
-        <div id="tab"  column="{{ column }}"></div>
-        <table id="serverside_table" class="display" width="100%">
-            <thead>
-            <tr>
-                {% for i in name_column %}
-                <th>{{ i }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-        </table>
-        {% endif %}
+            {% endif %}
         </div>
     </div>
 
-</div>
+    </div>
 </form>
 {% endblock %}

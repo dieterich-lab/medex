@@ -26,19 +26,14 @@ def get_data():
 def post_data():
 
     # get request values
-    entities = request.form.getlist('entities')
+    entities = (request.form.getlist('entities'))
+    print(entities)
     what_table = request.form.get('what_table')
 
     if block_measurement == 'none':
         measurement = all_measurement[0]
     else:
         measurement = request.form.getlist('measurement')
-
-    categorical_entities = list(set(entities)-set(all_num_entities_list)-set(all_date_entities_list))
-    numerical_entities = list(set(entities) - set(all_cat_entities_list) - set(all_date_entities_list))
-    date_entities = list(set(entities) - set(all_num_entities_list) - set(all_cat_entities_list))
-    dict_entities = {'entities': entities, 'categorical_entities': categorical_entities,
-                     'numerical_entities': numerical_entities, 'data_entities': date_entities}
 
     df = pd.DataFrame()
     # errors

@@ -5,64 +5,66 @@
     <title>Research Data Warehouse</title>
 </head>
 <body>
-    {# custom style #}
+{# custom style #}
 
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 
-    {# requirements for bootstrap #}
+{# requirements for bootstrap #}
 
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-    <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+<script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
 
-        <div class="w3-bar w3-border w3-light-blue">
-          <div class="w3-bar-item">{{ database_information[0] }}</div>
-          <div class="w3-bar-item">{{ database_information[1] }}</div>
-          <div class="w3-bar-item">{{ database_information[2] }}</div>
-          <div class="w3-bar-item">{{ database_information[3] }}</div>
-          <div class="w3-bar-item">{{ database_information[4] }}</div>
-        </div>
+<div class="w3-bar w3-border w3-light-blue">
+    <div class="w3-bar-item">{{ database_information[0] }}</div>
+    <div class="w3-bar-item">{{ database_information[1] }}</div>
+    <div class="w3-bar-item">{{ database_information[2] }}</div>
+    <div class="w3-bar-item">{{ database_information[3] }}</div>
+    <div class="w3-bar-item">{{ database_information[4] }}</div>
+</div>
 <div id="page" class="mx-4">
-      <nav class="navbar navbar-light bg-light  ">
-          <a class="navbar-brand" href="/tutorial">Tutorial</a>
-          <ul class="nav mx-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="/data">Table browser</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/basic_stats">Basic Stats</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/scatter_plot">Scatter plot</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/barchart">Barchart</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/histogram">Histogram</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/boxplot">Boxplot</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/heatmap">Heatmap</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/calculator">Calculator</a>
-          </li>
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="/categorical_vale">Create new categorical value</a>
-          </li> -->
-          <li class="nav-item">
-            <a class="nav-link" href="/logout">Logout</a>
-          </li>
-          </ul>
-          <button onclick="location.href='{{ meddusa_url }}'" type="button" class="btn btn-outline-info" style="display: {{ meddusa }}"> Meddusa </button>
-        </nav>
+    <nav class="navbar navbar-light bg-light  ">
+        <a class="navbar-brand" href="/tutorial">Tutorial</a>
+        <ul class="nav mx-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/data">Table browser</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/basic_stats">Basic Stats</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/scatter_plot">Scatter plot</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/barchart">Barchart</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/histogram">Histogram</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/boxplot">Boxplot</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/heatmap">Heatmap</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/calculator">Calculator</a>
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="/categorical_vale">Create new categorical value</a>
+            </li> -->
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+        <button onclick="location.href='{{ meddusa_url }}'" type="button" class="btn btn-outline-info"
+                style="display: {{ meddusa }}"> Meddusa
+        </button>
+    </nav>
     {% block body %}
     {% endblock %}
-    </div>
+</div>
 
 </body>
 </html>

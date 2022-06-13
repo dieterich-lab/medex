@@ -3,6 +3,7 @@ import numpy as np
 import datetime
 from collections import ChainMap
 import textwrap as tr
+from sqlalchemy import text
 
 
 def get_header(r):
@@ -74,6 +75,35 @@ def get_entities(r):
     return \
         all_entities, all_num_entities, all_cat_entities, all_date_entities, all_num_entities_list, \
         all_cat_entities_list, all_date_entities_list, all_entities_list
+
+
+def get_numeric_entities(r):
+    """
+    param r: connection with database
+    return:
+        size: number of numerical entities
+        entities: DataFrame with name, synonym,description for numerical entities
+        df_min_max: DataFrame with min and max values
+    """
+    size = """SELECT count(*) FROM examination_numerical"""
+    all_numerical_entities = """SELECT "key","description","synonym" FROM name_type WHERE type = 'Double'
+                                ORDER BY "key" """
+    min_max = """SELECT "key",max("Value"),min("Value") FROM examination_numerical GROUP BY "key" """
+
+    df = pd.read_sql(size, r)
+    size = df.iloc[0]['count']
+
+    entities = pd.read_sql(all_numerical_entities, r)
+    entities = entities.replace([None], ' ')
+
+    try:
+        df_min_max = pd.read_sql(min_max, r)
+        df_min_max = df_min_max.set_index('key')
+    except Exception:
+
+        df_min_max = pd.DataFrame()
+    return size, entities
+
 
 
 def min_max_value_numeric_entities(r):
@@ -179,8 +209,7 @@ def remove_one_filter(filter, r):
     update_table = """ DELETE FROM temp_table_ids WHERE key not in ({}) """.format(filters_join)
 
 
-def get_data(entity, categorical_entities, numerical_entities, date_entities, what_table, measurement, date,
-             limit_selected, limit, offset, update, r):
+def get_data(what_table, entities, measurement, date_filter, limit_filter, update_filter, r):
 
     measurement = "$$" + "$$,$$".join(measurement) + "$$"
 
@@ -212,22 +241,23 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
     else:
         date_value = ''
     sql, sql2 = '', ''
+    
     if not limit_selected and what_table == 'long':
-        sql = """(SELECT en.name_id,en."case_id" {6},measurement,key,value::text
+        sql = """(SELECT en.name_id,en.case_id {6},measurement,key,value::text
                          FROM examination_numerical as en
                          {3}
                          WHERE key IN ({0})  
                          AND measurement IN ({1})
                          {2})
                          UNION
-                         (SELECT ec.name_id,ec."case_id" {6},measurement,key,value::text
+                         (SELECT ec.name_id,ec.case_id {6},measurement,key,value::text
                          FROM examination_categorical as ec
                          {4}
                          WHERE key IN ({0}) 
                          AND measurement IN ({1})
                          {2})
                          UNION
-                         (SELECT ed.name_id,ed."case_id" {6},measurement,key,value::text
+                         (SELECT ed.name_id,ed.case_id {6},measurement,key,value::text
                          FROM examination_date as ed
                          {5}
                          WHERE key IN ({0}) 
@@ -240,7 +270,7 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
             entity_column_n = '"' + '","'.join(numerical_entities) + '",'
             for i, e in enumerate(numerical_entities):
                 if limit_selected:
-                    sql_part_n = """(SELECT en.name_id,en."case_id" {5},measurement,key,value::text
+                    sql_part_n = """(SELECT en.name_id,en.case_id {5},measurement,key,value::text
                                    FROM examination_numerical as en
                                    {4}
                                    WHERE key = $${0}$$  
@@ -251,25 +281,25 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                 if what_table != 'long':
                     tab = 'a_{}'.format(i)
                     cte_table = """,
-                                    {0} as (SELECT en.name_id,en."case_id" {6},measurement,
+                                    {0} as (SELECT en.name_id,en.case_id {6},measurement,
                                     STRING_AGG(value::text, ';') "{1}"
                                     FROM examination_numerical en
                                     {5}
                                     WHERE key = $${1}$$
                                     AND measurement IN ({2})
                                     {3}
-                                    GROUP BY en.name_id,en."case_id" {6},measurement,key
+                                    GROUP BY en.name_id,en.case_id {6},measurement,key
                                     {4})""".format(tab, e, measurement, date_value, limit, filters_en, meas_date)
                     cte_table_n = cte_table_n + cte_table
                     join = """ 
                             FULL OUTER JOIN {0} 
-                            USING(name_id,"case_id" {1},measurement) """.format(tab, meas_date)
+                            USING(name_id,case_id {1},measurement) """.format(tab, meas_date)
                     join_n = join_n + join
         if categorical_entities:
             entity_column_c = '"' + '","'.join(categorical_entities) + '",'
             for i, e in enumerate(categorical_entities):
                 if limit_selected:
-                    sql_part_c = """(SELECT ec.name_id,ec."case_id" {5},measurement,key,value::text
+                    sql_part_c = """(SELECT ec.name_id,ec.case_id {5},measurement,key,value::text
                                     FROM examination_categorical as ec
                                     {4}
                                     WHERE key = $${0}$$  
@@ -280,25 +310,25 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                 if what_table != 'long':
                     tab = 'a_{}'.format(len(numerical_entities) + i)
                     cte_table = """,
-                                    {0} as (SELECT ec.name_id,ec."case_id" {6},measurement,
+                                    {0} as (SELECT ec.name_id,ec.case_id {6},measurement,
                                     STRING_AGG(value::text, ';') "{1}"
                                     FROM examination_categorical ec
                                     {5}
                                     WHERE key = $${1}$$
                                     AND measurement IN ({2})
                                     {3}
-                                    GROUP BY ec.name_id,ec."case_id" {6},measurement,key
+                                    GROUP BY ec.name_id,ec.case_id {6},measurement,key
                                     {4})""".format(tab, e, measurement, date_value, limit, filters_ec, meas_date)
                     cte_table_c = cte_table_c + cte_table
                     join = """ 
                                 FULL OUTER JOIN {0} 
-                                USING(name_id,"case_id" {1},measurement) """.format(tab, meas_date)
+                                USING(name_id,case_id {1},measurement) """.format(tab, meas_date)
                     join_c = join_c + join
         if date_entities:
             entity_column_d = '"' + '","'.join(date_entities) + '",'
             for i, e in enumerate(date_entities):
                 if limit_selected:
-                    sql_part_d = """(SELECT ed.name_id,ed."case_id" {5},measurement, key,value::text
+                    sql_part_d = """(SELECT ed.name_id,ed.case_id {5},measurement, key,value::text
                                     FROM examination_date as ed 
                                     {4}
                                     WHERE key = $${0}$$  
@@ -309,22 +339,22 @@ def get_data(entity, categorical_entities, numerical_entities, date_entities, wh
                 if what_table != 'long':
                     tab = 'a_{}'.format(len(numerical_entities) + len(categorical_entities) + i)
                     cte_table = """,
-                                    {0} as (SELECT ed.name_id,ed."case_id" {6},measurement,
+                                    {0} as (SELECT ed.name_id,ed.case_id {6},measurement,
                                     STRING_AGG(value::text, ';') "{1}"
                                     FROM examination_date ed
                                     {5}
                                     WHERE key = $${1}$$
                                     AND measurement IN ({2})
                                     {3}
-                                    GROUP BY ed.name_id,ed."case_id" {6},measurement,key
+                                    GROUP BY ed.name_id,ed.case_id {6},measurement,key
                                     {4} )""".format(tab, e, measurement, date_value, limit, filters_ed, meas_date)
                     cte_table_d = cte_table_d + cte_table
                     join = """
                             FULL OUTER JOIN {0} 
-                            USING(name_id,"case_id" {1},measurement) """.format(tab, meas_date)
+                            USING(name_id,case_id {1},measurement) """.format(tab, meas_date)
                     join_c = join_c + join
         if what_table != 'long':
-            sql2_part1 = "WITH" + cte_table_n + cte_table_c + cte_table_d + """ SELECT name_id,"case_id" {},
+            sql2_part1 = "WITH" + cte_table_n + cte_table_c + cte_table_d + """ SELECT name_id,case_id {},
             measurement, """.format(meas_date) + \
                        entity_column_n + entity_column_c + entity_column_d
             sql2_part2 = " From a_0" + join_n + join_c + join_d
@@ -544,7 +574,7 @@ def get_date_basic_stats(entity, measurement, date, limit_selected, limit, offse
         return None, "Problem with load data from database"
 
 
-# I have to work on this
+# Not used now
 def get_unit(name, r):
     """ Get number of all patients
 
@@ -558,30 +588,35 @@ def get_unit(name, r):
         return None, "Problem with load data from database"
 
 
-def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_measurement, y_measurement, date,
-                     limit_selected, limit, offset, update, r):
-    """
-    param:
-     entity: categorical entities names which should be selected from database
-     measurement: selected measurements
-     r: connection with database
-    return: DataFrame with calculated basic statistic
-    """
-    subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
-    if update == '0,0,No':
+def checking_for_filters(date_filter, limit_filter, update_filter):
+    if update_filter == 0:
         filters = ''
     else:
         filters = """ inner join temp_table_name_ids as ttni on x.name_id=ttni.name_id """
-    if limit_selected:
-        limit_selected = """ LIMIT {} OFFSET {} """.format(limit, offset)
+
+    if limit_filter.get('selected'):
+        limit_selected = """ LIMIT {} OFFSET {} """.format(limit_filter.get('limit'), limit_filter.get('offset'))
     else:
         limit_selected = ''
-    if date[2] != 0:
-        date_value1 = 'AND x."date" BETWEEN $${0}$$ AND $${1}$$ '.format(date[0], date[1])
-        date_value2 = 'AND y."date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+
+    if date_filter[2] != 0:
+        date_value1 = 'AND x."date" BETWEEN $${0}$$ AND $${1}$$ '.format(date_filter[0], date_filter[1])
+        date_value2 = 'AND y."date" BETWEEN $${0}$$ AND $${1}$$'.format(date_filter[0], date_filter[1])
+        date_value = 'AND "date" BETWEEN $${0}$$ AND $${1}$$'.format(date_filter[0], date_filter[1])
     else:
         date_value1 = ''
         date_value2 = ''
+        date_value = ''
+
+    return filters, limit_selected, date_value1, date_value2, date_value
+
+
+def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date_filter, limit_filter, update_filter, r):
+
+    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
+                                                                                         update_filter)
+    subcategory = "$$" + "$$,$$".join(categorical_entities[1]) + "$$"
+
     if not add_group_by:
         sql = """SELECT x.name_id,AVG(x.value) as "{2}_{0}",AVG(y.value) as "{3}_{1}"
                             FROM examination_numerical as x
@@ -595,10 +630,11 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                             {4}
                             {5}
                             GROUP BY x.name_id,y.name_id
-                            {7}""".format(x_entity, y_entity, x_measurement, y_measurement, date_value1, date_value2,
+                            {7}""".format(axis[0], axis[1], measurement[0], measurement[1], date_value1, date_value2,
                                           filters, limit_selected)
     else:
-        sql = """SELECT * FROM (SELECT x.name_id,AVG(x.value) as "{2}_{0}",AVG(y.value) as "{3}_{1}",
+        sql = """SELECT * FROM (
+        SELECT x.name_id,AVG(x.value) as "{2}_{0}",AVG(y.value) as "{3}_{1}",
         STRING_AGG(distinct ec.value,'<br>') as "{6}" 
                             FROM examination_numerical as x
                             {8}
@@ -616,42 +652,35 @@ def get_scatter_plot(add_group_by, entity, subcategory, x_entity, y_entity, x_me
                             GROUP BY x.name_id
                             {9}) foo
                             WHERE foo."{6}" IN ({7})
-                            """.format(x_entity, y_entity, x_measurement, y_measurement, date_value1, date_value2,
-                                       entity, subcategory, filters, limit_selected)
+                            """.format(axis[0], axis[1], measurement[0], measurement[1], date_value1, date_value2,
+                                       categorical_entities[0], subcategory, filters, limit_selected)
+
+
+    print(sql)
 
     try:
-        df = pd.read_sql(sql, r)
-        x_axis_m = x_entity + '_' + x_measurement
-        y_axis_m = y_entity + '_' + y_measurement
-        if not add_group_by:
-            df.columns = ['name_id', x_axis_m, y_axis_m]
-        else:
-            df.columns = ['name_id', x_axis_m, y_axis_m, entity]
-        if df.empty:
-            df, error = df, "One of the selected entities is empty"
-            return df, error
-        else:
-            return df, None
+        df = pd.read_sql(sql, r.bind)
+        print(df)
+        #x_axis_m, y_axis_m = axis[0] + '_' + measurement[0], axis[1] + '_' + measurement[1]
+        #if not add_group_by:
+        #    df.columns = ['name_id', x_axis_m, y_axis_m]
+        #else:
+        #    df.columns = ['name_id', x_axis_m, y_axis_m, categorical_entities[0]]
+        #if df.empty:
+        #    df, error = df, "One of the selected entities is empty"
+        #    return df, error
+        #else:
+        return 'df', None
     except (Exception,):
         return None, "Problem with load data from database"
 
 
-def get_bar_chart(entity, subcategory, measurement, date, limit_selected, limit, offset, update, r):
+def get_bar_chart(entity, subcategory, measurement, date_filter, limit_filter, update_filter, r):
 
+    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter, update_filter)
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0,No':
-        filters = ''
-    else:
-        filters = """ inner join temp_table_name_ids as ttni on ec.name_id=ttni.name_id """
-    if limit_selected:
-        limit_selected = """ LIMIT {} OFFSET {} """.format(limit, offset)
-    else:
-        limit_selected = ''
-    if date[2] != 0:
-        date_value = 'AND "date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
-    else:
-        date_value = ''
+
     sql = """SELECT value AS "{0}",measurement,count(value)
                 FROM (SELECT STRING_AGG(distinct value,'<br>')  AS value,measurement FROM examination_categorical 
                 as ec
@@ -677,23 +706,12 @@ def get_bar_chart(entity, subcategory, measurement, date, limit_selected, limit,
         return None, "Problem with load data from database"
 
 
-def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, date, limit_selected, limit, offset,
-                           update, r):
+def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, date_filter, limit_filter, update_filter, r):
 
+    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter, update_filter)
     subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0,No':
-        filters = ''
-    else:
-        filters = """ inner join temp_table_name_ids as ttni on en.name_id=ttni.name_id """
-    if limit_selected:
-        limit_selected = """ LIMIT {} OFFSET {} """.format(limit, offset)
-    else:
-        limit_selected = ''
-    if date[2] != 0:
-        date_value = 'AND en."date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
-    else:
-        date_value = ''
+
     sql = """SELECT en.name_id,en.measurement,AVG(en.value) AS "{0}",ec.value AS "{1}"
                 FROM examination_numerical AS en 
                 {5}
