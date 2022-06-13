@@ -101,8 +101,6 @@ df_min_max = ps.min_max_value_numeric_entities(rdb)
 all_subcategory_entities = ps.get_subcategories_from_categorical_entities(rdb)
 all_measurement, block_measurement = ps.get_measurement(rdb)
 
-size_numerical_table, all_numeric_entities= ps.get_numeric_entities(rdb)
-all_numeric_entities = all_numeric_entities.to_dict('index')
 
 Meddusa = 'none'
 try:
@@ -157,6 +155,8 @@ def message_count():
         date_block = 'block'
 
     session['date_filter'] = (start_date, end_date, 0)
+    session['filter_update'] = 0
+    session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': False}
 
     return dict(date_block=date_block,
                 case_display=case_display,
@@ -212,7 +212,7 @@ def login_get():
     a = factory.get_session(session.get('session_id'))
 
     session['date_filter'] = {'start': start_date, 'end': end_date, 'update': 0}
-    session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': True}
+    session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': False}
     session['filter_cat'] = {}
     session['filter_num'] = {}
     session['filter_update'] = 0

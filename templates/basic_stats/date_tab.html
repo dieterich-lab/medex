@@ -1,18 +1,20 @@
 {# Categorical tab. Using bootstrap classes. The tab container (div#statistics) and navigation links (ul#statistics_tab)
-            are defined in basic_stats.html #}
+are defined in basic_stats.html #}
 
-<div class="tab-pane fade {% if date_tab %}show active{% endif %}" id="date_tab" role="tabpanel" aria-labelledby="d_settings_header">
+<div class="tab-pane fade {% if date_tab %}show active{% endif %}" id="date_tab" role="tabpanel"
+     aria-labelledby="d_settings_header">
     <div id="date_accordion">
         <div class="card">
             <div class="card-header" id="d_settings_header">
                 <h5 class="mb-0">
                     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#date_settings"
-                        {% if date_entities %} aria-expanded="true" {% endif %} aria-controls="date_settings">
+                            {% if date_entities %} aria-expanded="true" {% endif %} aria-controls="date_settings">
                         Settings
                     </button>
                 </h5>
             </div>
-            <div id="date_settings" class="collapse show" aria-labelledby="d_settings_header" data-parent="#date_accordion">
+            <div id="date_settings" class="collapse show" aria-labelledby="d_settings_header"
+                 data-parent="#date_accordion">
                 <div class="card-body">
                     {% import 'macro_template.html' as m %}
 
@@ -20,20 +22,24 @@
                     {{ m.show_error(error) }}
                     {% endif %}
 
-                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_date",name =all_measurement,class="measurement",value=entity,select=measurement_date,d=name,block=block) }}
-                    {{ m.entity_form_multiple(id_multiple= "date_entities",class="date_entities", name =all_timestamp_entities ,value=entity,select=date_entities,d="Date entities:") }}
-                    <button id="result_date" name="basic_stats_d" class="btn btn-outline-info" class="Plot">Basic Stats</button>
+                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_date",name
+                    =measurement_tuple[0],class="measurement",value=entity,select=measurement_date,d=name,block=block) }}
+                    {{ m.entity_form_multiple(id_multiple= "date_entities",class="date_entities", name
+                    =entities[3] ,value=entity,select=date_entities,d="Date entities:") }}
+                    <button id="result_date" name="basic_stats_d" class="btn btn-outline-info" class="Plot">Basic
+                        Stats
+                    </button>
                 </div>
             </div>
         </div>
 
         <div class="card">
             <div class="card-header" id="results_header">
-                  <h5 class="mb-0">
-                      <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#date_results"
-                              {% if date_entities %} aria-expanded="true" {% endif %} aria-controls="#date_results">
-                          Results
-                      </button>
+                <h5 class="mb-0">
+                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#date_results"
+                            {% if date_entities %} aria-expanded="true" {% endif %} aria-controls="#date_results">
+                        Results
+                    </button>
                 </h5>
             </div>
             <div id="date_results" class="collapse {% if date_entities %} show {% endif %}"
@@ -43,26 +49,30 @@
                     <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
                     <table class="table table-stripped">
                         <thead>
-                            <tr>
-                                <th>Entity</th>
-                                {% if block != 'none' %}<th>{{ measurement_name }}</th>{% endif %}
-                                <th>Count</th>
-                                <th>Count NaN</th>
-                            </tr>
+                        <tr>
+                            <th>Entity</th>
+                            {% if block != 'none' %}
+                            <th>{{ measurement_name }}</th>
+                            {% endif %}
+                            <th>Count</th>
+                            <th>Count NaN</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {% for entity in date_entities %}
-                            {% for m in measurement_date %}
-                            <tr>
-                                {% if basic_stats_d['count'][entity,m] is defined %}
-                                <td>{{ entity }}</td>
-                                {% if block != 'none' %}<td>{{ m }}</td>{% endif %}
-                                <td>{{ basic_stats_d['count'][entity,m]}}</td>
-                                <td>{{ basic_stats_d['count NaN'][entity,m] }}</td>
-                                {% endif %}
-                            </tr>
-                            {% endfor %}
-                            {% endfor %}
+                        {% for entity in date_entities %}
+                        {% for m in measurement_date %}
+                        <tr>
+                            {% if basic_stats_d['count'][entity,m] is defined %}
+                            <td>{{ entity }}</td>
+                            {% if block != 'none' %}
+                            <td>{{ m }}</td>
+                            {% endif %}
+                            <td>{{ basic_stats_d['count'][entity,m]}}</td>
+                            <td>{{ basic_stats_d['count NaN'][entity,m] }}</td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
                         </tbody>
                     </table>
                     {% endif %}

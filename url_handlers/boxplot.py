@@ -1,13 +1,13 @@
 from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 import plotly.express as px
-import url_handlers.filtering as filtering
-from webserver import rdb, df_min_max, data, block_measurement, Name_ID, all_measurement, measurement_name
+import plotly.graph_objects as go
+from webserver import block_measurement, all_measurement, session_db
 import pandas as pd
 import textwrap
-import time
 
-boxplot_page = Blueprint('boxplot', __name__,template_folder='templates')
+
+boxplot_page = Blueprint('boxplot', __name__, template_folder='templates')
 
 
 @boxplot_page.route('/boxplot', methods=['GET'])
@@ -17,91 +17,71 @@ def get_boxplots():
 
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
-
-
+    
+    # get request values
     if block_measurement == 'none':
         measurement = all_measurement[0]
     else:
         measurement = request.form.getlist('measurement')
-    numeric_entities = (request.form.get('numeric_entities'),request.form.get('numeric_entities'))
-    print(numeric_entities)
-    categorical_entities = request.form.get('categorical_entities')
-    subcategory_entities = request.form.getlist('subcategory_entities')
+    entities = (request.form.get('numeric_entities'), request.form.get('categorical_entities'),
+                request.form.getlist('subcategory_entities'))
     how_to_plot = request.form.get('how_to_plot')
 
+    # get_filter
+    date_filter = session.get('date_filter')
+    limit_filter = session.get('limit_offset')
+    update_filter = session.get('filter_update')
 
     # handling errors and load data from database
     df = pd.DataFrame()
     if measurement == "Search entity":
         error = "Please select number of measurement"
-    elif numeric_entities == "Search entity" or categorical_entities == "Search entity":
+    elif entities[0] == "Search entity" or entities[1] == "Search entity":
         error = "Please select entity"
-    elif not subcategory_entities:
+    elif not entities[2]:
         error = "Please select subcategory"
     else:
-        df, error = ps.get_histogram_box_plot(numeric_entities, categorical_entities, subcategory_entities, measurement,
-                                              date, limit_selected, limit, offset, update, rdb)
-        df = filtering.checking_for_block(block, df, Name_ID, measurement_name)
+        df, error = ps.get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter,
+                                              session_db)
 
     if error:
         return render_template('boxplot.html',
                                error=error,
-                               numeric_entities=numeric_entities,
-                               categorical_entities=categorical_entities,
-                               subcategory_entities=subcategory_entities,
-                               measurement=measurement,
-                               start_date=start_date,
-                               end_date=end_date,
-                               filter=categorical_filter_zip,
-                               numerical_filter=numerical_filter,
-                               categorical_filter=categorical_names,
-                               numerical_filter_name=name,
                                how_to_plot=how_to_plot,
-                               df_min_max=df_min_max,
-                               val=update,
-                               limit_yes=data.limit_selected,
-                               limit=data.limit,
-                               offset=data.offset,
-                               )
+                               measurement=measurement,
+                               numeric_entities=entities[0],
+                               categorical_entities=entities[1],
+                               subcategory_entities=entities[2])
 
     # Plot figure and convert to an HTML string representation
-    import plotly.graph_objects as go
-    if block == 'none':
-        table = df.groupby([categorical_entities]).size().reset_index(name='counts')
-        fig_table = go.Figure(data=[go.Table(header=dict(values=list(table[categorical_entities].values)),
+    if block_measurement == 'none':
+        table = df.groupby([entities[1]]).size().reset_index(name='counts')
+        fig_table = go.Figure(data=[go.Table(header=dict(values=list(table[entities[1]].values)),
                                              cells=dict(values=table['counts'].transpose().values.tolist()))])
+        if how_to_plot == 'linear':
+            fig = px.box(df, x=entities[1], y=entities[0], color=entities[1],
+                         template="plotly_white")
+        else:
+            fig = px.box(df, x=entities[1], y=entities[0], color=entities[1],
+                         template="plotly_white", log_y=True)
     else:
-        table = df.groupby([measurement_name,categorical_entities]).size().reset_index(name='counts')
-        table = table.pivot(index=measurement_name, columns = categorical_entities,values='counts').reset_index()
+        table = df.groupby(['measurement', entities[1]]).size().reset_index(name='counts')
+        table = table.pivot(index='measurement', columns=entities[1], values='counts').reset_index()
         fig_table = go.Figure(data=[go.Table(header=dict(values=list(table.columns)),
                                              cells=dict(values=table.transpose().values.tolist()))
                                     ])
-
-
-
-
-
-    #len()
-    if block == 'none':
         if how_to_plot == 'linear':
-            fig = px.box(df, x=categorical_entities, y=numeric_entities, color=categorical_entities,
+            fig = px.box(df, x='measurement', y=entities[0], color=entities[1],
                          template="plotly_white")
         else:
-            fig = px.box(df, x=categorical_entities, y=numeric_entities, color=categorical_entities,
-                         template="plotly_white", log_y=True)
-    else:
-        if how_to_plot == 'linear':
-            fig = px.box(df, x=measurement_name, y=numeric_entities, color=categorical_entities,
-                         template="plotly_white")
-        else:
-            fig = px.box(df, x=measurement_name, y=numeric_entities, color=categorical_entities,
+            fig = px.box(df, x='measurement', y=entities[0], color=entities[1],
                          template="plotly_white", log_y=True)
 
-    legend = textwrap.wrap(categorical_entities, width=20)
+    legend = textwrap.wrap(entities[1], width=20)
     fig.update_layout(font=dict(size=16),
                       legend_title='<br>'.join(legend),
                       title={
-                          'text': '<b>' + numeric_entities + '</b> by <b>' + categorical_entities + '</b>',
+                          'text': '<b>' + entities[0] + '</b> by <b>' + entities[1] + '</b>',
                           'x': 0.5,
                           'xanchor': 'center', }
                       )
@@ -111,21 +91,10 @@ def post_boxplots():
     fig = fig.to_html()
 
     return render_template('boxplot.html',
-                           numeric_entities=numeric_entities,
-                           categorical_entities=categorical_entities,
-                           subcategory_entities=subcategory_entities,
                            measurement=measurement,
-                           start_date=start_date,
-                           end_date=end_date,
-                           filter=categorical_filter_zip,
-                           numerical_filter=numerical_filter,
-                           categorical_filter=categorical_names,
-                           numerical_filter_name=name,
+                           numeric_entities=entities[0],
+                           categorical_entities=entities[1],
+                           subcategory_entities=entities[2],
                            how_to_plot=how_to_plot,
-                           df_min_max=df_min_max,
-                           val=update,
-                           limit_yes=data.limit_selected,
-                           limit=data.limit,
-                           offset=data.offset,
                            table=fig_table,
                            plot=fig)

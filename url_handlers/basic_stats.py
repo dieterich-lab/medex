@@ -1,7 +1,6 @@
-from flask import Blueprint, render_template, request,session
+from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
-import url_handlers.filtering as filtering
-from webserver import rdb,  all_measurement, data, measurement_name, df_min_max, block_measurement
+from webserver import all_measurement, data, measurement_name, block_measurement, session_db
 import pandas as pd
 
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
@@ -18,6 +17,11 @@ def get_statistics():
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
 
+    # get_filter
+    date_filter = session.get('date_filter')
+    limit_filter = session.get('limit_offset')
+    update_filter = session.get('filter_update')
+
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
 
@@ -32,10 +36,11 @@ def get_basic_stats():
         error = None
         if not measurement1:
             error = "Please select number of {}".format(measurement_name)
-        elif not numeric_entities :
+        elif not numeric_entities:
             error = "Please select numeric entities"
         elif numeric_entities:
-            df, error = ps.get_basic_stats(numeric_entities, measurement1, rdb)
+            df, error = ps.get_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, update_filter,
+                                           session_db)
 
             # calculation basic stats
             if not 'count NaN' in request.form: df = df.drop(['count NaN'], axis=1)
@@ -50,7 +55,7 @@ def get_basic_stats():
             if n == 2:
                 error = "Please select at least one basic statistic"
             else:
-                df = df.set_index(['Key', 'measurement'])
+                df = df.set_index(['key', 'measurement'])
                 data.csv = df.to_csv()
                 result = df.to_dict()
         if error:
@@ -88,7 +93,8 @@ def get_basic_stats():
         elif not categorical_entities:
             error = "Please select entities"
         else:
-            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, rdb)
+            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, date_filter, limit_filter,
+                                               update_filter, session_db)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -99,7 +105,7 @@ def get_basic_stats():
                                    categorical_entities=categorical_entities,
                                    measurement_categorical=measurement,
                                    error=error)
-        df = df.set_index(['Key', 'measurement'])
+        df = df.set_index(['key', 'measurement'])
         basic_stats_c = df.to_dict()
         data.csv = df.to_csv()
 
@@ -130,7 +136,8 @@ def get_basic_stats():
         elif not date_entities:
             error = "Please select entities"
         else:
-            df, error = ps.get_date_basic_stats(date_entities, measurement_d, rdb)
+            df, error = ps.get_date_basic_stats(date_entities, measurement_d, date_filter, limit_filter, update_filter,
+                                                session_db)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -141,14 +148,13 @@ def get_basic_stats():
                                    date_entities=date_entities,
                                    measurement_date=measurement_d,
                                    error=error)
-        df = df.set_index(['Key', 'measurement'])
+        df = df.set_index(['key', 'measurement'])
         basic_stats_d = df.to_dict()
         data.csv = df.to_csv()
 
         return render_template('basic_stats/basic_stats.html',
                                date_tab=True,
                                name=measurement_name,
-
                                measurement_name=measurement_name,
                                all_measurement=all_measurement,
                                date_entities=date_entities,

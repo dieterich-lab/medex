@@ -3,7 +3,6 @@ import numpy as np
 import datetime
 from collections import ChainMap
 import textwrap as tr
-from sqlalchemy import text
 
 
 def get_header(r):
@@ -75,35 +74,6 @@ def get_entities(r):
     return \
         all_entities, all_num_entities, all_cat_entities, all_date_entities, all_num_entities_list, \
         all_cat_entities_list, all_date_entities_list, all_entities_list
-
-
-def get_numeric_entities(r):
-    """
-    param r: connection with database
-    return:
-        size: number of numerical entities
-        entities: DataFrame with name, synonym,description for numerical entities
-        df_min_max: DataFrame with min and max values
-    """
-    size = """SELECT count(*) FROM examination_numerical"""
-    all_numerical_entities = """SELECT "key","description","synonym" FROM name_type WHERE type = 'Double'
-                                ORDER BY "key" """
-    min_max = """SELECT "key",max("Value"),min("Value") FROM examination_numerical GROUP BY "key" """
-
-    df = pd.read_sql(size, r)
-    size = df.iloc[0]['count']
-
-    entities = pd.read_sql(all_numerical_entities, r)
-    entities = entities.replace([None], ' ')
-
-    try:
-        df_min_max = pd.read_sql(min_max, r)
-        df_min_max = df_min_max.set_index('key')
-    except Exception:
-
-        df_min_max = pd.DataFrame()
-    return size, entities
-
 
 
 def min_max_value_numeric_entities(r):
@@ -378,29 +348,40 @@ def get_data(what_table, entities, measurement, date_filter, limit_filter, updat
         return df, "Problem with load data from database"
 
 
-def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, update, r):
-    """
-    param:
-     entity: numerical entities names which should be selected from database
-     measurement: selected measurements
-     r: connection with database
-    return: DataFrame with calculated basic statistic
-    """
-
-    n = """SELECT COUNT ( DISTINCT name_id) FROM Patient"""
-    n = pd.read_sql(n, r)
-    n = n['count']
-
-    entity_final = "$$" + "$$,$$".join(entity) + "$$"
-    measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0,No':
+def checking_for_filters(date_filter, limit_filter, update_filter):
+    if update_filter == 0:
         filters = ''
     else:
-        filters = """ inner join temp_table_name_ids as ttni on en.name_id=ttni.name_id """
-    if date[2] != 0:
-        date_value = 'AND "date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
+        filters = """ inner join temp_table_name_ids as ttni on x.name_id=ttni.name_id """
+
+    if limit_filter.get('selected'):
+        limit_selected = """ LIMIT {} OFFSET {} """.format(limit_filter.get('limit'), limit_filter.get('offset'))
     else:
+        limit_selected = ''
+
+    if date_filter[2] != 0:
+        date_value1 = 'AND x."date" BETWEEN $${0}$$ AND $${1}$$ '.format(date_filter[0], date_filter[1])
+        date_value2 = 'AND y."date" BETWEEN $${0}$$ AND $${1}$$'.format(date_filter[0], date_filter[1])
+        date_value = 'AND "date" BETWEEN $${0}$$ AND $${1}$$'.format(date_filter[0], date_filter[1])
+    else:
+        date_value1 = ''
+        date_value2 = ''
         date_value = ''
+
+    return filters, limit_selected, date_value1, date_value2, date_value
+
+
+def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
+
+    n = """SELECT COUNT ( DISTINCT name_id) FROM Patient"""
+    n = pd.read_sql(n, r.bind)
+    n = n['count']
+
+    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
+                                                                                         update_filter)
+    entity_final = "$$" + "$$,$$".join(entity) + "$$"
+    measurement = "'" + "','".join(measurement) + "'"
+
     sql = """ WITH basic_stats as (SELECT en.name_id,key,measurement,AVG(value) as value 
                                    FROM examination_numerical en 
                                    {3}
@@ -431,8 +412,8 @@ def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, up
                     AND measurement IN ({1}) 
                     {2}
                     GROUP BY en.name_id,key,measurement
-                    LIMIT {4} OFFSET {5})
-                    UNION """.format(e, measurement, date_value, filters, limit, offset)
+                    {4})
+                    UNION """.format(e, measurement, date_value, filters, limit_selected)
             sql_part = sql_part + s
         sql_part = sql_part[:-6]
         sql = """ WITH basic_stats AS ({})
@@ -449,7 +430,7 @@ def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, up
                                     ORDER BY key,measurement """.format(sql_part)
 
     try:
-        df = pd.read_sql(sql, r)
+        df = pd.read_sql(sql, r.bind)
         df['count NaN'] = int(n) - df['count']
         df = df.round(2)
         return df, None
@@ -457,25 +438,13 @@ def get_basic_stats(entity, measurement, date, limit_selected, limit, offset, up
         return None, "Problem with load data from database"
 
 
-def get_cat_basic_stats(entity, measurement, date, limit_selected, limit, offset, update, r):
-    """
-    param:
-     entity: categorical entities names which should be selected from database
-     measurement: selected measurements
-     r: connection with database
-    return: DataFrame with calculated basic statistic
-    """
+def get_cat_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0,No':
-        filters = ''
-    else:
-        filters = """ inner join temp_table_name_ids as ttni on ec.name_id= ttni.name_id """
-    if date[2] != 0:
-        date_value = 'AND "date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
-    else:
-        date_value = ''
+    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
+                                                                                         update_filter)
+
     sql = """WITH basic_stats as (SELECT ec.name_id,key,measurement
                                    FROM examination_categorical as ec
                                    {3}
@@ -496,8 +465,8 @@ def get_cat_basic_stats(entity, measurement, date, limit_selected, limit, offset
                     AND measurement IN ({1}) 
                     {2}
                     GROUP BY ec.name_id,key,measurement
-                    LIMIT {4} OFFSET {5})
-                    UNION """.format(e, measurement, date_value, filters, limit, offset)
+                    {4} )
+                    UNION """.format(e, measurement, date_value, filters, limit_selected)
             sql_part = sql_part + s
         sql_part = sql_part[:-6]
         sql = """ WITH basic_stats AS ({})
@@ -506,16 +475,16 @@ def get_cat_basic_stats(entity, measurement, date, limit_selected, limit, offset
                         GROUP BY measurement,key """.format(sql_part)
     try:
         n = """SELECT COUNT ( DISTINCT name_id) FROM Patient"""
-        n = pd.read_sql(n, r)
+        n = pd.read_sql(n, r.bind)
         n = n['count']
-        df = pd.read_sql(sql, r)
+        df = pd.read_sql(sql, r.bind)
         df['count NaN'] = int(n) - df['count']
         return df, None
     except (Exception,):
         return None, "Problem with load data from database"
 
 
-def get_date_basic_stats(entity, measurement, date, limit_selected, limit, offset, update, r):
+def get_date_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
     """
     param:
      entity: date entities names which should be selected from database
@@ -525,19 +494,13 @@ def get_date_basic_stats(entity, measurement, date, limit_selected, limit, offse
     """
 
     n = """SELECT COUNT ( DISTINCT name_id) FROM Patient"""
-    n = pd.read_sql(n, r)
+    n = pd.read_sql(n, r.bind)
     n = n['count']
 
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
-    if update == '0,0,No':
-        filters = ''
-    else:
-        filters = """ inner join temp_table_name_ids as ttni on ed.name_id=ttni.name_id """
-    if date[2] != 0:
-        date_value = 'AND "date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
-    else:
-        date_value = ''
+    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
+                                                                                         update_filter)
     sql = """WITH basic_stats as (SELECT ed.name_id,key,measurement
                                    FROM examination_date as ed
                                    {3}
@@ -558,16 +521,19 @@ def get_date_basic_stats(entity, measurement, date, limit_selected, limit, offse
                     AND measurement IN ({1}) 
                     {2}
                     GROUP BY ed.name_id,key,measurement
-                    LIMIT {4} OFFSET {5})
-                    UNION """.format(e, measurement, date_value, filters, limit, offset)
+                    {4})
+                    UNION """.format(e, measurement, date_value, filters, limit_selected)
             sql_part = sql_part + s
         sql_part = sql_part[:-6]
         sql = """ WITH basic_stats AS ({})
                     SELECT key,measurement,count(name_id) 
                         FROM basic_stats
                         GROUP BY measurement,key """.format(sql_part)
+    print(sql)
+    df = pd.read_sql(sql, r.bind)
+    print(df)
     try:
-        df = pd.read_sql(sql, r)
+        df = pd.read_sql(sql, r.bind)
         df['count NaN'] = int(n) - df['count']
         return df, None
     except (Exception,):
@@ -588,30 +554,8 @@ def get_unit(name, r):
         return None, "Problem with load data from database"
 
 
-def checking_for_filters(date_filter, limit_filter, update_filter):
-    if update_filter == 0:
-        filters = ''
-    else:
-        filters = """ inner join temp_table_name_ids as ttni on x.name_id=ttni.name_id """
-
-    if limit_filter.get('selected'):
-        limit_selected = """ LIMIT {} OFFSET {} """.format(limit_filter.get('limit'), limit_filter.get('offset'))
-    else:
-        limit_selected = ''
-
-    if date_filter[2] != 0:
-        date_value1 = 'AND x."date" BETWEEN $${0}$$ AND $${1}$$ '.format(date_filter[0], date_filter[1])
-        date_value2 = 'AND y."date" BETWEEN $${0}$$ AND $${1}$$'.format(date_filter[0], date_filter[1])
-        date_value = 'AND "date" BETWEEN $${0}$$ AND $${1}$$'.format(date_filter[0], date_filter[1])
-    else:
-        date_value1 = ''
-        date_value2 = ''
-        date_value = ''
-
-    return filters, limit_selected, date_value1, date_value2, date_value
-
-
-def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date_filter, limit_filter, update_filter, r):
+def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date_filter, limit_filter, update_filter,
+                     r):
 
     filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
                                                                                          update_filter)
@@ -655,30 +599,28 @@ def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date
                             """.format(axis[0], axis[1], measurement[0], measurement[1], date_value1, date_value2,
                                        categorical_entities[0], subcategory, filters, limit_selected)
 
-
-    print(sql)
-
     try:
         df = pd.read_sql(sql, r.bind)
-        print(df)
-        #x_axis_m, y_axis_m = axis[0] + '_' + measurement[0], axis[1] + '_' + measurement[1]
-        #if not add_group_by:
-        #    df.columns = ['name_id', x_axis_m, y_axis_m]
-        #else:
-        #    df.columns = ['name_id', x_axis_m, y_axis_m, categorical_entities[0]]
-        #if df.empty:
-        #    df, error = df, "One of the selected entities is empty"
-        #    return df, error
-        #else:
-        return 'df', None
+        x_axis, y_axis = axis[0] + '_' + measurement[0], axis[1] + '_' + measurement[1]
+        if not add_group_by:
+            df.columns = ['name_id', x_axis, y_axis]
+        else:
+            df.columns = ['name_id', x_axis, y_axis, categorical_entities[0]]
+
+        if df.empty:
+            df, error = df, "One of the selected entities is empty"
+            return df, error
+        else:
+            return df, None
     except (Exception,):
         return None, "Problem with load data from database"
 
 
-def get_bar_chart(entity, subcategory, measurement, date_filter, limit_filter, update_filter, r):
+def get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, update_filter, r):
 
-    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter, update_filter)
-    subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
+    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
+                                                                                         update_filter)
+    subcategory = "$$" + "$$,$$".join(categorical_entities[1]) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
 
     sql = """SELECT value AS "{0}",measurement,count(value)
@@ -692,24 +634,26 @@ def get_bar_chart(entity, subcategory, measurement, date_filter, limit_filter, u
                         GROUP BY ec.name_id,measurement
                         {5}) AS foo
                 GROUP BY value,measurement
-                """.format(entity, subcategory, measurement, date_value, filters, limit_selected)
+                """.format(categorical_entities[0], subcategory, measurement, date_value, filters, limit_selected)
     try:
-        df = pd.read_sql(sql, r)
-        if df.empty or len(df) == 0:
+        df = pd.read_sql(sql, r.bind)
+        if df.empty:
             return df, "The entity wasn't measured"
         else:
-            df.columns = [entity, 'measurement', 'count']
-            df[entity] = df[entity].str.wrap(30).replace(to_replace=[r"\\n", "\n"],
-                                                         value=["<br>", "<br>"], regex=True)
+            df.columns = [categorical_entities[0], 'measurement', 'count']
+            df[categorical_entities[0]] = df[categorical_entities[0]].str.wrap(30).replace(to_replace=[r"\\n", "\n"],
+                                                                                           value=["<br>", "<br>"],
+                                                                                           regex=True)
             return df, None
     except (Exception,):
         return None, "Problem with load data from database"
 
 
-def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, date_filter, limit_filter, update_filter, r):
+def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter, r):
 
-    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter, update_filter)
-    subcategory = "$$" + "$$,$$".join(subcategory) + "$$"
+    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
+                                                                                         update_filter)
+    subcategory = "$$" + "$$,$$".join(entities[2]) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
 
     sql = """SELECT en.name_id,en.measurement,AVG(en.value) AS "{0}",ec.value AS "{1}"
@@ -724,38 +668,28 @@ def get_histogram_box_plot(entity_num, entity_cat, subcategory, measurement, dat
                 {4}
                 GROUP BY en.name_id,en.measurement,ec.value
                 {6}
-                """.format(entity_num, entity_cat, subcategory, measurement, date_value, filters, limit_selected)
+                """.format(entities[0], entities[1], subcategory, measurement, date_value, filters, limit_selected)
+
     try:
-        df = pd.read_sql(sql, r)
+        df = pd.read_sql(sql, r.bind)
         if df.empty or len(df) == 0:
-            return df, "The entity {0} or {1} wasn't measured".format(entity_num, entity_cat)
+            return df, "The entity {0} or {1} wasn't measured".format(entities[0], entities[1])
         else:
-            df.columns = ["name", 'measurement', entity_num, entity_cat]
-            df[entity_cat] = df[entity_cat].str.wrap(30).replace(to_replace=[r"\\n", "\n"], value=["<br>", "<br>"],
-                                                                 regex=True)
+            df.columns = ["name", 'measurement', entities[0], entities[1]]
+            df[entities[1]] = df[entities[1]].str.wrap(30).replace(to_replace=[r"\\n", "\n"], value=["<br>", "<br>"],
+                                                                   regex=True)
             return df, None
     except (Exception,):
         return None, "Problem with load data from database"
 
 
-def get_heat_map(entity, date, limit_selected, limit, offset, update, r):
+def get_heat_map(entity, date_filter, limit_filter, update_filter, r):
 
-    case_statement = ""
-    crosstab_columns = ""
-    if update == '0,0,No':
-        filters = ''
-    else:
-        filters = """ inner join temp_table_name_ids as ttni on en.name_id=ttni.name_id """
-    for ent in entity:
-        create_case_statement = """case WHEN key = '{0}' THEN value END AS "{0}" """.format(ent)
-        case_statement = case_statement + ',' + create_case_statement
-        create_crosstab_columns = '"{}" double precision'.format(ent)
-        crosstab_columns = crosstab_columns + ',' + create_crosstab_columns
-    if date[2] != 0:
-        date_value = 'AND en."date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
-    else:
-        date_value = ''
+    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
+                                                                                         update_filter)
+
     entity_fin = "$$" + "$$,$$".join(entity) + "$$"
+
     sql = """SELECT en.name_id,key,AVG(value) as value 
                 FROM examination_numerical as en
                 {2} 
@@ -771,14 +705,12 @@ def get_heat_map(entity, date, limit_selected, limit, offset, update, r):
                            {2}
                            WHERE key = $${0}$$  
                            {1}
-                           LIMIT {3} 
-                           OFFSET {4}) UNION """.format(e, date_value, filters, limit, offset)
+                           UNION """.format(e, date_value, filters, limit_selected)
             sql = sql + sql_part
         sql = """ SELECT name_id,key,AVG(value) as value FROM (""" + sql[:-6] + """) 
         foo GROUP BY name_id,key """
-
     try:
-        df = pd.read_sql(sql, r)
+        df = pd.read_sql(sql, r.bind)
         df = df.pivot_table(index=['name_id'], columns='key', values='value', aggfunc=np.mean).reset_index()
         new_columns = [tr.fill(x, width=20).replace("\n", "<br>") for x in df.columns.values]
         df.columns = new_columns
