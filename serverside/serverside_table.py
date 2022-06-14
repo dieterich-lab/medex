@@ -40,6 +40,7 @@ class ServerSideTable(object):
         self.cardinality_filtered = len(filtered_data)    # Num. displayed rows
 
         sorted_data = self._custom_sort(filtered_data)
+        print(sorted_data)
         self.result_data = self._custom_paging(sorted_data)
 
     def _extract_rows_from_data(self, data):

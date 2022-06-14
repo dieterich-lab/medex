@@ -179,175 +179,6 @@ def remove_one_filter(filter, r):
     update_table = """ DELETE FROM temp_table_ids WHERE key not in ({}) """.format(filters_join)
 
 
-def get_data(what_table, entities, measurement, date_filter, limit_filter, update_filter, r):
-
-    measurement = "$$" + "$$,$$".join(measurement) + "$$"
-
-    if date[0] == date[1] and date[2] == 0:
-        meas_date = ""
-    else:
-        meas_date = ',"date"'
-
-    entity_final = "$$" + "$$,$$".join(entity) + "$$"
-    entity_column_n, entity_column_c, entity_column_d = '', '', ''
-    sql_n, sql_c, sql_d = "", "", ""
-    join_n, join_c, join_d = "", "", ""
-    cte_table_n, cte_table_c, cte_table_d = "", "", ""
-
-    if update == '0,0,No':
-        filters_en, filters_ec, filters_ed = "", "", ""
-    else:
-        filters_en = """ inner join temp_table_name_ids as ttni on en.name_id=ttni.name_id """
-        filters_ec = """ inner join temp_table_name_ids as ttni on ec.name_id=ttni.name_id """
-        filters_ed = """ inner join temp_table_name_ids as ttni on ed.name_id=ttni.name_id """
-
-    if limit_selected:
-        limit = """ LIMIT {0} OFFSET {1}""".format(limit, offset)
-    else:
-        limit = ''
-
-    if date[2] != 0:
-        date_value = 'AND "date" BETWEEN $${0}$$ AND $${1}$$'.format(date[0], date[1])
-    else:
-        date_value = ''
-    sql, sql2 = '', ''
-    
-    if not limit_selected and what_table == 'long':
-        sql = """(SELECT en.name_id,en.case_id {6},measurement,key,value::text
-                         FROM examination_numerical as en
-                         {3}
-                         WHERE key IN ({0})  
-                         AND measurement IN ({1})
-                         {2})
-                         UNION
-                         (SELECT ec.name_id,ec.case_id {6},measurement,key,value::text
-                         FROM examination_categorical as ec
-                         {4}
-                         WHERE key IN ({0}) 
-                         AND measurement IN ({1})
-                         {2})
-                         UNION
-                         (SELECT ed.name_id,ed.case_id {6},measurement,key,value::text
-                         FROM examination_date as ed
-                         {5}
-                         WHERE key IN ({0}) 
-                         AND measurement IN ({1})
-                         {2})
-                         """.format(entity_final, measurement, date_value, filters_en, filters_ec, filters_ed,
-                                    meas_date)
-    else:
-        if numerical_entities:
-            entity_column_n = '"' + '","'.join(numerical_entities) + '",'
-            for i, e in enumerate(numerical_entities):
-                if limit_selected:
-                    sql_part_n = """(SELECT en.name_id,en.case_id {5},measurement,key,value::text
-                                   FROM examination_numerical as en
-                                   {4}
-                                   WHERE key = $${0}$$  
-                                   AND measurement IN ({1})
-                                   {2}
-                                   {3}) UNION """.format(e, measurement, date_value, limit, filters_en, meas_date)
-                    sql_n = sql_n + sql_part_n
-                if what_table != 'long':
-                    tab = 'a_{}'.format(i)
-                    cte_table = """,
-                                    {0} as (SELECT en.name_id,en.case_id {6},measurement,
-                                    STRING_AGG(value::text, ';') "{1}"
-                                    FROM examination_numerical en
-                                    {5}
-                                    WHERE key = $${1}$$
-                                    AND measurement IN ({2})
-                                    {3}
-                                    GROUP BY en.name_id,en.case_id {6},measurement,key
-                                    {4})""".format(tab, e, measurement, date_value, limit, filters_en, meas_date)
-                    cte_table_n = cte_table_n + cte_table
-                    join = """ 
-                            FULL OUTER JOIN {0} 
-                            USING(name_id,case_id {1},measurement) """.format(tab, meas_date)
-                    join_n = join_n + join
-        if categorical_entities:
-            entity_column_c = '"' + '","'.join(categorical_entities) + '",'
-            for i, e in enumerate(categorical_entities):
-                if limit_selected:
-                    sql_part_c = """(SELECT ec.name_id,ec.case_id {5},measurement,key,value::text
-                                    FROM examination_categorical as ec
-                                    {4}
-                                    WHERE key = $${0}$$  
-                                    AND measurement IN ({1}) 
-                                    {2}
-                                    {3}) UNION """.format(e, measurement, date_value, limit, filters_ec, meas_date)
-                    sql_c = sql_c + sql_part_c
-                if what_table != 'long':
-                    tab = 'a_{}'.format(len(numerical_entities) + i)
-                    cte_table = """,
-                                    {0} as (SELECT ec.name_id,ec.case_id {6},measurement,
-                                    STRING_AGG(value::text, ';') "{1}"
-                                    FROM examination_categorical ec
-                                    {5}
-                                    WHERE key = $${1}$$
-                                    AND measurement IN ({2})
-                                    {3}
-                                    GROUP BY ec.name_id,ec.case_id {6},measurement,key
-                                    {4})""".format(tab, e, measurement, date_value, limit, filters_ec, meas_date)
-                    cte_table_c = cte_table_c + cte_table
-                    join = """ 
-                                FULL OUTER JOIN {0} 
-                                USING(name_id,case_id {1},measurement) """.format(tab, meas_date)
-                    join_c = join_c + join
-        if date_entities:
-            entity_column_d = '"' + '","'.join(date_entities) + '",'
-            for i, e in enumerate(date_entities):
-                if limit_selected:
-                    sql_part_d = """(SELECT ed.name_id,ed.case_id {5},measurement, key,value::text
-                                    FROM examination_date as ed 
-                                    {4}
-                                    WHERE key = $${0}$$  
-                                    AND measurement IN ({1}) 
-                                    {2}
-                                    {3}) UNION """.format(e, measurement, date_value, limit, filters_ed, meas_date)
-                    sql_d = sql_d + sql_part_d
-                if what_table != 'long':
-                    tab = 'a_{}'.format(len(numerical_entities) + len(categorical_entities) + i)
-                    cte_table = """,
-                                    {0} as (SELECT ed.name_id,ed.case_id {6},measurement,
-                                    STRING_AGG(value::text, ';') "{1}"
-                                    FROM examination_date ed
-                                    {5}
-                                    WHERE key = $${1}$$
-                                    AND measurement IN ({2})
-                                    {3}
-                                    GROUP BY ed.name_id,ed.case_id {6},measurement,key
-                                    {4} )""".format(tab, e, measurement, date_value, limit, filters_ed, meas_date)
-                    cte_table_d = cte_table_d + cte_table
-                    join = """
-                            FULL OUTER JOIN {0} 
-                            USING(name_id,case_id {1},measurement) """.format(tab, meas_date)
-                    join_c = join_c + join
-        if what_table != 'long':
-            sql2_part1 = "WITH" + cte_table_n + cte_table_c + cte_table_d + """ SELECT name_id,case_id {},
-            measurement, """.format(meas_date) + \
-                       entity_column_n + entity_column_c + entity_column_d
-            sql2_part2 = " From a_0" + join_n + join_c + join_d
-            sql2 = sql2_part1[:-1]+sql2_part2
-            start = sql2.find(',')
-            start_full = sql2.find('FULL')
-
-            sql2 = sql2[0:start] + sql2[start+1:start_full] + sql2[start_full+97::]
-        else:
-            sql = sql_n + sql_c + sql_d
-            sql = sql[:-6]
-
-    try:
-        if what_table == 'long':
-            df = pd.read_sql(sql, r)
-        else:
-            df = pd.read_sql(sql2, r)
-        return df, None
-    except (Exception,):
-        df = pd.DataFrame()
-        return df, "Problem with load data from database"
-
-
 def checking_for_filters(date_filter, limit_filter, update_filter):
     if update_filter == 0:
         filters = ''
@@ -369,6 +200,56 @@ def checking_for_filters(date_filter, limit_filter, update_filter):
         date_value = ''
 
     return filters, limit_selected, date_value1, date_value2, date_value
+
+
+def get_data(entities, what_table, measurement, limit, offset, r):
+
+    measurement = "$$" + "$$,$$".join(measurement) + "$$"
+    entity_final = "$$" + "$$,$$".join(entities) + "$$"
+
+    select_union = """SELECT name_id,case_id,measurement,key,value::text FROM examination_numerical 
+                                    WHERE key IN ({0}) AND measurement IN ({1})
+                                    UNION 
+                                SELECT name_id,case_id,measurement,key,value FROM examination_categorical 
+                                    WHERE key IN ({0}) AND measurement IN ({1})
+                                    UNION
+                                SELECT name_id,case_id,measurement,key,value::text FROM examination_date 
+                                    WHERE key IN ({0}) AND measurement IN ({1})""".format(entity_final, measurement)
+
+    if what_table == 'long':
+        sql = """ SELECT * FROM ({0}) foo 
+                            ORDER BY name_id LIMIT {1} offset {2} """.format(select_union, limit, offset)
+
+        len = """ SELECT count(name_id) from ({0}) foo""".format(select_union)
+
+    else:
+        case_when = ""
+        for i in entities:
+            case_when +=""" min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
+        case_when = case_when[:-1]
+
+        sql = """ SELECT name_id,case_id,measurement,
+                        {1}
+                        FROM (SELECT name_id,case_id,measurement,key,STRING_AGG(value, ';') value 
+                    FROM ({0}) foo
+                            group by name_id,case_id,measurement,key) foo2 
+                    group by name_id,case_id,measurement order by name_id 
+                    LIMIT {2} offset {3} 
+                    """.format(select_union, case_when, limit, offset)
+
+        len = """ SELECT count(*) FROM (SELECT name_id,case_id,measurement,STRING_AGG(value, ';') value 
+                    FROM ({0}) foo group by name_id,case_id,measurement) foo2 """.format(select_union)
+
+
+    try:
+        df = pd.read_sql(sql, r.bind)
+        len = pd.read_sql(len, r.bind)
+        len = len.iloc[0]['count']
+        return df, len, None
+    except (Exception,):
+        df = pd.DataFrame()
+        len = 0
+        return df, len, "Problem with load data from database"
 
 
 def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
@@ -529,9 +410,7 @@ def get_date_basic_stats(entity, measurement, date_filter, limit_filter, update_
                     SELECT key,measurement,count(name_id) 
                         FROM basic_stats
                         GROUP BY measurement,key """.format(sql_part)
-    print(sql)
-    df = pd.read_sql(sql, r.bind)
-    print(df)
+
     try:
         df = pd.read_sql(sql, r.bind)
         df['count NaN'] = int(n) - df['count']

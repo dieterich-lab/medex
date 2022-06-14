@@ -35,10 +35,6 @@ def teardown_db(exception):
 factory = DatabaseSessionFactory(rdb)
 
 
-def collect_data_server_side(data_sample, columns):
-    return ServerSideTable(request, data_sample, columns).output_result()
-
-
 # I have to remove this
 class DataStore:
 

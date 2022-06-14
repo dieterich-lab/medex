@@ -57,7 +57,7 @@
                     {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name
                     =measurement_tuple[0],class="measurement",value=entity,select=measurement,d=name,block=block) }}
                     {{ m.entity_form_multiple(id_multiple= "entities",name
-                    =all_entities,value=entity,select=entities,d="Entities:") }}
+                    =all_entities,value=entity,select=entities_selected,d="Entities:") }}
                     <label>Table: </label>
                     <div class="custom-control custom-radio">
                         <input type="radio" class="custom-control-input" id="long" name="what_table" value="long"
@@ -78,7 +78,7 @@
         <div class="card-header" id="results_header">
             <h5 class="mb-0">
                 <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                        {% if entities %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                        {% if entities_selected %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
                     Results
                 </button>
             </h5>

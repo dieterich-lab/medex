@@ -1,18 +1,16 @@
 from flask import Blueprint, render_template, request, jsonify, session
-import modules.load_data_postgre as ps
 import pandas as pd
-import url_handlers.filtering as filtering
-from webserver import rdb, data, Name_ID, collect_data_server_side, block_measurement, all_entities, measurement_name,\
-    all_measurement, all_num_entities_list, all_cat_entities_list, all_date_entities_list
-
+#from serverside.serverside_table import ServerSideTable
+from serverside.serverside_table2 import ServerSideTable
+from webserver import data, Name_ID, block_measurement, all_entities, measurement_name,\
+    all_measurement, session_db
 data_page = Blueprint('data', __name__, template_folder='templates')
 
 
 @data_page.route('/data/data1', methods=['GET', 'POST'])
 def table_data():
-    df = data.dict
-    table_schema = session.get('table_schema')
-    dat = collect_data_server_side(df, table_schema)
+    table_browser = session.get('table_browser')
+    dat = ServerSideTable(request, table_browser[0], table_browser[1], table_browser[2], session_db).output_result()
     return jsonify(dat)
 
 
@@ -26,14 +24,17 @@ def get_data():
 def post_data():
 
     # get request values
-    entities = (request.form.getlist('entities'))
-    print(entities)
+    entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
-
     if block_measurement == 'none':
         measurement = all_measurement[0]
     else:
         measurement = request.form.getlist('measurement')
+
+    # get_filter
+    date_filter = session.get('date_filter')
+    limit_filter = session.get('limit_offset')
+    update_filter = session.get('filter_update')
 
     df = pd.DataFrame()
     # errors
@@ -42,42 +43,39 @@ def post_data():
     elif len(entities) == 0:
         error = "Please select entities"
     else:
-        df, error = ps.get_data(dict_entities, what_table, measurement, rdb)
+        #df, error = ps.get_data(entities, what_table, measurement, session_db)
+        df,error=pd.DataFrame(),None
+
     if error:
         return render_template('data.html',
                                error=error,
                                all_entities=all_entities,
-                               entities=entities,
+                               entities_selected=entities,
                                measurement=measurement,
                                what_table=what_table,
                                )
 
-    df = filtering.checking_for_block(block_measurement, df, Name_ID, measurement_name)
-
-    session['table_browser_entities'] = entities
+    session['table_browser'] = (entities, what_table, measurement)
     data.csv = df.to_csv(index=False)
-    df = df.fillna("missing data")
-    column = df.columns.tolist()
+
+    if what_table == 'long':
+        column = ['name_id', 'case_id', 'measurement', 'key', 'value']
+    else:
+        column = ['name_id', 'case_id', 'measurement']+entities
+
 
     # change name of entities if they have dot inside otherwise server side table doesn't work properly
     column_change_name = []
     [column_change_name.append(i.replace('.', '_').replace("'", "")) for i in column]
-    df.columns = column_change_name
 
-    data.dict = df.to_dict("records")
+
     dict_of_column = []
-    table_schema = []
-
-    [dict_of_column.append({'data': column_change_name[i]}) for i in range(0, len(column_change_name))]
-    [table_schema.append({'data_name': column_change_name[i], 'column_name': column_change_name[i], "default": "",
-                          "order": 1, "searchable": True}) for i in range(0, len(column_change_name))]
-
-    session['table_schema'] = table_schema
+    [dict_of_column.append({'data': i}) for i in column_change_name]
 
     return render_template('data.html',
                            error=error,
                            all_entities=all_entities,
-                           entities=entities,
+                           entities_selected=entities,
                            measurement=measurement,
                            what_table=what_table,
                            name_column=column,
