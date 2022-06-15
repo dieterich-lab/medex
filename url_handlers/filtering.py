@@ -2,6 +2,14 @@ from flask import request, session
 import datetime
 
 
+def check_for_limit_offset():
+    limit_selected = request.form.get('limit_yes')
+    limit = request.form.get('limit')
+    offset = request.form.get('offset')
+    session['limit_offset'] = (limit, offset, limit_selected)
+    return {'limit': limit, 'offset': offset, 'selected': limit_selected}
+
+
 def checking_for_block(block, df, name_id, measurement_name):
     if block == 'none':
         df = df.drop(columns=['measurement'])

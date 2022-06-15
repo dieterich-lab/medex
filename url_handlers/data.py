@@ -1,5 +1,4 @@
 from flask import Blueprint, render_template, request, jsonify, session
-import pandas as pd
 from serverside.serverside_table2 import ServerSideTable
 from webserver import block_measurement, all_entities, measurement_name,\
     all_measurement, session_db

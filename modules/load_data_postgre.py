@@ -5,7 +5,6 @@ from collections import ChainMap
 import textwrap as tr
 
 
-
 def get_header(r):
     sql = "SELECT * FROM header"
     try:
@@ -125,12 +124,13 @@ def get_measurement(r):
     return df['measurement'], block_measurement
 
 
-def create_temp_table_case_id(case_id):
+def create_temp_table_case_id(case_id, r):
     case_id_all = "$$" + "$$,$$".join(case_id) + "$$"
-    create_table = """BEGIN
-                        DROP TABLE IF EXISTS temp_table1;
+    create_table = """BEGIN DROP TABLE IF EXISTS temp_table1;
                         CREATE TEMP TABLE IF NOT EXISTS temp_table_case_ids 
                         AS (SELECT name_id FROM patient WHERE case_id in ({0})) """.format(case_id_all)
+
+    r.execute(create_table)
 
 
 def clean_filter(r):
@@ -144,7 +144,6 @@ def clean_filter(r):
 def first_filter(query, query2, r):
     create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
     create_table_2 = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_ids as ({}) """.format(query2)
-    sql = """ SELECT * FROM temp_table_name_ids """
 
     r.execute(create_table)
     r.execute(create_table_2)
@@ -204,7 +203,7 @@ def checking_for_filters(date_filter, limit_filter, update_filter):
     if update_filter == 0:
         filters = ''
     else:
-        filters = """ inner join temp_table_name_ids as ttni on x.name_id=ttni.name_id """
+        filters = """ inner join temp_table_name_ids as ttni on foo.name_id=ttni.name_id """
 
     if limit_filter.get('selected'):
         limit_selected = """ LIMIT {} OFFSET {} """.format(limit_filter.get('limit'), limit_filter.get('offset'))
@@ -244,9 +243,10 @@ def get_data(entities, what_table, measurement, limit, offset, update_filter, r)
     if what_table == 'long':
         sql = """ SELECT foo.name_id,foo.case_id,foo.measurement,foo.key,foo.value::text FROM ({0}) foo
                          {3}
-                            ORDER BY foo.name_id LIMIT {1} offset {2} """.format(select_union, limit, offset,filters)
+                            ORDER BY foo.name_id LIMIT {1} offset {2} """.format(select_union, limit, offset, filters)
 
-        length = """ SELECT count(name_id) from ({0}) foo""".format(select_union)
+        length = """ SELECT count(name_id) FROM (SELECT foo.name_id 
+                                                    FROM ({0}) foo {1}) foo_join """.format(select_union, filters)
 
     else:
         case_when = ""
@@ -254,17 +254,17 @@ def get_data(entities, what_table, measurement, limit, offset, update_filter, r)
             case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
         case_when = case_when[:-1]
 
-        sql = """ SELECT name_id,case_id,measurement,
-                        {1}
-                        FROM (SELECT name_id,case_id,measurement,key,STRING_AGG(value, ';') value 
-                    FROM ({0}) foo
-                            group by name_id,case_id,measurement,key) foo2 
-                    group by name_id,case_id,measurement order by name_id 
+        sql = """ SELECT foo.name_id,case_id,measurement,{1}
+                    FROM (SELECT name_id,case_id,measurement,key,STRING_AGG(value, ';') value 
+                            FROM ({0}) foo2
+                            group by name_id,case_id,measurement,key) foo
+                    {4}
+                    group by foo.name_id,case_id,measurement order by name_id 
                     LIMIT {2} offset {3} 
-                    """.format(select_union, case_when, limit, offset)
+                    """.format(select_union, case_when, limit, offset, filters)
 
-        length = """ SELECT count(*) FROM (SELECT name_id,case_id,measurement,STRING_AGG(value, ';') value 
-                    FROM ({0}) foo group by name_id,case_id,measurement) foo2 """.format(select_union)
+        length = """ SELECT count(name_id) FROM (SELECT foo.name_id
+                    FROM ({0}) foo {1} group by foo.name_id,case_id,measurement) foo2 """.format(select_union, filters)
 
     try:
         df = pd.read_sql(sql, r.connection())
@@ -279,7 +279,7 @@ def get_data(entities, what_table, measurement, limit, offset, update_filter, r)
 
 def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
 
-    n = """SELECT COUNT ( DISTINCT name_id) FROM Patient"""
+    n = """SELECT COUNT(DISTINCT name_id) FROM Patient"""
     n = pd.read_sql(n, r.bind)
     n = n['count']
 
@@ -288,13 +288,31 @@ def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filte
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
 
-    sql = """ WITH basic_stats as (SELECT en.name_id,key,measurement,AVG(value) as value 
-                                   FROM examination_numerical en 
-                                   {3}
-                                   WHERE key IN ({0})
-                                   AND measurement IN ({1}) 
-                                   {2}
-                                   GROUP BY en.name_id,key,measurement)
+    print(limit_selected)
+
+    if limit_selected:
+        sql_part = ""
+        for e in entity:
+            s = """ (SELECT key,measurement,foo.name_id, AVG(value) as value
+                    FROM examination_numerical foo 
+                    {3}
+                    WHERE key = $${0}$$ 
+                    AND measurement IN ({1}) 
+                    {2}
+                    GROUP BY foo.name_id,key,measurement
+                    {4})
+                    UNION """.format(e, measurement, date_value, filters, limit_selected)
+            sql_part = sql_part + s
+        sql_part = sql_part[:-6]
+    else:
+        sql_part = """ SELECT foo.name_id,key,measurement,AVG(value) as value 
+                        FROM examination_numerical foo
+                        {3}
+                        WHERE key IN ({0})
+                        AND measurement IN ({1}) 
+                        {2}
+                        GROUP BY foo.name_id,key,measurement """.format(entity_final, measurement, date_value, filters)
+    sql = """ WITH basic_stats as ({})
                 SELECT key,measurement,
                                 count(name_id),
                                 min(value),
@@ -306,37 +324,10 @@ def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filte
                                 FROM basic_stats
                                 GROUP BY key,measurement 
                                 ORDER BY key,measurement
-                                """.format(
-                                entity_final, measurement, date_value, filters)
-    if limit_selected:
-        sql_part = ""
-        for e in entity:
-            s = """ (SELECT key,measurement,en.name_id, AVG(value) as value
-                    FROM examination_numerical as en  
-                    {3}
-                    WHERE key = $${0}$$ 
-                    AND measurement IN ({1}) 
-                    {2}
-                    GROUP BY en.name_id,key,measurement
-                    {4})
-                    UNION """.format(e, measurement, date_value, filters, limit_selected)
-            sql_part = sql_part + s
-        sql_part = sql_part[:-6]
-        sql = """ WITH basic_stats AS ({})
-                    SELECT key,measurement,
-                                    count(name_id),
-                                    min(value),
-                                    max(value),
-                                    AVG(value) AS "mean",
-                                    stddev(value),
-                                    (stddev(value)/sqrt(count(value))) AS "stderr",
-                                    (percentile_disc(0.5) within group (order by value)) AS median 
-                                    FROM basic_stats as en  
-                                    GROUP BY key,measurement 
-                                    ORDER BY key,measurement """.format(sql_part)
-
+                                """.format(sql_part)
+    df = pd.read_sql(sql, r.connection())
     try:
-        df = pd.read_sql(sql, r.bind)
+
         df['count NaN'] = int(n) - df['count']
         df = df.round(2)
         return df, None

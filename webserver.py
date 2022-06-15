@@ -102,7 +102,6 @@ def data_information():
                 measurement_tuple=(all_measurement, '{}'.format(measurement_name), block_measurement),
                 df_min_max=df_min_max,
                 meddusa=(Meddusa, MEDDUSA_URL),
-                limit_offset=(True, 1000, 0),
                 )
 
 
@@ -121,15 +120,19 @@ def message_count():
 
     if session.get('filter_update') is None:
         session['filter_update'] = 0
+        session['filter_cat'] = {}
+        session['filter_num'] = {}
 
     session['date_filter'] = (start_date, end_date, 0)
-    session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': False}
+    if session.get('limit_offset') is None:
+        session['limit_offset'] = (10000, 0, False)
 
     return dict(date_block=date_block,
                 case_display=case_display,
                 filter_update=session.get('filter_update'),
                 categorical_filter=session.get('filter_cat'),
-                numerical_filter=session.get('filter_num')
+                numerical_filter=session.get('filter_num'),
+                limit_offset=session.get('limit_offset')
                 )
 
 
@@ -180,7 +183,7 @@ def login_get():
     a = factory.get_session(session.get('session_id'))
 
     session['date_filter'] = {'start': start_date, 'end': end_date, 'update': 0}
-    session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': False}
+    session['limit_offset'] = (10000, 0, False)
     session['filter_cat'] = {}
     session['filter_num'] = {}
     session['filter_update'] = 0
