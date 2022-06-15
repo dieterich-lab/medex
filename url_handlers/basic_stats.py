@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
-from webserver import all_measurement, data, measurement_name, block_measurement, session_db
+from webserver import all_measurement, measurement_name, block_measurement, session_db
 import pandas as pd
 
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
@@ -56,7 +56,6 @@ def get_basic_stats():
                 error = "Please select at least one basic statistic"
             else:
                 df = df.set_index(['key', 'measurement'])
-                data.csv = df.to_csv()
                 result = df.to_dict()
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -107,7 +106,6 @@ def get_basic_stats():
                                    error=error)
         df = df.set_index(['key', 'measurement'])
         basic_stats_c = df.to_dict()
-        data.csv = df.to_csv()
 
         return render_template('basic_stats/basic_stats.html',
                                categorical_tab=True,
@@ -150,7 +148,6 @@ def get_basic_stats():
                                    error=error)
         df = df.set_index(['key', 'measurement'])
         basic_stats_d = df.to_dict()
-        data.csv = df.to_csv()
 
         return render_template('basic_stats/basic_stats.html',
                                date_tab=True,

@@ -35,37 +35,6 @@ def teardown_db(exception):
 factory = DatabaseSessionFactory(rdb)
 
 
-# I have to remove this
-class DataStore:
-
-    case_ids = []
-    table_case_ids = None
-    df = None
-    column = None
-    dict = None
-
-    # for table browser server side
-    table_schema = None
-    table_browser_column = None
-    table_browser_entities = None
-    table_browser_what_table = None
-    table_browser_column2 = None
-
-    year = None
-    new_table = pd.DataFrame()
-    new_table_dict = None
-    new_table_schema = None
-
-    # for download
-    csv = None
-    csv_new_table = None
-
-    information = None
-
-
-data = DataStore()
-
-
 def check_for_env(key: str, default=None, cast=None):
     if key in os.environ:
         if cast:
@@ -151,7 +120,8 @@ def message_count():
         date_block = 'block'
 
     session['date_filter'] = (start_date, end_date, 0)
-    session['filter_update'] = 0
+    if session.get('filter_update') is None:
+        session['filter_update'] = 0
     session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': False}
 
     return dict(date_block=date_block,
@@ -222,7 +192,7 @@ def filter_data():
     # if exists already do nothing print error
     if request.is_json:
         filters = request.get_json()
-        print(filters[0])
+        print(filters)
         if 'clean' in filters[0]:
             ps.clean_filter()
             session['filter_update'] = 0
@@ -240,9 +210,11 @@ def filter_data():
             else:
                 filter_cat.update({filters[0].get('cat'): filters[1].get('sub')})
                 session['filter_cat'] = filter_cat
-                session['filter_update'] = session.get('filter_update') + 1
-                ps.add_categorical_filter(filters, session.get('filter_update'))
-                results = {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub')}
+                session['filter_update'] = int(filters[2].get('filter_update'))+1
+                print(session.get('filter_update'))
+                ps.add_categorical_filter(filters, int(filters[2].get('filter_update')), session_db)
+                results = {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub'),
+                           'update_filter': int(filters[2].get('filter_update'))+1}
         elif "num" in filters[0]:
             filter_num = session.get('filter_num')
             if filters[0].get('num') in filter_num:
@@ -251,9 +223,11 @@ def filter_data():
                 filter_num.update({filters[0].get('num'): filters[1].get('from_to')})
                 from_to = filters[1].get('from_to').split(";")
                 session['filter_num'] = filter_num
-                session['filter_update'] = session.get('filter_update') + 1
-                ps.add_numerical_filter(filters, session.get('filter_update'))
-                results = {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1]}
+                session['filter_update'] = int(filters[2].get('filter_update'))+1
+                print(session.get('filter_update'))
+                ps.add_numerical_filter(filters, int(filters[2].get('filter_update')), session_db)
+                results = {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1],
+                           'update_filter': int(filters[2].get('filter_update'))+1}
     return jsonify(results)
 
 

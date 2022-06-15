@@ -5,6 +5,7 @@ from collections import ChainMap
 import textwrap as tr
 
 
+
 def get_header(r):
     sql = "SELECT * FROM header"
     try:
@@ -137,7 +138,24 @@ def clean_filter():
     sql_drop = "DROP TABLE IF EXISTS temp_table_with_name_ids"
 
 
-def add_categorical_filter(filters,n):
+def first_filter(query, query2, r):
+    create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
+    create_table_2 = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_ids as ({}) """.format(query2)
+    sql = """ SELECT * FROM temp_table_name_ids """
+
+    r.execute(create_table)
+    r.execute(create_table_2)
+
+
+def next_filter(query, query2, r):
+    create_table = """ DELETE FROM temp_table_name_ids WHERE name_id NOT IN ({})""".format(query)
+    create_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
+
+    r.execute(create_table)
+    r.execute(create_table_2)
+
+
+def add_categorical_filter(filters, n, r):
     subcategory = "$$" + "$$,$$".join(filters[1].get('sub')) + '$$'
 
     query = """SELECT DISTINCT name_id FROM examination_categorical WHERE key = '{}' AND value IN ({}) 
@@ -145,32 +163,25 @@ def add_categorical_filter(filters,n):
     query2 = """SELECT DISTINCT name_id,key FROM examination_categorical WHERE key = '{}' AND value IN ({}) 
     """.format(filters[0].get('cat'), subcategory)
 
-    return query, query2
+    if n == 0:
+        first_filter(query, query2, r)
+    else:
+        next_filter(query, query2, r)
 
 
-def add_numerical_filter(filters,n):
+def add_numerical_filter(filters, n):
     from_to = filters[1].get('from_to').split(";")
     query = """ SELECT DISTINCT name_id FROM examination_numerical WHERE key = '{}' 
                 AND value BETWEEN {} AND {}""".format(filters[0].get('num'), from_to[0], from_to[1])
     query2 = """ SELECT DISTINCT name_id,key FROM examination_numerical WHERE key = '{}' 
                 AND value BETWEEN {} AND {} """.format(filters[0].get('num'), from_to[0], from_to[1])
 
-    return query, query2
+    if n == 0:
+        first_filter(query, query2)
+    else:
+        next_filter(query, query2)
 
 
-def first_filter(query, query2):
-
-    create_table = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_name_ids as ({}) """.format(query)
-    create_table_2 = """ CREATE TEMP TABLE IF NOT EXISTS temp_table_ids as ({}) """.format(query2)
-    print('works_create')
-
-
-def next_filter(query, query2):
-    create_table = """ DELETE FROM temp_table_name_ids WHERE "Name_ID" NOT IN ({})""".format(query)
-    create_table_2 = """ INSERT INTO temp_table_ids ({}) """.format(query2)
-    print('works_add')
-
-    
 def remove_one_filter(filter, r):
     query = """ SELECT name_id FROM temp_table_ids WHERE key IN ({}) GROUP BY name_id 
                     HAVING count(name_id) = {} """.format(filters_join, n)
@@ -180,6 +191,7 @@ def remove_one_filter(filter, r):
 
 
 def checking_for_filters(date_filter, limit_filter, update_filter):
+
     if update_filter == 0:
         filters = ''
     else:
@@ -202,10 +214,14 @@ def checking_for_filters(date_filter, limit_filter, update_filter):
     return filters, limit_selected, date_value1, date_value2, date_value
 
 
-def get_data(entities, what_table, measurement, limit, offset, r):
-
+def get_data(entities, what_table, measurement, limit, offset, update_filter, r):
     measurement = "$$" + "$$,$$".join(measurement) + "$$"
     entity_final = "$$" + "$$,$$".join(entities) + "$$"
+
+    if update_filter == 0:
+        filters = ''
+    else:
+        filters = """ inner join temp_table_name_ids as ttni on foo.name_id=ttni.name_id """
 
     select_union = """SELECT name_id,case_id,measurement,key,value::text FROM examination_numerical 
                                     WHERE key IN ({0}) AND measurement IN ({1})
@@ -217,15 +233,16 @@ def get_data(entities, what_table, measurement, limit, offset, r):
                                     WHERE key IN ({0}) AND measurement IN ({1})""".format(entity_final, measurement)
 
     if what_table == 'long':
-        sql = """ SELECT * FROM ({0}) foo 
-                            ORDER BY name_id LIMIT {1} offset {2} """.format(select_union, limit, offset)
+        sql = """ SELECT foo.name_id,foo.case_id,foo.measurement,foo.key,foo.value::text FROM ({0}) foo
+                         {3}
+                            ORDER BY foo.name_id LIMIT {1} offset {2} """.format(select_union, limit, offset,filters)
 
-        len = """ SELECT count(name_id) from ({0}) foo""".format(select_union)
+        length = """ SELECT count(name_id) from ({0}) foo""".format(select_union)
 
     else:
         case_when = ""
         for i in entities:
-            case_when +=""" min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
+            case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
         case_when = case_when[:-1]
 
         sql = """ SELECT name_id,case_id,measurement,
@@ -237,19 +254,18 @@ def get_data(entities, what_table, measurement, limit, offset, r):
                     LIMIT {2} offset {3} 
                     """.format(select_union, case_when, limit, offset)
 
-        len = """ SELECT count(*) FROM (SELECT name_id,case_id,measurement,STRING_AGG(value, ';') value 
+        length = """ SELECT count(*) FROM (SELECT name_id,case_id,measurement,STRING_AGG(value, ';') value 
                     FROM ({0}) foo group by name_id,case_id,measurement) foo2 """.format(select_union)
 
-
     try:
-        df = pd.read_sql(sql, r.bind)
-        len = pd.read_sql(len, r.bind)
-        len = len.iloc[0]['count']
-        return df, len, None
+        df = pd.read_sql(sql, r.connection())
+        length = pd.read_sql(length, r.connection())
+        length = length.iloc[0]['count']
+        return df, length, None
     except (Exception,):
         df = pd.DataFrame()
-        len = 0
-        return df, len, "Problem with load data from database"
+        length = 0
+        return df, length, "Problem with load data from database"
 
 
 def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):

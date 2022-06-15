@@ -138,12 +138,14 @@ $(function () {
 
 
     $("#add_filter").click(function() {
+        var filter_update = document.getElementById("add_filter").value;
         if (document.getElementById("categorical_filter_check").checked) {
             var filter_cat = document.getElementById("categorical_filter").value;
             var filter_sub_cat = $('#subcategory_filter').val();
             var filters = [
             {"cat": filter_cat},
             {"sub": filter_sub_cat},
+            {"filter_update": filter_update}
             ];
             $.ajax({
               type: "POST",
@@ -158,7 +160,7 @@ $(function () {
                 content += "<span class='close' onclick='remove_filter(this)' >x </span>"
                 content += response.filter + ' is ' + response.subcategory
                 content += "</button></div>"
-
+                document.getElementById("add_filter").value = response.update_filter
                 $("#demo").append(content)
                 }
             });
@@ -169,7 +171,8 @@ $(function () {
             var filters = [
             {"num": filter_num},
             {"from_to": num_from_to},
-            {"min_max": [min,max]}
+            {"min_max": [min,max]},
+            {"filter_update": filter_update}
             ];
 
             $.ajax({
@@ -186,6 +189,7 @@ $(function () {
                 content += "' data-max='"+ max +"'data-from='"+ response.from_num +"'data-to='"+ response.to_num +"'/>"
                 content += "</div>"
                 $("#demo2").append(content)
+                document.getElementById("add_filter").value = response.update_filter
                 },
               complete: function(response){
                     $(".range").ionRangeSlider({
