@@ -133,9 +133,12 @@ def create_temp_table_case_id(case_id):
                         AS (SELECT name_id FROM patient WHERE case_id in ({0})) """.format(case_id_all)
 
 
-def clean_filter():
+def clean_filter(r):
     sql = "DROP TABLE IF EXISTS temp_table_ids"
-    sql_drop = "DROP TABLE IF EXISTS temp_table_with_name_ids"
+    sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
+
+    r.execute(sql)
+    r.execute(sql_drop)
 
 
 def first_filter(query, query2, r):
@@ -169,7 +172,7 @@ def add_categorical_filter(filters, n, r):
         next_filter(query, query2, r)
 
 
-def add_numerical_filter(filters, n):
+def add_numerical_filter(filters, n, r):
     from_to = filters[1].get('from_to').split(";")
     query = """ SELECT DISTINCT name_id FROM examination_numerical WHERE key = '{}' 
                 AND value BETWEEN {} AND {}""".format(filters[0].get('num'), from_to[0], from_to[1])
@@ -177,17 +180,23 @@ def add_numerical_filter(filters, n):
                 AND value BETWEEN {} AND {} """.format(filters[0].get('num'), from_to[0], from_to[1])
 
     if n == 0:
-        first_filter(query, query2)
+        first_filter(query, query2, r)
     else:
-        next_filter(query, query2)
+        next_filter(query, query2, r)
 
 
-def remove_one_filter(filter, r):
-    query = """ SELECT name_id FROM temp_table_ids WHERE key IN ({}) GROUP BY name_id 
-                    HAVING count(name_id) = {} """.format(filters_join, n)
-    sql_drop_2 = "DROP TABLE IF EXISTS temp_table_name_ids"
+def remove_one_filter(filters, filter_update, r):
+    update_table = """ DELETE FROM temp_table_ids WHERE key = '{}' """.format(filters)
+    sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
+
+    query = """ SELECT name_id FROM temp_table_ids 
+                    GROUP BY name_id 
+                    HAVING count(name_id) = {1} """.format(filters, filter_update)
     create_table = """ CREATE TEMP TABLE temp_table_name_ids as ({}) """.format(query)
-    update_table = """ DELETE FROM temp_table_ids WHERE key not in ({}) """.format(filters_join)
+
+    r.execute(update_table)
+    r.execute(sql_drop)
+    r.execute(create_table)
 
 
 def checking_for_filters(date_filter, limit_filter, update_filter):

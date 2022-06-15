@@ -119,14 +119,17 @@ def message_count():
     else:
         date_block = 'block'
 
-    session['date_filter'] = (start_date, end_date, 0)
     if session.get('filter_update') is None:
         session['filter_update'] = 0
+
+    session['date_filter'] = (start_date, end_date, 0)
     session['limit_offset'] = {'limit': 10000, 'offset': 0, 'selected': False}
 
     return dict(date_block=date_block,
                 case_display=case_display,
-                filter_update=session.get('filter_update')
+                filter_update=session.get('filter_update'),
+                categorical_filter=session.get('filter_cat'),
+                numerical_filter=session.get('filter_num')
                 )
 
 
@@ -162,11 +165,10 @@ def get_cases():
     session['session_id'] = session_id
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/get', json=session_id_json)
     case_ids = cases_get.json()
-    data.case_ids = case_ids['cases_ids']
-    ps.create_temp_table_case_id(case_ids['cases_ids'], rdb)
-    data.table_case_ids = pd.DataFrame(case_ids['cases_ids'], columns=["Case_ID"]).to_csv(index=False)
 
+    ps.create_temp_table_case_id(case_ids['cases_ids'], rdb)
     session['case_ids'] = 'Yes'
+
     return redirect('/')
 
 
@@ -192,15 +194,22 @@ def filter_data():
     # if exists already do nothing print error
     if request.is_json:
         filters = request.get_json()
-        print(filters)
         if 'clean' in filters[0]:
-            ps.clean_filter()
+            ps.clean_filter(session_db)
             session['filter_update'] = 0
+            session['filter_cat'] = {}
+            session['filter_num'] = {}
             results = {'filter': 'cleaned'}
         elif 'clean_one_filter' in filters[0]:
-            ps.remove_one_filter(filters, 1)
-            # CLEAN THIS ONe filter
             session['filter_update'] = session.get('filter_update') - 1
+            if session.get('filter_update') == 0:
+                ps.clean_filter(session_db)
+            else:
+                ps.remove_one_filter(filters[0].get('clean_one_filter'), session.get('filter_update'), session_db)
+            if filters[1].get('type') == 'categorical':
+                session['filter_cat'].pop(filters[0].get('clean_one_filter'))
+            else:
+                session['filter_num'].pop(filters[0].get('clean_one_filter'))
             results = {'filter': 'removed'}
         elif 'cat' in filters[0]:
             filter_cat = session.get('filter_cat')
@@ -208,10 +217,10 @@ def filter_data():
             if filters[0].get('cat') in filter_cat:
                 results = {'filter': 'error'}
             else:
-                filter_cat.update({filters[0].get('cat'): filters[1].get('sub')})
+                filter_cat.update({filters[0].get('cat'): ','.join(filters[1].get('sub'))})
                 session['filter_cat'] = filter_cat
                 session['filter_update'] = int(filters[2].get('filter_update'))+1
-                print(session.get('filter_update'))
+
                 ps.add_categorical_filter(filters, int(filters[2].get('filter_update')), session_db)
                 results = {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub'),
                            'update_filter': int(filters[2].get('filter_update'))+1}
@@ -220,14 +229,14 @@ def filter_data():
             if filters[0].get('num') in filter_num:
                 results = {'filter': 'error'}
             else:
-                filter_num.update({filters[0].get('num'): filters[1].get('from_to')})
                 from_to = filters[1].get('from_to').split(";")
+                filter_num.update({filters[0].get('num'): (from_to[0],from_to[1], filters[2].get('min_max')[0],
+                                                           filters[2].get('min_max')[1])})
                 session['filter_num'] = filter_num
-                session['filter_update'] = int(filters[2].get('filter_update'))+1
-                print(session.get('filter_update'))
-                ps.add_numerical_filter(filters, int(filters[2].get('filter_update')), session_db)
+                session['filter_update'] = int(filters[3].get('filter_update'))+1
+                ps.add_numerical_filter(filters, int(filters[3].get('filter_update')), session_db)
                 results = {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1],
-                           'update_filter': int(filters[2].get('filter_update'))+1}
+                           'update_filter': int(filters[3].get('filter_update'))+1}
     return jsonify(results)
 
 

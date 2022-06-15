@@ -124,11 +124,19 @@ $(function () {
     remove_filter = function(span) {
         var val_cat = $(span).closest("div").find("button.btn").val();
         var val_num = $(span).closest("div").find("input.name").val();
+            if (val_cat != null) {
+                var val = val_cat;
+                var type = 'categorical';
+            }else {
+                var val = val_num;
+                var type = 'numerical';
+            }
         span.closest("div").remove()
         $.ajax({
             type: "POST",
             url: "/filtering",
-            data: JSON.stringify([{'clean_one_filter': [val_cat,val_num]}]),
+            data: JSON.stringify([{'clean_one_filter': val},
+                                    {'type': type}]),
             contentType: "application/json",
             dataType: 'json',
             success: function(response) {
