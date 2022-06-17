@@ -5,12 +5,9 @@ from modules.database_sessions import DatabaseSessionFactory
 import modules.load_data_postgre as ps
 from flask_cors import CORS
 from db import connect_db, close_db
-import pandas as pd
 import os
 import io
 from flask import send_from_directory
-from serverside.serverside_table import ServerSideTable
-from sqlalchemy.orm import sessionmaker, scoped_session
 
 
 # create the application object
@@ -21,10 +18,6 @@ app.secret_key = os.urandom(24)
 with app.app_context():
     connect_db()
     rdb = g.db
-
-Session = sessionmaker()
-Session.configure(bind=rdb)
-session_db = Session()
 
 
 @app.teardown_appcontext
@@ -128,6 +121,11 @@ def message_count():
     if session.get('date_filter') is None:
         session['date_filter'] = (start_date, end_date, 0)
 
+    # get selected entities
+    if session.get('session_id') is None:
+        session['session_id'] = os.urandom(10)
+        a = factory.get_session(session.get('session_id'))
+
     return dict(date_block=date_block,
                 case_display=case_display,
                 filter_update=session.get('filter_update'),
@@ -179,16 +177,6 @@ def get_cases():
 # Direct to Data browser website during opening the program.
 @app.route('/', methods=['GET'])
 def login_get():
-    # get selected entities
-    session['session_id'] = os.urandom(10)
-    a = factory.get_session(session.get('session_id'))
-
-    session['date_filter'] = (start_date, end_date, 0)
-    session['limit_offset'] = (10000, 0, False)
-    session['filter_cat'] = {}
-    session['filter_num'] = {}
-    session['filter_update'] = 0
-
     return redirect('/data')
 
 
@@ -196,6 +184,7 @@ def login_get():
 def filter_data():
     # update database
     # if exists already do nothing print error
+    session_db = factory.get_session(session.get('session_id'))
     if request.is_json:
         filters = request.get_json()
         if 'clean' in filters[0]:
@@ -234,7 +223,7 @@ def filter_data():
                 results = {'filter': 'error'}
             else:
                 from_to = filters[1].get('from_to').split(";")
-                filter_num.update({filters[0].get('num'): (from_to[0],from_to[1], filters[2].get('min_max')[0],
+                filter_num.update({filters[0].get('num'): (from_to[0], from_to[1], filters[2].get('min_max')[0],
                                                            filters[2].get('min_max')[1])})
                 session['filter_num'] = filter_num
                 session['filter_update'] = int(filters[3].get('filter_update'))+1
@@ -247,9 +236,9 @@ def filter_data():
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])
 def download(filename):
     if filename == 'data.csv':
-        csv = data.csv
+        csv = 'data.csv'
     elif filename == 'case_ids.csv':
-        csv = data.table_case_ids
+        csv = 'data.table_case_ids'
     else:
         csv = ''
     # Create a string buffer

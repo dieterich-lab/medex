@@ -4,7 +4,7 @@ from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
 import plotly.graph_objects as go
-from webserver import session_db
+from webserver import factory
 
 heatmap_plot_page = Blueprint('heatmap', __name__, template_folder='tepmlates')
 
@@ -28,6 +28,7 @@ def post_plots():
     # handling errors and load data from database
     df = pd.DataFrame()
     if len(numeric_entities) > 1:
+        session_db = factory.get_session(session.get('session_id'))
         df, error = ps.get_heat_map(numeric_entities, date_filter, limit_filter, update_filter, session_db)
         if not error:
             if len(df.index) == 0:

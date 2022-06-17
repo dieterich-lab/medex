@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from serverside.serverside_table2 import ServerSideTable
 from webserver import block_measurement, all_entities, measurement_name,\
-    all_measurement, session_db
+    all_measurement, factory
 data_page = Blueprint('data', __name__, template_folder='templates')
 
 
 @data_page.route('/data/data1', methods=['GET', 'POST'])
 def table_data():
+    session_db = factory.get_session(session.get('session_id'))
     update_filter = session.get('filter_update')
     table_browser = session.get('table_browser')
     dat = ServerSideTable(request, table_browser[0], table_browser[1], table_browser[2],
@@ -30,11 +31,6 @@ def post_data():
         measurement = all_measurement[0]
     else:
         measurement = request.form.getlist('measurement')
-
-    # get_filter
-    date_filter = session.get('date_filter')
-    limit_filter = session.get('limit_offset')
-    update_filter = session.get('filter_update')
 
     # errors
     error = None

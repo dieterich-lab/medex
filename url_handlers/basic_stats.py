@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import all_measurement, measurement_name, block_measurement, session_db
+from webserver import all_measurement, measurement_name, block_measurement, factory
 import pandas as pd
 
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
@@ -22,6 +22,7 @@ def get_basic_stats():
     date_filter = session.get('date_filter')
     limit_filter = filtering.check_for_limit_offset()
     update_filter = session.get('filter_update')
+    session_db = factory.get_session(session.get('session_id'))
 
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""

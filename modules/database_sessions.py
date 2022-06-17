@@ -37,5 +37,5 @@ class DatabaseSessionFactory:
         return self.sessions_by_id[session_id].session
 
 
-def get_database_session() -> Session:
-    return g.database_session_factory.get_session(session.get('session_id'))
+def get_database_session(flask_session) -> Session:
+    return DatabaseSessionFactory.get_session(flask_session)

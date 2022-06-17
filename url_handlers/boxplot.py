@@ -3,7 +3,7 @@ import modules.load_data_postgre as ps
 import plotly.express as px
 import plotly.graph_objects as go
 import url_handlers.filtering as filtering
-from webserver import block_measurement, all_measurement, session_db
+from webserver import block_measurement, all_measurement, factory
 import pandas as pd
 import textwrap
 
@@ -42,6 +42,7 @@ def post_boxplots():
     elif not entities[2]:
         error = "Please select subcategory"
     else:
+        session_db = factory.get_session(session.get('session_id'))
         df, error = ps.get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter,
                                               session_db)
 

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
-from webserver import all_measurement, measurement_name, block_measurement, session_db
+from webserver import all_measurement, measurement_name, block_measurement, factory
 import url_handlers.filtering as filtering
 import pandas as pd
 import textwrap
@@ -49,6 +49,7 @@ def post_plots():
     elif not categorical_entities[1] and add_group_by:
         error = "Please select subcategory"
     else:
+        session_db = factory.get_session(session.get('session_id'))
         df, error = ps.get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date_filter,
                                         limit_filter, update_filter, session_db)
 
