@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 from webserver import all_measurement, measurement_name, block_measurement, session_db
+import url_handlers.filtering as filtering
 import pandas as pd
 import textwrap
 import plotly.graph_objects as go
@@ -30,7 +31,7 @@ def post_plots():
 
     # get_filter
     date_filter = session.get('date_filter')
-    limit_filter = session.get('limit_offset')
+    limit_filter = filtering.check_for_limit_offset()
     update_filter = session.get('filter_update')
 
     # handling errors and load data from database
@@ -53,7 +54,8 @@ def post_plots():
 
     if error:
         return render_template('scatter_plot.html',
-                               categorical_entities=categorical_entities,
+                               categorical_entities=categorical_entities[0],
+                               subcategory=categorical_entities[1],
                                add_group_by=add_group_by,
                                x_axis=axis[0],
                                y_axis=axis[1],
@@ -67,12 +69,11 @@ def post_plots():
 
     # create figure
     fig = go.Figure()
+
     if add_group_by:
         for i in categorical_entities[1]:
-            df = df[df[categorical_entities] == i]
-            x = df[x_axis]
-            y = df[y_axis]
-            fig.add_trace(go.Scattergl(x=x, y=y, mode='markers', name=i))
+            df_new = df[df[categorical_entities[0]] == i]
+            fig.add_trace(go.Scattergl(x=df_new[x_axis], y=df_new[y_axis], mode='markers', name=i))
     else:
         fig.add_trace(
             go.Scattergl(x=df[x_axis], y=df[y_axis], mode='markers', marker=dict(line=dict(width=1,
@@ -107,7 +108,8 @@ def post_plots():
 
     fig = fig.to_html()
     return render_template('scatter_plot.html',
-                           categorical_entities=categorical_entities,
+                           categorical_entities=categorical_entities[0],
+                           subcategory=categorical_entities[1],
                            add_group_by=add_group_by,
                            x_axis=axis[0],
                            y_axis=axis[1],

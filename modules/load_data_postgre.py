@@ -279,17 +279,12 @@ def get_data(entities, what_table, measurement, limit, offset, update_filter, r)
 
 def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
 
-    n = """SELECT COUNT(DISTINCT name_id) FROM Patient"""
-    n = pd.read_sql(n, r.bind)
-    n = n['count']
-
     filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
                                                                                          update_filter)
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
 
-    print(limit_selected)
-
+    n = """SELECT COUNT(DISTINCT name_id) FROM Patient"""
     if limit_selected:
         sql_part = ""
         for e in entity:
@@ -325,9 +320,11 @@ def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filte
                                 GROUP BY key,measurement 
                                 ORDER BY key,measurement
                                 """.format(sql_part)
-    df = pd.read_sql(sql, r.connection())
-    try:
 
+    try:
+        df = pd.read_sql(sql, r.connection())
+        n = pd.read_sql(n, r.connection())
+        n = n['count']
         df['count NaN'] = int(n) - df['count']
         df = df.round(2)
         return df, None
@@ -335,116 +332,50 @@ def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filte
         return None, "Problem with load data from database"
 
 
-def get_cat_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
+def get_cat_date_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, table, r):
 
-    entity_final = "$$" + "$$,$$".join(entity) + "$$"
-    measurement = "'" + "','".join(measurement) + "'"
     filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
                                                                                          update_filter)
-
-    sql = """WITH basic_stats as (SELECT ec.name_id,key,measurement
-                                   FROM examination_categorical as ec
-                                   {3}
-                                   WHERE key IN ({0})
-                                   AND measurement IN ({1}) 
-                                   {2}
-                                   GROUP BY ec.name_id,key,measurement)
-            SELECT key,measurement,count(name_id) 
-                        FROM basic_stats
-                        GROUP BY measurement,key """.format(entity_final, measurement, date_value, filters)
-    if limit_selected:
-        sql_part = ""
-        for e in entity:
-            s = """ (SELECT key,measurement,ec.name_id
-                    FROM examination_categorical as ec 
-                    {3}
-                    WHERE key = $${0}$$ 
-                    AND measurement IN ({1}) 
-                    {2}
-                    GROUP BY ec.name_id,key,measurement
-                    {4} )
-                    UNION """.format(e, measurement, date_value, filters, limit_selected)
-            sql_part = sql_part + s
-        sql_part = sql_part[:-6]
-        sql = """ WITH basic_stats AS ({})
-                    SELECT key,measurement,count(name_id) 
-                        FROM basic_stats
-                        GROUP BY measurement,key """.format(sql_part)
-    try:
-        n = """SELECT COUNT ( DISTINCT name_id) FROM Patient"""
-        n = pd.read_sql(n, r.bind)
-        n = n['count']
-        df = pd.read_sql(sql, r.bind)
-        df['count NaN'] = int(n) - df['count']
-        return df, None
-    except (Exception,):
-        return None, "Problem with load data from database"
-
-
-def get_date_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
-    """
-    param:
-     entity: date entities names which should be selected from database
-     measurement: selected measurements
-     r: connection with database
-    return: DataFrame with calculated basic statistic
-    """
+    entity_final = "$$" + "$$,$$".join(entity) + "$$"
+    measurement = "'" + "','".join(measurement) + "'"
 
     n = """SELECT COUNT ( DISTINCT name_id) FROM Patient"""
-    n = pd.read_sql(n, r.bind)
-    n = n['count']
-
-    entity_final = "$$" + "$$,$$".join(entity) + "$$"
-    measurement = "'" + "','".join(measurement) + "'"
-    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
-                                                                                         update_filter)
-    sql = """WITH basic_stats as (SELECT ed.name_id,key,measurement
-                                   FROM examination_date as ed
-                                   {3}
-                                   WHERE key IN ({0})
-                                   AND measurement IN ({1}) 
-                                   {2}
-                                   GROUP BY ed.name_id,key,measurement)
-            SELECT key,measurement,count(name_id) 
-                        FROM basic_stats
-                        GROUP BY measurement,key """.format(entity_final, measurement, date_value, filters)
     if limit_selected:
         sql_part = ""
         for e in entity:
-            s = """ (SELECT key,measurement,ed.name_id
-                    FROM examination_date as ed 
+            s = """ (SELECT key,measurement,foo.name_id
+                    FROM {5} foo
                     {3}
                     WHERE key = $${0}$$ 
                     AND measurement IN ({1}) 
                     {2}
-                    GROUP BY ed.name_id,key,measurement
-                    {4})
-                    UNION """.format(e, measurement, date_value, filters, limit_selected)
+                    GROUP BY foo.name_id,key,measurement
+                    {4} )
+                    UNION """.format(e, measurement, date_value, filters, limit_selected, table)
             sql_part = sql_part + s
         sql_part = sql_part[:-6]
-        sql = """ WITH basic_stats AS ({})
-                    SELECT key,measurement,count(name_id) 
-                        FROM basic_stats
-                        GROUP BY measurement,key """.format(sql_part)
+    else:
+        sql_part = """SELECT foo.name_id,key,measurement
+                                       FROM {4} foo
+                                       {3}
+                                       WHERE key IN ({0})
+                                       AND measurement IN ({1}) 
+                                       {2}
+                                       GROUP BY foo.name_id,key,measurement""".format(entity_final, measurement,
+                                                                                      date_value, filters, table)
+
+    sql = """ WITH basic_stats AS ({})
+                SELECT key,measurement,count(name_id) 
+                    FROM basic_stats
+                    GROUP BY measurement,key 
+                    ORDER by key""".format(sql_part)
 
     try:
-        df = pd.read_sql(sql, r.bind)
+        n = pd.read_sql(n, r.connection())
+        n = n['count']
+        df = pd.read_sql(sql, r.connection())
         df['count NaN'] = int(n) - df['count']
         return df, None
-    except (Exception,):
-        return None, "Problem with load data from database"
-
-
-# Not used now
-def get_unit(name, r):
-    """ Get number of all patients
-
-     number use only for basic_stats
-     """
-    try:
-        sql = """SELECT key,"unit" FROM name_type WHERE key='{}' """.format(name)
-        df = pd.read_sql(sql, r)
-        return df['unit'][0], None
     except (Exception,):
         return None, "Problem with load data from database"
 
@@ -457,51 +388,50 @@ def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date
     subcategory = "$$" + "$$,$$".join(categorical_entities[1]) + "$$"
 
     if not add_group_by:
-        sql = """SELECT x.name_id,AVG(x.value) as "{2}_{0}",AVG(y.value) as "{3}_{1}"
-                            FROM examination_numerical as x
+        sql = """SELECT foo.name_id,AVG(foo.value) as "{2}_{0}",AVG(y.value) as "{3}_{1}"
+                            FROM examination_numerical foo
                             {6}
                             INNER JOIN examination_numerical as y
-                                ON x.name_id = y.name_id
-                            WHERE x.key IN ('{0}') 
+                                ON foo.name_id = y.name_id
+                            WHERE foo.key IN ('{0}') 
                             AND y.key IN ('{1}') 
-                            AND x.measurement='{2}' 
+                            AND foo.measurement='{2}' 
                             AND y.measurement='{3}' 
                             {4}
                             {5}
-                            GROUP BY x.name_id,y.name_id
+                            GROUP BY foo.name_id
                             {7}""".format(axis[0], axis[1], measurement[0], measurement[1], date_value1, date_value2,
                                           filters, limit_selected)
     else:
         sql = """SELECT * FROM (
-        SELECT x.name_id,AVG(x.value) as "{2}_{0}",AVG(y.value) as "{3}_{1}",
+        SELECT foo.name_id,AVG(foo.value) as "{2}_{0}",AVG(y.value) as "{3}_{1}",
         STRING_AGG(distinct ec.value,'<br>') as "{6}" 
-                            FROM examination_numerical as x
+                            FROM examination_numerical foo
                             {8}
-                            INNER JOIN examination_numerical as y
-                                ON x.name_id = y.name_id
-                            LEFT JOIN examination_categorical as ec
-                                ON x.name_id = ec.name_id
-                            WHERE x.key IN ('{0}') 
+                            INNER JOIN examination_numerical y
+                                ON foo.name_id = y.name_id
+                            LEFT JOIN examination_categorical ec
+                                ON foo.name_id = ec.name_id
+                            WHERE foo.key IN ('{0}') 
                             AND y.key IN ('{1}') 
                             AND ec.key IN ('{6}')
-                            AND x.measurement='{2}' 
+                            AND foo.measurement='{2}' 
                             AND y.measurement='{3}' 
                             {4}
                             {5}
-                            GROUP BY x.name_id
-                            {9}) foo
-                            WHERE foo."{6}" IN ({7})
+                            GROUP BY foo.name_id
+                            {9}) foo2
+                            WHERE foo2."{6}" IN ({7})
                             """.format(axis[0], axis[1], measurement[0], measurement[1], date_value1, date_value2,
                                        categorical_entities[0], subcategory, filters, limit_selected)
 
     try:
-        df = pd.read_sql(sql, r.bind)
+        df = pd.read_sql(sql, r.connection())
         x_axis, y_axis = axis[0] + '_' + measurement[0], axis[1] + '_' + measurement[1]
         if not add_group_by:
             df.columns = ['name_id', x_axis, y_axis]
         else:
             df.columns = ['name_id', x_axis, y_axis, categorical_entities[0]]
-
         if df.empty:
             df, error = df, "One of the selected entities is empty"
             return df, error
@@ -519,19 +449,18 @@ def get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, 
     measurement = "'" + "','".join(measurement) + "'"
 
     sql = """SELECT value AS "{0}",measurement,count(value)
-                FROM (SELECT STRING_AGG(distinct value,'<br>')  AS value,measurement FROM examination_categorical 
-                as ec
+                FROM (SELECT STRING_AGG(distinct value,'<br>')  AS value,measurement FROM examination_categorical foo
                         {4} 
                         WHERE key='{0}'
                         AND value IN ({1}) 
                         {3}
                         AND measurement IN ({2})
-                        GROUP BY ec.name_id,measurement
-                        {5}) AS foo
+                        GROUP BY foo.name_id,measurement
+                        {5}) AS foo2
                 GROUP BY value,measurement
                 """.format(categorical_entities[0], subcategory, measurement, date_value, filters, limit_selected)
     try:
-        df = pd.read_sql(sql, r.bind)
+        df = pd.read_sql(sql, r.connection())
         if df.empty:
             return df, "The entity wasn't measured"
         else:
@@ -551,22 +480,22 @@ def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, upd
     subcategory = "$$" + "$$,$$".join(entities[2]) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
 
-    sql = """SELECT en.name_id,en.measurement,AVG(en.value) AS "{0}",ec.value AS "{1}"
-                FROM examination_numerical AS en 
+    sql = """SELECT foo.name_id,foo.measurement,AVG(foo.value) AS "{0}",ec.value AS "{1}"
+                FROM examination_numerical foo 
                 {5}
-                LEFT JOIN examination_categorical AS ec 
-                ON en.name_id = ec.name_id
-                WHERE en.key = '{0}' 
+                LEFT JOIN examination_categorical ec
+                ON foo.name_id = ec.name_id
+                WHERE foo.key = '{0}' 
                 AND ec.key = '{1}' 
                 AND ec.value IN ({2}) 
-                AND en.measurement IN ({3}) 
+                AND foo.measurement IN ({3}) 
                 {4}
-                GROUP BY en.name_id,en.measurement,ec.value
+                GROUP BY foo.name_id,foo.measurement,ec.value
                 {6}
                 """.format(entities[0], entities[1], subcategory, measurement, date_value, filters, limit_selected)
-
+    df = pd.read_sql(sql, r.connection())
     try:
-        df = pd.read_sql(sql, r.bind)
+        df = pd.read_sql(sql, r.connection())
         if df.empty or len(df) == 0:
             return df, "The entity {0} or {1} wasn't measured".format(entities[0], entities[1])
         else:
@@ -578,38 +507,26 @@ def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, upd
         return None, "Problem with load data from database"
 
 
-def get_heat_map(entity, date_filter, limit_filter, update_filter, r):
+def get_heat_map(entities, date_filter, limit_filter, update_filter, r):
 
     filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
                                                                                          update_filter)
 
-    entity_fin = "$$" + "$$,$$".join(entity) + "$$"
+    case_when = ""
+    for i in entities:
+        case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
+    case_when = case_when[:-1]
 
-    sql = """SELECT en.name_id,key,AVG(value) as value 
-                FROM examination_numerical as en
-                {2} 
-                WHERE key IN ({0}) 
+    sql = """ SELECT foo.name_id,{0}
+                FROM examination_numerical foo
                 {1}
-                GROUP BY en.name_id,key """.format(entity_fin, date_value, filters)
+                group by foo.name_id
+                {2} 
+                """.format(case_when, filters, limit_selected)
 
-    if limit_selected:
-        sql = ""
-        for e in entity:
-            sql_part = """(SELECT en.name_id,key,value 
-                           FROM examination_numerical as en 
-                           {2}
-                           WHERE key = $${0}$$  
-                           {1}
-                           UNION """.format(e, date_value, filters, limit_selected)
-            sql = sql + sql_part
-        sql = """ SELECT name_id,key,AVG(value) as value FROM (""" + sql[:-6] + """) 
-        foo GROUP BY name_id,key """
     try:
-        df = pd.read_sql(sql, r.bind)
-        df = df.pivot_table(index=['name_id'], columns='key', values='value', aggfunc=np.mean).reset_index()
-        new_columns = [tr.fill(x, width=20).replace("\n", "<br>") for x in df.columns.values]
-        df.columns = new_columns
-        if df.empty or len(df) == 0:
+        df = pd.read_sql(sql, r.connection())
+        if df.empty:
             return df, "The entity wasn't measured"
         else:
             return df, None
@@ -659,3 +576,16 @@ def push_to_numerical_table(column_name, df, r):
     except (Exception,):
         print('Problem')
 """
+
+# Not used now
+def get_unit(name, r):
+    """ Get number of all patients
+
+     number use only for basic_stats
+     """
+    try:
+        sql = """SELECT key,"unit" FROM name_type WHERE key='{}' """.format(name)
+        df = pd.read_sql(sql, r)
+        return df['unit'][0], None
+    except (Exception,):
+        return None, "Problem with load data from database"

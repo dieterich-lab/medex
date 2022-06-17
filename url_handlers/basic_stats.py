@@ -22,7 +22,6 @@ def get_basic_stats():
     date_filter = session.get('date_filter')
     limit_filter = filtering.check_for_limit_offset()
     update_filter = session.get('filter_update')
-    print(limit_filter)
 
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""
@@ -94,8 +93,8 @@ def get_basic_stats():
         elif not categorical_entities:
             error = "Please select entities"
         else:
-            df, error = ps.get_cat_basic_stats(categorical_entities, measurement, date_filter, limit_filter,
-                                               update_filter, session_db)
+            df, error = ps.get_cat_date_basic_stats(categorical_entities, measurement, date_filter, limit_filter,
+                                                    update_filter, 'examination_categorical', session_db)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -136,8 +135,8 @@ def get_basic_stats():
         elif not date_entities:
             error = "Please select entities"
         else:
-            df, error = ps.get_date_basic_stats(date_entities, measurement_d, date_filter, limit_filter, update_filter,
-                                                session_db)
+            df, error = ps.get_cat_date_basic_stats(date_entities, measurement_d, date_filter, limit_filter,
+                                                    update_filter, 'examination_date', session_db)
 
         if error:
             return render_template('basic_stats/basic_stats.html',

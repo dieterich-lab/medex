@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 import plotly.express as px
 import plotly.graph_objects as go
+import url_handlers.filtering as filtering
 from webserver import block_measurement, all_measurement, session_db
 import pandas as pd
 import textwrap
@@ -29,7 +30,7 @@ def post_boxplots():
 
     # get_filter
     date_filter = session.get('date_filter')
-    limit_filter = session.get('limit_offset')
+    limit_filter = filtering.check_for_limit_offset()
     update_filter = session.get('filter_update')
 
     # handling errors and load data from database

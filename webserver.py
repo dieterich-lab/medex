@@ -123,9 +123,10 @@ def message_count():
         session['filter_cat'] = {}
         session['filter_num'] = {}
 
-    session['date_filter'] = (start_date, end_date, 0)
     if session.get('limit_offset') is None:
         session['limit_offset'] = (10000, 0, False)
+    if session.get('date_filter') is None:
+        session['date_filter'] = (start_date, end_date, 0)
 
     return dict(date_block=date_block,
                 case_display=case_display,
@@ -182,7 +183,7 @@ def login_get():
     session['session_id'] = os.urandom(10)
     a = factory.get_session(session.get('session_id'))
 
-    session['date_filter'] = {'start': start_date, 'end': end_date, 'update': 0}
+    session['date_filter'] = (start_date, end_date, 0)
     session['limit_offset'] = (10000, 0, False)
     session['filter_cat'] = {}
     session['filter_num'] = {}

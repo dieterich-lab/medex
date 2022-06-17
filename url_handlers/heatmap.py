@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, session
 import pandas as pd
 from scipy.stats import pearsonr
 import modules.load_data_postgre as ps
+import url_handlers.filtering as filtering
 import plotly.graph_objects as go
 from webserver import session_db
 
@@ -21,7 +22,7 @@ def post_plots():
 
     # get_filter
     date_filter = session.get('date_filter')
-    limit_filter = session.get('limit_offset')
+    limit_filter = filtering.check_for_limit_offset()
     update_filter = session.get('filter_update')
 
     # handling errors and load data from database
