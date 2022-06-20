@@ -1,4 +1,5 @@
 from modules import import_dataset_postgre as idp
+from modules import models, load_data_to_database as ld
 from configparser import ConfigParser
 import os
 import sys
@@ -31,6 +32,9 @@ class ImportSettings:
         self.config.set('hashes', 'dataset', "")
         self.config.set('hashes', 'date', "")
 
+    def get_hash(self, path):
+        return os.popen(f"sha512sum {path}").read().split(' ')[0]
+
     def update(self, entities_path, dataset_path):
         self.config['hashes']['entity'] = self.get_hash(entities_path)
         self.config['hashes']['dataset'] = self.get_hash(dataset_path)
@@ -40,17 +44,11 @@ class ImportSettings:
         with open(self.path, 'w+') as cnfFile:
             self.config.write(cnfFile)
 
-    def get_hash(self, path):
-        return os.popen(f"sha512sum {path}").read() \
-            .split(' ')[0]
-
     def is_entity_changed(self, path):
-        hash = self.get_hash(path)
-        return self.config['hashes']['entity'] != hash
+        return self.config['hashes']['entity'] != self.get_hash(path)
 
     def is_dataset_changed(self, path):
-        hash = self.get_hash(path)
-        return self.config['hashes']['dataset'] != hash
+        return self.config['hashes']['dataset'] != self.get_hash(path)
 
     def is_empty(self):
         if self.config['hashes']['dataset'] and self.config['hashes']['entity']:
@@ -80,10 +78,13 @@ def start_import(rdb):
                     header = row.replace("\n", "").split(",")
                 header = header[0:3]
         # use function from import_dataset_postgre.py to create tables in database
+
         print("Start create tables")
-        idp.create_table(rdb)
+        models.drop_tables(rdb)
+        models.create_tables(rdb)
         print("Start load data ")
-        idp.load_data(entities, dataset, header, rdb)
+        ld.load_header(header,rdb)
+        ld.load_data(entities, dataset, header, rdb)
         print("Start alter table ")
         idp.alter_table(rdb)
         print("Start create_index ")
