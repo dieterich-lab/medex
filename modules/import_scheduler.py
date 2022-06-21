@@ -1,5 +1,4 @@
-from modules import import_dataset_postgre as idp
-from modules import models, load_data_to_database as ld
+from modules import models, load_data_to_database as ld, cluster_analyze as ca
 from configparser import ConfigParser
 import os
 import sys
@@ -77,20 +76,18 @@ def start_import(rdb):
                 for row in in_file:
                     header = row.replace("\n", "").split(",")
                 header = header[0:3]
-        # use function from import_dataset_postgre.py to create tables in database
 
         print("Start create tables")
         models.drop_tables(rdb)
         models.create_tables(rdb)
         print("Start load data ")
-        ld.load_header(header,rdb)
+        ld.load_header(header, rdb)
         ld.load_data(entities, dataset, header, rdb)
-        print("Start alter table ")
-        idp.alter_table(rdb)
-        print("Start create_index ")
-        idp.create_index(rdb)
+        ld.patient_table(rdb)
         print("Start cluster_table ")
-        idp.cluster_table(rdb)
+        ca.cluster_table(rdb)
+        ca.analyze_table(rdb)
+        ca.alter_system(rdb)
 
         settings.update(dataset_path=dataset, entities_path=entities)
         settings.save()

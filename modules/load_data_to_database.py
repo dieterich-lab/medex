@@ -1,3 +1,5 @@
+from modules.models import TableNumerical, TableCategorical, TableDate, Patient
+from sqlalchemy.sql import union, select, insert
 import pandas as pd
 
 
@@ -59,3 +61,17 @@ def load_data(entities, dataset, header, rdb):
                     cur.execute("INSERT INTO examination_categorical values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
     rdb.commit()
     in_file.close()
+
+
+def patient_table(rdb):
+
+    s_union = union(select(TableCategorical.name_id, TableCategorical.case_id),
+                    select(TableNumerical.name_id, TableNumerical.case_id),
+                    select(TableDate.name_id, TableDate.case_id)).subquery()
+    s_select = select(s_union.c.name_id, s_union.c.case_id).group_by(s_union.c.name_id, s_union.c.case_id)
+    sql_statement = insert(Patient).from_select(['name_id', 'case_id'], s_select)
+    with rdb.connect() as conn:
+        try:
+            conn.execute(sql_statement)
+        except (Exception,):
+            return print("Problem with connection with database")

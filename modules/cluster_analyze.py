@@ -1,9 +1,9 @@
 def cluster_table(rdb):
     with rdb.connect() as conn:
         try:
-            conn.execute(""" CLUSTER examination_date USING key_index_date """)
-            conn.execute(""" CLUSTER examination_numerical USING key_index_numerical """)
-            conn.execute(""" CLUSTER examination_categorical USING key_index_categorical """)
+            conn.execute(""" CLUSTER examination_date USING idx_key_date""")
+            conn.execute(""" CLUSTER examination_numerical USING idx_key_num""")
+            conn.execute(""" CLUSTER examination_categorical USING idx_key_cat""")
         except (Exception,):
             return print("Problem with connection with database")
 
@@ -19,7 +19,7 @@ def analyze_table(rdb):
 
 
 def alter_system(rdb):
-    with rdb.connect() as conn:
+    with rdb.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
         try:
             conn.execute(""" ALTER SYSTEM SET work_mem='2GB' """)
             conn.execute(""" ALTER SYSTEM SET max_parallel_workers_per_gather=7 """)

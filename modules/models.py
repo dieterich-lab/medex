@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Time, Numeric, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, Date,  Numeric, ForeignKey, Index
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -9,6 +9,13 @@ class Header(Base):
     __tablename__ = "header"
     name_id = Column(String, primary_key=True)
     measurement = Column(String)
+
+
+class Patient(Base):
+    __tablename__ = "patient"
+    name_id = Column(String, primary_key=True)
+    case_id = Column(String, primary_key=True)
+    __table_args__ = (Index('idx_name_id_patient', 'name_id'), Index('idx_case_id_patient', 'case_id'))
 
 
 class NameType(Base):
@@ -45,7 +52,7 @@ class TableCategorical(Base):
     time = Column(String)
     key = Column(String, ForeignKey('name_type.key'))
     value = Column(String)
-    __table_args__ = (Index('idx_key_cat', 'key'),Index('idx_name_id_cat', 'name_id'))
+    __table_args__ = (Index('idx_key_cat', 'key'), Index('idx_name_id_cat', 'name_id'))
 
 
 class TableDate(Base):
@@ -67,5 +74,3 @@ def drop_tables(rdb):
 
 def create_tables(rdb):
     Base.metadata.create_all(rdb)
-
-

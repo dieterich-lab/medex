@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from flask import g, session
 import threading
 import time
 
@@ -35,7 +34,3 @@ class DatabaseSessionFactory:
         t = threading.Thread(target=_cleanup, args=(self, session_id))
         t.start()
         return self.sessions_by_id[session_id].session
-
-
-def get_database_session(flask_session) -> Session:
-    return DatabaseSessionFactory.get_session(flask_session)

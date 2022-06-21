@@ -493,7 +493,6 @@ def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, upd
                 GROUP BY foo.name_id,foo.measurement,ec.value
                 {6}
                 """.format(entities[0], entities[1], subcategory, measurement, date_value, filters, limit_selected)
-    df = pd.read_sql(sql, r.connection())
     try:
         df = pd.read_sql(sql, r.connection())
         if df.empty or len(df) == 0:
