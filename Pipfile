@@ -4,44 +4,34 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-cython = "*"
 numpy = "*"
 scipy = "*"
-pandas = "*"
-joblib = "*"
-docopt = "*"
-tqdm = "*"
-pyyaml = "*"
-nltk = "*"
-redis = "*"
-ipython = "*"
-"pybind11" = "*"
-python-dotenv = "*"
+pandas = "==1.3.1"
 click = "*"
 flask = "*"
-misc = {git = "https://bitbucket.org/bmmalone/misc.git"}
-autosklearn = {ref = "development",git = "https://github.com/automl/auto-sklearn.git"}
 flask-redis = "*"
-sklearn = "*"
-seaborn = "*"
-matplotlib = "*"
 jinja2 = "*"
 flask-login = "*"
-passlib = "*"
 plotly = "*"
 pytest = "*"
 apscheduler = "*"
 waitress = "*"
 ipdb = "*"
-psycopg2 = "*"
+psycopg2-binary = "*"
 statsmodels = "*"
 gower = "*"
 umap = "*"
+flask_cors = "*"
+requests = "*"
+scikit-learn = "==0.24.2"
+sqlalchemy = "*"
+pytest-mock = "*"
 
 
 [dev-packages]
 pylint = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
+
 

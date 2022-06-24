@@ -3,11 +3,11 @@ from configparser import ConfigParser
 import os
 import sys
 from datetime import datetime
+import tzlocal
 from apscheduler.schedulers.background import BackgroundScheduler
 
 
-
-class ImportSettings():
+class ImportSettings:
     """
     Class which create file dev_import necessary to import data.
     Inside the file we have two unique cods for files dataset and entities.
@@ -57,6 +57,7 @@ class ImportSettings():
             return False
         return True
 
+
 def start_import(rdb):
     """ Import data from entities and dataset files"""
 
@@ -65,7 +66,6 @@ def start_import(rdb):
     dataset = './import/dataset.csv'
     entities ='./import/entities.csv'
     header = './import/header.csv'
-
 
     if not os.path.isfile(dataset) or not os.path.isfile(entities):
         return print("Could not import to database either or entities.csv and dataset.csv is missing", file=sys.stderr)
@@ -99,7 +99,7 @@ class Scheduler():
     """
 
     def __init__(self,rdb, day_of_week, hour, minute):
-        self.bgs = BackgroundScheduler()
+        self.bgs = BackgroundScheduler(timezone=str(tzlocal.get_localzone()))
         start_import(rdb)
         self.bgs.add_job(start_import,'cron',[rdb], day_of_week=day_of_week, hour=hour, minute=minute)
 
