@@ -1,10 +1,9 @@
 # import the Flask class from the flask module
-from flask import Flask, redirect, session, send_file, render_template, Response, request, url_for
+from flask import Flask, send_file, render_template, request, g
 from modules.import_scheduler import Scheduler
 from url_handlers.models import TableBuilder
 import modules.load_data_postgre as ps
 from db import connect_db
-import pandas as pd
 import os
 import io
 
@@ -12,10 +11,17 @@ import io
 app = Flask(__name__)
 
 app.secret_key = os.urandom(24)
+
 with app.app_context():
     rdb = connect_db()
 
-app.secret_key=os.urandom(32)
+
+@app.teardown_appcontext
+def teardown_db(exception):
+    db = g.pop('db', None)
+
+    if db is not None:
+        db.close()
 
 
 def check_for_env(key: str, default=None, cast=None):
@@ -50,7 +56,6 @@ all_numeric_entities_sc = all_numeric_entities_sc.to_dict('index')
 all_categorical_entities_sc = all_categorical_entities_sc.to_dict('index')
 all_numeric_entities_hs = all_numeric_entities_hs.to_dict('index')
 
-#all_entities = all_categorical_entities.append(all_numeric_entities, ignore_index=True, sort=False)
 all_entities = ps.get_entities(rdb)
 all_entities = all_entities.to_dict('index')
 all_numeric_entities = all_numeric_entities.to_dict('index')
@@ -72,7 +77,7 @@ size_categorical = 'the size of the categorical table: ' + str(size_c)+' rows'
 
 
 # data store for download and so I need work on this and check !!!
-class DataStore():
+class DataStore:
 
     filter_store = None
     cat= None
@@ -99,7 +104,6 @@ from url_handlers.boxplot import boxplot_page
 from url_handlers.scatter_plot import scatter_plot_page
 from url_handlers.barchart import barchart_page
 from url_handlers.heatmap import heatmap_plot_page
-#from url_handlers.clustering_pl import clustering_plot_page
 from url_handlers.coplots_pl import coplots_plot_page
 from url_handlers.logout import logout_page
 from url_handlers.tutorial import tutorial_page
@@ -114,7 +118,6 @@ app.register_blueprint(boxplot_page)
 app.register_blueprint(scatter_plot_page)
 app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
-#app.register_blueprint(clustering_plot_page)
 app.register_blueprint(coplots_plot_page)
 
 
@@ -191,30 +194,7 @@ def login():
 @app.route('/', methods=['POST'])
 def login2():
     # get selected entities
-    """
-    if 'filter_c' in request.form:
-        filter = request.form.getlist('filter')
-        cat = request.form.getlist('cat')
-        data.filter_store = filter
-        data.cat = cat
-        number_filter = 0
-        if filter != None:
-            number_filter = len(filter)
-            filter = zip(cat, filter)
-        return render_template('data.html',
-                               all_entities=all_entities,
-                               all_numeric_entities=all_numeric_entities,
-                               all_subcategory_entities=all_subcategory_entities,
-                               all_categorical_entities=all_categorical_entities,
-                               filter=filter,
-                               number_filter=number_filter,
-                               database=database,
-                               size_categorical=size_categorical,
-                               size_numeric=size_numeric,
-                               len_numeric=len_numeric,
-                               len_categorical=len_categorical,
-                               )
-    """
+
     entities = request.form.getlist('entities')
     if 'Select all' in entities: entities.remove('Select all')
     data.table_browser_entites = entities
@@ -243,7 +223,6 @@ def login2():
                                all_entities=all_entities,
                                all_categorical_entities=all_categorical_entities,
                                all_subcategory_entities=all_subcategory_entities,
-                               categorical_entities=categorical_entities,
                                entities=entities,
                                filter=filter,
                                database=database,
