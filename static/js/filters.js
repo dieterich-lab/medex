@@ -81,8 +81,8 @@ $(function () {
 
    filter_check = function(input) {
     if (document.getElementById('categorical_filter_check').checked) {
-        document.getElementById('categorical_filter_check_block').style.display = 'block';
         document.getElementById('numerical_filter_check_block').style.display = 'none';
+        document.getElementById('categorical_filter_check_block').style.display = 'block';
     }
     else if (document.getElementById('numerical_filter_check').checked){
         document.getElementById('numerical_filter_check_block').style.display = 'block';

@@ -101,10 +101,12 @@ def data_information():
 # information about database
 @app.context_processor
 def message_count():
-    if session.get('case_ids') is None:
+    if session.get('case_ids') is None or session.get('case_ids') == 'No':
         case_display = 'none'
+        session['case_ids'] = 'No'
     else:
         case_display = 'block'
+        session['case_ids'] = 'Yes'
 
     if start_date == end_date:
         date_block = 'none'
@@ -164,11 +166,12 @@ app.register_blueprint(calculator_page)
 def get_cases():
     session_id = request.args.get('sessionid')
     session_id_json = {"session_id": "{}".format(session_id)}
-    session['session_id'] = session_id
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/get', json=session_id_json)
     case_ids = cases_get.json()
-
-    ps.create_temp_table_case_id(case_ids['cases_ids'], rdb)
+    session_db = factory.get_session(session.get('session_id'))
+    if session.get('case_ids') == 'No':
+        session['filter_update'] = session.get('filter_update') + 1
+    ps.create_temp_table_case_id(case_ids['cases_ids'], session.get('filter_update'), session.get('case_ids'), session_db)
     session['case_ids'] = 'Yes'
 
     return redirect('/')
@@ -190,6 +193,7 @@ def filter_data():
         if 'clean' in filters[0]:
             ps.clean_filter(session_db)
             session['filter_update'] = 0
+            session['case_id'] = 'No'
             session['filter_cat'] = {}
             session['filter_num'] = {}
             results = {'filter': 'cleaned'}
@@ -214,9 +218,9 @@ def filter_data():
                 session['filter_cat'] = filter_cat
                 session['filter_update'] = int(filters[2].get('filter_update'))+1
 
-                ps.add_categorical_filter(filters, int(filters[2].get('filter_update')), session_db)
+                ps.add_categorical_filter(filters, session.get('filter_update'), session_db)
                 results = {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub'),
-                           'update_filter': int(filters[2].get('filter_update'))+1}
+                           'update_filter': session.get('filter_update')}
         elif "num" in filters[0]:
             filter_num = session.get('filter_num')
             if filters[0].get('num') in filter_num:
@@ -227,9 +231,9 @@ def filter_data():
                                                            filters[2].get('min_max')[1])})
                 session['filter_num'] = filter_num
                 session['filter_update'] = int(filters[3].get('filter_update'))+1
-                ps.add_numerical_filter(filters, int(filters[3].get('filter_update')), session_db)
+                ps.add_numerical_filter(filters, session.get('filter_update'), session_db)
                 results = {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1],
-                           'update_filter': int(filters[3].get('filter_update'))+1}
+                           'update_filter': session.get('filter_update')}
     return jsonify(results)
 
 
@@ -243,10 +247,8 @@ def download(filename):
         csv = ''
     # Create a string buffer
     buf_str = io.StringIO(csv)
-
     # Create a bytes buffer from the string buffer
     buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
-    # Return the CSV data as an attachment
     return send_file(buf_byt,
                      mimetype="text/csv",
                      as_attachment=True,

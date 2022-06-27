@@ -1,12 +1,13 @@
+from modules.models import TableNumerical, TableCategorical, TableDate, Patient, Header, NameType
+from sqlalchemy.sql import union, select, insert, func, distinct
+from sqlalchemy import Column, Integer, String, and_, literal_column, case, asc, text
 import pandas as pd
-import numpy as np
 import datetime
 from collections import ChainMap
-import textwrap as tr
 
 
 def get_header(r):
-    sql = "SELECT * FROM header"
+    sql = select(Header)
     try:
         df = pd.read_sql(sql, r)
         name_id, measurement_name = df['name_id'][0], df['measurement'][0]
@@ -25,7 +26,6 @@ def get_database_information(r):
         size_num_tab, size_date_tab, size_cat_tab = \
             size_num_tab.iloc[0]['count'], size_date_tab.iloc[0]['count'],\
             size_cat_tab.iloc[0]['count']
-                                                    
     except (Exception,):
         size_num_tab, size_date_tab, size_cat_tab = 0, 0, 0
     return size_num_tab, size_date_tab, size_cat_tab
@@ -124,15 +124,6 @@ def get_measurement(r):
     return df['measurement'], block_measurement
 
 
-def create_temp_table_case_id(case_id, r):
-    case_id_all = "$$" + "$$,$$".join(case_id) + "$$"
-    create_table = """BEGIN DROP TABLE IF EXISTS temp_table1;
-                        CREATE TEMP TABLE IF NOT EXISTS temp_table_case_ids 
-                        AS (SELECT name_id FROM patient WHERE case_id in ({0})) """.format(case_id_all)
-
-    r.execute(create_table)
-
-
 def clean_filter(r):
     sql = "DROP TABLE IF EXISTS temp_table_ids"
     sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
@@ -160,12 +151,13 @@ def next_filter(query, query2, r):
 def add_categorical_filter(filters, n, r):
     subcategory = "$$" + "$$,$$".join(filters[1].get('sub')) + '$$'
 
-    query = """SELECT DISTINCT name_id FROM examination_categorical WHERE key = '{}' AND value IN ({}) 
+    query = """SELECT DISTINCT ec.name_id FROM examination_categorical ec 
+                WHERE ec.key = '{0}' AND ec.value IN ({1}) 
     """.format(filters[0].get('cat'), subcategory)
-    query2 = """SELECT DISTINCT name_id,key FROM examination_categorical WHERE key = '{}' AND value IN ({}) 
-    """.format(filters[0].get('cat'), subcategory)
+    query2 = """SELECT DISTINCT ec.name_id,ec.key FROM examination_categorical ec 
+    WHERE ec.key = '{0}' AND ec.value IN ({1}) """.format(filters[0].get('cat'), subcategory,)
 
-    if n == 0:
+    if n == 1:
         first_filter(query, query2, r)
     else:
         next_filter(query, query2, r)
@@ -173,12 +165,30 @@ def add_categorical_filter(filters, n, r):
 
 def add_numerical_filter(filters, n, r):
     from_to = filters[1].get('from_to').split(";")
-    query = """ SELECT DISTINCT name_id FROM examination_numerical WHERE key = '{}' 
-                AND value BETWEEN {} AND {}""".format(filters[0].get('num'), from_to[0], from_to[1])
-    query2 = """ SELECT DISTINCT name_id,key FROM examination_numerical WHERE key = '{}' 
-                AND value BETWEEN {} AND {} """.format(filters[0].get('num'), from_to[0], from_to[1])
+    query = """ SELECT DISTINCT en.name_id FROM examination_numerical en 
+    WHERE en.key = '{0}'  AND en.value BETWEEN {1} AND {2}""".format(filters[0].get('num'), from_to[0], from_to[1])
+    query2 = """ SELECT DISTINCT en.name_id,en.key FROM examination_numerical en 
+    WHERE key = '{0}' AND en.value BETWEEN {1} AND {2} """.format(filters[0].get('num'), from_to[0], from_to[1])
 
-    if n == 0:
+    if n == 1:
+        first_filter(query, query2, r)
+    else:
+        next_filter(query, query2, r)
+
+
+def create_temp_table_case_id(case_id, n, check_case_id, r):
+    case_id_all = "$$" + "$$,$$".join(case_id) + "$$"
+
+    query = """ SELECT DISTINCT name_id FROM patient WHERE case_id in ({0}) """.format(case_id_all)
+
+    query2 = """ SELECT name_id,(CASE WHEN case_id !='' THEN 'case_id' END) as key 
+    from patient where case_id in ({0}) """.format(case_id_all)
+    print(n, check_case_id,)
+    if check_case_id == 'Yes' and n == 1:
+        clean_filter(r)
+    elif check_case_id == 'Yes' and n != 1:
+        remove_one_filter('case_id', n, r)
+    if n == 1:
         first_filter(query, query2, r)
     else:
         next_filter(query, query2, r)
@@ -190,7 +200,7 @@ def remove_one_filter(filters, filter_update, r):
 
     query = """ SELECT name_id FROM temp_table_ids 
                     GROUP BY name_id 
-                    HAVING count(name_id) = {1} """.format(filters, filter_update)
+                    HAVING count(name_id) = {} """.format(filter_update)
     create_table = """ CREATE TEMP TABLE temp_table_name_ids as ({}) """.format(query)
 
     r.execute(update_table)
@@ -223,52 +233,51 @@ def checking_for_filters(date_filter, limit_filter, update_filter):
 
 
 def get_data(entities, what_table, measurement, limit, offset, update_filter, r):
-    measurement = "$$" + "$$,$$".join(measurement) + "$$"
-    entity_final = "$$" + "$$,$$".join(entities) + "$$"
 
-    if update_filter == 0:
-        filters = ''
-    else:
-        filters = """ inner join temp_table_name_ids as ttni on foo.name_id=ttni.name_id """
-
-    select_union = """SELECT name_id,case_id,measurement,key,value::text FROM examination_numerical 
-                                    WHERE key IN ({0}) AND measurement IN ({1})
-                                    UNION 
-                                SELECT name_id,case_id,measurement,key,value FROM examination_categorical 
-                                    WHERE key IN ({0}) AND measurement IN ({1})
-                                    UNION
-                                SELECT name_id,case_id,measurement,key,value::text FROM examination_date 
-                                    WHERE key IN ({0}) AND measurement IN ({1})""".format(entity_final, measurement)
+    s = []
+    for i, name in enumerate([TableCategorical, TableNumerical, TableDate]):
+        s.append(select(name.name_id, name.case_id, name.measurement, name.key, name.value.cast(String).label('value')).
+                 where(and_(name.key.in_(entities), name.measurement.in_(measurement))))
+    s_union = union(s[0], s[1], s[2])
 
     if what_table == 'long':
-        sql = """ SELECT foo.name_id,foo.case_id,foo.measurement,foo.key,foo.value::text FROM ({0}) foo
-                         {3}
-                            ORDER BY foo.name_id LIMIT {1} offset {2} """.format(select_union, limit, offset, filters)
-
-        length = """ SELECT count(name_id) FROM (SELECT foo.name_id 
-                                                    FROM ({0}) foo {1}) foo_join """.format(select_union, filters)
+        if update_filter == 0:
+            sql_statement = select(s_union.c).\
+                order_by(asc(s_union.c.name_id)).\
+                limit(limit).offset(offset)
+            sql_statement_l = select(func.count(s_union.c.name_id).label('count'))
+        else:
+            sql_statement = select(s_union.c).\
+                join(text('temp_table_name_ids'), s_union.c.name_id == text('temp_table_name_ids.name_id')).\
+                order_by(asc(s_union.c.name_id)).\
+                limit(limit).offset(offset)
+            sql_statement_l = select(func.count(s_union.c.name_id).label('count')).\
+                join(text('temp_table_name_ids'), s_union.c.name_id == text('temp_table_name_ids.name_id'))
 
     else:
+        s_group_by = select(s_union.c.name_id, s_union.c.case_id, s_union.c.measurement, s_union.c.key,
+                            func.string_agg(s_union.c.value, literal_column("';'")).label('value')).\
+            group_by(s_union.c.name_id, s_union.c.case_id, s_union.c.measurement, s_union.c.key)
+
         case_when = ""
         for i in entities:
             case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
         case_when = case_when[:-1]
-
-        sql = """ SELECT foo.name_id,case_id,measurement,{1}
-                    FROM (SELECT name_id,case_id,measurement,key,STRING_AGG(value, ';') value 
-                            FROM ({0}) foo2
-                            group by name_id,case_id,measurement,key) foo
-                    {4}
-                    group by foo.name_id,case_id,measurement order by name_id 
-                    LIMIT {2} offset {3} 
-                    """.format(select_union, case_when, limit, offset, filters)
-
-        length = """ SELECT count(name_id) FROM (SELECT foo.name_id
-                    FROM ({0}) foo {1} group by foo.name_id,case_id,measurement) foo2 """.format(select_union, filters)
+        if update_filter == 0:
+            sql_statement = select(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement, text(case_when)).\
+                group_by(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement)
+        else:
+            sql_statement = select(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement, text(case_when)). \
+                join(text('temp_table_name_ids'), s_group_by.c.name_id == text('temp_table_name_ids.name_id')). \
+                group_by(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement)
+        sql_statement_l = select(func.count(sql_statement.c.name_id).label('count'))
+        sql_statement = sql_statement.\
+            order_by(asc(s_group_by.c.name_id)).\
+            limit(limit).offset(offset)
 
     try:
-        df = pd.read_sql(sql, r.connection())
-        length = pd.read_sql(length, r.connection())
+        df = pd.read_sql(sql_statement, r.connection())
+        length = pd.read_sql(sql_statement_l, r.connection())
         length = length.iloc[0]['count']
         return df, length, None
     except (Exception,):
