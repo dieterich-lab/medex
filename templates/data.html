@@ -89,7 +89,7 @@
             <div class="card-body">
                 {% if name_column %}
                 <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
-                <button id="send_id" name="send_id" onclick="location.href='{{ meddusa_url_session }}'" type="button"
+                <button id="send_id" name="send_id" onclick="location.href='{{ meddusa[1] }}'" type="button"
                         class="btn btn-outline-info" style="float: right; display: {{ meddusa }}" value="Yes"> Meddusa
                 </button>
                 <br><br>

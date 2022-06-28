@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from serverside.serverside_table2 import ServerSideTable
 from webserver import block_measurement, all_entities, measurement_name,\
-    all_measurement, factory
+    all_measurement, factory, Meddusa, EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL
+import requests
 data_page = Blueprint('data', __name__, template_folder='templates')
 
 
@@ -12,6 +13,19 @@ def table_data():
     table_browser = session.get('table_browser')
     dat = ServerSideTable(request, table_browser[0], table_browser[1], table_browser[2],
                           update_filter, session_db).output_result()
+
+    if Meddusa == 'block':
+        session_id = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/session/create')
+        session_id = session_id.json()
+
+        meddusa_url_send = EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/set'
+        session['meddusa_url_session'] = MEDDUSA_URL + '/_session?sessionid=' + str(session_id['session_id'])
+
+        case_id_json = {"session_id": session_id['session_id'],
+                        "cases_ids": [1, 2, 3, 4]}
+
+        requests.post(meddusa_url_send, json=case_id_json)
+
     return jsonify(dat)
 
 

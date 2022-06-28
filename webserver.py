@@ -60,7 +60,7 @@ all_subcategory_entities = ps.get_subcategories_from_categorical_entities(rdb)
 all_measurement, block_measurement = ps.get_measurement(rdb)
 
 
-Meddusa = 'none'
+Meddusa = 'block'
 try:
     EXPRESS_MEDEX_MEDDUSA_URL = os.environ['EXPRESS_MEDEX_MEDDUSA_URL']
     MEDDUSA_URL = os.environ['MEDDUSA_URL']
@@ -68,7 +68,7 @@ try:
 except (Exception,):
     EXPRESS_MEDEX_MEDDUSA_URL = 'http://localhost:3500'
     MEDDUSA_URL = 'http://localhost:3000'
-    Meddusa = 'none'
+    Meddusa = 'block'
 
 
 # favicon

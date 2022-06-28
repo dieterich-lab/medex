@@ -1,5 +1,6 @@
 from modules.models import TableNumerical, TableCategorical, TableDate, Patient, Header, NameType
-from sqlalchemy.sql import union, select, insert, func, distinct
+from sqlalchemy.sql import union, select, insert, func, distinct, join
+from sqlalchemy.orm import aliased
 from sqlalchemy import Column, Integer, String, and_, literal_column, case, asc, text
 import pandas as pd
 import datetime
@@ -183,7 +184,6 @@ def create_temp_table_case_id(case_id, n, check_case_id, r):
 
     query2 = """ SELECT name_id,(CASE WHEN case_id !='' THEN 'case_id' END) as key 
     from patient where case_id in ({0}) """.format(case_id_all)
-    print(n, check_case_id,)
     if check_case_id == 'Yes' and n == 1:
         clean_filter(r)
     elif check_case_id == 'Yes' and n != 1:
@@ -396,7 +396,16 @@ def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date
                                                                                          update_filter)
     subcategory = "$$" + "$$,$$".join(categorical_entities[1]) + "$$"
 
+    adalias2 = aliased(TableNumerical)
+
+
     if not add_group_by:
+        sql2 = select(TableNumerical.name_id, func.avg(TableNumerical.value).label(f'{measurement[0]}_{axis[0]}'),
+                      func.avg(adalias2.value).label(f'{measurement[1]}_{axis[1]}')). \
+            join(adalias2, TableNumerical.name_id == adalias2.name_id). \
+            where(and_(TableNumerical.key == axis[0], TableNumerical.measurement == measurement[0],
+                       adalias2.key == axis[1], adalias2.measurement == measurement[1])). \
+            group_by(TableNumerical.name_id)
         sql = """SELECT foo.name_id,AVG(foo.value) as "{2}_{0}",AVG(y.value) as "{3}_{1}"
                             FROM examination_numerical foo
                             {6}
@@ -412,6 +421,17 @@ def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date
                             {7}""".format(axis[0], axis[1], measurement[0], measurement[1], date_value1, date_value2,
                                           filters, limit_selected)
     else:
+        subquer = select(TableNumerical.name_id, TableNumerical.value.label('value1'), adalias2.value.label('value2')).\
+        join(adalias2, TableNumerical.name_id == adalias2.name_id).\
+        where(and_(TableNumerical.key == axis[0], TableNumerical.measurement == measurement[0],
+                   adalias2.key == axis[1], adalias2.measurement == measurement[1]))
+
+        sql2 = select(subquer.c.name_id, func.avg(subquer.c.value1).label(f'{measurement[0]}_{axis[0]}'),
+                      func.avg(subquer.c.value2).label(f'{measurement[1]}_{axis[1]}'),
+                      func.string_agg(distinct(TableCategorical.value), literal_column("'<br>'")).label(categorical_entities[0])).\
+            join(TableCategorical, TableCategorical.name_id == subquer.c.name_id).\
+            where(and_(TableCategorical.key == categorical_entities[0],TableCategorical.value.in_(categorical_entities[1]))).\
+            group_by(subquer.c.name_id)
         sql = """SELECT * FROM (
         SELECT foo.name_id,AVG(foo.value) as "{2}_{0}",AVG(y.value) as "{3}_{1}",
         STRING_AGG(distinct ec.value,'<br>') as "{6}" 
@@ -436,6 +456,7 @@ def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date
 
     try:
         df = pd.read_sql(sql, r.connection())
+
         x_axis, y_axis = axis[0] + '_' + measurement[0], axis[1] + '_' + measurement[1]
         if not add_group_by:
             df.columns = ['name_id', x_axis, y_axis]
@@ -451,14 +472,22 @@ def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date
 
 
 def get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, update_filter, r):
-
+    measurement1= measurement
     filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
                                                                                          update_filter)
     subcategory = "$$" + "$$,$$".join(categorical_entities[1]) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
+    subquer = select(func.string_agg(distinct(TableCategorical.value), literal_column("'<br>'")).label('value'),
+                      TableCategorical.measurement).\
+        where(and_(TableCategorical.key == categorical_entities[0], TableCategorical.value.in_(categorical_entities[1]),
+                   TableCategorical.measurement.in_(measurement1))).\
+        group_by(TableCategorical.name_id, TableCategorical.measurement)
+
+    sql2 = select(subquer.c.value.label(categorical_entities[0]),subquer.c.measurement,
+                  func.count(subquer.c.value).label('count')).group_by(subquer.c.value, subquer.c.measurement)
 
     sql = """SELECT value AS "{0}",measurement,count(value)
-                FROM (SELECT STRING_AGG(distinct value,'<br>')  AS value,measurement FROM examination_categorical foo
+                FROM (SELECT STRING_AGG(distinct value,'<br>') AS value,measurement FROM examination_categorical foo
                         {4} 
                         WHERE key='{0}'
                         AND value IN ({1}) 
@@ -468,6 +497,7 @@ def get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, 
                         {5}) AS foo2
                 GROUP BY value,measurement
                 """.format(categorical_entities[0], subcategory, measurement, date_value, filters, limit_selected)
+
     try:
         df = pd.read_sql(sql, r.connection())
         if df.empty:
@@ -483,11 +513,18 @@ def get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, 
 
 
 def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter, r):
+    measurement1 = measurement
 
     filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
                                                                                          update_filter)
     subcategory = "$$" + "$$,$$".join(entities[2]) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
+    sql2 = select(TableNumerical.name_id, TableNumerical.measurement, func.avg(TableNumerical.value).label(entities[0]),
+                  TableCategorical.value.label(entities[1])).\
+        join(TableCategorical, TableCategorical.name_id == TableNumerical.name_id,isouter=True)
+    sql2 = sql2.where(and_(TableNumerical.key == entities[0], TableCategorical.key == entities[1],
+                           TableCategorical.value.in_(entities[2]), TableNumerical.measurement.in_(measurement1)))
+    sql2 = sql2.group_by(TableNumerical.name_id, TableNumerical.measurement, TableCategorical.value)
 
     sql = """SELECT foo.name_id,foo.measurement,AVG(foo.value) AS "{0}",ec.value AS "{1}"
                 FROM examination_numerical foo 
@@ -504,6 +541,7 @@ def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, upd
                 """.format(entities[0], entities[1], subcategory, measurement, date_value, filters, limit_selected)
     try:
         df = pd.read_sql(sql, r.connection())
+
         if df.empty or len(df) == 0:
             return df, "The entity {0} or {1} wasn't measured".format(entities[0], entities[1])
         else:
@@ -525,6 +563,18 @@ def get_heat_map(entities, date_filter, limit_filter, update_filter, r):
         case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
     case_when = case_when[:-1]
 
+    sql2 = select(TableNumerical.name_id, text(case_when))
+
+    if filters != '':
+        j = join(TableNumerical, text("temp_table_name_ids"),
+                 TableNumerical.name_id == text("temp_table_name_ids.name_id"))
+        sql2 = sql2.select_from(j)
+
+    sql2 = sql2.group_by(TableNumerical.name_id)
+    #if limit_selected != '':
+    #    sql2 = sql2.
+
+
     sql = """ SELECT foo.name_id,{0}
                 FROM examination_numerical foo
                 {1}
@@ -534,6 +584,7 @@ def get_heat_map(entities, date_filter, limit_filter, update_filter, r):
 
     try:
         df = pd.read_sql(sql, r.connection())
+
         if df.empty:
             return df, "The entity wasn't measured"
         else:
@@ -541,59 +592,3 @@ def get_heat_map(entities, date_filter, limit_filter, update_filter, r):
     except (Exception,):
         return None, "Problem with load data from database"
 
-
-def calculator(entity1, entity2, date_first_measurement, date_second_measurement, column_name, r):
-
-    sql = """ SELECT a.name_id,a."date",date_PART('year',a.value::timestamp) - 
-    date_PART('year',b.value::timestamp) as {4}
-    FROM (SELECT name_id,"date",measurement,value 
-    from examination_date WHERE key='{0}' and measurement='{2}' 
-    group by name_id,"date",measurement,value) as a 
-    LEFT JOIN (SELECT name_id,measurement,value from examination_date WHERE key='{1}' 
-    and measurement='{3}' group by name_id,measurement,value) as b 
-    ON a.name_id = b.name_id """.format(entity1, entity2, date_first_measurement, date_second_measurement, column_name)
-
-    try:
-        df = pd.read_sql(sql, r)
-        df = df.dropna()
-        df.reset_index(drop=True, inplace=True)
-        df.sort_index(inplace=True)
-        return df
-    except (Exception,):
-        return None
-
-
-""" 
-def push_to_numerical_table(column_name, df, r):
-
-    sql_order = " select orders from name_type order by orders desc limit 1 "
-    sql_id = " select "id" from examination_numerical order by "id" desc limit 1 "
-
-    try:
-        # df_order = pd.read_sql(sql_order, r)
-        # order = df_order['order'][0] + 1
-        # row = [order, column_name, 'Double']
-
-        output = io.StringIO()
-        df_id = pd.read_sql(sql_id, r)
-        ids = df_id['id'][0] + 1
-        df["id"] = df["id"] + ids
-        df.to_csv(output, sep=',', header=False, index=False)
-        output.seek(0)
-        r.commit()
-    except (Exception,):
-        print('Problem')
-"""
-
-# Not used now
-def get_unit(name, r):
-    """ Get number of all patients
-
-     number use only for basic_stats
-     """
-    try:
-        sql = """SELECT key,"unit" FROM name_type WHERE key='{}' """.format(name)
-        df = pd.read_sql(sql, r)
-        return df['unit'][0], None
-    except (Exception,):
-        return None, "Problem with load data from database"
