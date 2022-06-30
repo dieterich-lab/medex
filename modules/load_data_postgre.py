@@ -1,7 +1,7 @@
-from modules.models import TableNumerical, TableCategorical, TableDate, Patient, Header, NameType
-from sqlalchemy.sql import union, select, insert, func, distinct, join
+from modules.models import TableNumerical, TableCategorical, TableDate, Header, Patient
+from sqlalchemy.sql import union, select, func, distinct, join
 from sqlalchemy.orm import aliased
-from sqlalchemy import Column, Integer, String, and_, literal_column, case, asc, text
+from sqlalchemy import String, and_, literal_column, asc, text
 import pandas as pd
 import datetime
 from collections import ChainMap
@@ -66,15 +66,10 @@ def get_entities(r):
 
         all_num_entities, all_cat_entities = num_entities.to_dict('index'), cat_entities.to_dict('index')
         all_date_entities, all_entities = date_entities.to_dict('index'), entities.to_dict('index')
-
-        all_num_entities_list, all_cat_entities_list = num_entities['key'].tolist(), cat_entities['key'].tolist()
-        all_date_entities_list, all_entities_list = date_entities['key'].tolist(), entities['key'].tolist()
+        length = (str(len(num_entities)), str(len(cat_entities)), str(len(date_entities)))
     except (Exception,):
-        all_entities, all_entities_list, all_num_entities, all_num_entities_list = {}, [], {}, []
-        all_cat_entities, all_date_entities, all_cat_entities_list, all_date_entities_list = {}, {}, [], []
-    return \
-        all_entities, all_num_entities, all_cat_entities, all_date_entities, all_num_entities_list, \
-        all_cat_entities_list, all_date_entities_list, all_entities_list
+        all_entities, all_num_entities, all_cat_entities, all_date_entities, length = {}, {}, {}, {}, ('0', '0', '0')
+    return all_entities, all_num_entities, all_cat_entities, all_date_entities, length
 
 
 def min_max_value_numeric_entities(r):
@@ -233,6 +228,7 @@ def checking_for_filters(date_filter, limit_filter, update_filter):
 
 
 def get_data(entities, what_table, measurement, limit, offset, update_filter, r):
+    print(entities, what_table, measurement, limit, offset, update_filter)
 
     s = []
     for i, name in enumerate([TableCategorical, TableNumerical, TableDate]):
@@ -241,40 +237,10 @@ def get_data(entities, what_table, measurement, limit, offset, update_filter, r)
     s_union = union(s[0], s[1], s[2])
 
     if what_table == 'long':
-        if update_filter == 0:
-            sql_statement = select(s_union.c).\
-                order_by(asc(s_union.c.name_id)).\
-                limit(limit).offset(offset)
-            sql_statement_l = select(func.count(s_union.c.name_id).label('count'))
-        else:
-            sql_statement = select(s_union.c).\
-                join(text('temp_table_name_ids'), s_union.c.name_id == text('temp_table_name_ids.name_id')).\
-                order_by(asc(s_union.c.name_id)).\
-                limit(limit).offset(offset)
-            sql_statement_l = select(func.count(s_union.c.name_id).label('count')).\
-                join(text('temp_table_name_ids'), s_union.c.name_id == text('temp_table_name_ids.name_id'))
+        sql_statement, sql_statement_l = get_data_long_format(s_union, update_filter, limit, offset)
 
     else:
-        s_group_by = select(s_union.c.name_id, s_union.c.case_id, s_union.c.measurement, s_union.c.key,
-                            func.string_agg(s_union.c.value, literal_column("';'")).label('value')).\
-            group_by(s_union.c.name_id, s_union.c.case_id, s_union.c.measurement, s_union.c.key)
-
-        case_when = ""
-        for i in entities:
-            case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
-        case_when = case_when[:-1]
-        if update_filter == 0:
-            sql_statement = select(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement, text(case_when)).\
-                group_by(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement)
-        else:
-            sql_statement = select(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement, text(case_when)). \
-                join(text('temp_table_name_ids'), s_group_by.c.name_id == text('temp_table_name_ids.name_id')). \
-                group_by(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement)
-        sql_statement_l = select(func.count(sql_statement.c.name_id).label('count'))
-        sql_statement = sql_statement.\
-            order_by(asc(s_group_by.c.name_id)).\
-            limit(limit).offset(offset)
-
+        sql_statement, sql_statement_l = get_data_short_format(s_union, update_filter, entities, limit, offset)
     try:
         df = pd.read_sql(sql_statement, r.connection())
         length = pd.read_sql(sql_statement_l, r.connection())
@@ -286,17 +252,64 @@ def get_data(entities, what_table, measurement, limit, offset, update_filter, r)
         return df, length, "Problem with load data from database"
 
 
-def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
+def get_data_long_format(s_union, update_filter, limit, offset):
+    sql_statement = select(s_union.c)
+    sql_statement_l = select(func.count(s_union.c.name_id).label('count'))
+    if update_filter != 0:
+        sql_statement = sql_statement. \
+            join(text('temp_table_name_ids'), s_union.c.name_id == text('temp_table_name_ids.name_id'))
+        sql_statement_l = sql_statement_l. \
+            join(text('temp_table_name_ids'), s_union.c.name_id == text('temp_table_name_ids.name_id'))
+    sql_statement = sql_statement. \
+        order_by(asc(s_union.c.name_id)). \
+        limit(limit).offset(offset)
+    return sql_statement, sql_statement_l
 
+
+def get_data_short_format(s_union, update_filter, entities, limit, offset):
+    s_group_by = select(s_union.c.name_id, s_union.c.case_id, s_union.c.measurement, s_union.c.key,
+                        func.string_agg(s_union.c.value, literal_column("';'")).label('value')). \
+        group_by(s_union.c.name_id, s_union.c.case_id, s_union.c.measurement, s_union.c.key)
+
+    case_when = ""
+    for i in entities:
+        case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
+    case_when = case_when[:-1]
+    sql_statement = select(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement, text(case_when))
+
+    if update_filter != 0:
+        sql_statement = sql_statement.\
+            join(text('temp_table_name_ids'), s_group_by.c.name_id == text('temp_table_name_ids.name_id'))
+    sql_statement = sql_statement.\
+        group_by(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement)
+    sql_statement_l = select(func.count(sql_statement.c.name_id).label('count'))
+    sql_statement = sql_statement.\
+        order_by(asc(s_group_by.c.name_id)). \
+        limit(limit).offset(offset)
+    return sql_statement, sql_statement_l
+
+
+def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
+    measurement1 = measurement
     filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
                                                                                          update_filter)
     entity_final = "$$" + "$$,$$".join(entity) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
 
     n = """SELECT COUNT(DISTINCT name_id) FROM Patient"""
+    n2 = select(func.coun(distinct(Patient.name_id)))
+    s22 = []
     if limit_selected:
         sql_part = ""
         for e in entity:
+            s2 = select(TableNumerical.key, TableNumerical.measurement, TableNumerical.name_id,
+                        func.avg(TableNumerical.value).label('value'))
+            if filter != '':
+                j = join(TableNumerical, text("temp_table_name_ids"),
+                         TableNumerical.name_id == text("temp_table_name_ids.name_id"))
+                s2 = s2.select_from(j)
+            s22.append(s2.where(and_(TableNumerical.key == e, TableNumerical.measurement.in_(measurement1))).
+                       group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement))
             s = """ (SELECT key,measurement,foo.name_id, AVG(value) as value
                     FROM examination_numerical foo 
                     {3}
@@ -308,7 +321,16 @@ def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filte
                     UNION """.format(e, measurement, date_value, filters, limit_selected)
             sql_part = sql_part + s
         sql_part = sql_part[:-6]
+        sql_part2 = union(*s22)
     else:
+        sql_part2 = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement,
+                           func.avg(TableNumerical.value).label('value'))
+        if filter != '':
+            j = join(TableNumerical, text("temp_table_name_ids"),
+                     TableNumerical.name_id == text("temp_table_name_ids.name_id"))
+            sql_part2 = sql_part2.select_from(j)
+            sql_part2 = sql_part2.where(and_(TableNumerical.key.in_(entity), TableNumerical.measurement.in_(measurement1))).\
+                group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement)
         sql_part = """ SELECT foo.name_id,key,measurement,AVG(value) as value 
                         FROM examination_numerical foo
                         {3}
@@ -397,7 +419,6 @@ def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date
     subcategory = "$$" + "$$,$$".join(categorical_entities[1]) + "$$"
 
     adalias2 = aliased(TableNumerical)
-
 
     if not add_group_by:
         sql2 = select(TableNumerical.name_id, func.avg(TableNumerical.value).label(f'{measurement[0]}_{axis[0]}'),

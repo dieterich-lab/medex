@@ -1,13 +1,13 @@
-from flask import Flask, send_file, request, redirect, session, g, jsonify
-import requests
+from flask import Flask, send_file, request, redirect, session, g, jsonify, send_from_directory
 from modules.import_scheduler import Scheduler
 from modules.database_sessions import DatabaseSessionFactory
 import modules.load_data_postgre as ps
+from url_handlers.filtering import Filtering
 from flask_cors import CORS
 from db import connect_db, close_db
+import requests
 import os
 import io
-from flask import send_from_directory
 
 
 # create the application object
@@ -26,6 +26,7 @@ def teardown_db(exception):
 
 
 factory = DatabaseSessionFactory(rdb)
+filtering = Filtering(0, 'No', {}, {})
 
 
 def check_for_env(key: str, default=None, cast=None):
@@ -54,13 +55,12 @@ Name_ID, measurement_name = ps.get_header(rdb)
 size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information(rdb)
 start_date, end_date = ps.get_date(rdb)
 all_patient = ps.patient(rdb)
-all_entities, all_num_entities, all_cat_entities, all_date_entities,  all_num_entities_list, all_cat_entities_list, all_date_entities_list, all_entities_list = ps.get_entities(rdb)
+all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities(rdb)
 df_min_max = ps.min_max_value_numeric_entities(rdb)
 all_subcategory_entities = ps.get_subcategories_from_categorical_entities(rdb)
 all_measurement, block_measurement = ps.get_measurement(rdb)
 
-
-Meddusa = 'block'
+# change this
 try:
     EXPRESS_MEDEX_MEDDUSA_URL = os.environ['EXPRESS_MEDEX_MEDDUSA_URL']
     MEDDUSA_URL = os.environ['MEDDUSA_URL']
@@ -82,12 +82,11 @@ def favicon():
 @app.context_processor
 def data_information():
 
-    database_name = os.environ['POSTGRES_DB']
-    database = '{} data'.format(database_name)
+    database = '{} data'.format(os.environ['POSTGRES_DB'])
 
-    len_numeric = 'number of numerical entities: ' + str(len(all_num_entities_list))
+    len_numeric = 'number of numerical entities: ' + length[0]
     size_numeric = 'the size of the numeric table: ' + str(size_num_tab) + ' rows'
-    len_categorical = 'number of categorical entities: ' + str(len(all_cat_entities_list))
+    len_categorical = 'number of categorical entities: ' + length[1]
     size_categorical = 'the size of the categorical table: ' + str(size_cat_tab) + ' rows'
 
     return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical),
@@ -101,38 +100,30 @@ def data_information():
 # information about database
 @app.context_processor
 def message_count():
-    if session.get('case_ids') is None or session.get('case_ids') == 'No':
+    if session.get('session_id') is None:
+        session['session_id'] = os.urandom(10)
+        factory.get_session(session.get('session_id'))
+
+    session['filtering'] = vars(filtering)
+    if session.get('filtering')['case_id'] == 'No':
         case_display = 'none'
-        session['case_ids'] = 'No'
     else:
         case_display = 'block'
-        session['case_ids'] = 'Yes'
 
     if start_date == end_date:
         date_block = 'none'
     else:
         date_block = 'block'
 
-    if session.get('filter_update') is None:
-        session['filter_update'] = 0
-        session['filter_cat'] = {}
-        session['filter_num'] = {}
-
     if session.get('limit_offset') is None:
         session['limit_offset'] = (10000, 0, False)
-    if session.get('date_filter') is None:
         session['date_filter'] = (start_date, end_date, 0)
-
-    # get selected entities
-    if session.get('session_id') is None:
-        session['session_id'] = os.urandom(10)
-        a = factory.get_session(session.get('session_id'))
 
     return dict(date_block=date_block,
                 case_display=case_display,
-                filter_update=session.get('filter_update'),
-                categorical_filter=session.get('filter_cat'),
-                numerical_filter=session.get('filter_num'),
+                filter_update=session.get('filtering')['filter_update'],
+                categorical_filter=session.get('filtering')['filter_cat'],
+                numerical_filter=session.get('filtering')['filter_num'],
                 limit_offset=session.get('limit_offset')
                 )
 
@@ -169,11 +160,8 @@ def get_cases():
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/get', json=session_id_json)
     case_ids = cases_get.json()
     session_db = factory.get_session(session.get('session_id'))
-    if session.get('case_ids') == 'No':
-        session['filter_update'] = session.get('filter_update') + 1
-    ps.create_temp_table_case_id(case_ids['cases_ids'], session.get('filter_update'), session.get('case_ids'), session_db)
-    session['case_ids'] = 'Yes'
-
+    filtering.case_id(case_ids, session_db)
+    session['filtering'] = vars(filtering)
     return redirect('/')
 
 
@@ -185,55 +173,19 @@ def login_get():
 
 @app.route('/filtering', methods=['POST', 'GET'])
 def filter_data():
-    # update database
-    # if exists already do nothing print error
     session_db = factory.get_session(session.get('session_id'))
+    results = {}
     if request.is_json:
         filters = request.get_json()
         if 'clean' in filters[0]:
-            ps.clean_filter(session_db)
-            session['filter_update'] = 0
-            session['case_id'] = 'No'
-            session['filter_cat'] = {}
-            session['filter_num'] = {}
-            results = {'filter': 'cleaned'}
+            results = filtering.clean_all_filter(session_db)
         elif 'clean_one_filter' in filters[0]:
-            session['filter_update'] = session.get('filter_update') - 1
-            if session.get('filter_update') == 0:
-                ps.clean_filter(session_db)
-            else:
-                ps.remove_one_filter(filters[0].get('clean_one_filter'), session.get('filter_update'), session_db)
-            if filters[1].get('type') == 'categorical':
-                session['filter_cat'].pop(filters[0].get('clean_one_filter'))
-            else:
-                session['filter_num'].pop(filters[0].get('clean_one_filter'))
-            results = {'filter': 'removed'}
+            results = filtering.clean_one_filter(filters, session_db)
         elif 'cat' in filters[0]:
-            filter_cat = session.get('filter_cat')
-            # if filter is already
-            if filters[0].get('cat') in filter_cat:
-                results = {'filter': 'error'}
-            else:
-                filter_cat.update({filters[0].get('cat'): ','.join(filters[1].get('sub'))})
-                session['filter_cat'] = filter_cat
-                session['filter_update'] = int(filters[2].get('filter_update'))+1
-
-                ps.add_categorical_filter(filters, session.get('filter_update'), session_db)
-                results = {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub'),
-                           'update_filter': session.get('filter_update')}
+            results = filtering.add_categorical_filter(filters, session_db)
         elif "num" in filters[0]:
-            filter_num = session.get('filter_num')
-            if filters[0].get('num') in filter_num:
-                results = {'filter': 'error'}
-            else:
-                from_to = filters[1].get('from_to').split(";")
-                filter_num.update({filters[0].get('num'): (from_to[0], from_to[1], filters[2].get('min_max')[0],
-                                                           filters[2].get('min_max')[1])})
-                session['filter_num'] = filter_num
-                session['filter_update'] = int(filters[3].get('filter_update'))+1
-                ps.add_numerical_filter(filters, session.get('filter_update'), session_db)
-                results = {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1],
-                           'update_filter': session.get('filter_update')}
+            results = filtering. add_numerical_filter(filters, session_db)
+        session['filtering'] = vars(filtering)
     return jsonify(results)
 
 

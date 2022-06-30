@@ -9,11 +9,12 @@ data_page = Blueprint('data', __name__, template_folder='templates')
 @data_page.route('/data/data1', methods=['GET', 'POST'])
 def table_data():
     session_db = factory.get_session(session.get('session_id'))
-    update_filter = session.get('filter_update')
+    update_filter = session.get('filtering')['filter_update']
     table_browser = session.get('table_browser')
     dat = ServerSideTable(request, table_browser[0], table_browser[1], table_browser[2],
                           update_filter, session_db).output_result()
 
+    """
     if Meddusa == 'block':
         session_id = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/session/create')
         session_id = session_id.json()
@@ -25,6 +26,7 @@ def table_data():
                         "cases_ids": [1, 2, 3, 4]}
 
         requests.post(meddusa_url_send, json=case_id_json)
+    """
 
     return jsonify(dat)
 
