@@ -54,6 +54,7 @@ if os.environ.get('IMPORT_DISABLED') is None:
 Name_ID, measurement_name = ps.get_header(rdb)
 size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information(rdb)
 start_date, end_date = ps.get_date(rdb)
+print(start_date, end_date)
 all_patient = ps.patient(rdb)
 all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities(rdb)
 df_min_max = ps.min_max_value_numeric_entities(rdb)
@@ -117,9 +118,11 @@ def message_count():
 
     if session.get('limit_offset') is None:
         session['limit_offset'] = (10000, 0, False)
+    if session.get('date_filter') is None:
         session['date_filter'] = (start_date, end_date, 0)
 
     return dict(date_block=date_block,
+                date=session.get('date_filter'),
                 case_display=case_display,
                 filter_update=session.get('filtering')['filter_update'],
                 categorical_filter=session.get('filtering')['filter_cat'],

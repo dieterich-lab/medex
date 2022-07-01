@@ -1,7 +1,7 @@
 from modules.models import TableNumerical, TableCategorical, TableDate, Header, Patient
 from sqlalchemy.sql import union, select, func, distinct, join
 from sqlalchemy.orm import aliased
-from sqlalchemy import String, and_, literal_column, asc, text
+from sqlalchemy import String, and_, literal_column, asc, text, desc
 import pandas as pd
 import datetime
 from collections import ChainMap
@@ -204,8 +204,8 @@ def remove_one_filter(filters, filter_update, r):
 
 
 def checking_for_filters(date_filter, limit_filter, update_filter):
-
-    if update_filter == 0:
+    print(update_filter)
+    if update_filter is None:
         filters = ''
     else:
         filters = """ inner join temp_table_name_ids as ttni on foo.name_id=ttni.name_id """
@@ -227,22 +227,29 @@ def checking_for_filters(date_filter, limit_filter, update_filter):
     return filters, limit_selected, date_value1, date_value2, date_value
 
 
-def get_data(entities, what_table, measurement, limit, offset, update_filter, r):
-    print(entities, what_table, measurement, limit, offset, update_filter)
-
+def get_data(entities, what_table, measurement, limit, offset, sort, date_filter, update_filter, r):
+    if sort[1] == 'desc':
+        sort = desc(text(f'"{sort[0]}"'))
+    else:
+        sort = asc(text(f'"{sort[0]}"'))
     s = []
     for i, name in enumerate([TableCategorical, TableNumerical, TableDate]):
-        s.append(select(name.name_id, name.case_id, name.measurement, name.key, name.value.cast(String).label('value')).
-                 where(and_(name.key.in_(entities), name.measurement.in_(measurement))))
+        if date_filter[2] != 0:
+            values = name.date.between(date_filter[3], date_filter[4])
+        else:
+            values = text('')
+        s.append(select(name.name_id, name.case_id, name.date, name.measurement, name.key, name.value.cast(String).label('value')).
+                 where(and_(name.key.in_(entities), name.measurement.in_(measurement), values)))
     s_union = union(s[0], s[1], s[2])
 
     if what_table == 'long':
-        sql_statement, sql_statement_l = get_data_long_format(s_union, update_filter, limit, offset)
-
+        sql_statement, sql_statement_l = get_data_long_format(s_union, update_filter, limit, offset, sort)
     else:
-        sql_statement, sql_statement_l = get_data_short_format(s_union, update_filter, entities, limit, offset)
+        sql_statement, sql_statement_l = get_data_short_format(s_union, update_filter, entities, limit, offset, sort)
+
     try:
         df = pd.read_sql(sql_statement, r.connection())
+        print(df)
         length = pd.read_sql(sql_statement_l, r.connection())
         length = length.iloc[0]['count']
         return df, length, None
@@ -252,7 +259,7 @@ def get_data(entities, what_table, measurement, limit, offset, update_filter, r)
         return df, length, "Problem with load data from database"
 
 
-def get_data_long_format(s_union, update_filter, limit, offset):
+def get_data_long_format(s_union, update_filter, limit, offset, sort):
     sql_statement = select(s_union.c)
     sql_statement_l = select(func.count(s_union.c.name_id).label('count'))
     if update_filter != 0:
@@ -261,30 +268,31 @@ def get_data_long_format(s_union, update_filter, limit, offset):
         sql_statement_l = sql_statement_l. \
             join(text('temp_table_name_ids'), s_union.c.name_id == text('temp_table_name_ids.name_id'))
     sql_statement = sql_statement. \
-        order_by(asc(s_union.c.name_id)). \
+        order_by(sort). \
         limit(limit).offset(offset)
+
     return sql_statement, sql_statement_l
 
 
-def get_data_short_format(s_union, update_filter, entities, limit, offset):
-    s_group_by = select(s_union.c.name_id, s_union.c.case_id, s_union.c.measurement, s_union.c.key,
+def get_data_short_format(s_union, update_filter, entities, limit, offset, sort):
+    s_group_by = select(s_union.c.name_id, s_union.c.case_id,  s_union.c.date, s_union.c.measurement, s_union.c.key,
                         func.string_agg(s_union.c.value, literal_column("';'")).label('value')). \
-        group_by(s_union.c.name_id, s_union.c.case_id, s_union.c.measurement, s_union.c.key)
+        group_by(s_union.c.name_id, s_union.c.case_id, s_union.c.date, s_union.c.measurement, s_union.c.key)
 
     case_when = ""
     for i in entities:
         case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
     case_when = case_when[:-1]
-    sql_statement = select(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement, text(case_when))
+    sql_statement = select(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.date, s_group_by.c.measurement, text(case_when))
 
     if update_filter != 0:
         sql_statement = sql_statement.\
             join(text('temp_table_name_ids'), s_group_by.c.name_id == text('temp_table_name_ids.name_id'))
     sql_statement = sql_statement.\
-        group_by(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.measurement)
+        group_by(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.date, s_group_by.c.measurement)
     sql_statement_l = select(func.count(sql_statement.c.name_id).label('count'))
     sql_statement = sql_statement.\
-        order_by(asc(s_group_by.c.name_id)). \
+        order_by(sort). \
         limit(limit).offset(offset)
     return sql_statement, sql_statement_l
 
@@ -358,6 +366,8 @@ def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filte
         n = n['count']
         df['count NaN'] = int(n) - df['count']
         df = df.round(2)
+        print(df)
+        print(n)
         return df, None
     except (Exception,):
         return None, "Problem with load data from database"
@@ -533,19 +543,34 @@ def get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, 
         return None, "Problem with load data from database"
 
 
-def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter, r):
+def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, filters, r):
+    print(limit_filter)
     measurement1 = measurement
 
-    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
-                                                                                         update_filter)
+    #filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
+    #                                                                                     update_filter)
     subcategory = "$$" + "$$,$$".join(entities[2]) + "$$"
     measurement = "'" + "','".join(measurement) + "'"
+
+    if date_filter[3] == 0:
+        date_group_by = text('')
+    else:
+        date_group_by = TableNumerical.date.between(date_filter[3], date_filter[4])
+
     sql2 = select(TableNumerical.name_id, TableNumerical.measurement, func.avg(TableNumerical.value).label(entities[0]),
-                  TableCategorical.value.label(entities[1])).\
-        join(TableCategorical, TableCategorical.name_id == TableNumerical.name_id,isouter=True)
+                  TableCategorical.value.label(entities[1]))
+
+    if filters['filter_update'] != 0:
+        j = join(TableNumerical, text("temp_table_name_ids"),
+                 TableNumerical.name_id == text("temp_table_name_ids.name_id"))
+        sql2 = sql2.select_from(j)
     sql2 = sql2.where(and_(TableNumerical.key == entities[0], TableCategorical.key == entities[1],
-                           TableCategorical.value.in_(entities[2]), TableNumerical.measurement.in_(measurement1)))
+                           TableCategorical.value.in_(entities[2]), TableNumerical.measurement.in_(measurement1), date_group_by,
+                           TableCategorical.name_id == TableNumerical.name_id))
     sql2 = sql2.group_by(TableNumerical.name_id, TableNumerical.measurement, TableCategorical.value)
+
+    if limit_filter['selected'] == 'true':
+        sql2 = sql2.limit(limit_filter['limit']).offset(limit_filter['offset'])
 
     sql = """SELECT foo.name_id,foo.measurement,AVG(foo.value) AS "{0}",ec.value AS "{1}"
                 FROM examination_numerical foo 
@@ -559,10 +584,11 @@ def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, upd
                 {4}
                 GROUP BY foo.name_id,foo.measurement,ec.value
                 {6}
-                """.format(entities[0], entities[1], subcategory, measurement, date_value, filters, limit_selected)
+                """#.format(entities[0], entities[1], subcategory, measurement, date_value, filters, limit_selected)
+    print(sql2)
     try:
-        df = pd.read_sql(sql, r.connection())
-
+        df = pd.read_sql(sql2, r.connection())
+        print(df)
         if df.empty or len(df) == 0:
             return df, "The entity {0} or {1} wasn't measured".format(entities[0], entities[1])
         else:
@@ -574,11 +600,7 @@ def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, upd
         return None, "Problem with load data from database"
 
 
-def get_heat_map(entities, date_filter, limit_filter, update_filter, r):
-
-    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
-                                                                                         update_filter)
-
+def get_heat_map(entities, date_filter, limit_filter, filters, r):
     case_when = ""
     for i in entities:
         case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
@@ -586,25 +608,26 @@ def get_heat_map(entities, date_filter, limit_filter, update_filter, r):
 
     sql2 = select(TableNumerical.name_id, text(case_when))
 
-    if filters != '':
+    if filters['filter_update'] != 0:
         j = join(TableNumerical, text("temp_table_name_ids"),
                  TableNumerical.name_id == text("temp_table_name_ids.name_id"))
         sql2 = sql2.select_from(j)
 
+    if date_filter[3] == 0:
+        date = text('')
+        date_group_by = text('')
+    else:
+        date = text('')
+        date_group_by = TableNumerical.date.between(date_filter[3], date_filter[4])
+        sql2 = sql2.where(TableNumerical.date.between(date_filter[3], date_filter[4]))
+
     sql2 = sql2.group_by(TableNumerical.name_id)
-    #if limit_selected != '':
-    #    sql2 = sql2.
 
-
-    sql = """ SELECT foo.name_id,{0}
-                FROM examination_numerical foo
-                {1}
-                group by foo.name_id
-                {2} 
-                """.format(case_when, filters, limit_selected)
+    if limit_filter['selected'] is True:
+        sql2 = sql2.limit(limit_filter['limit']).offset(limit_filter['offset'])
 
     try:
-        df = pd.read_sql(sql, r.connection())
+        df = pd.read_sql(sql2, r.connection())
 
         if df.empty:
             return df, "The entity wasn't measured"

@@ -71,24 +71,24 @@ def check_for_limit_offset():
     return {'limit': limit, 'offset': offset, 'selected': limit_selected}
 
 
-def check_for_date_filter_post():
-    date_filter = request.form.get('Date')
-    date = date_filter.split(" - ")
+def check_for_date_filter_post(start_date, end_date):
+    date = request.form.get('Date')
+    date = date.split(" - ")
 
     s_date, e_date = \
-        datetime.datetime.strptime(date[0], '%m/%d/%Y').timestamp() * 1000,\
-        datetime.datetime.strptime(date[1], '%m/%d/%Y').timestamp() * 1000
-
-    date_filter = session['date_filter']
-    if date_filter[0] != s_date or date_filter[1] != e_date:
-        date_filter[2] += 1
-    date[0], date[1] = \
         datetime.datetime.strptime(date[0], '%m/%d/%Y').strftime('%Y-%m-%d'),\
         datetime.datetime.strptime(date[1], '%m/%d/%Y').strftime('%Y-%m-%d')
-    date.append(date_filter[2])
-    session['date_filter'] = (s_date, e_date, date_filter[2])
+    date[0], date[1] = \
+        datetime.datetime.strptime(date[0], '%m/%d/%Y').timestamp() * 1000, \
+        datetime.datetime.strptime(date[1], '%m/%d/%Y').timestamp() * 1000
 
-    return s_date, e_date, date
+    if date[0] != start_date or date[1] != end_date:
+        date_filter = 1
+    else:
+        date_filter = 0
+
+    session['date_filter'] = (date[0], date[1], date_filter, s_date, e_date)
+    return session.get('date_filter')
 
 
 def checking_for_block(block, df, name_id, measurement_name):

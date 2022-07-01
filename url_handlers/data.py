@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from serverside.serverside_table2 import ServerSideTable
+from url_handlers.filtering import check_for_date_filter_post
 from webserver import block_measurement, all_entities, measurement_name,\
-    all_measurement, factory, Meddusa, EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL
+    all_measurement, factory, Meddusa, EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL, start_date, end_date
 import requests
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -11,7 +12,8 @@ def table_data():
     session_db = factory.get_session(session.get('session_id'))
     update_filter = session.get('filtering')['filter_update']
     table_browser = session.get('table_browser')
-    dat = ServerSideTable(request, table_browser[0], table_browser[1], table_browser[2],
+    date_filter = session.get('date_filter')
+    dat = ServerSideTable(request, table_browser[0], table_browser[1], table_browser[2], table_browser[3], date_filter,
                           update_filter, session_db).output_result()
 
     """
@@ -39,7 +41,7 @@ def get_data():
 
 @data_page.route('/data', methods=['POST'])
 def post_data():
-
+    check_for_date_filter_post(start_date, end_date)
     # get request values
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
@@ -64,12 +66,10 @@ def post_data():
                                what_table=what_table,
                                )
 
-    session['table_browser'] = (entities, what_table, measurement)
-
     if what_table == 'long':
-        column = ['name_id', 'case_id', 'measurement', 'key', 'value']
+        column = ['name_id', 'case_id', 'date', 'measurement', 'key', 'value']
     else:
-        column = ['name_id', 'case_id', 'measurement']+entities
+        column = ['name_id', 'case_id', 'date', 'measurement']+entities
 
     # change name of entities if they have dot inside otherwise server side table doesn't work properly
     column_change_name = []
@@ -77,9 +77,11 @@ def post_data():
 
     dict_of_column = []
     [dict_of_column.append({'data': i}) for i in column_change_name]
+    session['table_browser'] = (entities, what_table, measurement,dict_of_column)
 
     return render_template('data.html',
                            error=error,
+                           date=session.get('date_filter'),
                            all_entities=all_entities,
                            entities_selected=entities,
                            measurement=measurement,

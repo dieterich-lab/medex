@@ -22,8 +22,8 @@
     <div class="card-body">
         <label>Date range</label>
         <script type="text/javascript">
-            var start = moment({{start_date|safe}});
-            var end =  moment({{end_date|safe}});
+            var start = moment({{date[0]}});
+            var end =  moment({{date[1]}});
 
         </script>
         <input id="Date" name="Date"
