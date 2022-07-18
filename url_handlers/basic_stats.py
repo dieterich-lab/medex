@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 import url_handlers.filtering as filtering
-from webserver import all_measurement, measurement_name, block_measurement, factory
+from url_handlers.filtering import check_for_date_filter_post
+from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
 import pandas as pd
 
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
@@ -19,9 +20,10 @@ def get_statistics():
 def get_basic_stats():
 
     # get_filter
+    check_for_date_filter_post(start_date, end_date)
     date_filter = session.get('date_filter')
     limit_filter = filtering.check_for_limit_offset()
-    update_filter = session.get('filter_update')
+    update_filter = session.get('filtering')
     session_db = factory.get_session(session.get('session_id'))
 
     if 'basic_stats' in request.form:
@@ -36,6 +38,7 @@ def get_basic_stats():
 
         # handling errors and load data from database
         error = None
+        result = {}
         if not measurement1:
             error = "Please select number of {}".format(measurement_name)
         elif not numeric_entities:
@@ -43,6 +46,7 @@ def get_basic_stats():
         elif numeric_entities:
             df, error = ps.get_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, update_filter,
                                            session_db)
+            df['measurement'] = df['measurement'].astype(str)
 
             # calculation basic stats
             if not 'count NaN' in request.form: df = df.drop(['count NaN'], axis=1)
@@ -96,6 +100,7 @@ def get_basic_stats():
         else:
             df, error = ps.get_cat_date_basic_stats(categorical_entities, measurement, date_filter, limit_filter,
                                                     update_filter, 'examination_categorical', session_db)
+            df['measurement'] = df['measurement'].astype(str)
 
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -138,6 +143,7 @@ def get_basic_stats():
         else:
             df, error = ps.get_cat_date_basic_stats(date_entities, measurement_d, date_filter, limit_filter,
                                                     update_filter, 'examination_date', session_db)
+            df['measurement'] = df['measurement'].astype(str)
 
         if error:
             return render_template('basic_stats/basic_stats.html',

@@ -54,7 +54,6 @@ if os.environ.get('IMPORT_DISABLED') is None:
 Name_ID, measurement_name = ps.get_header(rdb)
 size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information(rdb)
 start_date, end_date = ps.get_date(rdb)
-print(start_date, end_date)
 all_patient = ps.patient(rdb)
 all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities(rdb)
 df_min_max = ps.min_max_value_numeric_entities(rdb)
@@ -200,9 +199,8 @@ def download(filename):
         csv = 'data.table_case_ids'
     else:
         csv = ''
-    # Create a string buffer
-    buf_str = io.StringIO(csv)
     # Create a bytes buffer from the string buffer
+    buf_str = io.StringIO(csv)
     buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
     return send_file(buf_byt,
                      mimetype="text/csv",

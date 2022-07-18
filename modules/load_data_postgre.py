@@ -1,7 +1,7 @@
 from modules.models import TableNumerical, TableCategorical, TableDate, Header, Patient
-from sqlalchemy.sql import union, select, func, distinct, join
+from sqlalchemy.sql import union, select, func, distinct, join, label
 from sqlalchemy.orm import aliased
-from sqlalchemy import String, and_, literal_column, asc, text, desc
+from sqlalchemy import String, and_, literal_column, asc, text, desc, func, cast
 import pandas as pd
 import datetime
 from collections import ChainMap
@@ -183,6 +183,7 @@ def create_temp_table_case_id(case_id, n, check_case_id, r):
         clean_filter(r)
     elif check_case_id == 'Yes' and n != 1:
         remove_one_filter('case_id', n, r)
+
     if n == 1:
         first_filter(query, query2, r)
     else:
@@ -204,7 +205,6 @@ def remove_one_filter(filters, filter_update, r):
 
 
 def checking_for_filters(date_filter, limit_filter, update_filter):
-    print(update_filter)
     if update_filter is None:
         filters = ''
     else:
@@ -238,7 +238,8 @@ def get_data(entities, what_table, measurement, limit, offset, sort, date_filter
             values = name.date.between(date_filter[3], date_filter[4])
         else:
             values = text('')
-        s.append(select(name.name_id, name.case_id, name.date, name.measurement, name.key, name.value.cast(String).label('value')).
+        s.append(select(name.name_id, name.case_id, name.date, name.measurement, name.key,
+                        name.value.cast(String).label('value')).
                  where(and_(name.key.in_(entities), name.measurement.in_(measurement), values)))
     s_union = union(s[0], s[1], s[2])
 
@@ -249,7 +250,6 @@ def get_data(entities, what_table, measurement, limit, offset, sort, date_filter
 
     try:
         df = pd.read_sql(sql_statement, r.connection())
-        print(df)
         length = pd.read_sql(sql_statement_l, r.connection())
         length = length.iloc[0]['count']
         return df, length, None
@@ -298,67 +298,47 @@ def get_data_short_format(s_union, update_filter, entities, limit, offset, sort)
 
 
 def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
-    measurement1 = measurement
-    filters, limit_selected, date_value1, date_value2, date_value = checking_for_filters(date_filter, limit_filter,
-                                                                                         update_filter)
-    entity_final = "$$" + "$$,$$".join(entity) + "$$"
-    measurement = "'" + "','".join(measurement) + "'"
-
-    n = """SELECT COUNT(DISTINCT name_id) FROM Patient"""
-    n2 = select(func.coun(distinct(Patient.name_id)))
+    print(limit_filter, update_filter)
+    n = select(func.count(distinct(Patient.name_id)).label('count'))
     s22 = []
-    if limit_selected:
-        sql_part = ""
+
+    if date_filter[2] != 0:
+        values = TableNumerical.date.between(date_filter[3], date_filter[4])
+    else:
+        values = text('')
+
+    if limit_filter.get('selected') is not None:
         for e in entity:
             s2 = select(TableNumerical.key, TableNumerical.measurement, TableNumerical.name_id,
                         func.avg(TableNumerical.value).label('value'))
-            if filter != '':
-                j = join(TableNumerical, text("temp_table_name_ids"),
-                         TableNumerical.name_id == text("temp_table_name_ids.name_id"))
-                s2 = s2.select_from(j)
-            s22.append(s2.where(and_(TableNumerical.key == e, TableNumerical.measurement.in_(measurement1))).
-                       group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement))
-            s = """ (SELECT key,measurement,foo.name_id, AVG(value) as value
-                    FROM examination_numerical foo 
-                    {3}
-                    WHERE key = $${0}$$ 
-                    AND measurement IN ({1}) 
-                    {2}
-                    GROUP BY foo.name_id,key,measurement
-                    {4})
-                    UNION """.format(e, measurement, date_value, filters, limit_selected)
-            sql_part = sql_part + s
-        sql_part = sql_part[:-6]
+            if update_filter['filter_update'] != 0:
+                s2 = s2. \
+                    join(text('temp_table_name_ids'), s2.c.name_id == text('temp_table_name_ids.name_id'))
+            s22.append(s2.where(and_(TableNumerical.key == e, TableNumerical.measurement.in_(measurement), values)).
+                       group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement).
+                       limit(limit_filter.get('limit')).offset(limit_filter.get('offset')))
         sql_part2 = union(*s22)
+
     else:
         sql_part2 = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement,
                            func.avg(TableNumerical.value).label('value'))
-        if filter != '':
-            j = join(TableNumerical, text("temp_table_name_ids"),
-                     TableNumerical.name_id == text("temp_table_name_ids.name_id"))
-            sql_part2 = sql_part2.select_from(j)
-            sql_part2 = sql_part2.where(and_(TableNumerical.key.in_(entity), TableNumerical.measurement.in_(measurement1))).\
-                group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement)
-        sql_part = """ SELECT foo.name_id,key,measurement,AVG(value) as value 
-                        FROM examination_numerical foo
-                        {3}
-                        WHERE key IN ({0})
-                        AND measurement IN ({1}) 
-                        {2}
-                        GROUP BY foo.name_id,key,measurement """.format(entity_final, measurement, date_value, filters)
-    sql = """ WITH basic_stats as ({})
-                SELECT key,measurement,
-                                count(name_id),
-                                min(value),
-                                max(value),
-                                AVG(value) AS "mean",
-                                stddev(value),
-                                (stddev(value)/sqrt(count(value))) AS "stderr",
-                                (percentile_disc(0.5) within group (order by value)) AS median 
-                                FROM basic_stats
-                                GROUP BY key,measurement 
-                                ORDER BY key,measurement
-                                """.format(sql_part)
+        if update_filter['filter_update'] != 0:
+            sql_part2 = sql_part2. \
+                join(text('temp_table_name_ids'), sql_part2.c.name_id == text('temp_table_name_ids.name_id'))
+        sql_part2 = sql_part2.where(and_(TableNumerical.key.in_(entity), TableNumerical.measurement.in_(measurement),
+                                         values)).\
+            group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement)
+
+    sql_part2 = sql_part2.cte('distinct_query')
+    sql = select(sql_part2.c.key, sql_part2.c.measurement,
+                 func.count(sql_part2.c.name_id).label('count'), func.min(sql_part2.c.value).label('min'),
+                 func.max(sql_part2.c.value).label('max'),
+                 func.avg(sql_part2.c.value).label('mean'),
+                 func.stddev(sql_part2.c.value).label('stddev'),
+                 label('stderr', func.stddev(sql_part2.c.value).label('stddev')/func.sqrt(func.count(sql_part2.c.value))),
+                 func.percentile_cont(0.5).within_group(sql_part2.c.value).label('median')).\
+        group_by(sql_part2.c.key, sql_part2.c.measurement).\
+        order_by(sql_part2.c.key, sql_part2.c.measurement)
 
     try:
         df = pd.read_sql(sql, r.connection())
@@ -366,8 +346,7 @@ def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filte
         n = n['count']
         df['count NaN'] = int(n) - df['count']
         df = df.round(2)
-        print(df)
-        print(n)
+
         return df, None
     except (Exception,):
         return None, "Problem with load data from database"
