@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
-from webserver import all_measurement, measurement_name, block_measurement, factory
-import url_handlers.filtering as filtering
+from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
+from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
 import pandas as pd
 import textwrap
 import plotly.graph_objects as go
@@ -30,9 +30,10 @@ def post_plots():
     log = (request.form.get('log_x'), request.form.get('log_y'))
 
     # get_filter
+    check_for_date_filter_post(start_date, end_date)
     date_filter = session.get('date_filter')
-    limit_filter = filtering.check_for_limit_offset()
-    update_filter = session.get('filter_update')
+    limit_filter = check_for_limit_offset()
+    update_filter = session.get('filtering')
 
     # handling errors and load data from database
     df = pd.DataFrame()
@@ -70,7 +71,6 @@ def post_plots():
 
     # create figure
     fig = go.Figure()
-
     if add_group_by:
         for i in categorical_entities[1]:
             df_new = df[df[categorical_entities[0]] == i]

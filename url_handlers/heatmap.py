@@ -21,7 +21,8 @@ def post_plots():
     numeric_entities = request.form.getlist('numeric_entities_multiple')
 
     # get_filter
-    date_filter = check_for_date_filter_post(start_date, end_date)
+    check_for_date_filter_post(start_date, end_date)
+    date_filter = session.get('date_filter')
     limit_filter = check_for_limit_offset()
     update_filter = session.get('filtering')
 

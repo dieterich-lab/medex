@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, session
 import modules.load_data_postgre as ps
 import plotly.express as px
-import url_handlers.filtering as filtering
-from webserver import all_measurement, measurement_name, block_measurement, factory
+from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
+from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
 import pandas as pd
 import textwrap
 
@@ -25,9 +25,10 @@ def post_statistics():
     how_to_plot = request.form.get('how_to_plot')
 
     # get_filter
+    check_for_date_filter_post(start_date, end_date)
     date_filter = session.get('date_filter')
-    limit_filter = filtering.check_for_limit_offset()
-    update_filter = session.get('filter_update')
+    limit_filter = check_for_limit_offset()
+    update_filter = session.get('filtering')
 
     df = pd.DataFrame()
     # handling errors and load data from database

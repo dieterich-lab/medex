@@ -29,7 +29,8 @@ def post_boxplots():
     how_to_plot = request.form.get('how_to_plot')
 
     # get_filter
-    date_filter = check_for_date_filter_post(start_date, end_date)
+    check_for_date_filter_post(start_date, end_date)
+    date_filter = session.get('date_filter')
     limit_filter = check_for_limit_offset()
     update_filter = session.get('filtering')
 
