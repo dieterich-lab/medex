@@ -1,3 +1,10 @@
+from modules.models import TableNumerical, TableCategorical, TableDate
+from sqlalchemy.sql import union, select
+from modules.filtering import checking_date_filter, checking_filter
+from sqlalchemy import String, and_, literal_column, asc, text, desc, func
+import pandas as pd
+
+
 def get_data(entities, what_table, measurement, limit, offset, sort, date_filter, update_filter, r):
     if sort[1] == 'desc':
         sort = desc(text(f'"{sort[0]}"'))
@@ -5,10 +12,7 @@ def get_data(entities, what_table, measurement, limit, offset, sort, date_filter
         sort = asc(text(f'"{sort[0]}"'))
     s = []
     for i, name in enumerate([TableCategorical, TableNumerical, TableDate]):
-        if date_filter[2] != 0:
-            values = name.date.between(date_filter[3], date_filter[4])
-        else:
-            values = text('')
+        values = checking_date_filter(date_filter, name)
         s.append(select(name.name_id, name.case_id, name.date, name.measurement, name.key,
                         name.value.cast(String).label('value')).
                  where(and_(name.key.in_(entities), name.measurement.in_(measurement), values)))

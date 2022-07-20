@@ -1,4 +1,4 @@
-import modules.load_data_postgre as ps
+import modules.filtering as ps
 from flask import request, session
 import datetime
 

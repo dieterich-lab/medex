@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, session
-from serverside.serverside_table2 import ServerSideTable
+from serverside.serverside_table import ServerSideTable
 from url_handlers.filtering import check_for_date_filter_post
 from webserver import block_measurement, all_entities, measurement_name,\
     all_measurement, factory, Meddusa, EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL, start_date, end_date

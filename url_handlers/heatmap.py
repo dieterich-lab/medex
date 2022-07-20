@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, session
 import pandas as pd
 from scipy.stats import pearsonr
-import modules.load_data_postgre as ps
+from modules.get_data_to_heatmap import get_heat_map
 from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
 import plotly.graph_objects as go
 from webserver import factory, start_date, end_date
@@ -30,7 +30,7 @@ def post_plots():
     df = pd.DataFrame()
     if len(numeric_entities) > 1:
         session_db = factory.get_session(session.get('session_id'))
-        df, error = ps.get_heat_map(numeric_entities, date_filter, limit_filter, update_filter, session_db)
+        df, error = get_heat_map(numeric_entities, date_filter, limit_filter, update_filter, session_db)
         if not error:
             if len(df.index) == 0:
                 error = "This two entities don't have common values"

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, session
-import modules.load_data_postgre as ps
+from modules.get_data_to_basic_stats import get_basic_stats, get_cat_date_basic_stats
 import url_handlers.filtering as filtering
 from url_handlers.filtering import check_for_date_filter_post
 from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
@@ -44,8 +44,8 @@ def get_basic_stats():
         elif not numeric_entities:
             error = "Please select numeric entities"
         elif numeric_entities:
-            df, error = ps.get_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, update_filter,
-                                           session_db)
+            df, error = get_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, update_filter,
+                                        session_db)
             df['measurement'] = df['measurement'].astype(str)
 
             # calculation basic stats
@@ -98,8 +98,8 @@ def get_basic_stats():
         elif not categorical_entities:
             error = "Please select entities"
         else:
-            df, error = ps.get_cat_date_basic_stats(categorical_entities, measurement, date_filter, limit_filter,
-                                                    update_filter, 'examination_categorical', session_db)
+            df, error = get_cat_date_basic_stats(categorical_entities, measurement, date_filter, limit_filter,
+                                                 update_filter, 'examination_categorical', session_db)
             df['measurement'] = df['measurement'].astype(str)
 
         if error:
@@ -141,8 +141,8 @@ def get_basic_stats():
         elif not date_entities:
             error = "Please select entities"
         else:
-            df, error = ps.get_cat_date_basic_stats(date_entities, measurement_d, date_filter, limit_filter,
-                                                    update_filter, 'examination_date', session_db)
+            df, error = get_cat_date_basic_stats(date_entities, measurement_d, date_filter, limit_filter,
+                                                 update_filter, 'examination_date', session_db)
             df['measurement'] = df['measurement'].astype(str)
 
         if error:

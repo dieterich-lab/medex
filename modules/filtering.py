@@ -1,3 +1,7 @@
+from sqlalchemy.sql import join
+from sqlalchemy import text
+
+
 def clean_filter(r):
     sql = "DROP TABLE IF EXISTS temp_table_ids"
     sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
@@ -80,3 +84,22 @@ def remove_one_filter(filters, filter_update, r):
     r.execute(update_table)
     r.execute(sql_drop)
     r.execute(create_table)
+
+
+def checking_date_filter(date_filter, table):
+    if date_filter[2] != 0:
+        values = table.date.between(date_filter[3], date_filter[4])
+    else:
+        values = text('')
+
+    return values
+
+
+def checking_filter(update_filter, table, sql):
+    if update_filter['filter_update'] != 0:
+        j = join(table, text("temp_table_name_ids"),
+                 table.name_id == text("temp_table_name_ids.name_id"))
+        sql = sql.select_from(j)
+    else:
+        sql = sql
+    return sql

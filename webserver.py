@@ -1,7 +1,7 @@
 from flask import Flask, send_file, request, redirect, session, g, jsonify, send_from_directory
 from modules.import_scheduler import Scheduler
 from modules.database_sessions import DatabaseSessionFactory
-import modules.load_data_postgre as ps
+import modules.load_data_to_select as ps
 from url_handlers.filtering import Filtering
 from flask_cors import CORS
 from db import connect_db, close_db

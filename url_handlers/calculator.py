@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, session, g
 
-import modules.load_data_postgre as ps
+import modules.load_data_to_select as ps
 from webserver import rdb, all_entities, measurement_name, all_measurement
 
 calculator_page = Blueprint('calculator', __name__, template_folder='templates')

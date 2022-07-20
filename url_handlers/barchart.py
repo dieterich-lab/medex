@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, session
-import modules.load_data_postgre as ps
+from modules.get_data_to_barchart import get_bar_chart
 import plotly.express as px
 from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
 from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
@@ -40,8 +40,8 @@ def post_statistics():
         error = "Please select subcategory"
     else:
         session_db = factory.get_session(session.get('session_id'))
-        df, error = ps.get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, update_filter,
-                                     session_db)
+        df, error = get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, update_filter,
+                                  session_db)
     if error:
         return render_template('barchart.html',
                                measurement=measurement,

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, session
-import modules.load_data_postgre as ps
+from modules.get_data_to_histogrm import get_histogram_box_plot
 import plotly.express as px
 import plotly.graph_objects as go
 from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
@@ -44,8 +44,7 @@ def post_boxplots():
         error = "Please select subcategory"
     else:
         session_db = factory.get_session(session.get('session_id'))
-        df, error = ps.get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter,
-                                              session_db)
+        df, error = get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter, session_db)
 
     if error:
         return render_template('boxplot.html',
