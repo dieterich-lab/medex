@@ -22,8 +22,7 @@ def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filte
         s2 = checking_filter(update_filter, TableNumerical, s2)
         sql_part2 = s2.where(and_(TableNumerical.key.in_(entity), TableNumerical.measurement.in_(measurement),
                                   values)).\
-            group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement).\
-            limit(limit_filter.get('limit')).offset(limit_filter.get('offset'))
+            group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement)
 
     sql_part2 = sql_part2.cte('distinct_query')
     sql = select(sql_part2.c.key, sql_part2.c.measurement,

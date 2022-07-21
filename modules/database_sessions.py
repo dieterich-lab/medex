@@ -8,7 +8,7 @@ MAX_AGE = timedelta(seconds=1)
 
 
 def _cleanup(DatabaseSessionFactory, session_id):
-    time.sleep(60*30)
+    time.sleep(2)
     del DatabaseSessionFactory.sessions_by_id[session_id]
 
 
@@ -31,6 +31,11 @@ class DatabaseSessionFactory:
         if session_id not in self.sessions_by_id:
             new_session = Session(self.db_engine)
             self.sessions_by_id[session_id] = self.SessionItem(new_session)
-        t = threading.Thread(target=_cleanup, args=(self, session_id))
-        t.start()
+        self.sessions_by_id[session_id].touch()
+        self.cleanup()
         return self.sessions_by_id[session_id].session
+
+    def cleanup(self):
+        for item in list(self.sessions_by_id):
+            if datetime.now() > self.sessions_by_id[item].last_access + timedelta(minutes=30):
+                del self.sessions_by_id[item]
