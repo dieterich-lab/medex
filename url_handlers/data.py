@@ -10,7 +10,7 @@ data_page = Blueprint('data', __name__, template_folder='templates')
 @data_page.route('/data/data1', methods=['GET', 'POST'])
 def table_data():
     session_db = factory.get_session(session.get('session_id'))
-    update_filter = session.get('filtering')['filter_update']
+    update_filter = session.get('filtering')
     table_browser = session.get('table_browser')
     date_filter = session.get('date_filter')
     dat = ServerSideTable(request, table_browser[0], table_browser[1], table_browser[2], table_browser[3], date_filter,
