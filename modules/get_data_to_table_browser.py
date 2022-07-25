@@ -2,72 +2,72 @@ from modules.models import TableNumerical, TableCategorical, TableDate
 from sqlalchemy.sql import union, select
 from modules.filtering import checking_date_filter, apply_filter_to_sql
 from sqlalchemy import String, and_, literal_column, asc, text, desc, func
+from modules.get_data_to_heatmap import case_when_for_sql_statement
 import pandas as pd
 
 
-def get_data(entities, what_table, measurement, limit, offset, sort, date_filter, update_filter, r):
+def get_data(entities, what_table, measurement, limit, offset, sort, date_filter, update_filter, session_db):
+    sql_union = union(*[select(name.name_id, name.case_id, name.date, name.measurement, name.key,
+                        name.value.cast(String).label('value')).
+                      where(and_(name.key.in_(entities), name.measurement.in_(measurement),
+                                 checking_date_filter(date_filter, name)))
+
+                        for i, name in enumerate([TableCategorical, TableNumerical, TableDate])
+                        ])
+
+    sql_statement = _get_what_type_of_table_print(entities, sql_union, update_filter, what_table)
+
+    sql_order_limit = _sort_and_limit(limit, offset, sort, sql_statement)
+
+    df = pd.read_sql(sql_order_limit, session_db.connection())
+    table_size_count = get_table_size(session_db, sql_statement)
+    return df, table_size_count, None
+
+
+def _get_what_type_of_table_print(entities, sql_union, update_filter, what_table):
+    if what_table == 'long':
+        sql_select = select(sql_union.c)
+        sql_statement = _apply_filter_table_browser_sql(sql_select, update_filter, sql_union)
+
+    else:
+        sql_group_by = select(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date, sql_union.c.measurement,
+                              sql_union.c.key,
+                              func.string_agg(sql_union.c.value, literal_column("';'")).label('value')). \
+            group_by(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date, sql_union.c.measurement,
+                     sql_union.c.key)
+
+        case_when = case_when_for_sql_statement(entities)
+        sql_select = select(sql_group_by.c.name_id, sql_group_by.c.case_id, sql_group_by.c.date,
+                            sql_group_by.c.measurement, text(case_when))
+        sql_statement = _apply_filter_table_browser_sql(sql_select, update_filter, sql_group_by)
+
+        sql_statement = sql_statement.group_by(sql_group_by.c.name_id, sql_group_by.c.case_id,
+                                               sql_group_by.c.date, sql_group_by.c.measurement)
+    return sql_statement
+
+
+def _apply_filter_table_browser_sql(sql_select, update_filter, sql_union):
+    if update_filter['filter_update'] != 0:
+        sql_statement = sql_select. \
+            join(text('temp_table_name_ids'), sql_union.c.name_id == text('temp_table_name_ids.name_id'))
+    else:
+        sql_statement = sql_select
+    return sql_statement
+
+
+def _sort_and_limit(limit, offset, sort, sql_statement):
     if sort[1] == 'desc':
         sort = desc(text(f'"{sort[0]}"'))
     else:
         sort = asc(text(f'"{sort[0]}"'))
-    s = []
-    for i, name in enumerate([TableCategorical, TableNumerical, TableDate]):
-        values = checking_date_filter(date_filter, name)
-        s.append(select(name.name_id, name.case_id, name.date, name.measurement, name.key,
-                        name.value.cast(String).label('value')).
-                 where(and_(name.key.in_(entities), name.measurement.in_(measurement), values)))
-    s_union = union(s[0], s[1], s[2])
-
-    if what_table == 'long':
-        sql_statement, sql_statement_l = get_data_long_format(s_union, update_filter, limit, offset, sort)
-    else:
-        sql_statement, sql_statement_l = get_data_short_format(s_union, update_filter, entities, limit, offset, sort)
-
-    try:
-        df = pd.read_sql(sql_statement, r.connection())
-        length = pd.read_sql(sql_statement_l, r.connection())
-        length = length.iloc[0]['count']
-        return df, length, None
-    except (Exception,):
-        df = pd.DataFrame()
-        length = 0
-        return df, length, "Problem with load data from database"
-
-
-def get_data_long_format(s_union, update_filter, limit, offset, sort):
-    sql_statement = select(s_union.c)
-    sql_statement_l = select(func.count(s_union.c.name_id).label('count'))
-    if update_filter != 0:
-        sql_statement = sql_statement. \
-            join(text('temp_table_name_ids'), s_union.c.name_id == text('temp_table_name_ids.name_id'))
-        sql_statement_l = sql_statement_l. \
-            join(text('temp_table_name_ids'), s_union.c.name_id == text('temp_table_name_ids.name_id'))
-    sql_statement = sql_statement. \
+    sql_order_limit = sql_statement. \
         order_by(sort). \
         limit(limit).offset(offset)
+    return sql_order_limit
 
-    return sql_statement, sql_statement_l
 
-
-def get_data_short_format(s_union, update_filter, entities, limit, offset, sort):
-    s_group_by = select(s_union.c.name_id, s_union.c.case_id,  s_union.c.date, s_union.c.measurement, s_union.c.key,
-                        func.string_agg(s_union.c.value, literal_column("';'")).label('value')). \
-        group_by(s_union.c.name_id, s_union.c.case_id, s_union.c.date, s_union.c.measurement, s_union.c.key)
-
-    case_when = ""
-    for i in entities:
-        case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
-    case_when = case_when[:-1]
-    sql_statement = select(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.date, s_group_by.c.measurement,
-                           text(case_when))
-
-    if update_filter != 0:
-        sql_statement = sql_statement.\
-            join(text('temp_table_name_ids'), s_group_by.c.name_id == text('temp_table_name_ids.name_id'))
-    sql_statement = sql_statement.\
-        group_by(s_group_by.c.name_id, s_group_by.c.case_id, s_group_by.c.date, s_group_by.c.measurement)
-    sql_statement_l = select(func.count(sql_statement.c.name_id).label('count'))
-    sql_statement = sql_statement.\
-        order_by(sort). \
-        limit(limit).offset(offset)
-    return sql_statement, sql_statement_l
+def get_table_size(r, sql_statement):
+    table_size = select(func.count(sql_statement.c.name_id).label('count'))
+    df_table_size = pd.read_sql(table_size, r.connection())
+    table_size_count = df_table_size.iloc[0]['count']
+    return table_size_count
