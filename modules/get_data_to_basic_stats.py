@@ -1,85 +1,95 @@
+from typing import List
+
 from modules.models import TableNumerical, TableCategorical, TableDate, Patient
 from sqlalchemy.sql import union, select, distinct, label
 from sqlalchemy import and_, func
 import pandas as pd
-from modules.filtering import checking_date_filter,checking_filter
+from modules.filtering import checking_date_filter,apply_filter_to_sql
 
 
-def get_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, r):
-    n = select(func.count(distinct(Patient.name_id)).label('count'))
-    s22 = []
-    values = checking_date_filter(date_filter, TableNumerical)
-    s2 = select(TableNumerical.key, TableNumerical.measurement, TableNumerical.name_id,
-                func.avg(TableNumerical.value).label('value'))
+def get_num_basic_stats(entities: List[str], measurement: List[str], date_filter, limit_filter, update_filter, db_session):
+
+    select_numerical_values_sql = select(
+        TableNumerical.key, TableNumerical.measurement, TableNumerical.name_id,
+        func.avg(TableNumerical.value).label('value')
+    )
+    select_numerical_values_with_filter_sql = apply_filter_to_sql(
+        update_filter, TableNumerical, select_numerical_values_sql
+    )
+    raw_data_sql = _get_raw_data_sql(entities, limit_filter, measurement, select_numerical_values_with_filter_sql,
+                                     checking_date_filter(date_filter, TableNumerical))
+    with_raw_data = raw_data_sql.cte('raw_data')
+    sql = select(with_raw_data.c.key, with_raw_data.c.measurement,
+                 func.count(with_raw_data.c.name_id).label('count'), func.min(with_raw_data.c.value).label('min'),
+                 func.max(with_raw_data.c.value).label('max'),
+                 func.avg(with_raw_data.c.value).label('mean'),
+                 func.stddev(with_raw_data.c.value).label('stddev'),
+                 label('stderr', func.stddev(with_raw_data.c.value).label('stddev')/func.sqrt(func.count(with_raw_data.c.value))
+                       ),
+                 func.percentile_cont(0.5).within_group(with_raw_data.c.value).label('median')
+                 ).\
+        group_by(with_raw_data.c.key, with_raw_data.c.measurement).\
+        order_by(with_raw_data.c.key, with_raw_data.c.measurement)
+
+    df = pd.read_sql(sql, db_session.connection())
+    n = _get_patient_count(db_session)
+    df['count NaN'] = n - df['count']
+    df = df.round(2)
+    return df, None
+
+
+def _get_patient_count(db_session):
+    patient_count_sql = select(func.count(distinct(Patient.name_id)).label('count'))
+    patient_count_result = pd.read_sql(patient_count_sql, db_session.connection())
+    return int(patient_count_result['count'])
+
+
+def _get_raw_data_sql(entities, limit_filter, measurement, select_numerical_values_with_filter_sql, values):
     if limit_filter.get('selected') is not None:
-        for e in entity:
-            s2 = checking_filter(update_filter, TableNumerical, s2)
-            s22.append(s2.where(and_(TableNumerical.key == e, TableNumerical.measurement.in_(measurement), values)).
-                       group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement).
-                       limit(limit_filter.get('limit')).offset(limit_filter.get('offset')))
-        sql_part2 = union(*s22)
+        return union(*[
+            select_numerical_values_with_filter_sql.where(
+                and_(TableNumerical.key == e, TableNumerical.measurement.in_(measurement), values)).
+            group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement).
+            limit(limit_filter.get('limit')).offset(limit_filter.get('offset'))
+
+            for e in entities
+        ])
     else:
-        s2 = checking_filter(update_filter, TableNumerical, s2)
-        sql_part2 = s2.where(and_(TableNumerical.key.in_(entity), TableNumerical.measurement.in_(measurement),
-                                  values)).\
+        return select_numerical_values_with_filter_sql.where(
+            and_(TableNumerical.key.in_(entities), TableNumerical.measurement.in_(measurement),
+                 values)). \
             group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement)
 
-    sql_part2 = sql_part2.cte('distinct_query')
-    sql = select(sql_part2.c.key, sql_part2.c.measurement,
-                 func.count(sql_part2.c.name_id).label('count'), func.min(sql_part2.c.value).label('min'),
-                 func.max(sql_part2.c.value).label('max'),
-                 func.avg(sql_part2.c.value).label('mean'),
-                 func.stddev(sql_part2.c.value).label('stddev'),
-                 label('stderr', func.stddev(sql_part2.c.value).label('stddev')/func.sqrt(func.count(sql_part2.c.value))
-                       ),
-                 func.percentile_cont(0.5).within_group(sql_part2.c.value).label('median')).\
-        group_by(sql_part2.c.key, sql_part2.c.measurement).\
-        order_by(sql_part2.c.key, sql_part2.c.measurement)
 
-    try:
-        df = pd.read_sql(sql, r.connection())
-        n = pd.read_sql(n, r.connection())
-        n = n['count']
-        df['count NaN'] = int(n) - df['count']
-        df = df.round(2)
-
-        return df, None
-    except (Exception,):
-        return None, "Problem with load data from database"
-
-
-def get_cat_date_basic_stats(entity, measurement, date_filter, limit_filter, update_filter, table, r):
+def get_cat_date_basic_stats(entities, measurement, date_filter, limit_filter, update_filter, table, db_session):
     if table == 'examination_categorical':
         name = TableCategorical
     else:
         name = TableDate
-    n = select(func.count(distinct(Patient.name_id)).label('count'))
-    s22 = []
 
     values = checking_date_filter(date_filter, name)
-    s2 = select(name.key, name.measurement, name.name_id)
+    select_values_sql = select(name.key, name.measurement, name.name_id)
+    select_numerical_values_with_filter_sql = apply_filter_to_sql(update_filter, name, select_values_sql)
+    
     if limit_filter.get('selected') is not None:
-        for e in entity:
-            s2 = checking_filter(update_filter, name, s2)
-            s22.append(s2.where(and_(name.key == e, name.measurement.in_(measurement), values)).
-                       group_by(name.name_id, name.key, name.measurement).
-                       limit(limit_filter.get('limit')).offset(limit_filter.get('offset')))
-        sql_part2 = union(*s22)
+        raw_data = union(*[select_numerical_values_with_filter_sql.
+                         where(and_(name.key == e, name.measurement.in_(measurement), values)).
+                         group_by(name.name_id, name.key, name.measurement).
+                         limit(limit_filter.get('limit')).offset(limit_filter.get('offset'))
+
+                         for e in entities
+                           ])
     else:
-        s2 = checking_filter(update_filter, name, s2)
-        sql_part2 = s2.where(and_(name.key.in_(entity), name.measurement.in_(measurement), values)). \
+        raw_data = select_numerical_values_with_filter_sql.\
+            where(and_(name.key.in_(entities), name.measurement.in_(measurement), values)). \
             group_by(name.name_id, name.key, name.measurement)
 
-    sql_part2 = sql_part2.cte('distinct_query')
-    sql = select(sql_part2.c.key, sql_part2.c.measurement, func.count(sql_part2.c.name_id).label('count')).\
-        group_by(sql_part2.c.key, sql_part2.c.measurement).\
-        order_by(sql_part2.c.key, sql_part2.c.measurement)
+    with_raw_data = raw_data.cte('raw_data')
+    sql = select(with_raw_data.c.key, with_raw_data.c.measurement, func.count(with_raw_data.c.name_id).label('count')).\
+        group_by(with_raw_data.c.key, with_raw_data.c.measurement).\
+        order_by(with_raw_data.c.key, with_raw_data.c.measurement)
 
-    try:
-        n = pd.read_sql(n, r.connection())
-        n = n['count']
-        df = pd.read_sql(sql, r.connection())
-        df['count NaN'] = int(n) - df['count']
-        return df, None
-    except (Exception,):
-        return None, "Problem with load data from database"
+    n = _get_patient_count(db_session)
+    df = pd.read_sql(sql, db_session.connection())
+    df['count NaN'] = n - df['count']
+    return df, None

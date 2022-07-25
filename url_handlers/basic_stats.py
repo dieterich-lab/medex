@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, session
-from modules.get_data_to_basic_stats import get_basic_stats, get_cat_date_basic_stats
+from modules.get_data_to_basic_stats import get_num_basic_stats, get_cat_date_basic_stats
 import url_handlers.filtering as filtering
 from url_handlers.filtering import check_for_date_filter_post
 from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
@@ -44,7 +44,7 @@ def get_basic_stats():
         elif not numeric_entities:
             error = "Please select numeric entities"
         elif numeric_entities:
-            df, error = get_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, update_filter,
+            df, error = get_num_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, update_filter,
                                         session_db)
             df['measurement'] = df['measurement'].astype(str)
 

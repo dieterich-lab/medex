@@ -95,11 +95,19 @@ def checking_date_filter(date_filter, table):
     return values
 
 
-def checking_filter(update_filter, table, sql):
+def apply_filter_to_sql(update_filter, table, sql):
     if update_filter['filter_update'] != 0:
         j = join(table, text("temp_table_name_ids"),
                  table.name_id == text("temp_table_name_ids.name_id"))
         sql = sql.select_from(j)
+    else:
+        sql = sql
+    return sql
+
+
+def apply_limit_to_sql_query(limit_filter, sql):
+    if limit_filter.get('selected') is not None:
+        sql = sql.limit(limit_filter['limit']).offset(limit_filter['offset'])
     else:
         sql = sql
     return sql

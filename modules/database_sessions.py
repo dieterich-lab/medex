@@ -1,15 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-import threading
-import time
 
-
-MAX_AGE = timedelta(seconds=1)
-
-
-def _cleanup(DatabaseSessionFactory, session_id):
-    time.sleep(2)
-    del DatabaseSessionFactory.sessions_by_id[session_id]
+MAX_AGE = timedelta(minutes=30)
 
 
 class DatabaseSessionFactory:
@@ -37,5 +29,5 @@ class DatabaseSessionFactory:
 
     def cleanup(self):
         for item in list(self.sessions_by_id):
-            if datetime.now() > self.sessions_by_id[item].last_access + timedelta(minutes=30):
+            if datetime.now() > self.sessions_by_id[item].last_access + MAX_AGE:
                 del self.sessions_by_id[item]

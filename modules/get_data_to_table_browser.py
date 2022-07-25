@@ -1,6 +1,6 @@
 from modules.models import TableNumerical, TableCategorical, TableDate
 from sqlalchemy.sql import union, select
-from modules.filtering import checking_date_filter, checking_filter
+from modules.filtering import checking_date_filter, apply_filter_to_sql
 from sqlalchemy import String, and_, literal_column, asc, text, desc, func
 import pandas as pd
 

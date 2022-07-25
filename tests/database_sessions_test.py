@@ -1,9 +1,7 @@
 from pytest import fixture
 from modules.database_sessions import DatabaseSessionFactory
-from unittest.mock import patch
 import time
-
-from unittest import mock
+from freezegun import freeze_time
 
 _session_count = 0
 
@@ -16,14 +14,8 @@ def session(mocker):
         return 'XXX_' + str(_session_count)
 
     mocker.patch('modules.database_sessions.Session', our_session)
-    #mocker.patch('modules.database_sessions._cleanup', return_value=True)
-
-
-@fixture
-def sleepless(monkeypatch):
-    def sleep(seconds):
-        pass
-    monkeypatch.setattr(time, 'sleep', sleep)
+    global _session_count
+    _session_count = 0
 
 
 def test_session_create(session):
@@ -36,3 +28,19 @@ def test_session_create(session):
     print(factory.sessions_by_id)
 
 
+def test_session_no_cleanup(session):
+    factory = DatabaseSessionFactory(None)
+    with freeze_time("1990-10-12 15:00:00"):
+        assert factory.get_session('a') == 'XXX_1'
+    with freeze_time("1990-10-12 15:29:00"):
+        assert factory.get_session('b') == 'XXX_2'
+        assert factory.get_session('a') == 'XXX_1'
+
+
+def test_session_cleanup(session):
+    factory = DatabaseSessionFactory(None)
+    with freeze_time("1990-10-12 15:00:00"):
+        assert factory.get_session('a') == 'XXX_1'
+    with freeze_time("1990-10-12 15:31:00"):
+        assert factory.get_session('b') == 'XXX_2'
+        assert factory.get_session('a') == 'XXX_3'
