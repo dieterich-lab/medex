@@ -2,7 +2,9 @@ from flask import Flask, send_file, request, redirect, session, g, jsonify, send
 from modules.import_scheduler import Scheduler
 from modules.database_sessions import DatabaseSessionFactory
 import modules.load_data_to_select as ps
+from modules.get_data_to_table_browser import get_data_download
 from url_handlers.filtering import Filtering
+from modules.filtering import get_case_ids
 from flask_cors import CORS
 from db import connect_db, close_db
 import requests
@@ -103,7 +105,6 @@ def message_count():
     if session.get('session_id') is None:
         session['session_id'] = os.urandom(10)
         factory.get_session(session.get('session_id'))
-
     session['filtering'] = vars(filtering)
     if session.get('filtering')['case_id'] == 'No':
         case_display = 'none'
@@ -162,7 +163,7 @@ def get_cases():
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/get', json=session_id_json)
     case_ids = cases_get.json()
     session_db = factory.get_session(session.get('session_id'))
-    filtering.case_id(case_ids, session_db)
+    filtering.add_case_id(case_ids, session_db)
     session['filtering'] = vars(filtering)
     return redirect('/')
 
@@ -193,10 +194,17 @@ def filter_data():
 
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])
 def download(filename):
-    if filename == 'data.csv':
-        csv = 'data.csv'
+    session_db = factory.get_session(session.get('session_id'))
+    if filename == 'basic_stats_data.csv':
+        csv = session.get('basic_stats_table')
+    elif filename == 'table_browser_data.csv':
+        update_filter = session.get('filtering')
+        table_browser = session.get('table_browser')
+        date_filter = session.get('date_filter')
+        csv = get_data_download(table_browser[0], table_browser[1], table_browser[2], date_filter, update_filter,
+                                session_db)
     elif filename == 'case_ids.csv':
-        csv = 'data.table_case_ids'
+        csv = get_case_ids(session_db)
     else:
         csv = ''
     # Create a bytes buffer from the string buffer

@@ -7,6 +7,7 @@ $(function () {
             select: {
             style: 'multi'
         },
+    sDom: 'lrtip',
     bProcessing: true,
     bServerSide: true,
     scrollX: true,

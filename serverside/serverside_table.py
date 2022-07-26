@@ -1,4 +1,4 @@
-from modules.get_data_to_table_browser import get_data
+from modules.get_data_to_table_browser import get_data_print
 
 
 class ServerSideTable(object):
@@ -31,8 +31,8 @@ class ServerSideTable(object):
         limit = int(self.request_values['iDisplayLength'])
         sort = (columns[int(self.request_values['iSortCol_0'])]['data'], self.request_values['sSortDir_0'])
 
-        df, length, error = get_data(entities, what_table, measurement, limit, offset, sort, date_filter, update_filter,
-                                     session_db)
+        df, length, error = get_data_print(entities, what_table, measurement, limit, offset, sort, date_filter,
+                                           update_filter, session_db)
         df = df.fillna("missing data")
         data = df.to_dict('records')
         return data, length

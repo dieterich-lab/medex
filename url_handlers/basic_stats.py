@@ -5,6 +5,7 @@ from url_handlers.filtering import check_for_date_filter_post
 from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
 import pandas as pd
 
+
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
 
 
@@ -45,7 +46,7 @@ def get_basic_stats():
             error = "Please select numeric entities"
         elif numeric_entities:
             df, error = get_num_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, update_filter,
-                                        session_db)
+                                            session_db)
             df['measurement'] = df['measurement'].astype(str)
 
             # calculation basic stats
@@ -62,6 +63,7 @@ def get_basic_stats():
                 error = "Please select at least one basic statistic"
             else:
                 df = df.set_index(['key', 'measurement'])
+                session['basic_stats_table'] = df.to_csv()
                 result = df.to_dict()
         if error:
             return render_template('basic_stats/basic_stats.html',
@@ -112,6 +114,7 @@ def get_basic_stats():
                                    measurement_categorical=measurement,
                                    error=error)
         df = df.set_index(['key', 'measurement'])
+        session['basic_stats_table'] = df.to_csv()
         basic_stats_c = df.to_dict()
 
         return render_template('basic_stats/basic_stats.html',
@@ -155,6 +158,7 @@ def get_basic_stats():
                                    measurement_date=measurement_d,
                                    error=error)
         df = df.set_index(['key', 'measurement'])
+        session['basic_stats_table'] = df.to_csv()
         basic_stats_d = df.to_dict()
 
         return render_template('basic_stats/basic_stats.html',

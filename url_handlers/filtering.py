@@ -49,11 +49,10 @@ class Filtering:
             return {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1],
                     'update_filter': session.get('filter_update')}
 
-    def case_id(self, case_ids, session_db):
+    def add_case_id(self, case_ids, session_db):
         if self.case_id == 'No':
             self.filter_update = self.filter_update + 1
-        ps.create_temp_table_case_id(case_ids['cases_ids'], session.get('filter_update'), session.get('case_ids'),
-                                     session_db)
+        ps.add_case_ids_to_filter(case_ids['cases_ids'], self.filter_update, self.case_id, session_db)
         self.case_id = 'Yes'
 
     def date_filter(self):

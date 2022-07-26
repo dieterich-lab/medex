@@ -1,5 +1,6 @@
 from sqlalchemy.sql import join
 from sqlalchemy import text
+import pandas as pd
 
 
 def clean_filter(r):
@@ -54,13 +55,15 @@ def add_numerical_filter(filters, n, r):
         next_filter(query, query2, r)
 
 
-def create_temp_table_case_id(case_id, n, check_case_id, r):
+def add_case_ids_to_filter(case_id, n, check_case_id, r):
+
     case_id_all = "$$" + "$$,$$".join(case_id) + "$$"
 
-    query = """ SELECT DISTINCT name_id FROM patient WHERE case_id in ({0}) """.format(case_id_all)
+    create_temp_table_case_id(case_id_all, r)
 
-    query2 = """ SELECT name_id,(CASE WHEN case_id !='' THEN 'case_id' END) as key 
-    from patient where case_id in ({0}) """.format(case_id_all)
+    query = """ SELECT DISTINCT name_id FROM patient WHERE case_id in ({0}) """.format(case_id_all)
+    query2 = """ SELECT name_id,(CASE WHEN case_id !='' THEN 'case_id' END) as key FROM patient 
+    WHERE case_id in ({0}) """.format(case_id_all)
     if check_case_id == 'Yes' and n == 1:
         clean_filter(r)
     elif check_case_id == 'Yes' and n != 1:
@@ -70,6 +73,20 @@ def create_temp_table_case_id(case_id, n, check_case_id, r):
         first_filter(query, query2, r)
     else:
         next_filter(query, query2, r)
+
+
+def create_temp_table_case_id(case_id_all, r):
+    sql_drop = "DROP TABLE IF EXISTS temp_table_case_ids"
+    create_table = """ CREATE TEMP TABLE temp_table_case_ids as (SELECT DISTINCT case_id FROM patient where 
+    case_id in ({0})) """.format(case_id_all)
+    r.execute(sql_drop)
+    r.execute(create_table)
+
+
+def get_case_ids(r):
+    sql = text("SELECT * FROM temp_table_case_ids")
+    df = pd.read_sql(sql, r.connection())
+    return df.to_csv()
 
 
 def remove_one_filter(filters, filter_update, r):
