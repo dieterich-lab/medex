@@ -26,7 +26,6 @@ requests = "*"
 scikit-learn = "==0.24.2"
 sqlalchemy = "*"
 pytest-mock = "*"
-freezegun = "*"
 register = "*"
 
 [dev-packages]
