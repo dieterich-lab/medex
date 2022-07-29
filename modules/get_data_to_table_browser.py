@@ -78,7 +78,6 @@ def _sort_and_limit(limit, offset, sort, sql_statement):
 
 def get_table_size(r, sql_statement):
     table_size = select(func.count(sql_statement.c.name_id).label('count'))
-    print(table_size)
     df_table_size = pd.read_sql(table_size, r.connection())
     table_size_count = df_table_size.iloc[0]['count']
     return table_size_count

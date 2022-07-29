@@ -35,9 +35,7 @@ $(function () {
     $("#y_measurement").select2({
     placeholder:"Search entity"
     });
-    $("#y_measurement").select2({
-    placeholder:"Search entity"
-    });
+
 
 
     // add spinner

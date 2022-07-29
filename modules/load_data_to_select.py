@@ -83,23 +83,16 @@ def min_max_value_numeric_entities(r):
 
 
 def get_subcategories_from_categorical_entities(r):
-    all_subcategories = """SELECT DISTINCT key,value FROM examination_categorical ORDER by key """
+    all_subcategories = """SELECT key,array_agg(distinct value) as value FROM examination_categorical 
+    WHERE key in (select key from name_type where type ='String') Group by key 
+                            ORDER by key """
     try:
-        subcategories = pd.read_sql(all_subcategories, r)
-        entities = subcategories['key'].unique()
-        array = []
-        df_subcategories = {}
-        # create dictionary with categories and subcategories
-        for value in entities:
-            df = subcategories[subcategories['key'] == value]
-            del df['key']
-            df_subcategories[value] = list(df['value'])
-            array.append(df_subcategories)
-
-        df_subcategories = dict(ChainMap(*array))
+        df = pd.read_sql(all_subcategories, r)
+        df.set_index('key', inplace=True)
+        df_dict = df.to_dict()
     except (Exception,):
-        df_subcategories = {}
-    return df_subcategories
+        df_dict = {}
+    return df_dict
 
 
 def get_measurement(r):
