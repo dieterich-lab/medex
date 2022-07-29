@@ -40,6 +40,23 @@ $(function () {
         from_fixed:true//block the from
     });
 
+    $('#id_numerical_filter').change(function () {
+        var entity =$(this).val(), values = df[entity] || [];
+        min =values['min']
+        max =values['max']
+
+
+        instance.update({
+            min: min,
+            from: min,
+            max: max,
+            to: max
+        });
+        $('#input1').prop("value", min);
+        $('#input2').prop("value", max);
+
+
+    });
 
     function updateInputs (data) {
         from = data.from;
@@ -90,21 +107,38 @@ $(function () {
 
     }
 
-    $('#id_numerical_filter').change(function () {
-        var entity =$(this).val(), values = df[entity] || [];
-        min =values['min']
-        max =values['max']
-
-        $('#input1').prop("value", min);
-        $('#input2').prop("value", max);
-        instance.update({
-            min: min,
-            max: max,
-            from: min,
-            to: max
-        });
-
+    // use plugin select2 for selector
+    $("#categorical_filter").select2({
+    placeholder:"Search entity"
     });
+    $("#id_numerical_filter").select2({
+    placeholder:"Search entity"
+    });
+
+    var $filter = $('#subcategory_filter').select2({
+    placeholder:"Search entity"
+    });
+    // handling select all choice
+    $('#subcategory_filter').on("select2:select", function (e) {
+           var data = e.params.data.text;
+           if(data=='Select all'){
+            $("#subcategory_filter> option").prop("selected","selected");
+            $('#subcategory_filter> option[value="Select all"]').prop("selected", false);
+            $("#subcategory_filter").trigger("change");
+           }
+      });
+
+    //change subcategories if category change
+    $('#categorical_filter').change(function () {
+        var entity =$(this).val(), values = filter[entity] || [];
+
+        var html = $.map(values, function(value){
+            return '<option value="' + value + '">' + value + '</option>'
+        }).join('');
+        $filter.html('<option value="Select all">Select all</option>'+html)
+    });
+
+
 
     $("#clean").click(function(){
         var clean = document.getElementById("categorical_filter").value;

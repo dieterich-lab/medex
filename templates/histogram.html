@@ -79,7 +79,7 @@
                     <label>Number of bins </label><input type="text" class="form-control"
                                                          name="number_of_bins" id="number_of_bins"
                                                          value="{{ number_of_bins }}">
-                    <button id="Plot" name="plot_histogram" class="btn btn-outline-info mt-4">Plot histogram</button>
+                    <button id="Result" name="plot_histogram" class="btn btn-outline-info mt-4">Result</button>
 
                 </div>
             </div>
@@ -88,7 +88,7 @@
         <div class="card-header" id="results_header">
             <h5 class="mb-0">
                 <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                        {% if measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                        {% if plot_histogram %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
                     Results
                 </button>
             </h5>

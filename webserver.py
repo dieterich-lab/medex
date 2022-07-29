@@ -10,6 +10,7 @@ from db import connect_db, close_db
 import requests
 import os
 import io
+import time
 
 
 # create the application object
@@ -53,6 +54,7 @@ if os.environ.get('IMPORT_DISABLED') is None:
 
 
 # get all numeric and categorical entities from database
+start_time = time.time()
 Name_ID, measurement_name = ps.get_header(rdb)
 size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information(rdb)
 start_date, end_date = ps.get_date(rdb)
@@ -61,6 +63,7 @@ all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps
 df_min_max = ps.min_max_value_numeric_entities(rdb)
 all_subcategory_entities = ps.get_subcategories_from_categorical_entities(rdb)
 all_measurement, block_measurement = ps.get_measurement(rdb)
+print("---1  %s seconds ---" % (time.time() - start_time))
 
 # change this
 try:
@@ -79,7 +82,7 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='vnd.microsoft.icon')
 
-
+start_time = time.time()
 # information about database
 @app.context_processor
 def data_information():
@@ -97,11 +100,13 @@ def data_information():
                 df_min_max=df_min_max,
                 meddusa=(Meddusa, MEDDUSA_URL),
                 )
+print("---2. %s seconds ---" % (time.time() - start_time))
 
-
+start_time = time.time()
 # information about database
 @app.context_processor
 def message_count():
+    start_time = time.time()
     if session.get('session_id') is None:
         session['session_id'] = os.urandom(10)
         factory.get_session(session.get('session_id'))
@@ -125,11 +130,11 @@ def message_count():
                 date=session.get('date_filter'),
                 case_display=case_display,
                 filter_update=session.get('filtering')['filter_update'],
-                categorical_filter=session.get('filtering')['filter_cat'],
-                numerical_filter=session.get('filtering')['filter_num'],
+                categorical_filter_results=session.get('filtering')['filter_cat'],
+                numerical_filter_results=session.get('filtering')['filter_num'],
                 limit_offset=session.get('limit_offset')
                 )
-
+print("---3. %s seconds ---" % (time.time() - start_time))
 
 # import a Blueprint
 from url_handlers.data import data_page
@@ -141,7 +146,6 @@ from url_handlers.barchart import barchart_page
 from url_handlers.heatmap import heatmap_plot_page
 from url_handlers.logout import logout_page
 from url_handlers.tutorial import tutorial_page
-from url_handlers.calculator import calculator_page
 
 # register blueprints here:\
 app.register_blueprint(data_page)
@@ -153,7 +157,6 @@ app.register_blueprint(boxplot_page)
 app.register_blueprint(scatter_plot_page)
 app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
-app.register_blueprint(calculator_page)
 
 
 @app.route('/_session', methods=['GET'])

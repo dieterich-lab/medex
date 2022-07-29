@@ -92,7 +92,7 @@
                         </tr>
                     </table>
 
-                    <button id="Plot" name="plot_boxplot" class="btn btn-outline-info">Plot</button>
+                    <button id="Result" name="plot_boxplot" class="btn btn-outline-info">Result</button>
 
                 </div>
             </div>
@@ -100,7 +100,7 @@
             <div class="card-header" id="results_header">
                 <h5 class="mb-0">
                     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                            {% if plot %} aria-expanded="true" {% endif %} aria-controls="numeric_results">
+                            {% if plot_boxplot %} aria-expanded="true" {% endif %} aria-controls="numeric_results">
                         Results
                     </button>
                 </h5>

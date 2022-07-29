@@ -85,7 +85,6 @@
             <label>is</label>
             <script type="text/javascript">
                 var filter = {{entities[2]|safe}};
-
             </script>
             <select multiple id="subcategory_filter" name="subcategory_filter" style="width: 100%"
                     class="form-control">
@@ -101,7 +100,6 @@
             {{ m.entity_form_single(id_single="id_numerical_filter",name =entities[0],value=entity,d="Numerical:") }}
             <script type="text/javascript">
                 var df = {{df_min_max|safe }};
-
             </script>
             <div class="range-slider">
                 <input type="text" name="my-slider" id="range" class="js-range-slider" value=""/>
@@ -126,8 +124,8 @@
             Clear All
         </button>
         <div id="demo">
-            {% for key, value in categorical_filter.items() %}
-            <div class='categorical_filter'>
+            {% for key, value in categorical_filter_results.items() %}
+            <div class='categorical_filter_results'>
                 <button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;'
                         class='btn btn-outline-primary text-left' value= '{{ key }}' >
                     <span class='close' onclick='remove_filter(this)'>x </span>
@@ -137,8 +135,8 @@
             {% endfor %}
         </div>
         <div id="demo2">
-            {% for key, value in numerical_filter.items() %}
-            <div class="numerical_filter">
+            {% for key, value in numerical_filter_results.items() %}
+            <div class="numerical_filter_results">
                 <span onclick='remove_filter(this)' class='close'> x </span>
                 <input type="hidden" class="name" value='{{ key }}'/>{{ key }}
                 <input type='text' class='range' name='loan_term' data-min="{{ value[2] }}" data-max='{{ value[3] }}'
@@ -148,13 +146,6 @@
         </div>
     </div>
 </div>
-</div>
-<script type="text/javascript">
-    function remove(el) {
-        $(el).parent('button').remove();
-    }
 
 
-
-</script>
 {% endblock %}

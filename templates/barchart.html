@@ -59,7 +59,7 @@
                     <div class="tooltips" title="Please select category and next subcategory">
                         <label>Subcategory: </label>
                         <select multiple id="subcategory_entities" class="subcategory_entities"
-                                name="subcategory_entities" class="form-control" style="width: 100%">
+                                name="subcategory_entities"  style="width: 100%">
                             <option value="Select all">Select all</option>
                             {% for entity in entities[2][categorical_entities] %}
                             <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{
@@ -91,7 +91,7 @@
                             </tr>
                         </table>
                     </div>
-                    <button id="Plot" name="barchart" class="btn btn-outline-info" class="Plot">Plot</button>
+                    <button id="Result" name="barchart" class="btn btn-outline-info" >Result</button>
                 </div>
             </div>
         </div>
@@ -99,7 +99,7 @@
         <div class="card-header" id="results_header">
             <h5 class="mb-0">
                 <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                        {% if plot %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                        {% if barchart %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
                     Results
                 </button>
             </h5>

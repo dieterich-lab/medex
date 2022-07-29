@@ -19,7 +19,7 @@ def get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, 
 
     sql = select(subquery_with_limit.c.value.label(categorical_entities[0]), subquery_with_limit.c.measurement,
                  func.count(subquery_with_limit.c.value).label('count')).\
-        group_by(subquery_with_limit.c.value, subquery.c.measurement)
+        group_by(subquery_with_limit.c.value, subquery_with_limit.c.measurement)
 
     df = pd.read_sql(sql, session_db.connection())
     df[categorical_entities[0]] = df[categorical_entities[0]].str.wrap(30).replace(to_replace=[r"\\n", "\n"],
