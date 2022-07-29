@@ -95,7 +95,10 @@ def data_information():
     size_categorical = 'the size of the categorical table: ' + str(size_cat_tab) + ' rows'
 
     return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical),
-                entities=(all_num_entities, all_cat_entities, all_subcategory_entities, all_date_entities),
+                all_num_entities=all_num_entities,
+                all_cat_entities=all_cat_entities,
+                all_subcategory_entities=all_subcategory_entities,
+                all_date_entities=all_date_entities,
                 measurement_tuple=(all_measurement, '{}'.format(measurement_name), block_measurement),
                 df_min_max=df_min_max,
                 meddusa=(Meddusa, MEDDUSA_URL),

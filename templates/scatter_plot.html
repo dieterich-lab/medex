@@ -53,11 +53,11 @@
                     {{ m.entity_form_single_measurement(id_single_measurement= "x_measurement",name =
                     measurement_tuple[0],value=entity,select=x_measurement,d=name,block=block) }}
                     {{ m.entity_form_single(id_single= "x_axis",class="numeric_entities",name
-                    =entities[0],value=entity,select=x_axis,d="x axis:") }}
+                    =all_num_entities,value=entity,select=x_axis,d="x axis:") }}
                     {{ m.entity_form_single_measurement(id_single_measurement= "y_measurement",name =
                     measurement_tuple[0],value=entity,select=y_measurement,d=name,block=block) }}
                     {{ m.entity_form_single(id_single= "y_axis",class="numeric_entities",name
-                    =entities[0],value=entity,select=y_axis,d="y axis:") }}
+                    =all_num_entities,value=entity,select=y_axis,d="y axis:") }}
 
                     <label>Scale</label>
                     <table>
@@ -103,11 +103,11 @@
                     <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox"
                          value="true">
                         {{ m.entity_form_single(id_single= "categorical_entities",class="categorical_entities",name
-                        =entities[1],select=categorical_entities,value=entity,d="Group by:") }}
+                        =all_cat_entities,select=categorical_entities,value=entity,d="Group by:") }}
 
                         <!-- Send dictionary with subcategory data to javascript -->
                         <script type="text/javascript">
-                        var cat = {{entities[2]|safe}};
+                        var cat = {{all_subcategory_entities|safe}};
 
                         </script>
 
@@ -116,7 +116,7 @@
                             <select style="width: 100%" multiple id="subcategory_entities" class="subcategory_entities"
                                     name="subcategory_entities" class="form-control">
                                 <option value="Select all">Select all</option>
-                                {% for entity in entities[2][categorical_entities] %}
+                                {% for entity in all_subcategory_entities[categorical_entities] %}
                                 <option value="{{ entity }}" {% if entity in subcategory %}selected{% endif %}>
                                     {{ entity }}
                                 </option>
