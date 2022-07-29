@@ -90,9 +90,10 @@ def get_subcategories_from_categorical_entities(r):
         df = pd.read_sql(all_subcategories, r)
         df.set_index('key', inplace=True)
         df_dict = df.to_dict()
+        df_dict_values = df_dict['value']
     except (Exception,):
-        df_dict = {}
-    return df_dict
+        df_dict_values = {}
+    return df_dict_values
 
 
 def get_measurement(r):
