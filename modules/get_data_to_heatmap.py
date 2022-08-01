@@ -1,24 +1,27 @@
 from modules.models import TableNumerical
 from sqlalchemy.sql import select
-from sqlalchemy import text
+from sqlalchemy.sql import join
+from sqlalchemy import text, case, func
 import pandas as pd
-from modules.filtering import apply_filter_to_sql, checking_date_filter, apply_limit_to_sql_query
+from modules.filtering import checking_date_filter, apply_limit_to_sql_query
 
 
-def get_heat_map(entities, date_filter, limit_filter, update_filter, r):
-    case_when = case_when_for_sql_statement(entities)
-    sql = select(TableNumerical.name_id, text(case_when))
-    sql_with_filter = apply_filter_to_sql(update_filter, TableNumerical, sql)
-    sql_with_where_group = sql_with_filter.where(checking_date_filter(date_filter, TableNumerical)).\
+def get_heat_map(entities, date_filter, limit_filter, update_filter, session_db):
+    case_when = [func.min(case([(TableNumerical.key == i, TableNumerical.value)])).label(i) for i in entities]
+    sql = select(TableNumerical.name_id, *case_when).where(checking_date_filter(date_filter, TableNumerical)).\
         group_by(TableNumerical.name_id)
-    sql_limit = apply_limit_to_sql_query(limit_filter, sql_with_where_group)
-    df = pd.read_sql(sql_limit, r.connection())
+    sql_with_filter = apply_filter_heatmap(sql, update_filter)
+    sql_limit = apply_limit_to_sql_query(limit_filter, sql_with_filter)
+    df = pd.read_sql(sql_limit, session_db.connection())
     return df, None
 
 
-def case_when_for_sql_statement(entities):
-    case_when = ""
-    for i in entities:
-        case_when += """ min(CASE WHEN key = $${0}$$ then value end) as "{0}",""".format(i)
-    case_when = case_when[:-1]
-    return case_when
+def apply_filter_heatmap(sql, update_filter):
+    if update_filter['filter_update'] != 0:
+        cte = sql.cte('cte')
+        j = join(cte, text("temp_table_name_ids"),
+                 cte.c.name_id == text("temp_table_name_ids.name_id"))
+        sql_with_filter = select(cte.c).select_from(j)
+    else:
+        sql_with_filter = sql
+    return sql_with_filter

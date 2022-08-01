@@ -1,8 +1,8 @@
 from modules.models import TableNumerical, TableCategorical, TableDate
 from sqlalchemy.sql import union, select
 from modules.filtering import checking_date_filter
-from sqlalchemy import String, and_, literal_column, asc, text, desc, func
-from modules.get_data_to_heatmap import case_when_for_sql_statement
+from sqlalchemy import String, and_, literal_column, asc, text, desc, func, case
+from modules.get_data_to_heatmap import apply_filter_heatmap
 import pandas as pd
 
 
@@ -37,8 +37,6 @@ def get_data(entities, what_table, measurement, date_filter, update_filter):
 def _get_what_type_of_table_print(entities, sql_union, update_filter, what_table):
     if what_table == 'long':
         sql_select = select(sql_union.c)
-        sql_statement = _apply_filter_table_browser_sql(sql_select, update_filter, sql_union)
-
     else:
         sql_group_by = select(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date, sql_union.c.measurement,
                               sql_union.c.key,
@@ -46,22 +44,12 @@ def _get_what_type_of_table_print(entities, sql_union, update_filter, what_table
             group_by(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date, sql_union.c.measurement,
                      sql_union.c.key)
 
-        case_when = case_when_for_sql_statement(entities)
+        case_when = [func.min(case([(sql_group_by.c.key == i, sql_group_by.c.value)])).label(i) for i in entities]
         sql_select = select(sql_group_by.c.name_id, sql_group_by.c.case_id, sql_group_by.c.date,
-                            sql_group_by.c.measurement, text(case_when))
-        sql_statement = _apply_filter_table_browser_sql(sql_select, update_filter, sql_group_by)
+                            sql_group_by.c.measurement, *case_when).\
+            group_by(sql_group_by.c.name_id, sql_group_by.c.case_id, sql_group_by.c.date, sql_group_by.c.measurement)
 
-        sql_statement = sql_statement.group_by(sql_group_by.c.name_id, sql_group_by.c.case_id,
-                                               sql_group_by.c.date, sql_group_by.c.measurement)
-    return sql_statement
-
-
-def _apply_filter_table_browser_sql(sql_select, update_filter, sql_union):
-    if update_filter['filter_update'] != 0:
-        sql_statement = sql_select. \
-            join(text('temp_table_name_ids'), sql_union.c.name_id == text('temp_table_name_ids.name_id'))
-    else:
-        sql_statement = sql_select
+    sql_statement = apply_filter_heatmap(sql_select, update_filter)
     return sql_statement
 
 
