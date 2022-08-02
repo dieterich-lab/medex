@@ -3,7 +3,7 @@ from serverside.serverside_table import ServerSideTable
 from url_handlers.filtering import check_for_date_filter_post
 from webserver import block_measurement, all_entities, measurement_name,\
     all_measurement, factory, Meddusa, EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL, start_date, end_date
-import requests
+
 data_page = Blueprint('data', __name__, template_folder='templates')
 
 
@@ -13,8 +13,7 @@ def table_data():
     update_filter = session.get('filtering')
     table_browser = session.get('table_browser')
     date_filter = session.get('date_filter')
-    dat = ServerSideTable(request, table_browser[0], table_browser[1], table_browser[2], table_browser[3], date_filter,
-                          update_filter, session_db).output_result()
+    dat = ServerSideTable(request, table_browser, date_filter, update_filter, session_db).output_result()
 
     """
     if Meddusa == 'block':
@@ -77,7 +76,7 @@ def post_data():
 
     dict_of_column = []
     [dict_of_column.append({'data': i}) for i in column_change_name]
-    session['table_browser'] = (entities, what_table, measurement,dict_of_column)
+    session['table_browser'] = (entities, measurement, what_table, dict_of_column)
 
     return render_template('data.html',
                            error=error,

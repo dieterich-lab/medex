@@ -4,32 +4,39 @@ from modules.filtering import checking_date_filter
 from sqlalchemy import String, and_, literal_column, asc, text, desc, func, case
 from modules.get_data_to_heatmap import apply_filter_heatmap
 import pandas as pd
+import time
 
 
-def get_data_print(entities, what_table, measurement, limit, offset, sort, date_filter, update_filter, session_db):
-    sql_statement = get_data(entities, what_table, measurement, date_filter, update_filter)
-    sql_order_limit = _sort_and_limit(limit, offset, sort, sql_statement)
+def get_data_print(table_browser, information_from_request, date_filter, update_filter, session_db):
+    start_time = time.time()
+    sql_statement = get_data(table_browser, date_filter, update_filter)
+    sql_order_limit = _sort_and_limit(information_from_request, sql_statement)
     df = pd.read_sql(sql_order_limit, session_db.connection())
-    table_size_count = get_table_size(session_db, sql_statement)
-    return df, table_size_count, None
+    print("---1. %s seconds ---" % (time.time() - start_time))
+    start_time = time.time()
+    table_size_count = 0
+    if information_from_request[0] == '1':
+        table_size_count = get_table_size(session_db, sql_statement)
+    print("---2. %s seconds ---" % (time.time() - start_time))
+    return df, table_size_count
 
 
-def get_data_download(entities, what_table, measurement, date_filter, update_filter, session_db):
-    sql_statement = get_data(entities, what_table, measurement, date_filter, update_filter)
+def get_data_download(table_browser, date_filter, update_filter, session_db):
+    sql_statement = get_data(table_browser[0], date_filter, update_filter)
     df = pd.read_sql(sql_statement, session_db.connection())
     return df.to_csv()
 
 
-def get_data(entities, what_table, measurement, date_filter, update_filter):
+def get_data(table_browser, date_filter, update_filter):
     sql_union = union(*[select(name.name_id, name.case_id, name.date, name.measurement, name.key,
                         name.value.cast(String).label('value')).
-                      where(and_(name.key.in_(entities), name.measurement.in_(measurement),
+                      where(and_(name.key.in_(table_browser[0]), name.measurement.in_(table_browser[1]),
                                  checking_date_filter(date_filter, name)))
 
                         for i, name in enumerate([TableCategorical, TableNumerical, TableDate])
                         ])
 
-    sql_statement = _get_what_type_of_table_print(entities, sql_union, update_filter, what_table)
+    sql_statement = _get_what_type_of_table_print(table_browser[0], sql_union, update_filter, table_browser[2])
 
     return sql_statement
 
@@ -53,14 +60,14 @@ def _get_what_type_of_table_print(entities, sql_union, update_filter, what_table
     return sql_statement
 
 
-def _sort_and_limit(limit, offset, sort, sql_statement):
-    if sort[1] == 'desc':
-        sort = desc(text(f'"{sort[0]}"'))
+def _sort_and_limit(information_from_request, sql_statement):
+    if information_from_request[3][1] == 'desc':
+        sort = desc(text(f'"{information_from_request[3][0]}"'))
     else:
-        sort = asc(text(f'"{sort[0]}"'))
+        sort = asc(text(f'"{information_from_request[3][0]}"'))
     sql_order_limit = sql_statement. \
         order_by(sort). \
-        limit(limit).offset(offset)
+        limit(information_from_request[1]).offset(information_from_request[2])
     return sql_order_limit
 
 
