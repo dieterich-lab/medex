@@ -1,4 +1,4 @@
-from modules.get_data_to_table_browser import get_data_print
+from modules.get_data_to_table_browser import get_data_print, get_table_size
 from flask import session
 
 
@@ -31,9 +31,10 @@ class ServerSideTable(object):
                                     (table_browser[3][int(self.request_values['iSortCol_0'])]['data'],
                                      self.request_values['sSortDir_0']))
 
-        df, length = get_data_print(table_browser, information_from_request, date_filter, update_filter, session_db)
+        df = get_data_print(table_browser, information_from_request, date_filter, update_filter, session_db)
         if self.request_values['sEcho'] == '1':
-            session['table_size'] = str(length)
+            length = get_table_size(session_db, table_browser, date_filter, update_filter)
+            session['table_size'] = length
         else:
             length = int(session.get('table_size'))
         df = df.fillna("missing data")
