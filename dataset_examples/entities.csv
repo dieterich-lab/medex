@@ -1,4 +1,4 @@
-Key,type,synonym,description,unit,show
+key,type,synonym,description,unit,show
 NYHA,String,NYHA,NYHA,,+
 Diabetes,String,Diabetes,Diabetes,,+
 Gender,String,Sex,Gender,,+

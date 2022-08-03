@@ -9,12 +9,12 @@
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='moment.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='daterangepicker.min.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='daterangepicker.css') }}" />
 
+<link rel="stylesheet" href="{{ url_for('static', filename='ion.rangeSlider.min.css') }}" />
+<script src="{{ url_for('static', filename='ion.rangeSlider.min.js') }}" ></script>
 
 {% import 'macro_template.html' as m %}
 
