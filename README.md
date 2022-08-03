@@ -18,7 +18,7 @@ However, it is not limited to clinical data, but can be used to do exploratory d
 * `$ docker-compose up -d`
 
 Test it out at http://localhost:8000. No mounted folders. To apply changes, the image must be re-built. <br>
-[Data import information](#Data-Import)
+[Data import information](#Data-import)
 
 ## Setup via Docker image from Docker hub ##
 Instructions and a docker image are available at the link: https://hub.docker.com/r/aljoschak1/medex. <br>
@@ -47,7 +47,7 @@ Not recommended for pure deployment.
 
 Test it out at http://localhost:5000. The "web" folder is mounted into the container and your code changes apply automatically.
 
-## Data Import   [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/master/dataset_examples/Data_import.md)
+###Data Import [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/master/dataset_examples/Data_import.md)
 * In order to add new data add a new `entities.csv` and `dataset.csv` to the `./import` folder.
 * The `entities.csv` and `dataset.csv` files should look like in directory `dataset_examples`.
 * Database imports run every night at 5:05 and at start.
