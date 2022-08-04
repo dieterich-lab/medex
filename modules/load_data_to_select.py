@@ -2,26 +2,26 @@ from modules.models import Header
 from sqlalchemy.sql import select
 import pandas as pd
 import datetime
-from collections import ChainMap
 
 
-def get_header(r):
+
+def get_header(connection_db):
     sql = select(Header)
     try:
-        df = pd.read_sql(sql, r)
+        df = pd.read_sql(sql, connection_db)
         name_id, measurement_name = df['name_id'][0], df['measurement'][0]
     except (Exception,):
         name_id, measurement_name = 'name_id', 'measurement'
     return name_id, measurement_name
 
 
-def get_database_information(r):
+def get_database_information(connection_db):
     size_num_table = """SELECT count(*) FROM examination_numerical"""
     size_date_table = """SELECT count(*) FROM examination_date"""
     size_cat_table = """SELECT count(*) FROM examination_categorical"""
     try:
-        size_num_tab, size_date_tab, size_cat_tab = pd.read_sql(size_num_table, r), pd.read_sql(size_date_table, r), \
-                                                    pd.read_sql(size_cat_table, r)
+        size_num_tab, size_date_tab, size_cat_tab = pd.read_sql(size_num_table, connection_db), pd.read_sql(size_date_table, connection_db), \
+                                                    pd.read_sql(size_cat_table, connection_db)
         size_num_tab, size_date_tab, size_cat_tab = \
             size_num_tab.iloc[0]['count'], size_date_tab.iloc[0]['count'], \
             size_cat_tab.iloc[0]['count']
@@ -30,32 +30,32 @@ def get_database_information(r):
     return size_num_tab, size_date_tab, size_cat_tab
 
 
-def get_date(r):
+def get_date(connection_db):
     sql = """ SELECT min("date"),max("date") FROM examination_numerical """
     try:
-        df = pd.read_sql(sql, r)
+        df = pd.read_sql(sql, connection_db)
         start_date = datetime.datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
         end_date = datetime.datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
     except (Exception,):
-        now = datetime.datetime.now()
-        start_date = datetime.datetime.timestamp(now - datetime.timedelta(days=365.24 * 100)) * 1000
-        end_date = datetime.datetime.timestamp(now) * 1000
+        now = datetime.datetime.now().strftime('%Y-%d-%m')
+        start_date = datetime.datetime.strptime(now, '%Y-%m-%d').timestamp() * 1000
+        end_date = datetime.datetime.strptime(now, '%Y-%m-%d').timestamp() * 1000
     return start_date, end_date
 
 
-def patient(r):
+def patient(connection_db):
     sql = """SELECT * FROM Patient"""
     try:
-        df = pd.read_sql(sql, r)
+        df = pd.read_sql(sql, connection_db)
         return df['name_id'], None
     except (Exception,):
         return None, "Problem with load data from database"
 
 
-def get_entities(r):
+def get_entities(connection_db):
     all_entities = """SELECT key,type,description,synonym FROM name_type ORDER BY orders """
     try:
-        entities = pd.read_sql(all_entities, r)
+        entities = pd.read_sql(all_entities, connection_db)
         entities = entities.replace([None], ' ')
         num_entities = entities[entities['type'] == 'Double'].drop(columns=['type'])
         cat_entities = entities[entities['type'] == 'String'].drop(columns=['type'])
@@ -70,10 +70,10 @@ def get_entities(r):
     return all_entities, all_num_entities, all_cat_entities, all_date_entities, length
 
 
-def min_max_value_numeric_entities(r):
+def min_max_value_numeric_entities(connection_db):
     min_max = """SELECT key,max(value),min(value) FROM examination_numerical GROUP BY key """
     try:
-        df_min_max = pd.read_sql(min_max, r)
+        df_min_max = pd.read_sql(min_max, connection_db)
         df_min_max = df_min_max.set_index('key')
         df_min_max = df_min_max.to_dict('index')
     except (Exception,):
@@ -82,12 +82,12 @@ def min_max_value_numeric_entities(r):
     return df_min_max
 
 
-def get_subcategories_from_categorical_entities(r):
+def get_subcategories_from_categorical_entities(connection_db):
     all_subcategories = """SELECT key,array_agg(distinct value) as value FROM examination_categorical 
     WHERE key in (select key from name_type where type ='String') Group by key 
                             ORDER by key """
     try:
-        df = pd.read_sql(all_subcategories, r)
+        df = pd.read_sql(all_subcategories, connection_db)
         df.set_index('key', inplace=True)
         df_dict = df.to_dict()
         df_dict_values = df_dict['value']
@@ -96,10 +96,10 @@ def get_subcategories_from_categorical_entities(r):
     return df_dict_values
 
 
-def get_measurement(r):
+def get_measurement(connection_db):
     sql = """SELECT DISTINCT measurement:: int FROM examination_numerical ORDER BY measurement """
     try:
-        df = pd.read_sql(sql, r)
+        df = pd.read_sql(sql, connection_db)
         df['measurement'] = df['measurement'].astype(str)
         # show all hide measurement selector when was only one measurement for all entities
         if len(df['measurement']) < 2:
@@ -110,3 +110,12 @@ def get_measurement(r):
         df = ["No data"]
         block_measurement = 'none'
     return df['measurement'], block_measurement
+
+
+def check_if_exists_case_id(connection_db):
+    sql = "SELECT DISTINCT case_id from patient"
+    df = pd.read_sql(sql, connection_db)
+    if len(df) < 2:
+        return 'no'
+    else:
+        return 'yes'

@@ -25,7 +25,7 @@ def load_entities(entities, rdb):
     rdb.commit()
     in_file.close()
     df = pd.read_csv(entities)
-    numerical_entities, date_entities = df[df['type'] == 'Double']['key'], df[df['type'] == 'date']['key']
+    numerical_entities, date_entities = df[df['type'] == 'Double']['key'], df[df['type'] == 'Date']['key']
     numerical_entities, date_entities = numerical_entities.to_list(), date_entities.to_list()
 
     return numerical_entities, date_entities

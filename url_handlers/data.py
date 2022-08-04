@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, jsonify, session
 from serverside.serverside_table import ServerSideTable
 from url_handlers.filtering import check_for_date_filter_post
+import modules.load_data_to_select as ps
 from webserver import block_measurement, all_entities, measurement_name,\
-    all_measurement, factory, Meddusa, EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL, start_date, end_date
+    all_measurement, factory, Meddusa, EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL, start_date, end_date, exists_case_id
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -44,11 +45,23 @@ def post_data():
     # get request values
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
+
+    column = ['name_id']
+    if exists_case_id == 'yes':
+        column = column + ['case_id']
+    if session.get('date_filter')[2] != 0:
+        column = column + ['date']
+
     if block_measurement == 'none':
         measurement = [all_measurement[0]]
     else:
         measurement = request.form.getlist('measurement')
+        column = column + ['measurement']
 
+    if what_table == 'long':
+        column = column + ['key', 'value']
+    else:
+        column = column + entities
     # errors
     error = None
     if not measurement:
@@ -64,11 +77,6 @@ def post_data():
                                measurement=measurement,
                                what_table=what_table,
                                )
-
-    if what_table == 'long':
-        column = ['name_id', 'case_id', 'date', 'measurement', 'key', 'value']
-    else:
-        column = ['name_id', 'case_id', 'date', 'measurement']+entities
 
     # change name of entities if they have dot inside otherwise server side table doesn't work properly
     column_change_name = []

@@ -49,7 +49,7 @@ are defined in basic_stats.html #}
                         <thead>
                         <tr>
                             <th>Entity</th>
-                            {% if block != 'none' %}
+                            {% if measurement_tuple[2] != 'none' %}
                             <th>{{ measurement_name }}</th>
                             {% endif %}
                             <th>Count</th>
@@ -62,7 +62,7 @@ are defined in basic_stats.html #}
                         <tr>
                             {% if basic_stats_d['count'][entity,m] is defined %}
                             <td>{{ entity }}</td>
-                            {% if block != 'none' %}
+                            {% if measurement_tuple[2] != 'none' %}
                             <td>{{ m }}</td>
                             {% endif %}
                             <td>{{ basic_stats_d['count'][entity,m]}}</td>

@@ -161,6 +161,7 @@ def get_basic_stats():
         session['basic_stats_table'] = df.to_csv()
         basic_stats_d = df.to_dict()
 
+
         return render_template('basic_stats/basic_stats.html',
                                date_tab=True,
                                name=measurement_name,

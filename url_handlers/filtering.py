@@ -80,7 +80,6 @@ def check_for_date_filter_post(start_date, end_date):
     date[0], date[1] = \
         datetime.datetime.strptime(date[0], '%m/%d/%Y').timestamp() * 1000, \
         datetime.datetime.strptime(date[1], '%m/%d/%Y').timestamp() * 1000
-
     if date[0] != start_date or date[1] != end_date:
         date_filter = 1
     else:

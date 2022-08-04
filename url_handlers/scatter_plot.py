@@ -81,6 +81,7 @@ def post_plots():
                                                                                            color='DarkSlateGrey'))))
     # title for figure
     if block_measurement == 'none':
+        x_axis, y_axis = axis[0], axis[1]
         split_text = textwrap.wrap("Compare values of <b>" + axis[0] + "</b> and <b>" + axis[1] +
                                    "<br> Number of Points: " + str(number_of_points))
 

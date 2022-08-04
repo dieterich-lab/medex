@@ -8,7 +8,6 @@ from modules.filtering import checking_date_filter,apply_filter_to_sql
 
 
 def get_num_basic_stats(entities: List[str], measurement: List[str], date_filter, limit_filter, update_filter, db_session):
-
     select_numerical_values_sql = select(
         TableNumerical.key, TableNumerical.measurement, TableNumerical.name_id,
         func.avg(TableNumerical.value).label('value')
@@ -30,7 +29,6 @@ def get_num_basic_stats(entities: List[str], measurement: List[str], date_filter
                  ).\
         group_by(with_raw_data.c.key, with_raw_data.c.measurement).\
         order_by(with_raw_data.c.key, with_raw_data.c.measurement)
-
     df = pd.read_sql(sql, db_session.connection())
     n = _get_patient_count(db_session)
     df['count NaN'] = n - df['count']
