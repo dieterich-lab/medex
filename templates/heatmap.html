@@ -1,9 +1,5 @@
 {% extends "layout.html" %}
 {% block body %}
-<form action="" method="POST">
-    <div id="menu">
-        {% include 'sidebar.html' %}
-    </div>
     {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
@@ -18,6 +14,10 @@
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
     {# end of imports #}
+<form action="" method="POST">
+    <div id="menu">
+        {% include 'sidebar.html' %}
+    </div>
 
     <div id="content">
         <div class="card">
