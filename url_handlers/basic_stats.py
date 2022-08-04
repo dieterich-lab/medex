@@ -33,7 +33,7 @@ def get_basic_stats():
         # get selected entities
         numeric_entities = request.form.getlist('numeric_entities_multiple')
         if block_measurement == 'none':
-            measurement1 = all_measurement[0]
+            measurement1 = [all_measurement[0]]
         else:
             measurement1 = request.form.getlist('measurement_numeric')
 
@@ -89,7 +89,7 @@ def get_basic_stats():
         # list selected data by client
         categorical_entities = request.form.getlist('categorical_entities')
         if block_measurement == 'none':
-            measurement = all_measurement[0]
+            measurement = [all_measurement[0]]
         else:
             measurement = request.form.getlist('measurement_categorical')
 
@@ -132,7 +132,7 @@ def get_basic_stats():
         # list selected data by client
         date_entities = request.form.getlist('date_entities')
         if block_measurement == 'none':
-            measurement_d = all_measurement[0]
+            measurement_d = [all_measurement[0]]
         else:
             measurement_d = request.form.getlist('measurement_date')
 

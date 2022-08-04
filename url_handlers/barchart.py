@@ -18,7 +18,7 @@ def get_statistics():
 def post_statistics():
     # get request values
     if block_measurement == 'none':
-        measurement = all_measurement[0]
+        measurement = [all_measurement[0]]
     else:
         measurement = request.form.getlist('measurement')
     categorical_entities = (request.form.get('categorical_entities'), request.form.getlist('subcategory_entities'))

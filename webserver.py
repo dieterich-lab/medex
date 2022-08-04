@@ -93,11 +93,8 @@ def data_information():
     size_categorical = 'the size of the categorical table: ' + str(size_cat_tab) + ' rows'
 
     return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical),
-                all_num_entities=all_num_entities,
-                all_cat_entities=all_cat_entities,
-                all_subcategory_entities=all_subcategory_entities,
-                all_date_entities=all_date_entities,
-                measurement_tuple=(all_measurement, '{}'.format(measurement_name), block_measurement),
+                entities=(all_num_entities, all_cat_entities, all_subcategory_entities, all_date_entities),
+                measurement_tuple=(all_measurement, '{}:'.format(measurement_name), block_measurement),
                 df_min_max=df_min_max,
                 meddusa=(Meddusa, MEDDUSA_URL),
                 )
@@ -203,8 +200,7 @@ def download(filename):
         update_filter = session.get('filtering')
         table_browser = session.get('table_browser')
         date_filter = session.get('date_filter')
-        csv = get_data_download(table_browser[0], table_browser[1], table_browser[2], date_filter, update_filter,
-                                session_db)
+        csv = get_data_download(table_browser, date_filter, update_filter, session_db)
     elif filename == 'case_ids.csv':
         csv = get_case_ids(session_db)
     else:

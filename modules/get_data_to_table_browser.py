@@ -14,7 +14,7 @@ def get_data_print(table_browser, information_from_request, date_filter, update_
 
 
 def get_data_download(table_browser, date_filter, update_filter, session_db):
-    sql_statement = get_data(table_browser[0], date_filter, update_filter)
+    sql_statement = get_data(table_browser, date_filter, update_filter)
     df = pd.read_sql(sql_statement, session_db.connection())
     return df.to_csv()
 

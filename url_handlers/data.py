@@ -45,7 +45,7 @@ def post_data():
     entities = request.form.getlist('entities')
     what_table = request.form.get('what_table')
     if block_measurement == 'none':
-        measurement = all_measurement[0]
+        measurement = [all_measurement[0]]
     else:
         measurement = request.form.getlist('measurement')
 

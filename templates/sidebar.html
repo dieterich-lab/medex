@@ -75,29 +75,29 @@
             <select id="categorical_filter" name="categorical_filter" style="width: 100%"
                     class="js-example-basic-single">
                 <option>Search entity</option>
-                {% for entity in all_cat_entities %}
-                <option title="{{ all_cat_entities[entity].description }}"
-                        value="{{ all_cat_entities[entity].key }}">{{ all_cat_entities[entity].key }}
+                {% for entity in entities[1] %}
+                <option title="{{ entities[1][entity].description }}"
+                        value="{{ entities[1][entity].key }}">{{ entities[1][entity].key }}
                 </option>
                 {% endfor %}
             </select>
             <br>
             <label>is</label>
             <script type="text/javascript">
-                var filter = {{all_subcategory_entities|safe}};
+                var filter = {{entities[2]|safe}};
             </script>
             <select multiple id="subcategory_filter" name="subcategory_filter" style="width: 100%"
                     class="form-control">
                 <option value="Select all">Select all</option>
-                {% for entity in all_subcategory_entities[categorical_filter] %}
-                <option value="{{ entity }}" {% if entity in all_subcategory_entities %}selected{% endif %}>{{ entity }}</option>
+                {% for entity in entities[2][categorical_filter] %}
+                <option value="{{ entity }}" {% if entity in entities[2] %}selected{% endif %}>{{ entity }}</option>
                 {% endfor %}
             </select>
             <br><br>
         </div>
 
         <div style="display:none" id="numerical_filter_check_block">
-            {{ m.entity_form_single(id_single="id_numerical_filter",name =all_num_entities,value=entity,d="Numerical:") }}
+            {{ m.entity_form_single(id_single="id_numerical_filter",name =entities[0],value=entity,d="Numerical:") }}
             <script type="text/javascript">
                 var df = {{df_min_max|safe }};
             </script>
