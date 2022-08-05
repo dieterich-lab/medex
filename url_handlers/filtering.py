@@ -16,15 +16,18 @@ class Filtering:
         return {'filter': 'cleaned'}
 
     def clean_one_filter(self, filters, session_db):
+
         self.filter_update = self.filter_update - 1
+        print(self.filter_update)
         if self.filter_update == 0:
             ps.clean_filter(session_db)
+            self.filter_update, self.case_id, self.filter_num, self.filter_cat = 0, 'No', {}, {}
         else:
             ps.remove_one_filter(filters[0].get('clean_one_filter'), self.filter_update, session_db)
-        if filters[1].get('type') == 'categorical':
-            session['filter_cat'].pop(filters[0].get('clean_one_filter'))
-        else:
-            session['filter_num'].pop(filters[0].get('clean_one_filter'))
+            if filters[1].get('type') == 'categorical':
+                del self.filter_cat[filters[0].get('clean_one_filter')]
+            else:
+                del self.filter_num[filters[0].get('clean_one_filter')]
         return {'filter': 'removed'}
 
     def add_categorical_filter(self, filters, session_db):
