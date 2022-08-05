@@ -61,7 +61,6 @@ all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps
 df_min_max = ps.min_max_value_numeric_entities(rdb)
 all_subcategory_entities = ps.get_subcategories_from_categorical_entities(rdb)
 all_measurement, block_measurement = ps.get_measurement(rdb)
-exists_case_id = ps.check_if_exists_case_id(rdb)
 
 # change this
 try:

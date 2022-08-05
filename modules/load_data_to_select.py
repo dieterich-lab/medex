@@ -4,7 +4,6 @@ import pandas as pd
 import datetime
 
 
-
 def get_header(connection_db):
     sql = select(Header)
     try:
@@ -20,7 +19,8 @@ def get_database_information(connection_db):
     size_date_table = """SELECT count(*) FROM examination_date"""
     size_cat_table = """SELECT count(*) FROM examination_categorical"""
     try:
-        size_num_tab, size_date_tab, size_cat_tab = pd.read_sql(size_num_table, connection_db), pd.read_sql(size_date_table, connection_db), \
+        size_num_tab, size_date_tab, size_cat_tab = pd.read_sql(size_num_table, connection_db), \
+                                                    pd.read_sql(size_date_table, connection_db), \
                                                     pd.read_sql(size_cat_table, connection_db)
         size_num_tab, size_date_tab, size_cat_tab = \
             size_num_tab.iloc[0]['count'], size_date_tab.iloc[0]['count'], \
@@ -110,12 +110,3 @@ def get_measurement(connection_db):
         df = ["No data"]
         block_measurement = 'none'
     return df['measurement'], block_measurement
-
-
-def check_if_exists_case_id(connection_db):
-    sql = "SELECT DISTINCT case_id from patient"
-    df = pd.read_sql(sql, connection_db)
-    if len(df) < 2:
-        return 'no'
-    else:
-        return 'yes'

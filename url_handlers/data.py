@@ -3,7 +3,7 @@ from serverside.serverside_table import ServerSideTable
 from url_handlers.filtering import check_for_date_filter_post
 import modules.load_data_to_select as ps
 from webserver import block_measurement, all_entities, measurement_name,\
-    all_measurement, factory, Meddusa, EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL, start_date, end_date, exists_case_id
+    all_measurement, factory, Meddusa, EXPRESS_MEDEX_MEDDUSA_URL, MEDDUSA_URL, start_date, end_date
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
@@ -47,8 +47,6 @@ def post_data():
     what_table = request.form.get('what_table')
 
     column = ['name_id']
-    if exists_case_id == 'yes':
-        column = column + ['case_id']
     if session.get('date_filter')[2] != 0:
         column = column + ['date']
 
