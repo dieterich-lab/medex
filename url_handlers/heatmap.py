@@ -1,61 +1,39 @@
-from flask import Blueprint, render_template, request,session
+from flask import Blueprint, render_template, request, session
 import pandas as pd
 from scipy.stats import pearsonr
-import modules.load_data_postgre as ps
+from modules.get_data_to_heatmap import get_heat_map
+from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
 import plotly.graph_objects as go
-import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement,measurement_name, block, df_min_max,data
+from webserver import factory, start_date, end_date
 
-
-heatmap_plot_page = Blueprint('heatmap', __name__,template_folder='tepmlates')
+heatmap_plot_page = Blueprint('heatmap', __name__, template_folder='tepmlates')
 
 
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
 def get_plots():
-    start_date, end_date = filtering.date()
-    categorical_filter, categorical_names = filtering.check_for_filter_get()
-    numerical_filter = filtering.check_for_numerical_filter_get()
-    return render_template('heatmap.html',
-                           name='{}'.format(measurement_name),
-                           block=block,
-                           numeric_tab=True,
-                           all_measurement=all_measurement,
-                           start_date=start_date,
-                           end_date=end_date,
-                           measurement_filter=session.get('measurement_filter'),
-                           filter=categorical_filter,
-                           numerical_filter=numerical_filter,
-                           df_min_max=df_min_max
-                           )
+    return render_template('heatmap.html')
 
 
 @heatmap_plot_page.route('/heatmap', methods=['POST'])
 def post_plots():
-    # get filter
-    start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    session['measurement_filter'] = measurement_filter
 
-    # get selected entities
+    # get request values
     numeric_entities = request.form.getlist('numeric_entities_multiple')
-    if block == 'none':
-        measurement = all_measurement.values[0]
-    else:
-        measurement = request.form.get('measurement')
+
+    # get_filter
+    check_for_date_filter_post(start_date, end_date)
+    date_filter = session.get('date_filter')
+    limit_filter = check_for_limit_offset()
+    update_filter = session.get('filtering')
 
     # handling errors and load data from database
-    if measurement == "Search entity":
-        error = "Please select number of {}".format(measurement_name)
-    elif len(numeric_entities) > 1:
-        numeric_df, error = ps.get_values_heatmap(numeric_entities, measurement, case_ids,categorical_filter,
-                                                  categorical_names, name, from1, to1, measurement_filter, date, rdb)
-
+    df = pd.DataFrame()
+    if len(numeric_entities) > 1:
+        session_db = factory.get_session(session.get('session_id'))
+        df, error = get_heat_map(numeric_entities, date_filter, limit_filter, update_filter, session_db)
         if not error:
-            if len(numeric_df.index) == 0:
+            if len(df.index) == 0:
                 error = "This two entities don't have common values"
-
     elif len(numeric_entities) < 2:
         error = "Please select more then one category"
     else:
@@ -63,31 +41,21 @@ def post_plots():
 
     if error:
         return render_template('heatmap.html',
-                               name='{}'.format(measurement_name),
-                               block=block,
-                               numeric_tab=True,
                                numeric_entities=numeric_entities,
-                               measurement=measurement,
-                               all_measurement=all_measurement,
-                               measurement_filter=measurement_filter,
-                               start_date=start_date,
-                               end_date=end_date,
-                               filter=categorical_filter_zip,
-                               numerical_filter=numerical_filter,
-                               df_min_max=df_min_max,
                                error=error)
 
     # calculate person correlation
-    numeric_df = numeric_df.drop(columns=['Name_ID'])
+    numeric_df = df.drop(columns=['name_id'])
     new_numeric_entities = numeric_df.columns.tolist()
+
     numeric_entities_not_measured = set(numeric_entities).difference(set(new_numeric_entities))
     if len(numeric_entities_not_measured) > 0:
         error = "{} not measure during Replicate".format(numeric_entities_not_measured)
-    numeric_entities = new_numeric_entities
 
     dfcols = pd.DataFrame(columns=numeric_df.columns)
     pvalues = dfcols.transpose().join(dfcols, how='outer')
     corr_values = dfcols.transpose().join(dfcols, how='outer')
+    number_of_values = dfcols.transpose().join(dfcols, how='outer')
 
     for r in numeric_df.columns:
         for c in numeric_df.columns:
@@ -96,44 +64,23 @@ def post_plots():
             else:
                 df_corr = numeric_df[[r, c]].dropna()
             if len(df_corr) < 2:
-                corr_values[r][c], pvalues[r][c] = None,None
-
+                corr_values[r][c], pvalues[r][c] = None, None
             else:
+                number_of_values[r][c] = len(df_corr)
                 corr_values[r][c], pvalues[r][c] = pearsonr(df_corr[r], df_corr[c])
-
-    # currently don't use
-    pvalues = pvalues.astype(float)
-    pvalues = pvalues.round(decimals=3)
-    pvalues = pvalues.T.values.tolist()
 
     corr_values = corr_values.astype(float)
     corr_values = corr_values.round(decimals=2)
     corr_values = corr_values.T.values.tolist()
 
-    fig = go.Figure(data=go.Heatmap(z=corr_values, x=numeric_entities, y=numeric_entities, colorscale='Viridis'))
-    fig.update_layout(height=600)
+    number_of_values = number_of_values.T.values.tolist()
+    fig = go.Figure(data=go.Heatmap(z=corr_values, x=new_numeric_entities, y=new_numeric_entities,
+                                    colorscale='Viridis'))
+    fig.update_traces(text=number_of_values, texttemplate="%{text}")
+    fig.update_layout(height=600,
+                      title='Heatmap shows Pearson correlation')
     fig = fig.to_html()
-    plot_series = []
-    plot_series.append({'z': corr_values,
-                        'x': numeric_entities,
-                        'y': numeric_entities,
-                        'type': "heatmap",
-                        'color': 'corr'
-                        })
-
     return render_template('heatmap.html',
-                           name='{}'.format(measurement_name),
-                           block=block,
-                           numeric_tab=True,
-                           all_measurement=all_measurement,
+                           error=error,
                            numeric_entities=numeric_entities,
-                           measurement=measurement,
-                           measurement_filter=measurement_filter,
-                           plot_series=plot_series,
-                           plot=fig,
-                           start_date=start_date,
-                           end_date=end_date,
-                           filter=categorical_filter_zip,
-                           numerical_filter=numerical_filter,
-                           df_min_max=df_min_max
-                           )
+                           plot=fig)

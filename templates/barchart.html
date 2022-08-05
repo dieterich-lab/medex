@@ -2,9 +2,9 @@
 {% block body %}
 <form action="" method="POST">
     <div id="menu">
-    {% include 'sidebar.html' %}
+        {% include 'sidebar.html' %}
     </div>
-{# imports #}
+    {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
 
@@ -17,90 +17,93 @@
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-
-
-
-{# end of imports #}
-<div id="content">
-<div class="card">
-    <div class="card-header" id="settings_header">
-        <h5 class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
-                Settings
-            </button>
-        </h5>
-    </div>
-    <div id="settings" class="collapse show" aria-labelledby="c_settings_header" data-parent="#accordion">
-        <div class="card-body">
-            {% import 'macro_template.html' as m %}
-
-            {% if error %}
-            {{ m.show_error(error) }}
-            {% endif %}
-
-            {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name =all_measurement,class="measurement",value=entity,select=measurement,d=name,block=block) }}
-            {{ m.entity_form_single(id_single= "categorical_entities",class="categorical_entities",name =all_categorical_entities,select=categorical_entities,value=entity,d="Group by:") }}
-
-            <!-- Send dictionary with subcategory data to javascript -->
-            <script type="text/javascript">
-                var cat = {{all_subcategory_entities|safe}};
-            </script>
-
-            <div class="tooltips" title="Please select category and next subcategory">
-                <label>Subcategory: </label>
-                <select multiple id="subcategory_entities" class="subcategory_entities" name="subcategory_entities" class="form-control" style="width: 100%" >
-                    <option value="Select all">Select all</option>
-                    {% for entity in all_subcategory_entities[categorical_entities] %}
-                    <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{ entity }}</option>
-                    {% endfor %}
-                </select>
+    {# end of imports #}
+    <div id="content">
+        <div class="card">
+            <div class="card-header" id="settings_header">
+                <h5 class="mb-0">
+                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                            aria-expanded="true" aria-controls="settings">
+                        Settings
+                    </button>
+                </h5>
             </div>
+            <div id="settings" class="collapse show" aria-labelledby="c_settings_header" data-parent="#accordion">
+                <div class="card-body">
+                    {% import 'macro_template.html' as m %}
+
+                    {% if error %}
+                    {{ m.show_error(error) }}
+                    {% endif %}
+
+                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name
+                    =measurement_tuple[0],class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                    {{ m.entity_form_single(id_single= "categorical_entities",class="categorical_entities",name
+                    =entities[1],select=categorical_entities,value=entity,d="Group by:") }}
+
+                    <!-- Send dictionary with subcategory data to javascript -->
+                    <script type="text/javascript">
+                        var cat = {{entities[2]|safe}};
+                    </script>
+
+                    <div class="tooltips" title="Please select category and next subcategory">
+                        <label>Subcategory: </label>
+                        <select multiple id="subcategory_entities" class="subcategory_entities"
+                                name="subcategory_entities"  style="width: 100%">
+                            <option value="Select all">Select all</option>
+                            {% for entity in entities[2][categorical_entities] %}
+                            <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{
+                                entity }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="card-body">
+                        <label>Show in: </label>
+                        <table>
+                            <tr>
+                                <td>
+                                    <div class="custom-control custom-radio">
+                                        <input type="radio" class="custom-control-input" id="count" name="how_to_plot"
+                                               value="count"
+                                               {% if how_to_plot=="count" %}checked{% endif %}>
+                                        <label class="custom-control-label" for="count">count</label>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="custom-control custom-radio">
+                                        <input type="radio" class="custom-control-input" id="%" name="how_to_plot"
+                                               value="%"
+                                               {% if how_to_plot=="%" or not how_to_plot %}checked{% endif %}>
+                                        <label class="custom-control-label" for="%">%</label>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <button id="Result" name="barchart" class="btn btn-outline-info" >Result</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-header" id="results_header">
+            <h5 class="mb-0">
+                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                        {% if barchart %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                    Results
+                </button>
+            </h5>
+        </div>
+        <div id="numeric_results" class="collapse {% if plot %} show {% endif %}" aria-labelledby="n_results_header"
+             data-parent="#numeric_accordion">
             <div class="card-body">
-            <label >Show in: </label>
-                <table >
-                    <tr>
-                        <td>
-                            <div class="custom-control custom-radio" >
-                                <input type="radio" class="custom-control-input" id="count" name="how_to_plot" value="count"
-                                       {% if how_to_plot=="count"  %}checked{% endif %}>
-                                <label class="custom-control-label" for="count">count</label>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="custom-control custom-radio">
-                                <input type="radio" class="custom-control-input" id="%" name="how_to_plot" value="%"
-                                       {% if how_to_plot=="%"  or not how_to_plot %}checked{% endif %}>
-                                <label class="custom-control-label" for="%">%</label>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+                {% if plot %}
+                <div class="chart" id="barchart">
+                    {{plot | safe}}
+                </div>
+                {% endif %}
             </div>
-        <button id="Plot"  name="barchart" class="btn btn-outline-info" class="Plot">Plot</button>
         </div>
     </div>
-</div>
-
-<div class="card-header" id="results_header">
-    <h5 class="mb-0">
-        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-            {% if measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
-            Results
-        </button>
-    </h5>
-</div>
-<div id="numeric_results" class="collapse {% if measurement %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-    <div class="card-body">
-        {% if plot %}
-        <div class="chart" id="barchart">
-            {{plot | safe}}
-        </div>
-        {% endif %}
-    </div>
-</div>
-</div>
 </form>
 {% endblock %}

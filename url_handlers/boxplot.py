@@ -1,120 +1,102 @@
-from flask import Blueprint, render_template, request,session
-import modules.load_data_postgre as ps
+from flask import Blueprint, render_template, request, session
+from modules.get_data_to_histogrm import get_histogram_box_plot
 import plotly.express as px
-import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, measurement_name,Name_ID, block, df_min_max,data
+import plotly.graph_objects as go
+from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
+from webserver import block_measurement, all_measurement, factory, start_date, end_date
+import pandas as pd
+import textwrap
 
-boxplot_page = Blueprint('boxplot', __name__,
-                         template_folder='templates')
+
+boxplot_page = Blueprint('boxplot', __name__, template_folder='templates')
 
 
 @boxplot_page.route('/boxplot', methods=['GET'])
 def get_boxplots():
-    start_date, end_date = filtering.date()
-    categorical_filter, categorical_names = filtering.check_for_filter_get()
-    numerical_filter = filtering.check_for_numerical_filter_get()
-    return render_template('boxplot.html',
-                           name='{}'.format(measurement_name),
-                           block=block,
-                           all_measurement=all_measurement,
-                           start_date=start_date,
-                           end_date=end_date,
-                           measurement_filter=session.get('measurement_filter'),
-                           filter=categorical_filter,
-                           numerical_filter=numerical_filter,
-                           df_min_max=df_min_max
-                           )
+    return render_template('boxplot.html')
 
 
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
-    # get filters
-    start_date, end_date, date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter= filtering.check_for_filter_post()
-    numerical_filter,numerical_filter_name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    session['measurement_filter'] = measurement_filter
-
-    if block == 'none':
-        measurement = all_measurement.values
+    
+    # get request values
+    if block_measurement == 'none':
+        measurement = [all_measurement[0]]
     else:
         measurement = request.form.getlist('measurement')
-
-    numeric_entities = request.form.get('numeric_entities')
-    categorical_entities = request.form.get('categorical_entities')
-    subcategory_entities = request.form.getlist('subcategory_entities')
+    entities = (request.form.get('numeric_entities'), request.form.get('categorical_entities'),
+                request.form.getlist('subcategory_entities'))
     how_to_plot = request.form.get('how_to_plot')
 
+    # get_filter
+    check_for_date_filter_post(start_date, end_date)
+    date_filter = session.get('date_filter')
+    limit_filter = check_for_limit_offset()
+    update_filter = session.get('filtering')
+
     # handling errors and load data from database
-    error = None
+    df = pd.DataFrame()
     if measurement == "Search entity":
-        error = "Please select number of {}".format(measurement_name)
-    elif numeric_entities == "Search entity" or categorical_entities == "Search entity":
+        error = "Please select number of measurement"
+    elif entities[0] == "Search entity" or entities[1] == "Search entity":
         error = "Please select entity"
-    elif not subcategory_entities:
+    elif not entities[2]:
         error = "Please select subcategory"
-    elif not error:
-        df, error = ps.get_num_cat_values(numeric_entities, categorical_entities, subcategory_entities, measurement, case_ids,
-                                          categorical_filter, categorical_names, numerical_filter_name, from1, to1,
-                                          measurement_filter, date, rdb)
-        df = df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
-        numeric_entities_unit, error = ps.get_unit(numeric_entities, rdb)
-        if numeric_entities_unit:
-            numeric_entities_unit = numeric_entities + ' (' + numeric_entities_unit + ')'
-            df.columns = [Name_ID,measurement_name, numeric_entities_unit,categorical_entities]
-        else:
-            numeric_entities_unit = numeric_entities
-        if not error:
-            df = df.dropna()
-            if len(df.index) == 0:
-                error = "This two entities don't have common values"
+    else:
+        session_db = factory.get_session(session.get('session_id'))
+        df, error = get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter, session_db)
 
     if error:
         return render_template('boxplot.html',
-                               name='{}'.format(measurement_name),
-                               block=block,
                                error=error,
-                               numeric_entities=numeric_entities,
-                               categorical_entities=categorical_entities,
-                               subcategory_entities=subcategory_entities,
-                               measurement=measurement,
-                               measurement_filter=measurement_filter,
-                               all_measurement=all_measurement,
-                               start_date=start_date,
-                               end_date=end_date,
-                               filter=categorical_filter_zip,
-                               numerical_filter=numerical_filter,
                                how_to_plot=how_to_plot,
-                               df_min_max=df_min_max
-                               )
+                               measurement=measurement,
+                               numeric_entities=entities[0],
+                               categorical_entities=entities[1],
+                               subcategory_entities=entities[2])
 
     # Plot figure and convert to an HTML string representation
-    if block == 'none':
+    if block_measurement == 'none':
+        table = df.groupby([entities[1]]).size().reset_index(name='counts')
+        fig_table = go.Figure(data=[go.Table(header=dict(values=list(table[entities[1]].values)),
+                                             cells=dict(values=table['counts'].transpose().values.tolist()))])
         if how_to_plot == 'linear':
-            fig = px.box(df, x=categorical_entities, y=numeric_entities_unit, color=categorical_entities, template="plotly_white")
+            fig = px.box(df, x=entities[1], y=entities[0], color=entities[1],
+                         template="plotly_white")
         else:
-            fig = px.box(df, x=categorical_entities, y=numeric_entities_unit, color=categorical_entities, template="plotly_white", log_y=True)
+            fig = px.box(df, x=entities[1], y=entities[0], color=entities[1],
+                         template="plotly_white", log_y=True)
     else:
+        table = df.groupby(['measurement', entities[1]]).size().reset_index(name='counts')
+        table = table.pivot(index='measurement', columns=entities[1], values='counts').reset_index()
+        fig_table = go.Figure(data=[go.Table(header=dict(values=list(table.columns)),
+                                             cells=dict(values=table.transpose().values.tolist()))
+                                    ])
         if how_to_plot == 'linear':
-            fig = px.box(df, x=measurement_name, y=numeric_entities_unit, color=categorical_entities, template="plotly_white")
+            fig = px.box(df, x='measurement', y=entities[0], color=entities[1],
+                         template="plotly_white")
         else:
-            fig = px.box(df, x=measurement_name, y=numeric_entities_unit, color=categorical_entities, template="plotly_white", log_y=True)
-    fig.update_layout(font=dict(size=16))
+            fig = px.box(df, x='measurement', y=entities[0], color=entities[1],
+                         template="plotly_white", log_y=True)
+
+    legend = textwrap.wrap(entities[1], width=20)
+    fig.update_layout(font=dict(size=16),
+                      legend_title='<br>'.join(legend),
+                      title={
+                          'text': '<b>' + entities[0] + '</b> by <b>' + entities[1] + '</b>',
+                          'x': 0.5,
+                          'xanchor': 'center', }
+                      )
+    height = 30 + len(table) * 30
+    fig_table.update_layout(height=height, margin=dict(r=5, l=5, t=5, b=5))
+    fig_table = fig_table.to_html()
     fig = fig.to_html()
 
     return render_template('boxplot.html',
-                           name='{}'.format(measurement_name),
-                           block=block,
-                           all_measurement=all_measurement,
-                           numeric_entities=numeric_entities,
-                           categorical_entities=categorical_entities,
-                           subcategory_entities=subcategory_entities,
                            measurement=measurement,
-                           measurement_filter=measurement_filter,
-                           start_date=start_date,
-                           end_date=end_date,
-                           filter=categorical_filter_zip,
-                           numerical_filter=numerical_filter,
+                           numeric_entities=entities[0],
+                           categorical_entities=entities[1],
+                           subcategory_entities=entities[2],
                            how_to_plot=how_to_plot,
-                           df_min_max=df_min_max,
+                           table=fig_table,
                            plot=fig)

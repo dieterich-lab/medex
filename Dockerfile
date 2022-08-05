@@ -1,4 +1,4 @@
-FROM python:slim
+FROM python:3.8-slim
 
 WORKDIR /app
 COPY Pipfile Pipfile.lock ./
@@ -19,7 +19,7 @@ ENV FLASK_ENV production
 ENV TZ=Europe/Berlin
 
 EXPOSE 5428
-EXPOSE 80
+EXPOSE 700
 
 
-CMD [ "waitress-serve","--port","80","--host","medex","--call", "webserver:main" ]
+CMD [ "waitress-serve","--port","700","--call", "webserver:main" ]

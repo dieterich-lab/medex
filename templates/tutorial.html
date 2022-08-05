@@ -1,258 +1,276 @@
 {% extends "layout.html" %}
 {% block body %}
 <div class="container">
-<div class="col-12">
-    <div class="bd-content">
-    <div class="jumbotron">
-        <h1 class="typography-display-1">Tutorial</h1>
-        <div class="tab-content" id="pills-tabContent">
-            <div class="tab-pane fade show active" id="example_of_usage" role="tabpanel" aria-labelledby="random_example">
-                <p style="font-size:18px;">A blue background displays information about the data.</p>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/baruu.png') }}"
-                         width="100%" class="img-responsive">
-                </div>
-                <br />
-                <br />
-                <p style="font-size:18px;"> When loading data into the database from an entities.csv file, it is possible to add
-                    a synonym, description and unit columns. <br />
-                The synonym is displayed under the entity name. It is possible to search for an entity by name or synonym.</p>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/synonym.png') }}"
-                         width="100%" class="img-responsive">
-                </div>
-                <br />
-                <br />
-                <p style="font-size:18px;"> The description is visible as a tooltip when you hover the mouse over the entity.</p>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/mouse_over.png') }}"
-                         width="100%" class="img-responsive">
-                </div>
-                <br />
-                <br />
-                <p style="font-size:18px;">The numeric and categorical tables in the database look like the figure below. They
-                    contain the columns: Patient_ID,Visit(optional),Date, Key and Value.</p>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/examination_numerical.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <br />
-                <h3>Data filtering</h3>
-                <div class="thumbnail">
-                <p style="float: left;"><img src="{{ url_for('static', filename='images/filtering.png') }}"
-                width="80%"  border="1px"></p>
-                <br />
-                <p style="font-size:18px;">Filters are applied to each tab.<br />
-                First, you can select a time window that shows only data from the selected range.<br />
-                <br />
-                The numeric and categorical filters filter the data by ID.<br />
-                <br />
-                Next, if there is more than one visit.
-                First, select which visit the filter will be applied to. Data can be filtered based on multiple visits.
-                </p></div>
-                <div style="clear: left;"></div>
+    <div class="col-12">
+        <div class="bd-content">
+            <div class="jumbotron">
+                <h1 class="typography-display-1">Tutorial</h1>
+                <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-pane fade show active" id="example_of_usage" role="tabpanel"
+                         aria-labelledby="random_example">
+                        <p style="font-size:18px;">A blue background displays information about the data.</p>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/baruu.png') }}"
+                                 width="100%" class="img-responsive">
+                        </div>
+                        <br/>
+                        <br/>
+                        <p style="font-size:18px;"> When loading data into the database from an entities.csv file, it is
+                            possible to add
+                            a synonym, description and unit columns. <br/>
+                            The synonym is displayed under the entity name. It is possible to search for an entity by
+                            name or synonym.</p>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/synonym.png') }}"
+                                 width="100%" class="img-responsive">
+                        </div>
+                        <br/>
+                        <br/>
+                        <p style="font-size:18px;"> The description is visible as a tooltip when you hover the mouse
+                            over the entity.</p>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/mouse_over.png') }}"
+                                 width="100%" class="img-responsive">
+                        </div>
+                        <br/>
+                        <br/>
+                        <p style="font-size:18px;">The numeric and categorical tables in the database look like the
+                            figure below. They
+                            contain the columns: Patient_ID,Visit(optional),Date, Key and Value.</p>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/examination_numerical.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <br/>
+                        <h3>Data filtering</h3>
+                        <div class="thumbnail">
+                            <p style="float: left;"><img src="{{ url_for('static', filename='images/filtering.png') }}"
+                                                         width="80%" border="1px"></p>
+                            <br/>
+                            <p style="font-size:18px;">Filters are applied to each tab.<br/>
+                                First, you can select a time window that shows only data from the selected range.<br/>
+                                <br/>
+                                The numeric and categorical filters filter the data by ID.<br/>
+                                <br/>
+                                Next, if there is more than one visit.
+                                First, select which visit the filter will be applied to. Data can be filtered based on
+                                multiple visits.
+                            </p></div>
+                        <div style="clear: left;"></div>
 
-                <div class="columns">
-                  <div class="columns__item">
-                    <figure>
-                      <img src="{{ url_for('static', filename='images/filtering_results2.png') }}" />
-                      <figcaption>
-                        Example 1: shows that we will only select IDs where bmi_overweigth is 1 and basis_drinksweek is
-                          between 6 and 18 on the first and second visit.
-                      </figcaption>
-                     </figure>
-                  </div>
-                  <div class="columns__item">
-                    <figure>
-                      <img src="{{ url_for('static', filename='images/filtering_results.png') }}" />
-                      <figcaption>
-                        Example 2: This example shows that we will only select IDs where bmi_overweigth is 1 and
-                          basis_drinksweek is between 6 and 18 during the first visit (these values for the selected
-                          entities may vary during other visits).
-                      </figcaption>
-                     </figure>
-                  </div>
-                </div>
+                        <div class="columns">
+                            <div class="columns__item">
+                                <figure>
+                                    <img src="{{ url_for('static', filename='images/filtering_results2.png') }}"/>
+                                    <figcaption>
+                                        Example 1: shows that we will only select IDs where bmi_overweigth is 1 and
+                                        basis_drinksweek is
+                                        between 6 and 18 on the first and second visit.
+                                    </figcaption>
+                                </figure>
+                            </div>
+                            <div class="columns__item">
+                                <figure>
+                                    <img src="{{ url_for('static', filename='images/filtering_results.png') }}"/>
+                                    <figcaption>
+                                        Example 2: This example shows that we will only select IDs where bmi_overweigth
+                                        is 1 and
+                                        basis_drinksweek is between 6 and 18 during the first visit (these values for
+                                        the selected
+                                        entities may vary during other visits).
+                                    </figcaption>
+                                </figure>
+                            </div>
+                        </div>
 
-                <br />
-                <br />
-                <h4>Table browser</h4>
-                <h5>Selector Panel</h5>
-                <p style="font-size:18px;">Below is the selection panel for the tab: Table browser. <br/>
-                It contains a selector where you can choose which entities will be displayed in the table and what
-                    format the table should have: long format or entities as columns.</p>
-                <div class="thumbnail">
-                    <div class="caption">
-                    </div>
-                    <img src="{{ url_for('static', filename='images/table_browser_selector.png') }}"
-                         width="100%" class="img-responsive">
-                </div>
-                <br />
-                <p style="font-size:18px;">Long format: In this format, the table contains only columns ID,Date,Visit(if exists),
-                    Key and Value.</p>
-                                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/table_browser_long_format.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <p style="font-size:18px;">Entities as columns: In this case entities are as columns.</p>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/table_browser_entities_format.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br/>
-               <p style="font-size:18px;">Result also has a download button, by pressing this button you can download the displayed
-                   table in csv format.</p>
-                <br />
-                <br />
-                <h4>Basic Stats</h4>
-                <p style="font-size:18px;">The Basic Statistics table calculates the min/max/average/median/standard
-                    deviation/standard error value for all occurrences of each entity.</p>
-                <br />
-                <h5>Selector Panel</h5>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/basic_statisc_slector.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <h5>Results</h5>
-                                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/basic_statisc_results.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/basic_statisc_c_slector.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <p style="font-size:18px;"> <!-- Counts show for how many transcripts the specific categorical information is available<br /> -->
-                In this case it is also possible to download the table with basic statistics using the download button.</p>
-                <br />
-                <h4>Scatter plot</h4>
-                <h5>Selector Panel</h5>
-                <!-- Scatter plot panel jest troche bardziej rozbudowany tutaj mozemy wybrac -->
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/scatter_plot_selector.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <h5>Results</h5>
-                <p style="font-size:18px;">On each graph there is Modebar in the upper right corner . This is Plotly
-                    feature that contains buttons for download chart, zoom, scroll etc.<</p>>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/scatter_plot_result1.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <p style="font-size:18px;">or with group by category</p>
-                                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/scatter_plot_selector2.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/scatter_plot_result_group.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <h4>Barchart</h4>
-                <h5>Selector Panel</h5>
-                <p style="font-size:18px;">The number of occurrences of a value can be presented as a percentage or a count.</p>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/barchart_selector.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <h5>Results</h5>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/barchart_results.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <h4>Histogram</h4>
-                <p style="font-size:18px;">It shows distribution of the data.</p>
-                <h5>Selector Panel</h5>
-                <p style="font-size:18px;">It is possible to change the number of bins.</p>
+                        <br/>
+                        <br/>
+                        <h4>Table browser</h4>
+                        <h5>Selector Panel</h5>
+                        <p style="font-size:18px;">Below is the selection panel for the tab: Table browser. <br/>
+                            It contains a selector where you can choose which entities will be displayed in the table
+                            and what
+                            format the table should have: long format or entities as columns.</p>
+                        <div class="thumbnail">
+                            <div class="caption">
+                            </div>
+                            <img src="{{ url_for('static', filename='images/table_browser_selector.png') }}"
+                                 width="100%" class="img-responsive">
+                        </div>
+                        <br/>
+                        <p style="font-size:18px;">Long format: In this format, the table contains only columns
+                            ID,Date,Visit(if exists),
+                            Key and Value.</p>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/table_browser_long_format.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <p style="font-size:18px;">Entities as columns: In this case entities are as columns.</p>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/table_browser_entities_format.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <p style="font-size:18px;">Result also has a download button, by pressing this button you can
+                            download the displayed
+                            table in csv format.</p>
+                        <br/>
+                        <br/>
+                        <h4>Basic Stats</h4>
+                        <p style="font-size:18px;">The Basic Statistics table calculates the
+                            min/max/average/median/standard
+                            deviation/standard error value for all occurrences of each entity.</p>
+                        <br/>
+                        <h5>Selector Panel</h5>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/basic_statisc_slector.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <h5>Results</h5>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/basic_statisc_results.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/basic_statisc_c_slector.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <p style="font-size:18px;">
+                            <!-- Counts show for how many transcripts the specific categorical information is available<br /> -->
+                            In this case it is also possible to download the table with basic statistics using the
+                            download button.</p>
+                        <br/>
+                        <h4>Scatter plot</h4>
+                        <h5>Selector Panel</h5>
+                        <!-- Scatter plot panel jest troche bardziej rozbudowany tutaj mozemy wybrac -->
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/scatter_plot_selector.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <h5>Results</h5>
+                        <p style="font-size:18px;">On each graph there is Modebar in the upper right corner . This is
+                            Plotly
+                            feature that contains buttons for download chart, zoom, scroll etc.<</p>>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/scatter_plot_result1.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <p style="font-size:18px;">or with group by category</p>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/scatter_plot_selector2.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/scatter_plot_result_group.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <h4>Barchart</h4>
+                        <h5>Selector Panel</h5>
+                        <p style="font-size:18px;">The number of occurrences of a value can be presented as a percentage
+                            or a count.</p>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/barchart_selector.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <h5>Results</h5>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/barchart_results.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <h4>Histogram</h4>
+                        <p style="font-size:18px;">It shows distribution of the data.</p>
+                        <h5>Selector Panel</h5>
+                        <p style="font-size:18px;">It is possible to change the number of bins.</p>
 
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/histogram_selector.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <h5>Results</h5>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/histogram_results.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <h4>Boxplot</h4>
-                <p style="font-size:18px;">It show distribution of the data and compare the distributions of numerical measurements between groups.</p>
-                <h5>Selector Panel</h5>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/boxplot_selector.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <h5>Results</h5>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/boxplot_results.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <h4>Heatmap</h4>
-                <p style="font-size:18px;">It calculates the Pearson correlation between numeric data.</p>
-                <h5>Selector Panel</h5>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/heatmap_selector.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
-                    </div>
-                </div>
-                <br />
-                <h5>Results</h5>
-                <div class="thumbnail">
-                    <img src="{{ url_for('static', filename='images/heatmap_results.png') }}"
-                         width="100%" class="img-responsive">
-                    <div class="caption">
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/histogram_selector.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <h5>Results</h5>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/histogram_results.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <h4>Boxplot</h4>
+                        <p style="font-size:18px;">It show distribution of the data and compare the distributions of
+                            numerical measurements between groups.</p>
+                        <h5>Selector Panel</h5>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/boxplot_selector.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <h5>Results</h5>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/boxplot_results.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <h4>Heatmap</h4>
+                        <p style="font-size:18px;">It calculates the Pearson correlation between numeric data.</p>
+                        <h5>Selector Panel</h5>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/heatmap_selector.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
+                        <br/>
+                        <h5>Results</h5>
+                        <div class="thumbnail">
+                            <img src="{{ url_for('static', filename='images/heatmap_results.png') }}"
+                                 width="100%" class="img-responsive">
+                            <div class="caption">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-</div>
 </div>
 
 

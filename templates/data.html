@@ -2,16 +2,15 @@
 {% block body %}
 <form action="" method="POST">
     <div id="menu">
-    {% include 'sidebar.html' %}
+        {% include 'sidebar.html' %}
     </div>
 
 
-{# imports #}
+    {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
     <script src="{{ url_for('static', filename='js/data.js') }}"></script>
     <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/subcategories.js') }}"></script>
 
     {# plotly and jquery #}
     <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
@@ -20,76 +19,85 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.css"/>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.22/datatables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='datatables/datatables.min.css') }}"/>
+    <script type="text/javascript" src="{{ url_for('static', filename='datatables/datatables.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='dataTables.select.min.js') }}"></script>
 
-{# end of imports #}
+    {# end of imports #}
 
-<div id="content">
-<div class="card">
-    <div class="card-header" id="settings_header">
-        <h5 class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings" aria-expanded="true" aria-controls="settings">
-                Settings
-            </button>
-        </h5>
-    </div>
-    <div id="settings" class="collapse show "
-         aria-labelledby="c_settings_header" data-parent="#accordion">
-        <div class="card-body">
-            {% import 'macro_template.html' as m %}
-
-            {% if error %}
-            {{ m.show_error(error) }}
-            {% endif %}
-
-            {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name =all_measurement,class="measurement",value=entity,select=measurement,d=name,block=block) }}
-            {{ m.entity_form_multiple(id_multiple= "entities",name =all_entities,value=entity,select=entities,d="Entities:") }}
-            <label >Table: </label>
-            <div class="custom-control custom-radio" >
-                <input type="radio" class="custom-control-input" id="long" name="what_table" value="long"
-                       {% if what_table =="long" or not what_table %}checked{% endif %}>
-                <label class="custom-control-label" for="long">long format</label>
+    <div id="content">
+        <div class="card">
+            <div class="card-header" id="settings_header">
+                <h5 class="mb-0">
+                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                            aria-expanded="true" aria-controls="settings">
+                        Settings
+                    </button>
+                </h5>
             </div>
-            <div class="custom-control custom-radio">
-                <input type="radio" class="custom-control-input" id="short" name="what_table" value="short"
-                       {% if what_table =="short"  %} checked {% endif %}>
-                <label class="custom-control-label" for="short">entities as columns</label>
+            <div id="settings" class="collapse show "
+                 aria-labelledby="c_settings_header" data-parent="#accordion">
+                <div class="card-body">
+
+                    {% import 'macro_template.html' as m %}
+
+                    {% if error %}
+                    {{ m.show_error(error) }}
+                    {% endif %}
+
+                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name
+                    =measurement_tuple[0],class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                    {{ m.entity_form_multiple(id_multiple="entities",name=all_entities,
+                    value=entity,select=entities_selected,d="Entities:") }}
+                    <label>Table: </label>
+                    <div class="custom-control custom-radio">
+                        <input type="radio" class="custom-control-input" id="long" name="what_table" value="long"
+                               {% if what_table=="long" or not what_table %}checked{% endif %}>
+                        <label class="custom-control-label" for="long">long format</label>
+                    </div>
+                    <div class="custom-control custom-radio">
+                        <input type="radio" class="custom-control-input" id="short" name="what_table" value="short"
+                               {% if what_table=="short" %} checked {% endif %}>
+                        <label class="custom-control-label" for="short">entities as columns</label>
+                    </div>
+                    <button id="Result" name="Result" class="btn btn-outline-info">Result</button>
+                </div>
             </div>
-            <button id="Plot" name="Result" class="btn btn-outline-info">Result</button>
+        </div>
+
+
+        <div class="card-header" id="results_header">
+            <h5 class="mb-0">
+                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                        {% if entities_selected %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                    Results
+                </button>
+            </h5>
+        </div>
+
+        <div id="numeric_results" class="collapse show " aria-labelledby="n_results_header"
+             data-parent="#numeric_accordion">
+            <div class="card-body">
+                {% if name_column %}
+                <a href="{{url_for('download', filename = 'table_browser_data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
+                <button id="send_id" name="send_id" onclick="location.href='{{ meddusa[1] }}'" type="button"
+                        class="btn btn-outline-info" style="float: right; display: none" value="Yes"> Meddusa
+                </button>
+                <br><br>
+                <div id="tab" column="{{ column }}"></div>
+                <table id="serverside_table" class="display" width="100%">
+                    <thead>
+                    <tr>
+                        {% for i in name_column %}
+                        <th>{{ i }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                </table>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
-
-
-<div class="card-header" id="results_header">
-    <h5 class="mb-0">
-        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-            {% if entities  %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
-            Results
-        </button>
-    </h5>
-</div>
-
-<div id="numeric_results" class="collapse show " aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-    <div class="card-body">
-        {% if name_column %}
-        <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
-        <br><br>
-        <div id="tab"  column="{{ column }}"></div>
-        <table id="serverside_table" class="display" width="100%">
-            <thead>
-            <tr>
-                {% for i in name_column %}
-                <th>{{ i }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-        </table>
-        {% endif %}
-        </div>
     </div>
-</div>
-</div>
 </form>
 {% endblock %}

@@ -1,141 +1,254 @@
 $(function () {
 
 
-function cd(start, end) {
-        $('#Date span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
-    }
-    $('#Date').daterangepicker({
-        startDate: start,
-        endDate: end,
+    function cd(start, end) {
+            $('#Date span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
+        }
+        $('#Date').daterangepicker({
+            startDate: start,
+            endDate: end,
+        },cd);
 
-    },cd);
+        cd(start,end);
 
-    cd(start,end);
-
-
-var instance,
-    min = 10,
-    max = 100
+    var instance,
+        min = 10,
+        max = 100
 
 
 
-
-$('#range').ionRangeSlider({
-    type: "double",
-    skin: "big",
-    grid: true,
-    grid_num: 4,
-    min: min,
-    max: max,
-    step: 0.001,
-    onStart: updateInputs,
-    onChange: updateInputs
-});
-instance = $('#range').data("ionRangeSlider");
-
-
-function updateInputs (data) {
-	from = data.from;
-    to = data.to;
-    min = data.min;
-    max = data.max;
-
-    $('#input1').prop("value", from);
-    $('#input2').prop("value", to);
-}
-
-$('#input1').on("input", function () {
-    var val = $(this).prop("value");
-
-    // validate
-    if (val < min) {
-        val = min;
-    } else if (val > to) {
-        val = to;
-    }
-
-    instance.update({
-        from: val
-    });
-});
-
-$('#input2').on("input", function () {
-    var val = $(this).prop("value");
-    // validate
-    if (val < from) {
-        val = from;
-    } else if (val > max) {
-        val = max;
-    }
-
-    instance.update({
-        to: val
-    });
-});
-//change subcategories if category change
-$('#numerical_filter').change(function () {
-    var entity =$(this).val(), values = df[entity] || [];
-    var min =values['min']
-    var max =values['max']
-
-    $('#input1').prop("value", min);
-    $('#input2').prop("value", max);
-    instance.update({
+    $('#range').ionRangeSlider({
+        type: "double",
+        skin: "big",
+        grid: true,
+        grid_num: 4,
         min: min,
         max: max,
-        from: min,
-        to: max
+        step: 0.001,
+        onStart: updateInputs,
+        onChange: updateInputs
+    });
+    instance = $('#range').data("ionRangeSlider");
+
+    $(".range").ionRangeSlider({
+        type: "double",
+        skin: "big",
+        grid: true,
+        grid_num: 4,
+        step: 0.001,
+        to_fixed:true,//block the top
+        from_fixed:true//block the from
     });
 
-});
-        $(".range").ionRangeSlider({
-            type: "double",
-            skin: "big",
-            grid: true,
-            grid_num: 4,
-            step: 0.001,
+    $('#id_numerical_filter').change(function () {
+        var entity =$(this).val(), values = df[entity] || [];
+        min =values['min']
+        max =values['max']
+
+
+        instance.update({
+            min: min,
+            from: min,
+            max: max,
+            to: max
         });
+        $('#input1').prop("value", min);
+        $('#input2').prop("value", max);
+
+
+    });
+
+    function updateInputs (data) {
+        from = data.from;
+        to = data.to;
+        min = data.min;
+        max = data.max;
+        $('#input1').prop("value", from);
+        $('#input2').prop("value", to);
+
+    }
+
+    $('#input1').on("input", function () {
+        var val = $(this).prop("value");
+        // validate
+        if (val < min ) {
+            val = min;
+        } else if (val > to) {
+            val = to;
+        }
+        instance.update({
+            from: val
+        });
+
+    });
+
+    $('#input2').on("input", function () {
+        var val = $(this).prop("value");
+        // validate
+        if (val < from) {
+            val = from;
+        } else if (val > max) {
+            val = max;
+        }
+        instance.update({
+            to: val
+        });
+
+    });
+
+   filter_check = function(input) {
+    if (document.getElementById('categorical_filter_check').checked) {
+        document.getElementById('categorical_filter_check_block').style.display = 'block';
+        document.getElementById('numerical_filter_check_block').style.display = 'none';
+
+    }
+    else if (document.getElementById('numerical_filter_check').checked){
+        document.getElementById('numerical_filter_check_block').style.display = 'block';
+        document.getElementById('categorical_filter_check_block').style.display = 'none';}
+
+    }
+
+    // use plugin select2 for selector
+    $("#categorical_filter").select2({
+    placeholder:"Search entity"
+    });
+    $("#id_numerical_filter").select2({
+    placeholder:"Search entity"
+    });
+
+    var $filter = $('#subcategory_filter').select2({
+    placeholder:"Search entity"
+    });
+    // handling select all choice
+    $('#subcategory_filter').on("select2:select", function (e) {
+           var data = e.params.data.text;
+           if(data=='Select all'){
+            $("#subcategory_filter> option").prop("selected","selected");
+            $('#subcategory_filter> option[value="Select all"]').prop("selected", false);
+            $("#subcategory_filter").trigger("change");
+           }
+      });
+
+    //change subcategories if category change
+    $('#categorical_filter').change(function () {
+        var entity =$(this).val(), values = filter[entity] || [];
+
+        var html = $.map(values, function(value){
+            return '<option value="' + value + '">' + value + '</option>'
+        }).join('');
+        $filter.html('<option value="Select all">Select all</option>'+html)
+    });
 
 
 
     $("#clean").click(function(){
-        $("#demo").empty();
-        $("#demo2").empty();
+        var clean = document.getElementById("categorical_filter").value;
+        $.ajax({
+            type: "POST",
+            url: "/filtering",
+            data: JSON.stringify([{'clean':'clean'}]),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(response) {
+                    $("#demo").empty();
+                    $("#demo2").empty();
+                }
+            });
     });
 
-    $("#Add").click(function() {
-        var visit =$("#measurement_filter").val();
-
-        var mag =$("#categorical_filter").val();
-        var e2 =$('#subcategory_filter').val();
-        var mm = mag + " is " +e2
-
-        document.getElementById("demo0").innerHTML = '<p>Filter by visit as on:'+ visit +'</p><input type="hidden" value='+visit+'>'
-        $( "#measurement_filter").change();
-
-        if (mag != 'Search entity'){
-        document.getElementById("demo").innerHTML = document.getElementById("demo").innerHTML +"  <button  style='display: block; width: 100%' class='btn btn-outline-primary'  ><span onclick='remove(this)'  class='close' > x </span><input type='hidden' name='filter' value='" + mm +"'><input type='hidden' name='cat' value='" + mag+"'>" + mm + "</button>";
-        $("#categorical_filter").val('Search entity').change();
-
-        }
-
-        var ed = $("#numerical_filter").val();
-        var mag2 = $("#range").val();
-        var result = mag2.split(";");
-        var fieldvalue ='<div class="fd-box2"><span onclick="(this).closest(".fd-box2").remove()"   class="close" > x </span><input type="hidden" name="name" value="'+ed+'">'+ ed +'<input type="text" class="range" name="loan_term"  data-min="' + min + '" data-max="' + max + '" data-from="'+ result[0] +'" data-to="'+result[1]+ '"/></div>'
-        if (ed != 'Search entity'){
-        $(fieldvalue).appendTo($('#demo2'));
-        $("#numerical_filter").val('Search entity').change();
-        }
-        $(".range").ionRangeSlider({
-            type: "double",
-            skin: "big",
-            grid: true,
-            grid_num: 4,
-            step: 0.001,
+    remove_filter = function(span) {
+        var val_cat = $(span).closest("div").find("button.btn").val();
+        var val_num = $(span).closest("div").find("input.name").val();
+            if (val_cat != null) {
+                var val = val_cat;
+                var type = 'categorical';
+            }else {
+                var val = val_num;
+                var type = 'numerical';
+            }
+        span.closest("div").remove()
+        $.ajax({
+            type: "POST",
+            url: "/filtering",
+            data: JSON.stringify([{'clean_one_filter': val},
+                                    {'type': type}]),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function(response) {
+                }
         });
+    }
+
+
+    $("#add_filter").click(function() {
+        var filter_update = document.getElementById("add_filter").value;
+        if (document.getElementById("categorical_filter_check").checked) {
+            var filter_cat = document.getElementById("categorical_filter").value;
+            var filter_sub_cat = $('#subcategory_filter').val();
+            var filters = [
+            {"cat": filter_cat},
+            {"sub": filter_sub_cat},
+            {"filter_update": filter_update}
+            ];
+            $.ajax({
+              type: "POST",
+              url: "/filtering",
+              data: JSON.stringify(filters),
+              contentType: "application/json",
+              dataType: 'json',
+              success: function(response) {
+                var content = "<div class='categorical_filter'>"
+                content += "<button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;'"
+                content += "class='btn btn-outline-primary text-left' value = '"+ response.filter +"'>"
+                content += "<span class='close' onclick='remove_filter(this)' >x </span>"
+                content += response.filter + ' is ' + response.subcategory
+                content += "</button></div>"
+                document.getElementById("add_filter").value = response.update_filter
+                $("#demo").append(content)
+                }
+            });
+        }
+        else{
+            var filter_num = document.getElementById("id_numerical_filter").value;
+            var num_from_to = document.getElementById("range").value;
+            var filters = [
+            {"num": filter_num},
+            {"from_to": num_from_to},
+            {"min_max": [min,max]},
+            {"filter_update": filter_update}
+            ];
+
+            $.ajax({
+              type: "POST",
+              url: "/filtering",
+              data: JSON.stringify(filters),
+              contentType: "application/json",
+              dataType: 'json',
+              success: function(response) {
+                var content = "<div class='numerical_filter'>"
+                content += "<span onclick='remove_filter(this)'  class='close'> x </span>"
+                content += "<input type='hidden' class='name' value="+ response.filter +"/>" + response.filter
+                content += "<input type='text' class='range'  name='loan_term'  data-min='"+ min
+                content += "' data-max='"+ max +"'data-from='"+ response.from_num +"'data-to='"+ response.to_num +"'/>"
+                content += "</div>"
+                $("#demo2").append(content)
+                document.getElementById("add_filter").value = response.update_filter
+                },
+              complete: function(response){
+                    $(".range").ionRangeSlider({
+                    type: "double",
+                    skin: "big",
+                    grid: true,
+                    grid_num: 4,
+                    step: 0.001,
+                    to_fixed:true,//block the top
+                    from_fixed:true//block the from
+                });
+               }
+            });
+
+        }
+
 
     });
-
-
 });

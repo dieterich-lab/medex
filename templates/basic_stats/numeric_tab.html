@@ -1,13 +1,15 @@
 {# Numeric tab. Using bootstrap classes. The tab container (div.#statistics) and navigation links (ul#statistics_tab)
-            are defined in basic_stats.html. #}
+are defined in basic_stats.html. #}
 
-<div class="tab-pane fade {% if numeric_tab %}show active{% endif %}" id="numeric_tab" role="tabpanel" aria-labelledby="n_settings_header">
+<div class="tab-pane fade {% if numeric_tab %}show active{% endif %}" id="numeric_tab" role="tabpanel"
+     aria-labelledby="n_settings_header">
     <div id="numeric_accordion">
         <div class="card">
             <div class="card-header" id="n_settings_header">
                 <h5 class="mb-0">
                     <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_settings"
-                        {% if not numeric_entities %} aria-expanded="true" {% endif %} aria-controls="numeric_settings">
+                            {% if not numeric_entities %} aria-expanded="true" {% endif %}
+                            aria-controls="numeric_settings">
                         Settings
                     </button>
                 </h5>
@@ -20,29 +22,31 @@
                     {{ m.show_error(error) }}
                     {% endif %}
 
-                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_numeric",name =all_measurement,class="measurement",value=entity,select=measurement_numeric,d=name,block=block) }}
-                    {{ m.entity_form_multiple(id_multiple="numeric_entities_multiple",name=all_numeric_entities ,value=entity,select=numeric_entities,d="Numeric entities:") }}
+                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_numeric",name
+                    =measurement_tuple[0],class="measurement",value=entity,select=measurement_numeric,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                    {{ m.entity_form_multiple(id_multiple="numeric_entities_multiple",name=entities[0]
+                    ,value=entity,select=numeric_entities,d="Numeric entities:") }}
 
                     <label>Include following statistics:</label>
                     <div class="row ml-2">
                         <div class="custom-control custom-checkbox mr-2">
                             <input type="checkbox" class="custom-control-input" id="count" name="count"
-                                checked="{% if basic_stats and 'count' not in basic_stats %}false{% else %}true{% endif %}">
+                                   checked="{% if basic_stats and 'count' not in basic_stats %}false{% else %}true{% endif %}">
                             <label class="custom-control-label" for="count">Counts</label>
                         </div>
                         <div class="custom-control custom-checkbox mr-2">
                             <input type="checkbox" class="custom-control-input" id="count NaN" name="count NaN"
-                                checked="{% if basic_stats and 'count NaN' not in basic_stats %}false{% else %}true{% endif %}">
+                                   checked="{% if basic_stats and 'count NaN' not in basic_stats %}false{% else %}true{% endif %}">
                             <label class="custom-control-label" for="count NaN">Counts NaN</label>
                         </div>
                         <div class="custom-control custom-checkbox mr-2">
                             <input type="checkbox" class="custom-control-input" id="mean" name="mean"
-                                checked="{% if basic_stats and 'mean' not in basic_stats %}false{% else %}true{% endif %}">
+                                   checked="{% if basic_stats and 'mean' not in basic_stats %}false{% else %}true{% endif %}">
                             <label class="custom-control-label" for="mean">Mean</label>
                         </div>
                         <div class="custom-control custom-checkbox mr-2">
                             <input type="checkbox" class="custom-control-input" id="median" name="median"
-                                checked="{% if basic_stats and 'median' not in basic_stats %}false{% else %}true{% endif %}">
+                                   checked="{% if basic_stats and 'median' not in basic_stats %}false{% else %}true{% endif %}">
                             <label class="custom-control-label" for="median">Median</label>
                         </div>
                         <div class="custom-control custom-checkbox mr-2">
@@ -66,64 +70,102 @@
                             <label class="custom-control-label" for="std_dev">Std. Deviation</label>
                         </div>
                     </div>
-                    <button id="result_numeric" name="basic_stats" class="btn btn-outline-info" class="Plot">Basic Stats</button>
+                    <button id="Result_categorical" name="basic_stats" class="btn btn-outline-info" >Result</button>
                 </div>
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-header" id="results_header">
-                <h5 class="mb-0">
-                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                        {% if numeric_entities %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
-                        Results
-                    </button>
-                </h5>
-            </div>
 
-            <div id="numeric_results" class="collapse {% if numeric_entities %} show {% endif %}" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-                <div class="card-body">
-                    {% if basic_stats %}
-                        <a href="{{url_for('download', filename = 'data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
+            <div class="card">
+                <div class="card-header" id="results_header">
+                    <h5 class="mb-0">
+                        <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                                {% if numeric_entities %} aria-expanded="true" {% endif %}
+                                aria-controls="#numeric_results">
+                            Results
+                        </button>
+                    </h5>
+                </div>
+
+                <div id="numeric_results" class="collapse {% if numeric_entities %} show {% endif %}"
+                     aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+                    <div class="card-body">
+                        {% if basic_stats %}
+                        <a href="{{url_for('download', filename = 'basic_stats_data.csv')}}" id="download"
+                           class="btn btn-outline-info">Download</a>
                         <table class="table table-stripped">
                             <thead>
-                                <tr>
-                                    <th>Entity</th>
-                                    {% if block != 'none' %}<th>{{ measurement_name }}</th>{% endif %}
-                                    {% if 'count' in basic_stats %}<th>Counts</th>{% endif %}
-                                    {% if 'count NaN' in basic_stats %}<th title="Number of patients with missing entity value" >Counts NaN </th>{% endif %}
-                                    {% if 'min' in basic_stats %}<th>Min</th>{% endif %}
-                                    {% if 'max' in basic_stats %}<th>Max</th>{% endif %}
-                                    {% if 'mean' in basic_stats %}<th>Mean</th>{% endif %}
-                                    {% if 'median' in basic_stats %}<th>Median</th>{% endif %}
-                                    {% if 'stddev' in basic_stats %}<th>Std. Deviation</th>{% endif %}
-                                    {% if 'stderr' in basic_stats %}<th>Std. Error</th>{% endif %}
-                                </tr>
+                            <tr>
+                                <th>Entity</th>
+                                {% if measurement_tuple[2] != 'none' %}
+                                <th>{{ measurement_name }}</th>
+                                {% endif %}
+                                {% if 'count' in basic_stats %}
+                                <th>Counts</th>
+                                {% endif %}
+                                {% if 'count NaN' in basic_stats %}
+                                <th title="Number of patients with missing entity value">Counts NaN</th>
+                                {% endif %}
+                                {% if 'min' in basic_stats %}
+                                <th>Min</th>
+                                {% endif %}
+                                {% if 'max' in basic_stats %}
+                                <th>Max</th>
+                                {% endif %}
+                                {% if 'mean' in basic_stats %}
+                                <th>Mean</th>
+                                {% endif %}
+                                {% if 'median' in basic_stats %}
+                                <th>Median</th>
+                                {% endif %}
+                                {% if 'stddev' in basic_stats %}
+                                <th>Std. Deviation</th>
+                                {% endif %}
+                                {% if 'stderr' in basic_stats %}
+                                <th>Std. Error</th>
+                                {% endif %}
+                            </tr>
                             </thead>
                             <tbody>
-                                {% for entity in numeric_entities %}
-                                {% for m in measurement_numeric %}
-                                {% for i in instance %}
-                                <tr>
-                                    {% if basic_stats[first_value][entity,m,i] is defined %}
-                                    <td>{{ entity }}</a></td>
-                                    {% if block != 'none' %}<td>{{ m }}</td>{% endif %}
-                                        {% if 'count' in basic_stats %}<td>{{ basic_stats['count'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'count NaN' in basic_stats %}<td>{{ basic_stats['count NaN'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'min' in basic_stats %}<td>{{ basic_stats['min'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'max' in basic_stats %}<td>{{ basic_stats['max'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'mean' in basic_stats %}<td>{{ basic_stats['mean'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'median' in basic_stats %}<td>{{ basic_stats['median'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'stddev' in basic_stats %}<td>{{ basic_stats['stddev'][entity,m,i] }}</td>{% endif %}
-                                        {% if 'stderr' in basic_stats %}<td>{{ basic_stats['stderr'][entity,m,i] }}</td>{% endif %}
-                                    {% endif %}
-                                </tr>
-                            {% endfor %}
+                            {% for entity in numeric_entities %}
+                            {% for m in measurement_numeric %}
+                            <tr>
+                                {% if basic_stats[first_value][entity,m] is defined %}
+                                <td>{{ entity }}</a></td>
+                                {% if measurement_tuple[2] != 'none' %}
+                                <td>{{ m }}</td>
+                                {% endif %}
+                                {% if 'count' in basic_stats %}
+                                <td>{{ basic_stats['count'][entity,m] }}</td>
+                                {% endif %}
+                                {% if 'count NaN' in basic_stats %}
+                                <td>{{ basic_stats['count NaN'][entity,m] }}</td>
+                                {% endif %}
+                                {% if 'min' in basic_stats %}
+                                <td>{{ basic_stats['min'][entity,m] }}</td>
+                                {% endif %}
+                                {% if 'max' in basic_stats %}
+                                <td>{{ basic_stats['max'][entity,m] }}</td>
+                                {% endif %}
+                                {% if 'mean' in basic_stats %}
+                                <td>{{ basic_stats['mean'][entity,m] }}</td>
+                                {% endif %}
+                                {% if 'median' in basic_stats %}
+                                <td>{{ basic_stats['median'][entity,m] }}</td>
+                                {% endif %}
+                                {% if 'stddev' in basic_stats %}
+                                <td>{{ basic_stats['stddev'][entity,m] }}</td>
+                                {% endif %}
+                                {% if 'stderr' in basic_stats %}
+                                <td>{{ basic_stats['stderr'][entity,m] }}</td>
+                                {% endif %}
+                                {% endif %}
+                            </tr>
                             {% endfor %}
                             {% endfor %}
                             </tbody>
                         </table>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>

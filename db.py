@@ -1,7 +1,8 @@
 from flask import g
-import psycopg2.extras
 import os
-import time
+from sqlalchemy import create_engine
+from sqlalchemy.pool import NullPool
+
 
 user = os.environ['POSTGRES_USER']
 password = os.environ['POSTGRES_PASSWORD']
@@ -11,21 +12,13 @@ port = os.environ['POSTGRES_PORT']
 DATABASE_URL = f'postgresql://{user}:{password}@{host}:{port}/{database}'
 
 
-# Connection with database
 def connect_db():
-    """ connects to database """
-    db = getattr(g, '_database', None)
-    while db is None:
-        try:
-            db = psycopg2.connect(DATABASE_URL)
-            return db
-        except Exception:
-            time.sleep(0.1)
+    if 'db' not in g:
+        g.db = create_engine(DATABASE_URL, echo=False, poolclass=NullPool)
 
 
-def close_db(e=None):
-    db = g.pop('db', None)
-
-
-
-
+def close_db():
+    if 'db' in g:
+        db = g.pop('db')
+        if db is not None:
+            db.close()

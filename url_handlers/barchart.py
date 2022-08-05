@@ -1,114 +1,79 @@
-from flask import Blueprint, render_template, request,session
-import modules.load_data_postgre as ps
+from flask import Blueprint, render_template, request, session
+from modules.get_data_to_barchart import get_bar_chart
 import plotly.express as px
-import url_handlers.filtering as filtering
-from webserver import rdb, all_measurement, measurement_name, Name_ID, block, df_min_max, data
+from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
+from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
+import pandas as pd
+import textwrap
 
 barchart_page = Blueprint('barchart', __name__, template_folder='templates')
 
 
 @barchart_page.route('/barchart', methods=['GET'])
 def get_statistics():
-    start_date, end_date = filtering.date()
-    categorical_filter, categorical_names = filtering.check_for_filter_get()
-    numerical_filter = filtering.check_for_numerical_filter_get()
-    return render_template('barchart.html',
-                           block=block,
-                           name='{}'.format(measurement_name),
-                           all_measurement=all_measurement,
-                           start_date=start_date,
-                           end_date=end_date,
-                           measurement_filter=session.get('measurement_filter'),
-                           filter=categorical_filter,
-                           numerical_filter=numerical_filter,
-                           )
+    return render_template('barchart.html')
 
 
 @barchart_page.route('/barchart', methods=['POST'])
 def post_statistics():
-    # get filters
-    start_date, end_date,date = filtering.check_for_date_filter_post()
-    case_ids = data.case_ids
-    categorical_filter, categorical_names, categorical_filter_zip, measurement_filter = filtering.check_for_filter_post()
-    numerical_filter, name, from1, to1 = filtering.check_for_numerical_filter(df_min_max)
-    session['measurement_filter'] = measurement_filter
-
-
-    # checking if display selector for measurement
-    if block == 'none':
-        measurement = all_measurement.values
+    # get request values
+    if block_measurement == 'none':
+        measurement = [all_measurement[0]]
     else:
         measurement = request.form.getlist('measurement')
-
-    categorical_entities = request.form.get('categorical_entities')
-    subcategory_entities = request.form.getlist('subcategory_entities')
+    categorical_entities = (request.form.get('categorical_entities'), request.form.getlist('subcategory_entities'))
     how_to_plot = request.form.get('how_to_plot')
 
+    # get_filter
+    check_for_date_filter_post(start_date, end_date)
+    date_filter = session.get('date_filter')
+    limit_filter = check_for_limit_offset()
+    update_filter = session.get('filtering')
+
+    df = pd.DataFrame()
     # handling errors and load data from database
-    error = None
     if not measurement:
         error = "Please select number of {}".format(measurement_name)
-    elif categorical_entities == "Search entity":
+    elif categorical_entities[0] == "Search entity":
         error = "Please select a categorical value to group by"
-    elif not subcategory_entities:
+    elif not categorical_entities[1]:
         error = "Please select subcategory"
     else:
-        # select data from database
-        categorical_df, error = ps.get_cat_values_barchart(categorical_entities, subcategory_entities, measurement, case_ids,
-                                                           categorical_filter, categorical_names, name, from1, to1,
-                                                           measurement_filter, date, rdb)
-
-        # rename columns
-        categorical_df = categorical_df.rename(columns={"Name_ID": "{}".format(Name_ID), "measurement": "{}".format(measurement_name)})
-        if not error:
-            categorical_df.dropna()
-
+        session_db = factory.get_session(session.get('session_id'))
+        df, error = get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, update_filter,
+                                  session_db)
     if error:
         return render_template('barchart.html',
-                               name='{}'.format(measurement_name),
-                               block=block,
-                               start_date=start_date,
-                               end_date=end_date,
-                               filter=categorical_filter_zip,
-                               numerical_filter=numerical_filter,
                                measurement=measurement,
-                               measurement_filter=measurement_filter,
-                               categorical_entities=categorical_entities,
-                               subcategory_entities=subcategory_entities,
+                               categorical_entities=categorical_entities[0],
+                               subcategory_entities=categorical_entities[1],
                                how_to_plot=how_to_plot,
                                error=error
                                )
 
-    categorical_df['%'] = 100*categorical_df['count']/categorical_df.groupby(measurement_name)['count'].transform('sum')
+    df['%'] = 100 * df['count'] / df.groupby('measurement')['count'].transform('sum')
+    legend = textwrap.wrap(categorical_entities[0], width=20)
 
     # Plot figure and convert to an HTML string representation
-    if block == 'none':
-        if how_to_plot == 'count':
-            fig = px.bar(categorical_df, x=categorical_entities, y="count", barmode='group', template="plotly_white")
-        else:
-            fig = px.bar(categorical_df, x=categorical_entities, y="%", barmode='group', template="plotly_white")
+    if how_to_plot == 'count':
+        y = 'count'
     else:
-        if how_to_plot == 'count':
-            fig = px.bar(categorical_df, x=measurement_name, y="count", color=categorical_entities, barmode='group',
-                         template="plotly_white")
-        else:
-            fig = px.bar(categorical_df, x=measurement_name, y="%", color=categorical_entities, barmode='group',
-                         template="plotly_white")
+        y = '%'
+    if block_measurement == 'none':
+        fig = px.bar(df, x=categorical_entities[0], y=y, barmode='group', template="plotly_white")
+    else:
+        fig = px.bar(df, x='measurement', y=y, color=categorical_entities[0], barmode='group', template="plotly_white")
 
-    fig.update_layout(font=dict(size=16))
+    fig.update_layout(font=dict(size=16),
+                      legend_title='<br>'.join(legend),
+                      title={'text': categorical_entities[0],
+                             'x': 0.5,
+                             'xanchor': 'center'})
     fig = fig.to_html()
-
     return render_template('barchart.html',
-                           name='{}'.format(measurement_name),
-                           block=block,
                            measurement=measurement,
-                           measurement_filter=measurement_filter,
-                           start_date=start_date,
-                           end_date=end_date,
-                           filter=categorical_filter_zip,
-                           numerical_filter=numerical_filter,
-                           categorical_entities=categorical_entities,
-                           subcategory_entities=subcategory_entities,
+                           categorical_entities=categorical_entities[0],
+                           subcategory_entities=categorical_entities[1],
                            how_to_plot=how_to_plot,
                            plot=fig,
                            )
