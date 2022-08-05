@@ -65,8 +65,10 @@ def start_import(rdb):
     header = './import/header.csv'
 
     if not os.path.isfile(dataset) or not os.path.isfile(entities):
+        models.check_if_tables_exists(rdb)
         return print("Could not import to database either or entities.csv and dataset.csv is missing", file=sys.stderr)
     elif not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
+        models.check_if_tables_exists(rdb)
         return print("Data set not changed", file=sys.stderr)
     else:
         if not os.path.isfile(header):

@@ -18,7 +18,7 @@ However, it is not limited to clinical data, but can be used to do exploratory d
 * `$ docker-compose up -d`
 
 Test it out at http://localhost:8000. No mounted folders. To apply changes, the image must be re-built. <br>
-[Data import information](#data-import)
+[Data import information](#data-import-detailed-documentation)
 
 ## Setup via Docker image from Docker hub ##
 Instructions and a docker image are available at the link: https://hub.docker.com/r/aljoschak1/medex. <br>

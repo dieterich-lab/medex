@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date,  Numeric, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, Date,  Numeric, ForeignKey, Index, text
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -74,3 +74,14 @@ def drop_tables(rdb):
 
 def create_tables(rdb):
     Base.metadata.create_all(rdb)
+
+
+def check_if_tables_exists(rdb):
+    table = ''
+    connection = rdb.connect()
+    result = connection.execute(text("SELECT to_regclass('public.examination_numerical')"))
+    for row in result:
+        table = row[0]
+    if table != 'examination_numerical':
+        create_tables(rdb)
+

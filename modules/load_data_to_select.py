@@ -100,13 +100,13 @@ def get_measurement(connection_db):
     sql = """SELECT DISTINCT measurement:: int FROM examination_numerical ORDER BY measurement """
     try:
         df = pd.read_sql(sql, connection_db)
-        df['measurement'] = df['measurement'].astype(str)
+        measurement_list = df['measurement'].astype(str)
         # show all hide measurement selector when was only one measurement for all entities
         if len(df['measurement']) < 2:
             block_measurement = 'none'
         else:
             block_measurement = 'block'
     except (Exception,):
-        df = ["No data"]
+        measurement_list = []
         block_measurement = 'none'
-    return df['measurement'], block_measurement
+    return measurement_list, block_measurement
