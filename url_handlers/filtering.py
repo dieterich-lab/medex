@@ -3,66 +3,43 @@ from flask import request, session
 import datetime
 
 
-class Filtering:
-    def __init__(self, filter_update, case_id, filter_num, filter_cat):
-        self.filter_update = filter_update
-        self.case_id = case_id
-        self.filter_num = filter_num
-        self.filter_cat = filter_cat
+def clean_all_filter(session_db):
+    ps.clean_filter(session_db)
+    session['filtering'] = {'filter_update': '0', 'case_id': 'No', 'filter_num': {}, 'filter_cat': {}}
+    return {'filter': 'cleaned'}
 
-    def clean_all_filter(self, session_db):
-        ps.clean_filter(session_db)
-        self.filter_update, self.case_id, self.filter_num, self.filter_cat = 0, 'No', {}, {}
-        return {'filter': 'cleaned'}
 
-    def clean_one_filter(self, filters, session_db):
+def add_categorical_filter(filters, session_db):
+    if filters[0].get('cat') in session.get('filtering')['filter_cat']:
+        return {'filter': 'error'}
+    else:
+        session.get('filtering')['filter_cat'].update({filters[0].get('cat'): ','.join(filters[1].get('sub'))})
+        session.get('filtering')['filter_update'] = str(int(session.get('filtering')['filter_update']) + 1)
+        ps.add_categorical_filter(filters, int(session.get('filtering')['filter_update']), session_db)
+        return {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub'),
+                'update_filter': session.get('filter_update')}
 
-        self.filter_update = self.filter_update - 1
-        print(self.filter_update)
-        if self.filter_update == 0:
-            ps.clean_filter(session_db)
-            self.filter_update, self.case_id, self.filter_num, self.filter_cat = 0, 'No', {}, {}
-        else:
-            ps.remove_one_filter(filters[0].get('clean_one_filter'), self.filter_update, session_db)
-            if filters[1].get('type') == 'categorical':
-                del self.filter_cat[filters[0].get('clean_one_filter')]
-            else:
-                del self.filter_num[filters[0].get('clean_one_filter')]
-        return {'filter': 'removed'}
 
-    def add_categorical_filter(self, filters, session_db):
-        if filters[0].get('cat') in self.filter_cat:
-            return {'filter': 'error'}
-        else:
-            self.filter_cat.update({filters[0].get('cat'): ','.join(filters[1].get('sub'))})
-            self.filter_update = self.filter_update + 1
-            ps.add_categorical_filter(filters, self.filter_update, session_db)
-            return {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub'),
-                    'update_filter': session.get('filter_update')}
+def add_numerical_filter(filters, session_db):
+    if filters[0].get('num') in session.get('filtering')['filter_num']:
+        return {'filter': 'error'}
+    else:
+        from_to = filters[1].get('from_to').split(";")
+        session.get('filtering')['filter_num'].update({filters[0].get('num'): (from_to[0], from_to[1],
+                                                                               filters[2].get('min_max')[0],
+                                                                               filters[2].get('min_max')[1])})
+        session.get('filtering')['filter_update'] = str(int(session.get('filtering')['filter_update']) + 1)
+        ps.add_numerical_filter(filters, int(session.get('filtering')['filter_update']), session_db)
+        return {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1],
+                'update_filter': session.get('filter_update')}
 
-    def add_numerical_filter(self, filters, session_db):
-        if filters[0].get('num') in self.filter_num:
-            return {'filter': 'error'}
-        else:
-            from_to = filters[1].get('from_to').split(";")
-            self.filter_num.update({filters[0].get('num'): (from_to[0], from_to[1], filters[2].get('min_max')[0],
-                                                            filters[2].get('min_max')[1])})
-            self.filter_update = self.filter_update + 1
-            ps.add_numerical_filter(filters, self.filter_update, session_db)
-            return {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1],
-                    'update_filter': session.get('filter_update')}
 
-    def add_case_id(self, case_ids, session_db):
-        if self.case_id == 'No':
-            self.filter_update = self.filter_update + 1
-        ps.add_case_ids_to_filter(case_ids['cases_ids'], self.filter_update, self.case_id, session_db)
-        self.case_id = 'Yes'
-
-    def date_filter(self):
-        pass
-
-    def limit_offset(self):
-        pass
+def add_case_id(case_ids, session_db):
+    if session.get('filtering')['case_id'] == 'No':
+        session.get('filtering')['filter_update'] = str(int(session.get('filtering')['filter_update']) + 1)
+    ps.add_case_ids_to_filter(case_ids['cases_ids'], int(session.get('filtering')['filter_update']),
+                              session.get('filtering')['case_id'], session_db)
+    session.get('filtering')['case_id'] = 'Yes'
 
 
 def check_for_limit_offset():

@@ -3,7 +3,7 @@ from modules.import_scheduler import Scheduler
 from modules.database_sessions import DatabaseSessionFactory
 import modules.load_data_to_select as ps
 from modules.get_data_to_table_browser import get_data_download
-from url_handlers.filtering import Filtering
+import url_handlers.filtering as filtering
 from modules.filtering import get_case_ids
 from flask_cors import CORS
 from db import connect_db, close_db
@@ -28,7 +28,6 @@ def teardown_db(exception):
 
 
 factory = DatabaseSessionFactory(rdb)
-filtering = Filtering(0, 'No', {}, {})
 
 
 def check_for_env(key: str, default=None, cast=None):
@@ -102,7 +101,7 @@ def data_information():
 # information about database
 @app.context_processor
 def message_count():
-
+    print(session.get('session_id'))
     if session.get('session_id') is None:
         session['session_id'] = os.urandom(10)
         factory.get_session(session.get('session_id'))
@@ -131,7 +130,6 @@ def message_count():
                 numerical_filter_results=session.get('filtering')['filter_num'],
                 limit_offset=session.get('limit_offset')
                 )
-
 
 
 # import a Blueprint
@@ -165,8 +163,7 @@ def get_cases():
     case_ids = cases_get.json()
     session_db = factory.get_session(session.get('session_id'))
     filtering.add_case_id(case_ids, session_db)
-    session['filtering'] = vars(filtering)
-
+    session['filtering'] = session.get('filtering')
     return redirect('/')
 
 
@@ -185,12 +182,12 @@ def filter_data():
         if 'clean' in filters[0]:
             results = filtering.clean_all_filter(session_db)
         elif 'clean_one_filter' in filters[0]:
-            results = filtering.clean_one_filter(filters, session_db)
+            results = clean_one_filter(filters, session_db)
         elif 'cat' in filters[0]:
             results = filtering.add_categorical_filter(filters, session_db)
         elif "num" in filters[0]:
             results = filtering. add_numerical_filter(filters, session_db)
-        session['filtering'] = vars(filtering)
+        session['filtering'] = session.get('filtering')
     return jsonify(results)
 
 
