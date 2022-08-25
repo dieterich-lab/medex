@@ -24,12 +24,9 @@ def get_data(table_browser, date_filter, update_filter):
                         name.value.cast(String).label('value')).
                       where(and_(name.key.in_(table_browser[0]), name.measurement.in_(table_browser[1]),
                                  checking_date_filter(date_filter, name)))
-
                         for i, name in enumerate([TableCategorical, TableNumerical, TableDate])
                         ])
-
     sql_statement = _get_what_type_of_table_print(table_browser[0], sql_union, update_filter, table_browser[2])
-
     return sql_statement
 
 
@@ -37,17 +34,12 @@ def _get_what_type_of_table_print(entities, sql_union, update_filter, what_table
     if what_table == 'long':
         sql_select = select(sql_union.c)
     else:
-        sql_group_by = select(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date, sql_union.c.measurement,
-                              sql_union.c.key,
-                              func.string_agg(sql_union.c.value, literal_column("';'")).label('value')). \
-            group_by(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date, sql_union.c.measurement,
-                     sql_union.c.key)
-
-        case_when = [func.min(case([(sql_group_by.c.key == i, sql_group_by.c.value)])).label(i) for i in entities]
-        sql_select = select(sql_group_by.c.name_id, sql_group_by.c.case_id, sql_group_by.c.date,
-                            sql_group_by.c.measurement, *case_when).\
-            group_by(sql_group_by.c.name_id, sql_group_by.c.case_id, sql_group_by.c.date, sql_group_by.c.measurement)
-
+        case_when = [func.min(case([(sql_union.c.key == i, sql_union.c.value)])).label(i) for i in entities]
+        sql_select = select(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date,
+                            sql_union.c.measurement, *case_when).\
+            group_by(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date, sql_union.c.measurement).\
+            alias("select_case")
+        sql_select = select(sql_select.c).where(text("select_case is not Null"))
     sql_statement = apply_filter_heatmap(sql_select, update_filter)
     return sql_statement
 

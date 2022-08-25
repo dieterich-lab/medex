@@ -19,7 +19,7 @@ def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date
                                                 TableNumerical.name_id == adalias2.name_id, 
                                                 checking_date_filter(date_filter, TableNumerical))).\
         group_by(TableNumerical.name_id)
-    sql_with_group = _add_group_by(add_group_by, axis, categorical_entities, measurement, sql_with_where)
+    sql_with_group = _add_group_by(add_group_by, categorical_entities, sql_with_where)
 
     sql_with_limit = apply_limit_to_sql_query(limit_filter, sql_with_group)
     df = pd.read_sql(sql_with_limit, session_db.connection())
@@ -27,7 +27,7 @@ def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date
     return df, None
 
 
-def _add_group_by(add_group_by, axis, categorical_entities, measurement, sql_with_where):
+def _add_group_by(add_group_by, categorical_entities, sql_with_where):
     if add_group_by:
         sql_with_group = select(sql_with_where.c.name_id,
                                 func.avg(sql_with_where.c.value1).label('value1'),
