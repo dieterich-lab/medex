@@ -97,7 +97,7 @@ def get_subcategories_from_categorical_entities(connection_db):
 
 
 def get_measurement(connection_db):
-    sql = """SELECT DISTINCT measurement:: int FROM examination_numerical ORDER BY measurement """
+    sql = """SELECT DISTINCT measurement FROM examination_numerical ORDER BY measurement """
     try:
         df = pd.read_sql(sql, connection_db)
         measurement_list = df['measurement'].astype(str)

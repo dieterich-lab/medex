@@ -105,7 +105,7 @@ def message_count():
     if session.get('session_id') is None:
         session['session_id'] = os.urandom(10)
         factory.get_session(session.get('session_id'))
-        session['filtering'] = {'filter_update': 0, 'case_id': 'No', 'filter_num': {}, 'filter_cat': {}}
+        session['filtering'] = {'filter_update': '0', 'case_id': 'No', 'filter_num': {}, 'filter_cat': {}}
 
     if session.get('filtering')['case_id'] == 'No':
         case_display = 'none'
@@ -182,7 +182,7 @@ def filter_data():
         if 'clean' in filters[0]:
             results = filtering.clean_all_filter(session_db)
         elif 'clean_one_filter' in filters[0]:
-            results = clean_one_filter(filters, session_db)
+            results = filtering.clean_one_filter(filters, session_db)
         elif 'cat' in filters[0]:
             results = filtering.add_categorical_filter(filters, session_db)
         elif "num" in filters[0]:
@@ -197,10 +197,11 @@ def download(filename):
     if filename == 'basic_stats_data.csv':
         csv = session.get('basic_stats_table')
     elif filename == 'table_browser_data.csv':
-        update_filter = session.get('filtering')
-        table_browser = session.get('table_browser')
-        date_filter = session.get('date_filter')
-        csv = get_data_download(table_browser, date_filter, update_filter, session_db)
+        print(session.get('date_filter'))
+        print(session.get('filtering'))
+        print(session.get('table_browser'))
+        string = create_string()
+        csv = string
     elif filename == 'case_ids.csv':
         csv = get_case_ids(session_db)
     else:
@@ -212,6 +213,17 @@ def download(filename):
                      mimetype="text/csv",
                      as_attachment=True,
                      attachment_filename=filename)
+
+
+def create_string():
+    string = 'date range:' + str(session.get('date_filter')[3]) + ' ' + str(session.get('date_filter')[4]) + '\n' + \
+             'Filters:' + '\n' + 'categorical ' + str(session.get('filtering')['filter_cat']) + '\n' + \
+             'numerical' + str(session.get('filtering')['filter_num']) + '\n' +\
+             'selected values:' + '\n' + \
+             'Visits' + str(session.get('table_browser')[1]) + '\n' + \
+             'entities' + str(session.get('table_browser')[0]) + '\n' + \
+             'Table' + str(session.get('table_browser')[2])
+    return string
 
 
 def main():

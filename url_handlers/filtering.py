@@ -9,6 +9,21 @@ def clean_all_filter(session_db):
     return {'filter': 'cleaned'}
 
 
+def clean_one_filter(filters, session_db):
+    session.get('filtering')['filter_update'] = str(int(session.get('filtering')['filter_update']) - 1)
+    if session.get('filtering')['filter_update'] == 0:
+        clean_all_filter(session_db)
+    else:
+        ps.remove_one_filter(filters[0].get('clean_one_filter'), session.get('filtering')['filter_update'], session_db)
+        if filters[1].get('type') == 'categorical':
+            print(session.get('filtering'))
+            del session.get('filtering')['filter_cat'][filters[0].get('clean_one_filter')]
+            print(session.get('filtering'))
+        else:
+            del session.get('filtering')['filter_num'][filters[0].get('clean_one_filter')]
+    return {'filter': 'removed'}
+
+
 def add_categorical_filter(filters, session_db):
     if filters[0].get('cat') in session.get('filtering')['filter_cat']:
         return {'filter': 'error'}

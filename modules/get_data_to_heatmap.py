@@ -17,7 +17,8 @@ def get_heat_map(entities, date_filter, limit_filter, update_filter, session_db)
 
 
 def apply_filter_heatmap(sql, update_filter):
-    if update_filter['filter_update'] != 0:
+    print(update_filter)
+    if update_filter['filter_update'] != '0':
         cte = sql.cte('cte')
         j = join(cte, text("temp_table_name_ids"), cte.c.name_id == text("temp_table_name_ids.name_id"))
         sql_with_filter = select(cte.c).select_from(j)

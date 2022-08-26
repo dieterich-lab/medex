@@ -113,7 +113,7 @@ def checking_date_filter(date_filter, table):
 
 
 def apply_filter_to_sql(update_filter, table, sql):
-    if update_filter['filter_update'] != 0:
+    if update_filter['filter_update'] != '0':
         j = join(table, text("temp_table_name_ids"),
                  table.name_id == text("temp_table_name_ids.name_id"))
         sql = sql.select_from(j)
