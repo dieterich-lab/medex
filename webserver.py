@@ -217,12 +217,12 @@ def download(filename):
 
 def create_string():
     string = 'date range:' + str(session.get('date_filter')[3]) + ' ' + str(session.get('date_filter')[4]) + '\n' + \
-             'Filters:' + '\n' + 'categorical ' + str(session.get('filtering')['filter_cat']) + '\n' + \
-             'numerical' + str(session.get('filtering')['filter_num']) + '\n' +\
+             'Filters: ' + '\n' + 'categorical ' + str(session.get('filtering')['filter_cat']) + '\n' + \
+             'numerical: ' + str(session.get('filtering')['filter_num']) + '\n' +\
              'selected values:' + '\n' + \
-             'Visits' + str(session.get('table_browser')[1]) + '\n' + \
-             'entities' + str(session.get('table_browser')[0]) + '\n' + \
-             'Table' + str(session.get('table_browser')[2])
+             'Visits: ' + str(session.get('table_browser')[1]) + '\n' + \
+             'entities: ' + str(session.get('table_browser')[0]) + '\n' + \
+             'Table: ' + str(session.get('table_browser')[2])
     return string
 
 
