@@ -38,8 +38,8 @@ def get_date(connection_db):
         end_date = datetime.datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
     except (Exception,):
         now = datetime.datetime.now().strftime('%Y-%d-%m')
-        start_date = datetime.datetime.strptime(now, '%Y-%m-%d').timestamp() * 1000
-        end_date = datetime.datetime.strptime(now, '%Y-%m-%d').timestamp() * 1000
+        start_date = datetime.datetime.strptime(now, '%Y-%d-%m').timestamp() * 1000
+        end_date = datetime.datetime.strptime(now, '%Y-%d-%m').timestamp() * 1000
     return start_date, end_date
 
 
@@ -97,7 +97,7 @@ def get_subcategories_from_categorical_entities(connection_db):
 
 
 def get_measurement(connection_db):
-    sql = """SELECT DISTINCT measurement:: int FROM examination_numerical ORDER BY measurement """
+    sql = """SELECT DISTINCT measurement FROM examination_numerical ORDER BY measurement """
     try:
         df = pd.read_sql(sql, connection_db)
         measurement_list = df['measurement'].astype(str)

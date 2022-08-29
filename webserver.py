@@ -101,7 +101,6 @@ def data_information():
 # information about database
 @app.context_processor
 def message_count():
-    print(session.get('session_id'))
     if session.get('session_id') is None:
         session['session_id'] = os.urandom(10)
         factory.get_session(session.get('session_id'))
@@ -182,7 +181,7 @@ def filter_data():
         if 'clean' in filters[0]:
             results = filtering.clean_all_filter(session_db)
         elif 'clean_one_filter' in filters[0]:
-            results = clean_one_filter(filters, session_db)
+            results = filtering.clean_one_filter(filters, session_db)
         elif 'cat' in filters[0]:
             results = filtering.add_categorical_filter(filters, session_db)
         elif "num" in filters[0]:

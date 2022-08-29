@@ -75,12 +75,8 @@ def post_data():
                                what_table=what_table,
                                )
 
-    # change name of entities if they have dot inside otherwise server side table doesn't work properly
-    column_change_name = []
-    [column_change_name.append(i.replace('.', '_').replace("'", "")) for i in column]
-
     dict_of_column = []
-    [dict_of_column.append({'data': i}) for i in column_change_name]
+    [dict_of_column.append({'data': i}) for i in column]
     session['table_browser'] = (entities, measurement, what_table, dict_of_column)
 
     return render_template('data.html',
