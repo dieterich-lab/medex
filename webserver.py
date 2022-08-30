@@ -101,7 +101,6 @@ def data_information():
 # information about database
 @app.context_processor
 def message_count():
-    print(session.get('session_id'))
     if session.get('session_id') is None:
         session['session_id'] = os.urandom(10)
         factory.get_session(session.get('session_id'))
@@ -197,9 +196,6 @@ def download(filename):
     if filename == 'basic_stats_data.csv':
         csv = session.get('basic_stats_table')
     elif filename == 'table_browser_data.csv':
-        print(session.get('date_filter'))
-        print(session.get('filtering'))
-        print(session.get('table_browser'))
         string = create_string()
         csv = string
     elif filename == 'case_ids.csv':
