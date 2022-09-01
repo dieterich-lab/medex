@@ -28,14 +28,14 @@ def next_filter(query, query2, r):
 
 
 def add_categorical_filter(filters, n, r):
-    subcategory = "$$" + "$$,$$".join(filters[1].get('sub')) + '$$'
+    subcategory = "$$" + "$$,$$".join(filters[2].get('sub')) + '$$'
 
-    query = """SELECT DISTINCT ec.name_id FROM examination_categorical ec 
-                WHERE ec.key = '{0}' AND ec.value IN ({1}) 
-    """.format(filters[0].get('cat'), subcategory)
-    query2 = """SELECT DISTINCT ec.name_id,ec.key FROM examination_categorical ec 
-    WHERE ec.key = '{0}' AND ec.value IN ({1}) """.format(filters[0].get('cat'), subcategory,)
-
+    query = F"""SELECT DISTINCT ec.name_id FROM examination_categorical ec 
+                WHERE ec.key = '{filters[1].get('cat')}' AND ec.value IN ({subcategory}) 
+                AND ec.measurement = '{filters[0].get('measurement')}'"""
+    query2 = F"""SELECT DISTINCT ec.name_id,ec.key,ec.measurement FROM examination_categorical ec 
+                 WHERE ec.key = '{filters[1].get('cat')}' AND ec.value IN ({subcategory}) 
+                 AND ec.measurement = '{filters[0].get('measurement')}'"""
     if n == 1:
         first_filter(query, query2, r)
     else:
@@ -43,11 +43,13 @@ def add_categorical_filter(filters, n, r):
 
 
 def add_numerical_filter(filters, n, r):
-    from_to = filters[1].get('from_to').split(";")
-    query = """ SELECT DISTINCT en.name_id FROM examination_numerical en 
-    WHERE en.key = '{0}'  AND en.value BETWEEN {1} AND {2}""".format(filters[0].get('num'), from_to[0], from_to[1])
-    query2 = """ SELECT DISTINCT en.name_id,en.key FROM examination_numerical en 
-    WHERE key = '{0}' AND en.value BETWEEN {1} AND {2} """.format(filters[0].get('num'), from_to[0], from_to[1])
+    from_to = filters[2].get('from_to').split(";")
+    query = F"""SELECT DISTINCT en.name_id FROM examination_numerical en 
+                WHERE en.key = '{filters[1].get('num')}'  AND en.value BETWEEN {from_to[0]} AND {from_to[1]} 
+                AND en.measurement = '{filters[0].get('measurement')}'"""
+    query2 = F"""SELECT DISTINCT en.name_id,en.key,en.measurement FROM examination_numerical en 
+                WHERE key = '{filters[1].get('num')}' AND en.value BETWEEN {from_to[0]} AND {from_to[1]} 
+                AND en.measurement = '{filters[0].get('measurement')}'"""
 
     if n == 1:
         first_filter(query, query2, r)
@@ -90,7 +92,9 @@ def get_case_ids(r):
 
 
 def remove_one_filter(filters, filter_update, r):
-    update_table = """ DELETE FROM temp_table_ids WHERE key = '{}' """.format(filters)
+    filter_list = filters.split(";")
+    update_table = F""" DELETE FROM temp_table_ids WHERE key = '{filter_list[1]}' 
+AND measurement = '{filter_list[0]}' """
     sql_drop = "DROP TABLE IF EXISTS temp_table_name_ids"
 
     query = """ SELECT name_id FROM temp_table_ids 

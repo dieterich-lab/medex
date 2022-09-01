@@ -115,6 +115,9 @@ $(function () {
     $("#id_numerical_filter").select2({
     placeholder:"Search entity"
     });
+    $("#filter_measurement").select2({
+    placeholder:"Search entity"
+    });
 
     var $filter = $('#subcategory_filter').select2({
     placeholder:"Search entity"
@@ -182,10 +185,12 @@ $(function () {
 
     $("#add_filter").click(function() {
         var filter_update = document.getElementById("add_filter").value;
+        var filter_measurement = document.getElementById("filter_measurement").value;
         if (document.getElementById("categorical_filter_check").checked) {
             var filter_cat = document.getElementById("categorical_filter").value;
             var filter_sub_cat = $('#subcategory_filter').val();
             var filters = [
+            {"measurement": filter_measurement},
             {"cat": filter_cat},
             {"sub": filter_sub_cat},
             {"filter_update": filter_update}
@@ -196,22 +201,23 @@ $(function () {
               data: JSON.stringify(filters),
               contentType: "application/json",
               dataType: 'json',
-              success: function(response) {
+              success: function(response){if(response.filter != 'error'){
                 var content = "<div class='categorical_filter'>"
                 content += "<button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;'"
-                content += "class='btn btn-outline-primary text-left' value = '"+ response.filter +"'>"
+                content += "class='btn btn-outline-primary text-left' value = '"+ response.measurement + ';' + response.filter +"'>"
                 content += "<span class='close' onclick='remove_filter(this)' >x </span>"
-                content += response.filter + ' is ' + response.subcategory
+                content += 'in '+ response.measurement + ':<br>' + response.filter + ' is ' + response.subcategory
                 content += "</button></div>"
                 document.getElementById("add_filter").value = response.update_filter
                 $("#demo").append(content)
-                }
+                }}
             });
         }
         else{
             var filter_num = document.getElementById("id_numerical_filter").value;
             var num_from_to = document.getElementById("range").value;
             var filters = [
+            {"measurement": filter_measurement},
             {"num": filter_num},
             {"from_to": num_from_to},
             {"min_max": [min,max]},
@@ -224,16 +230,17 @@ $(function () {
               data: JSON.stringify(filters),
               contentType: "application/json",
               dataType: 'json',
-              success: function(response) {
+              success: function(response) {if(response.filter != 'error'){
                 var content = "<div class='numerical_filter'>"
                 content += "<span onclick='remove_filter(this)'  class='close'> x </span>"
-                content += "<input type='hidden' class='name' value="+ response.filter +"/>" + response.filter
+                content += "<input type='hidden' class='name' value="+ response.measurement + ';' +  response.filter +"/>"
+                content += 'in '+ response.measurement + ':<br>' + response.filter
                 content += "<input type='text' class='range'  name='loan_term'  data-min='"+ min
                 content += "' data-max='"+ max +"'data-from='"+ response.from_num +"'data-to='"+ response.to_num +"'/>"
                 content += "</div>"
                 $("#demo2").append(content)
                 document.getElementById("add_filter").value = response.update_filter
-                },
+                }},
               complete: function(response){
                     $(".range").ionRangeSlider({
                     type: "double",

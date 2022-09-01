@@ -182,9 +182,9 @@ def filter_data():
             results = filtering.clean_all_filter(session_db)
         elif 'clean_one_filter' in filters[0]:
             results = filtering.clean_one_filter(filters, session_db)
-        elif 'cat' in filters[0]:
+        elif 'cat' in filters[1]:
             results = filtering.add_categorical_filter(filters, session_db)
-        elif "num" in filters[0]:
+        elif "num" in filters[1]:
             results = filtering. add_numerical_filter(filters, session_db)
         session['filtering'] = session.get('filtering')
     return jsonify(results)

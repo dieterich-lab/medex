@@ -46,6 +46,9 @@
     <div class="card-body">
         <label>Filter</label>
 
+        {{ m.entity_form_single_measurement(id_single_measurement= "filter_measurement",name =
+                    measurement_tuple[0],value=entity,select=measurement_tuple[0][0],d=measurement_tuple[1],block=measurement_tuple[2]) }}
+
         <div class="form-check mt-4" style="display: none">
             <input class="form-check-input" type="checkbox" title="For large data, it may take longer to display the results
                     (maximum 1 min, if the query takes longer, the query will be killed)" value='true' id="limit_yes"
@@ -125,20 +128,22 @@
         </button>
         <div id="demo">
             {% for key, value in categorical_filter_results.items() %}
+            {% set key_list = key.split(';') %}
             <div class='categorical_filter_results'>
                 <button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;'
                         class='btn btn-outline-primary text-left' value= '{{ key }}' >
                     <span class='close' onclick='remove_filter(this)'>x </span>
-                    {{key}} is {{value}}
+                    in {{key_list[0]}}:<br> {{key_list[1]}} is {{value['value']}}
                 </button>
             </div>
             {% endfor %}
         </div>
         <div id="demo2">
             {% for key, value in numerical_filter_results.items() %}
+            {% set key_list = key.split(';') %}
             <div class="numerical_filter_results">
                 <span onclick='remove_filter(this)' class='close'> x </span>
-                <input type="hidden" class="name" value='{{ key }}'/>{{ key }}
+                <input type="hidden" class="name" value='{{ key }}'/>in {{key_list[0]}}:<br>  {{ key_list[1] }}
                 <input type='text' class='range' name='loan_term' data-min="{{ value[2] }}" data-max='{{ value[3] }}'
                        data-from='{{ value[0] }}' data-to='{{ value[1] }}'/>
             </div>

@@ -23,28 +23,34 @@ def clean_one_filter(filters, session_db):
 
 
 def add_categorical_filter(filters, session_db):
-    if filters[0].get('cat') in session.get('filtering')['filter_cat']:
+    filter_cat = filters[0].get('measurement') + ';' + filters[1].get('cat')
+    if filter_cat in session.get('filtering')['filter_cat'] or 'Search entity' in filter_cat or not \
+            filters[2].get('sub'):
         return {'filter': 'error'}
     else:
-        session.get('filtering')['filter_cat'].update({filters[0].get('cat'): ','.join(filters[1].get('sub'))})
+        session.get('filtering')['filter_cat'].\
+            update({filter_cat: ','.join(filters[2].get('sub'))})
         session.get('filtering')['filter_update'] = str(int(session.get('filtering')['filter_update']) + 1)
         ps.add_categorical_filter(filters, int(session.get('filtering')['filter_update']), session_db)
-        return {'filter': filters[0].get('cat'), 'subcategory': filters[1].get('sub'),
-                'update_filter': session.get('filter_update')}
+        return {'measurement': filters[0].get('measurement'), 'filter': filters[1].get('cat'),
+                'subcategory': filters[2].get('sub'), 'update_filter': session.get('filter_update')}
 
 
 def add_numerical_filter(filters, session_db):
-    if filters[0].get('num') in session.get('filtering')['filter_num']:
+    filter_num = filters[0].get('measurement') + ';' + filters[1].get('num')
+    if filter_num in session.get('filtering')['filter_num']:
+        return {'filter': 'error'}
+    elif 'Search entity' in filter_num:
         return {'filter': 'error'}
     else:
-        from_to = filters[1].get('from_to').split(";")
-        session.get('filtering')['filter_num'].update({filters[0].get('num'): (from_to[0], from_to[1],
-                                                                               filters[2].get('min_max')[0],
-                                                                               filters[2].get('min_max')[1])})
+        from_to = filters[2].get('from_to').split(";")
+        session.get('filtering')['filter_num'].update({filter_num: (from_to[0], from_to[1],
+                                                                    filters[3].get('min_max')[0],
+                                                                    filters[3].get('min_max')[1])})
         session.get('filtering')['filter_update'] = str(int(session.get('filtering')['filter_update']) + 1)
         ps.add_numerical_filter(filters, int(session.get('filtering')['filter_update']), session_db)
-        return {'filter': filters[0].get('num'), 'from_num': from_to[0], 'to_num': from_to[1],
-                'update_filter': session.get('filter_update')}
+        return {'measurement': filters[0].get('measurement'), 'filter': filters[1].get('num'),
+                'from_num': from_to[0], 'to_num': from_to[1], 'update_filter': session.get('filter_update')}
 
 
 def add_case_id(case_ids, session_db):
