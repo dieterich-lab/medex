@@ -7,7 +7,8 @@ import pandas as pd
 from modules.filtering import checking_date_filter,apply_filter_to_sql
 
 
-def get_num_basic_stats(entities: List[str], measurement: List[str], date_filter, limit_filter, update_filter, db_session):
+def get_num_basic_stats(entities: List[str], measurement: List[str], date_filter, limit_filter, update_filter,
+                        db_session):
     select_numerical_values_sql = select(
         TableNumerical.key, TableNumerical.measurement, TableNumerical.name_id,
         func.avg(TableNumerical.value).label('value')

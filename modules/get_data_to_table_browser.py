@@ -20,8 +20,7 @@ def get_data_download(table_browser, date_filter, update_filter, session_db):
 
 
 def get_data(table_browser, date_filter, update_filter):
-    sql_union = union(*[select(name.name_id, name.case_id, name.date, name.measurement, name.key,
-                        name.value.cast(String).label('value')).
+    sql_union = union(*[select(name.name_id, name.measurement, name.key, name.value.cast(String).label('value')).
                       where(and_(name.key.in_(table_browser[0]), name.measurement.in_(table_browser[1]),
                                  checking_date_filter(date_filter, name)))
                         for i, name in enumerate([TableCategorical, TableNumerical, TableDate])
@@ -35,9 +34,8 @@ def _get_what_type_of_table_print(entities, sql_union, update_filter, what_table
         sql_select = select(sql_union.c)
     else:
         case_when = [func.min(case([(sql_union.c.key == i, sql_union.c.value)])).label(i) for i in entities]
-        sql_select = select(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date,
-                            sql_union.c.measurement, *case_when).\
-            group_by(sql_union.c.name_id, sql_union.c.case_id, sql_union.c.date, sql_union.c.measurement).\
+        sql_select = select(sql_union.c.name_id, sql_union.c.measurement, *case_when).\
+            group_by(sql_union.c.name_id, sql_union.c.measurement).\
             alias("select_case")
         sql_select = select(sql_select.c).where(text("select_case is not Null"))
     sql_statement = apply_filter_heatmap(sql_select, update_filter)
