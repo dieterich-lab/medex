@@ -11,7 +11,7 @@ def clean_all_filter(session_db):
 
 def clean_one_filter(filters, session_db):
     session.get('filtering')['filter_update'] = str(int(session.get('filtering')['filter_update']) - 1)
-    if session.get('filtering')['filter_update'] == 0:
+    if session.get('filtering')['filter_update'] == '0':
         clean_all_filter(session_db)
     else:
         ps.remove_one_filter(filters[0].get('clean_one_filter'), session.get('filtering')['filter_update'], session_db)

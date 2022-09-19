@@ -55,7 +55,7 @@ if os.environ.get('IMPORT_DISABLED') is None:
 Name_ID, measurement_name = ps.get_header(rdb)
 size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information(rdb)
 start_date, end_date = ps.get_date(rdb)
-all_patient = ps.patient(rdb)
+number_of_patient = ps.patient(rdb)
 all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities(rdb)
 df_min_max = ps.min_max_value_numeric_entities(rdb)
 all_subcategory_entities = ps.get_subcategories_from_categorical_entities(rdb)
@@ -89,8 +89,10 @@ def data_information():
     size_numeric = 'the size of the numeric table: ' + str(size_num_tab) + ' rows'
     len_categorical = 'number of categorical entities: ' + length[1]
     size_categorical = 'the size of the categorical table: ' + str(size_cat_tab) + ' rows'
+    number_of_patients_str = 'Number of all patients: ' + str(number_of_patient)
 
-    return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical),
+    return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical,
+                                      number_of_patients_str),
                 entities=(all_num_entities, all_cat_entities, all_subcategory_entities, all_date_entities),
                 measurement_tuple=(all_measurement, '{}:'.format(measurement_name), block_measurement),
                 df_min_max=df_min_max,
