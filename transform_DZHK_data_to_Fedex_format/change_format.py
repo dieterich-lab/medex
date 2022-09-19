@@ -50,8 +50,8 @@ def pivot_and_remove_nan_value(df):
         value_name="value")
     df_without_na = df_melt.dropna(subset=['value'])
     df_without_na = df_without_na[~df_without_na.value.str.startswith("nan", na=False)]
-    df_without_na['value'] = df_without_na['value'].str.replace(',', '.')
     df_without_na.value = df_without_na.value.astype(str)
+    df_without_na['value'] = df_without_na['value'].str.replace(',', '.')
     return df_without_na
 
 
