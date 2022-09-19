@@ -44,12 +44,12 @@ def get_date(connection_db):
 
 
 def patient(connection_db):
-    sql = """SELECT * FROM Patient"""
+    sql = """SELECT count(*) FROM (SELECT distinct name_id FROM patient) as foo"""
     try:
         df = pd.read_sql(sql, connection_db)
-        return df['name_id'], None
+        return df.iloc[0]['count']
     except (Exception,):
-        return None, "Problem with load data from database"
+        return 0
 
 
 def get_entities(connection_db):
