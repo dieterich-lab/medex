@@ -46,8 +46,6 @@ def post_data():
     what_table = request.form.get('what_table')
 
     column = ['name_id']
-    if session.get('date_filter')[2] != 0:
-        column = column + ['date']
 
     if block_measurement == 'none':
         measurement = [all_measurement[0]]

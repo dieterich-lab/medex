@@ -104,7 +104,7 @@ def message_count():
     if session.get('session_id') is None:
         session['session_id'] = os.urandom(10)
         factory.get_session(session.get('session_id'))
-        session['filtering'] = {'filter_update': 0, 'case_id': 'No', 'filter_num': {}, 'filter_cat': {}}
+        session['filtering'] = {'filter_update': '0', 'case_id': 'No', 'filter_num': {}, 'filter_cat': {}}
 
     if session.get('filtering')['case_id'] == 'No':
         case_display = 'none'
