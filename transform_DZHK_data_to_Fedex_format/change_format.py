@@ -5,17 +5,17 @@ import os
 def change_files_format():
     files = []
     entities_numerical, entities_categorical = [], []
-    for r, d, f in os.walk('/home/magda/__git__/Fedex/DZKH/'):
+    for r, d, f in os.walk('{path with DZHK data}'):
         for i, file in enumerate(f):
             if '.csv' in file:
-                df = pd.read_csv('/home/magda/__git__/Fedex/DZKH/' + file)
+                df = pd.read_csv('{path with DZHK data}' + file)
                 if not df.empty:
                     drop_unnamed_columns(df)
                     df = join_value_and_unit_column(df)
                     df_without_na = pivot_and_remove_nan_value(df)
                     df_rename, entities_numerical, entities_categorical = \
                         rename_columns_with_unit(df_without_na, entities_numerical, entities_categorical)
-                    df_rename.to_csv('/home/magda/Documents/FEDEX/data_goetthingen/data_merge/' + file, index=False, header=False)
+                    df_rename.to_csv('{path to save DZHK data in Fedex format}' + file, index=False, header=False)
                     files.append(file)
     create_entities_file(entities_categorical, entities_numerical)
     return files
@@ -84,19 +84,19 @@ def create_entities_file(entities_categorical, entities_numerical):
     df_entities_categorical = pd.DataFrame(list(zip(set(entities_categorical), type_categorical)), columns=['key', 'type'])
     result = pd.concat([df_entities_numerical, df_entities_categorical])
     result = result[~result.key.duplicated(keep='last')]
-    result.to_csv('/home/magda/Documents/FEDEX/data_goetthingen/data_merge/import/entities.csv', index=False)
+    result.to_csv('path to save entities.csv file', index=False)
 
 
 files_list = change_files_format()
 print(files_list)
-cmd = 'sed 1d /home/magda/Documents/FEDEX/data_goetthingen/data_merge/*.csv > ' \
-      '/home/magda/Documents/FEDEX/data_goetthingen/data_merge/import/dataset.csv'
+cmd = 'sed 1d {path with DZHK data in Fedex format}/*.csv > ' \
+      'path to save dataset.csv file'
 os.system(cmd)
 
 
 def remove_not_harmonisierte_items():
     data = pd.read_csv('HarmonisierteItemsBasisregister_corrected.txt', header=None)
-    df = pd.read_csv('/home/magda/Documents/FEDEX/data_goetthingen/data_merge/import/entities.csv')
+    df = pd.read_csv('path with entities.csv file')
     df['key'] = df['key'].str.split(' ').str.get(0)
     # list_entities_which_are_in_torch_and_transcript_data_but_not_in_HarmonisierteItemsBasisregister
     entities_to_remove = list(set(list(df['key'])) - set(list(data[0])))
@@ -105,25 +105,25 @@ def remove_not_harmonisierte_items():
 
 
 def remove_not_harmonisierte_items_from_dataset_file(entities_to_remove):
-    df_dataset = pd.read_csv('/home/magda/Documents/FEDEX/data_goetthingen/data_merge/import/dataset.csv',
+    df_dataset = pd.read_csv('path with  dataset.csv file',
                              names=('id', 'case_id', 'visit', 'date', 'time', 'key', 'value'), low_memory=False)
     data_dataset = df_dataset.loc[~df_dataset['key'].isin(entities_to_remove)]
     data_dataset = data_dataset.loc[~data_dataset['key'].str.contains('lab_crp')]
     data_dataset = data_dataset.loc[~data_dataset['key'].str.contains('lab_mdrdgfr_tp')]
-    data_dataset.to_csv('/home/magda/Documents/FEDEX/data_goetthingen/data_merge/import/dataset.csv', index=False,
+    data_dataset.to_csv('path with  dataset.csv file', index=False,
                         header=None)
 
 
 def remove_not_harmonisierte_items_from_entities_file(entities_to_remove):
-    df_entities = pd.read_csv('/home/magda/Documents/FEDEX/data_goetthingen/data_merge/import/entities.csv')
+    df_entities = pd.read_csv('path with entities.csv file')
     data_entities = df_entities.loc[~df_entities['key'].isin(entities_to_remove)]
     data_entities = data_entities.loc[~data_entities['key'].str.contains('lab_crp')]
     data_entities = data_entities.loc[~data_entities['key'].str.contains('lab_mdrdgfr_tp')]
-    data_entities.to_csv('/home/magda/Documents/FEDEX/data_goetthingen/data_merge/import/entities.csv', index=False)
+    data_entities.to_csv('path with entities.csv file', index=False)
 
 
 def change_visit_numbers_to_names():
-    df = pd.read_csv('/home/magda/Documents/FEDEX/data_goetthingen/data_merge/import/dataset.csv',
+    df = pd.read_csv('path with  dataset.csv file',
                      names=('id', 'case_id', 'visit_id', 'date', 'time', 'key', 'value'), low_memory=False)
     df.loc[df['visit_id'].isin([2882, 22158, 2893]), 'visit'] = 'baseline'
     df = df[~df['visit_id'].isin([6685])]
@@ -131,7 +131,7 @@ def change_visit_numbers_to_names():
     df.loc[df['visit_id'].isin([22157]), 'visit'] = '4 year followup'
     df.loc[df['visit_id'].isin([2891, 24470, 26263]), 'visit'] = '5 year followup'
     df_final = df[['id', 'case_id', 'visit', 'date', 'time', 'key', 'value']]
-    df_final.to_csv('/home/magda/Documents/FEDEX/data_goetthingen/data_merge/import/dataset.csv', header=False,
+    df_final.to_csv('path with  dataset.csv file', header=False,
                     index=False)
 
 

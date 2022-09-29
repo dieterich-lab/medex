@@ -1,7 +1,6 @@
 Fedex data pre-processing:
 
-1. Move all data starting with the prefix 'mnpdzhk' from the directories: /home/magda/FEDEX/data_goetthingen/DZKH5 and /home/magda/FEDEX/data_goetthingen/DZKH7 
-   to  /home/magda/__git__/Fedex/DZKH
+1. Move all data starting with "mnpdzhk" into one directory.
    
 2. Change the unit columns so that they all contain the name "einh"
 
@@ -22,4 +21,4 @@ In some files quotes contain quotes. You have to remove this quotes otherwise th
 	3. changes entity names by adding entities to them
 	4. selects only harmonized elements
 	5. changes visit_id to names: baseline, follow up
-	6. creates entites.csv and dataset.csv files
+	6. creates entities.csv and dataset.csv files
