@@ -19,7 +19,7 @@ In some files quotes contain quotes. You have to remove this quotes otherwise th
 5. Run the python script 'change_format', which: 
 	1. merges all data 
 	2. changes commas in values to periods
-	3.Changes entity names by adding entities to them
-	4.selects only harmonized elements
-	5. changes visit_id to names: baseline. follow up
+	3. changes entity names by adding entities to them
+	4. selects only harmonized elements
+	5. changes visit_id to names: baseline, follow up
 	6. creates entites.csv and dataset.csv files
