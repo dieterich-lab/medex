@@ -1,4 +1,6 @@
 from flask import Flask, send_file, request, redirect, session, g, jsonify, send_from_directory
+
+from medex.controller.helpers import get_session_id
 from modules.import_scheduler import Scheduler
 from modules.database_sessions import DatabaseSessionFactory
 import modules.load_data_to_select as ps
@@ -101,9 +103,7 @@ def data_information():
 # information about database
 @app.context_processor
 def message_count():
-    if session.get('session_id') is None:
-        session['session_id'] = os.urandom(10)
-        factory.get_session(session.get('session_id'))
+    if 'filtering' not in session:
         session['filtering'] = {'filter_update': '0', 'case_id': 'No', 'filter_num': {}, 'filter_cat': {}}
 
     if session.get('filtering')['case_id'] == 'No':
@@ -160,7 +160,7 @@ def get_cases():
     session_id_json = {"session_id": "{}".format(session_id)}
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/get', json=session_id_json)
     case_ids = cases_get.json()
-    session_db = factory.get_session(session.get('session_id'))
+    session_db = factory.get_session(get_session_id())
     filtering.add_case_id(case_ids, session_db)
     session['filtering'] = session.get('filtering')
     return redirect('/')
@@ -174,7 +174,7 @@ def login_get():
 
 @app.route('/filtering', methods=['POST', 'GET'])
 def filter_data():
-    session_db = factory.get_session(session.get('session_id'))
+    session_db = factory.get_session(get_session_id())
     results = {}
     if request.is_json:
         filters = request.get_json()
@@ -192,7 +192,7 @@ def filter_data():
 
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])
 def download(filename):
-    session_db = factory.get_session(session.get('session_id'))
+    session_db = factory.get_session(get_session_id())
     if filename == 'basic_stats_data.csv':
         csv = session.get('basic_stats_table')
     elif filename == 'table_browser_data.csv':

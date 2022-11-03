@@ -2,7 +2,7 @@ from flask import g
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
-from medex.service.database import get_database_url
+from medex.services.database import get_database_url
 
 
 def connect_db():

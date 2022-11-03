@@ -1,4 +1,6 @@
 from flask import Blueprint, render_template, request, session
+
+from medex.controller.helpers import get_session_id
 from modules.get_data_to_scatter_plot import get_scatter_plot
 from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
 from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
@@ -50,7 +52,7 @@ def post_plots():
     elif not categorical_entities[1] and add_group_by:
         error = "Please select subcategory"
     else:
-        session_db = factory.get_session(session.get('session_id'))
+        session_db = factory.get_session(get_session_id())
         df, error = get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date_filter, limit_filter,
                                      update_filter, session_db)
 

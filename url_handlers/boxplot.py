@@ -1,4 +1,6 @@
 from flask import Blueprint, render_template, request, session
+
+from medex.controller.helpers import get_session_id
 from modules.get_data_to_histogrm import get_histogram_box_plot
 import plotly.express as px
 import plotly.graph_objects as go
@@ -43,7 +45,7 @@ def post_boxplots():
     elif not entities[2]:
         error = "Please select subcategory"
     else:
-        session_db = factory.get_session(session.get('session_id'))
+        session_db = factory.get_session(get_session_id())
         df, error = get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter, session_db)
 
     if error:

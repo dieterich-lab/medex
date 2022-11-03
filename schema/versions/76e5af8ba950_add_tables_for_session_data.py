@@ -18,8 +18,14 @@ depends_on = None
 
 def upgrade() -> None:
     op.create_table(
+        'sessions',
+        sa.Column('id', sa.String, primary_key=True),
+        sa.Column('created', sa.DateTime),
+        sa.Column('last_touched', sa.DateTime),
+    )
+    op.create_table(
         'session_filtered_name_ids',
-        sa.Column('session_id', sa.String, primary_key=True),
+        sa.Column('session_id', sa.String, sa.ForeignKey('sessions.id'), primary_key=True),
         sa.Column('name_id', sa.String, primary_key=True),
     )
     op.create_index(
@@ -30,7 +36,7 @@ def upgrade() -> None:
 
     op.create_table(
         'session_filtered_data_keys',
-        sa.Column('session_id', sa.String, primary_key=True),
+        sa.Column('session_id', sa.String, sa.ForeignKey('sessions.id'), primary_key=True),
         sa.Column('name_id', sa.String, primary_key=True),
         sa.Column('key', sa.String),
     )
@@ -40,7 +46,20 @@ def upgrade() -> None:
         ['session_id']
     )
 
+    op.create_table(
+        'session_filtered_case_ids',
+        sa.Column('session_id', sa.String, sa.ForeignKey('sessions.id'), primary_key=True),
+        sa.Column('case_id', sa.String, primary_key=True),
+    )
+    op.create_index(
+        'idx_session_filtered_case_ids_by_session_id',
+        'session_filtered_case_ids',
+        ['session_id']
+    )
+
 
 def downgrade() -> None:
     op.drop_table('session_filtered_name_ids')
     op.drop_table('session_filtered_data_keys')
+    op.drop_table('session_filtered_case_ids')
+    op.drop_table('sessions')

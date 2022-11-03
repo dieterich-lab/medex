@@ -16,10 +16,10 @@ class ImportSettings:
     More about th code : https://www.computerhope.com/unix/sha512sum.htm
     """
     def __init__(self):
-        if os.environ['FLASK_ENV'] == 'production':
-            self.path = "./import/import.ini"
-        else:
+        if 'FLASK_DEBUG' in os.environ and os.environ['FLASK_DEBUG'] == '1':
             self.path = './import/dev_import.ini'
+        else:
+            self.path = "./import/import.ini"
         self.config = ConfigParser()
         self.config.read(self.path)
         if 'hashes' not in self.config.sections():

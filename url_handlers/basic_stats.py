@@ -1,4 +1,6 @@
 from flask import Blueprint, render_template, request, session
+
+from medex.controller.helpers import get_session_id
 from modules.get_data_to_basic_stats import get_num_basic_stats, get_cat_date_basic_stats
 import url_handlers.filtering as filtering
 from url_handlers.filtering import check_for_date_filter_post
@@ -25,7 +27,7 @@ def get_basic_stats():
     date_filter = session.get('date_filter')
     limit_filter = filtering.check_for_limit_offset()
     update_filter = session.get('filtering')
-    session_db = factory.get_session(session.get('session_id'))
+    session_db = factory.get_session(get_session_id())
 
     if 'basic_stats' in request.form:
         """ calculation for numeric values"""

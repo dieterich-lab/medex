@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from medex.service.database import get_database_url
+from medex.services.database import get_database_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

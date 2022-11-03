@@ -1,4 +1,6 @@
 from flask import Blueprint, render_template, request, session
+
+from medex.controller.helpers import get_session_id
 from modules.get_data_to_barchart import get_bar_chart
 import plotly.express as px
 from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
@@ -39,7 +41,7 @@ def post_statistics():
     elif not categorical_entities[1]:
         error = "Please select subcategory"
     else:
-        session_db = factory.get_session(session.get('session_id'))
+        session_db = factory.get_session(get_session_id())
         df, error = get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, update_filter,
                                   session_db)
     if error:
