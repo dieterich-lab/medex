@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date,  Numeric, ForeignKey, Index, text
+from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, Index, text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -68,6 +68,35 @@ class TableDate(Base):
     __table_args__ = (Index('idx_key_date', 'key'), Index('idx_name_id_date', 'name_id'))
 
 
+class Sessions(Base):
+    __tablename__ = 'sessions'
+    id = Column(String, primary_key=True)
+    created = Column(DateTime)
+    last_touched = Column(DateTime)
+
+
+class SessionFilteredNameIds(Base):
+    __tablename__ = 'session_filtered_name_ids'
+    session_id = Column(String, ForeignKey('sessions.id'), primary_key=True)
+    name_id = Column(String, primary_key=True)
+    __table_args__ = None #(Index('idx_session_filtered_name_ids_by_session_id', 'session_id'))
+
+
+class SessionFilteredCaseIds(Base):
+    __tablename__ = 'session_filtered_case_ids'
+    session_id = Column(String, ForeignKey('sessions.id'), primary_key=True)
+    case_id = Column(String, primary_key=True)
+    __table_args__ = None #(Index('idx_session_filtered_case_ids_by_session_id', 'session_id'))
+
+
+class SessionNameIdsMatchingFilter(Base):
+    __tablename__ = 'session_name_ids_matching_filter'
+    session_id = Column(String, ForeignKey('sessions.id'), primary_key=True)
+    name_id = Column(String, primary_key=True)
+    filter = Column(String)
+    __table_args__ = None #(Index('idx_session_name_ids_matching_filter_by_session_id', 'session_id'))
+
+
 def drop_tables(rdb):
     Base.metadata.drop_all(rdb)
 
@@ -84,4 +113,5 @@ def check_if_tables_exists(rdb):
         table = row[0]
     if table != 'examination_numerical':
         create_tables(rdb)
+
 

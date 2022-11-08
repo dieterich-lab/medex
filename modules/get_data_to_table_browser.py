@@ -1,8 +1,7 @@
 from modules.models import TableNumerical, TableCategorical, TableDate
 from sqlalchemy.sql import union, select
-from modules.filtering import checking_date_filter
+from modules.filtering import checking_date_filter, apply_filter_heatmap
 from sqlalchemy import String, and_, literal_column, asc, text, desc, func, case
-from modules.get_data_to_heatmap import apply_filter_heatmap
 import pandas as pd
 
 

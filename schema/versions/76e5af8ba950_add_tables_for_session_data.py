@@ -35,14 +35,14 @@ def upgrade() -> None:
     )
 
     op.create_table(
-        'session_filtered_data_keys',
+        'session_name_ids_matching_filter',
         sa.Column('session_id', sa.String, sa.ForeignKey('sessions.id'), primary_key=True),
         sa.Column('name_id', sa.String, primary_key=True),
-        sa.Column('key', sa.String),
+        sa.Column('filter', sa.String),
     )
     op.create_index(
-        'idx_session_filtered_data_keys_by_session_id',
-        'session_filtered_data_keys',
+        'idx_session_name_ids_matching_filter_by_session_id',
+        'session_name_ids_matching_filter',
         ['session_id']
     )
 
@@ -60,6 +60,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_table('session_filtered_name_ids')
-    op.drop_table('session_filtered_data_keys')
+    op.drop_table('session_name_ids_matching_filter')
     op.drop_table('session_filtered_case_ids')
     op.drop_table('sessions')

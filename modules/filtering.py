@@ -1,5 +1,5 @@
 from sqlalchemy.sql import join
-from sqlalchemy import text
+from sqlalchemy import text, join, select
 import pandas as pd
 
 
@@ -128,3 +128,13 @@ def apply_limit_to_sql_query(limit_filter, sql):
     else:
         sql = sql
     return sql
+
+
+def apply_filter_heatmap(sql, update_filter):
+    if update_filter['filter_update'] != '0':
+        cte = sql.cte('cte')
+        j = join(cte, text("temp_table_name_ids"), cte.c.name_id == text("temp_table_name_ids.name_id"))
+        sql_with_filter = select(cte.c).select_from(j)
+    else:
+        sql_with_filter = sql
+    return sql_with_filter
