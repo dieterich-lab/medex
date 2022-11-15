@@ -1,6 +1,4 @@
 from pytest import fixture
-from modules.database_sessions import DatabaseSessionFactory
-import time
 from freezegun import freeze_time
 
 _session_count = 0

@@ -1,35 +1,29 @@
-from flask import Flask, send_file, request, redirect, session, g, jsonify, send_from_directory
+from flask import Flask, send_file, request, redirect, session, send_from_directory, has_app_context
+from flask_sqlalchemy import SQLAlchemy
 
-from medex.controller.helpers import get_session_id
-from modules.import_scheduler import Scheduler
-from modules.database_sessions import DatabaseSessionFactory
+from modules.import_scheduler import Scheduler, start_import
+from medex.services.database import get_db_session, get_database_url, init_db
 import modules.load_data_to_select as ps
 from modules.get_data_to_table_browser import get_data_download
 import url_handlers.filtering as filtering
 from modules.filtering import get_case_ids
 from flask_cors import CORS
-from db import connect_db, close_db
 import requests
 import os
 import io
-
+from medex.controller.filter import filter_controller
 
 # create the application object
 app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
+app.config["SQLALCHEMY_DATABASE_URI"] = get_database_url()
+db = SQLAlchemy()
+db.init_app(app)
+
 
 with app.app_context():
-    connect_db()
-    rdb = g.db
-
-
-@app.teardown_appcontext
-def teardown_db(exception):
-    close_db()
-
-
-factory = DatabaseSessionFactory(rdb)
+    init_db(db.engine, lambda: db.session)
 
 
 def check_for_env(key: str, default=None, cast=None):
@@ -40,28 +34,31 @@ def check_for_env(key: str, default=None, cast=None):
     return default
 
 
+with app.app_context():
+    start_import()
+
+# ToDo: Do we need an App Context for scheduled runs of "start_import" too?
+
 # date and hours to import data
 day_of_week = check_for_env('IMPORT_DAY_OF_WEEK', default='mon-sun')
 hour = check_for_env('IMPORT_HOUR', default=5)
 minute = check_for_env('IMPORT_MINUTE', default=5)
 
-
 # Import data using function scheduler from package modules
 if os.environ.get('IMPORT_DISABLED') is None:
-    scheduler = Scheduler(rdb, day_of_week=day_of_week, hour=hour, minute=minute)
+    scheduler = Scheduler(day_of_week=day_of_week, hour=hour, minute=minute)
     scheduler.start()
     scheduler.stop()
 
-
 # get all numeric and categorical entities from database
-Name_ID, measurement_name = ps.get_header(rdb)
-size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information(rdb)
-start_date, end_date = ps.get_date(rdb)
-all_patient = ps.patient(rdb)
-all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities(rdb)
-df_min_max = ps.min_max_value_numeric_entities(rdb)
-all_subcategory_entities = ps.get_subcategories_from_categorical_entities(rdb)
-all_measurement, block_measurement = ps.get_measurement(rdb)
+Name_ID, measurement_name = ps.get_header()
+size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information()
+start_date, end_date = ps.get_date()
+all_patient = ps.patient()
+all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities()
+df_min_max = ps.min_max_value_numeric_entities()
+all_subcategory_entities = ps.get_subcategories_from_categorical_entities()
+all_measurement, block_measurement = ps.get_measurement()
 
 # change this
 try:
@@ -84,7 +81,6 @@ def favicon():
 # information about database
 @app.context_processor
 def data_information():
-
     database = '{} data'.format(os.environ['POSTGRES_DB'])
 
     len_numeric = 'number of numerical entities: ' + length[0]
@@ -152,6 +148,8 @@ app.register_blueprint(boxplot_page)
 app.register_blueprint(scatter_plot_page)
 app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
+app.register_blueprint(filter_controller, url_prefix='/filter')
+import medex.controller.filter
 
 
 @app.route('/_session', methods=['GET'])
@@ -160,7 +158,7 @@ def get_cases():
     session_id_json = {"session_id": "{}".format(session_id)}
     cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/get', json=session_id_json)
     case_ids = cases_get.json()
-    session_db = factory.get_session(get_session_id())
+    session_db = get_db_session()
     filtering.add_case_id(case_ids, session_db)
     session['filtering'] = session.get('filtering')
     return redirect('/')
@@ -172,27 +170,9 @@ def login_get():
     return redirect('/data')
 
 
-@app.route('/filtering', methods=['POST', 'GET'])
-def filter_data():
-    session_db = factory.get_session(get_session_id())
-    results = {}
-    if request.is_json:
-        filters = request.get_json()
-        if 'clean' in filters[0]:
-            results = filtering.clean_all_filter(session_db)
-        elif 'clean_one_filter' in filters[0]:
-            results = filtering.clean_one_filter(filters, session_db)
-        elif 'cat' in filters[0]:
-            results = filtering.add_categorical_filter(filters, session_db)
-        elif "num" in filters[0]:
-            results = filtering. add_numerical_filter(filters, session_db)
-        session['filtering'] = session.get('filtering')
-    return jsonify(results)
-
-
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])
 def download(filename):
-    session_db = factory.get_session(get_session_id())
+    session_db = get_db_session()
     if filename == 'basic_stats_data.csv':
         csv = session.get('basic_stats_table')
     elif filename == 'table_browser_data.csv':
@@ -210,7 +190,7 @@ def download(filename):
     return send_file(buf_byt,
                      mimetype="text/csv",
                      as_attachment=True,
-                     attachment_filename=filename)
+                     download_name=filename)
 
 
 def main():

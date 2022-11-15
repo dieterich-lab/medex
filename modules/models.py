@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, Index, text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
+from medex.services.database import get_db_engine, get_db_session
 
 Base = declarative_base()
 
@@ -97,21 +98,20 @@ class SessionNameIdsMatchingFilter(Base):
     __table_args__ = None #(Index('idx_session_name_ids_matching_filter_by_session_id', 'session_id'))
 
 
-def drop_tables(rdb):
-    Base.metadata.drop_all(rdb)
+def drop_tables():
+    Base.metadata.drop_all(get_db_engine())
 
 
-def create_tables(rdb):
-    Base.metadata.create_all(rdb)
+def create_tables():
+    Base.metadata.create_all(get_db_engine())
 
 
-def check_if_tables_exists(rdb):
+def check_if_tables_exists():
     table = ''
-    connection = rdb.connect()
-    result = connection.execute(text("SELECT to_regclass('public.examination_numerical')"))
+    result = get_db_session().execute(text("SELECT to_regclass('public.examination_numerical')"))
     for row in result:
         table = row[0]
     if table != 'examination_numerical':
-        create_tables(rdb)
+        create_tables()
 
 

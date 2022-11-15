@@ -142,113 +142,90 @@ $(function () {
 
 
     $("#clean").click(function(){
-        var clean = document.getElementById("categorical_filter").value;
-        $.ajax({
-            type: "POST",
-            url: "/filtering",
-            data: JSON.stringify([{'clean':'clean'}]),
-            contentType: "application/json",
-            dataType: 'json',
-            success: function(response) {
-                    $("#demo").empty();
-                    $("#demo2").empty();
-                }
-            });
+        fetch('/filter/delete_all', {
+            method: 'DELETE',
+        }).then(response => {
+                $("#demo").empty();
+                $("#demo2").empty();
+        }).catch(
+            error => {
+                console.log(error)
+            }
+        );
     });
 
-    remove_filter = function(span) {
-        var val_cat = $(span).closest("div").find("button.btn").val();
-        var val_num = $(span).closest("div").find("input.name").val();
-            if (val_cat != null) {
-                var val = val_cat;
-                var type = 'categorical';
-            }else {
-                var val = val_num;
-                var type = 'numerical';
-            }
-        span.closest("div").remove()
-        $.ajax({
-            type: "POST",
-            url: "/filtering",
-            data: JSON.stringify([{'clean_one_filter': val},
-                                    {'type': type}]),
-            contentType: "application/json",
-            dataType: 'json',
-            success: function(response) {
-                }
-        });
+    remove_filter = function(entity) {
+        fetch('/filter/delete', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({'entity': entity}),
+        }).then(response => {
+            document.getElementById(`filter/${entity}`).remove();
+        }).catch(error => {
+            console.log(error)
+        })
     }
 
 
     $("#add_filter").click(function() {
-        var filter_update = document.getElementById("add_filter").value;
-        if (document.getElementById("categorical_filter_check").checked) {
-            var filter_cat = document.getElementById("categorical_filter").value;
-            var filter_sub_cat = $('#subcategory_filter').val();
-            var filters = [
-            {"cat": filter_cat},
-            {"sub": filter_sub_cat},
-            {"filter_update": filter_update}
-            ];
-            $.ajax({
-              type: "POST",
-              url: "/filtering",
-              data: JSON.stringify(filters),
-              contentType: "application/json",
-              dataType: 'json',
-              success: function(response) {
-                var content = "<div class='categorical_filter'>"
-                content += "<button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;'"
-                content += "class='btn btn-outline-primary text-left' value = '"+ response.filter +"'>"
-                content += "<span class='close' onclick='remove_filter(this)' >x </span>"
-                content += response.filter + ' is ' + response.subcategory
-                content += "</button></div>"
+        if (document.getElementById("categorical_filter_check").checked){
+            let entity = document.getElementById("categorical_filter").value;
+            let categories = $('#subcategory_filter').val();
+            fetch('/filter/add_categorical', {
+                method: 'POST',
+                headers:{
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify([{'entity': entity}, {'category': categories}]),
+            }).then(response => {
+                let content = `
+                        <div class="categorical_filter" id="filter/${entity}">
+                             <button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;'
+                                     class='btn btn-outline-primary text-left' value='${entity}'>
+                                  <span class='close' onclick='remove_filter(${entity})'>x</span>
+                                  ${entity} is ${categories}
+                             </button>
+                        </div>`;
                 document.getElementById("add_filter").value = response.update_filter
                 $("#demo").append(content)
-                }
-            });
+            }).catch(error => {
+                console.log(error)
+            })
         }
         else{
-            var filter_num = document.getElementById("id_numerical_filter").value;
-            var num_from_to = document.getElementById("range").value;
-            var filters = [
-            {"num": filter_num},
-            {"from_to": num_from_to},
-            {"min_max": [min,max]},
-            {"filter_update": filter_update}
-            ];
-
-            $.ajax({
-              type: "POST",
-              url: "/filtering",
-              data: JSON.stringify(filters),
-              contentType: "application/json",
-              dataType: 'json',
-              success: function(response) {
-                var content = "<div class='numerical_filter'>"
-                content += "<span onclick='remove_filter(this)'  class='close'> x </span>"
-                content += "<input type='hidden' class='name' value="+ response.filter +"/>" + response.filter
-                content += "<input type='text' class='range'  name='loan_term'  data-min='"+ min
-                content += "' data-max='"+ max +"'data-from='"+ response.from_num +"'data-to='"+ response.to_num +"'/>"
-                content += "</div>"
+            let entity = document.getElementById("id_numerical_filter").value;
+            fetch('/filter/add_numerical', {
+                method: 'POST',
+                headers:{
+                    'Content-Type': 'application/json',
+                },
+                // the parameters from_num and to_num need to be checked else need to be created
+                body: JSON.stringify([{'entity': entity}, {'from_value': from_num}, {'to_value': to_num}, {'min': min}, {'max': max}]),
+            }).then(response => {
+                let content = `
+                        <div class="numerical_filter" id="filter/${entity}">
+                            <span class='close' onclick='remove_filter(${entity})'>x</span>
+                            <input type='hidden' class='name' value='${entity}'/> ${entity}
+                            <input type='text' class='range'  name='loan_term'  data-min='${min}' data-max='${max}' 
+                                   data-from='${response.from_num}' data-to='${response.to_num}'/>
+                        </div>`;
                 $("#demo2").append(content)
                 document.getElementById("add_filter").value = response.update_filter
-                },
-              complete: function(response){
-                    $(".range").ionRangeSlider({
+            }).then(response => {
+                $(".range").ionRangeSlider({
                     type: "double",
                     skin: "big",
                     grid: true,
                     grid_num: 4,
                     step: 0.001,
-                    to_fixed:true,//block the top
-                    from_fixed:true//block the from
-                });
-               }
-            });
-
+                    to_fixed: true,//block the top
+                    from_fixed: true//block the from
+                })
+            }).catch(error => {
+                console.log(error)
+            })
         }
-
-
     });
 });

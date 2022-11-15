@@ -1,17 +1,17 @@
+from medex.services.database import get_db_session
 from modules.models import TableNumerical, TableCategorical, TableDate, Patient
 from sqlalchemy.sql import union, select, insert
 import pandas as pd
 
 
-def load_header(header, rdb):
-    rdb = rdb.raw_connection()
-    cur = rdb.cursor()
-    cur.execute("INSERT INTO header values (%s, %s) ON CONFLICT DO NOTHING", [header[0], header[2]])
-    rdb.commit()
+def load_header(header):
+    db_session = get_db_session()
+    db_session.execute("INSERT INTO header values (%s, %s) ON CONFLICT DO NOTHING", [header[0], header[2]])
+    db_session.commit()
 
 
-def load_entities(entities, rdb):
-    cur = rdb.cursor()
+def load_entities(entities):
+    db_session = get_db_session()
     with open(entities, 'r') as in_file:
         head = next(in_file)
         i = 0
@@ -21,8 +21,8 @@ def load_entities(entities, rdb):
                 i += 1
                 row = [str(i)] + row
             row = row + [''] * (7 - len(row))
-            cur.execute("INSERT INTO name_type values (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
-    rdb.commit()
+            db_session.execute("INSERT INTO name_type values (%s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING", row)
+    db_session.commit()
     in_file.close()
     df = pd.read_csv(entities)
     numerical_entities, date_entities = df[df['type'] == 'Double']['key'], df[df['type'] == 'Date']['key']
@@ -31,14 +31,13 @@ def load_entities(entities, rdb):
     return numerical_entities, date_entities
 
 
-def load_data(entities, dataset, header, rdb):
+def load_data(entities, dataset, header):
     """
     Load data from entities.csv, data.csv,header.csv files into examination table in Postgresql
     """
     # load data from header.csv file to header table
-    rdb = rdb.raw_connection()
-    cur = rdb.cursor()
-    numerical_entities, date_entities = load_entities(entities, rdb)
+    db_session = get_db_session()
+    numerical_entities, date_entities = load_entities(entities)
     with open(dataset, 'r', encoding="utf8", errors='ignore') as in_file:
         i = 0
         for row in in_file:
@@ -54,24 +53,21 @@ def load_data(entities, dataset, header, rdb):
             else:
                 line[6] = line[6].replace("  ", " ")
                 if line[7].replace('.', '', 1).isdigit() and line[6] in numerical_entities:
-                    cur.execute("INSERT INTO examination_numerical values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+                    db_session.execute("INSERT INTO examination_numerical values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                 elif line[6] in date_entities:
-                    cur.execute("INSERT INTO examination_date values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+                    db_session.execute("INSERT INTO examination_date values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
                 else:
-                    cur.execute("INSERT INTO examination_categorical values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
-    rdb.commit()
+                    db_session.execute("INSERT INTO examination_categorical values (%s,%s,%s,%s,%s,%s,%s,%s)", line)
+    db_session.commit()
     in_file.close()
 
 
-def patient_table(rdb):
+def patient_table():
 
     s_union = union(select(TableCategorical.name_id, TableCategorical.case_id),
                     select(TableNumerical.name_id, TableNumerical.case_id),
                     select(TableDate.name_id, TableDate.case_id)).subquery()
     s_select = select(s_union.c.name_id, s_union.c.case_id).group_by(s_union.c.name_id, s_union.c.case_id)
     sql_statement = insert(Patient).from_select(['name_id', 'case_id'], s_select)
-    with rdb.connect() as conn:
-        try:
-            conn.execute(sql_statement)
-        except (Exception,):
-            return print("Problem with connection with database")
+    db_session = get_db_session()
+    db_session.execute(sql_statement)

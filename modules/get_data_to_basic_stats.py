@@ -4,7 +4,7 @@ from modules.models import TableNumerical, TableCategorical, TableDate, Patient
 from sqlalchemy.sql import union, select, distinct, label
 from sqlalchemy import and_, func
 import pandas as pd
-from modules.filtering import checking_date_filter,apply_filter_to_sql
+from modules.filtering import checking_date_filter, apply_filter_to_sql
 
 
 def get_num_basic_stats(entities: List[str], measurement: List[str], date_filter, limit_filter, update_filter, db_session):

@@ -25,6 +25,7 @@ pytest-mock = "*"
 register = "*"
 alembic = "*"
 pydantic = "*"
+flask-sqlalchemy = "*"
 
 [dev-packages]
 pylint = "*"

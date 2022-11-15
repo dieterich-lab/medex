@@ -1,16 +1,23 @@
 from typing import Optional, Union
 
-from sqlalchemy import delete, select, func
+from sqlalchemy import delete, select, func, literal_column
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy.orm import Query
 
 from medex.dto.filter import FilterStatus, CategoricalFilter, NumericalFilter
+from medex.services.session import SessionService
 from modules.models import SessionFilteredNameIds, SessionNameIdsMatchingFilter, TableCategorical, TableNumerical
 
 
 class FilterService:
-    def __init__(self, database_session, session_id: str, filter_status: Optional[FilterStatus]):
+    def __init__(
+            self,
+            database_session,
+            session_service: SessionService,
+            filter_status: Optional[FilterStatus]
+    ):
         self._database_session = database_session
-        self._session_id = session_id
+        self._session_service = session_service
 
         if filter_status is None:
             self._filter_status = FilterStatus(filters={})
@@ -25,8 +32,11 @@ class FilterService:
             self._record_name_ids_for_numerical_filter(entity, new_filter)
         else:
             raise Exception('Unexpected Data Type')
-        self._record_name_ids_for_all_filters()
+        self._database_session.commit()
         self._filter_status.filters[entity] = new_filter
+        self._record_name_ids_for_all_filters()
+        self._session_service.touch()
+        self._database_session.commit()
 
     def _clean_up_filter_for_entity(self, entity):
         table = SessionNameIdsMatchingFilter
@@ -35,8 +45,8 @@ class FilterService:
         else:
             self._database_session.execute(
                 delete(table)
-                .where(table.c.session_id == self._session_id)
-                .where(table.c.filter == entity)
+                .where(table.session_id == self._session_service.get_id())
+                .where(table.filter == entity)
             )
 
     def delete_all_filters(self):
@@ -44,17 +54,18 @@ class FilterService:
         for table in [SessionFilteredNameIds, SessionNameIdsMatchingFilter]:
             db.execute(
                 delete(table)
-                .where(table.c.session_id == self._session_id)
+                .where(table.session_id == self._session_service.get_id())
             )
+        self._database_session.commit()
 
     def _record_name_ids_for_categorical_filter(self, entity, new_filter: CategoricalFilter):
         data_table = TableCategorical
         name_ids_for_filter = (
             select(
-                self._session_id, entity, data_table.c.name_id
+                self._session_service.get_id(), entity, data_table.name_id
             ).distinct()
-            .where(data_table.c.key == entity)
-            .where(data_table.c.value in new_filter.categories)
+            .where(data_table.key == entity)
+            .where(data_table.value in new_filter.categories)
         )
         self._database_session.execute(
             insert(SessionNameIdsMatchingFilter).from_select(
@@ -65,12 +76,15 @@ class FilterService:
 
     def _record_name_ids_for_numerical_filter(self, entity, new_filter: NumericalFilter):
         data_table = TableNumerical
+        session_id = self._session_service.get_id()
         name_ids_for_filter = (
             select(
-                self._session_id, entity, data_table.c.name_id
+                literal_column(f"'{session_id}'"),
+                literal_column(f"'{entity}'"),
+                data_table.name_id
             ).distinct()
-            .where(data_table.c.key == entity)
-            .where(data_table.c.value.between(new_filter.from_value, new_filter.to_value))
+            .where(data_table.key == entity)
+            .where(data_table.value.between(new_filter.from_value, new_filter.to_value))
         )
         self._database_session.execute(
             insert(SessionNameIdsMatchingFilter).from_select(
@@ -84,14 +98,17 @@ class FilterService:
         table = SessionNameIdsMatchingFilter
         db.execute(
             delete(SessionFilteredNameIds)
-            .where(SessionFilteredNameIds.c.session_id == self._session_id)
+            .where(SessionFilteredNameIds.session_id == self._session_service.get_id())
         )
 
+        number_of_matching_filters = func.count(table.name_id).label('number_of_matching_filters')
+        session_id = self._session_service.get_id()
         name_ids_for_all_filters = (
             select(
-                self._session_id, table.c.name_id, func.count(table.c.name_id)
+                literal_column(f"'{session_id}'"), table.name_id
             )
-            .group_by(table.c.name_id)
+            .group_by(table.name_id)
+            .having(number_of_matching_filters == len(self._filter_status.filters))
         )
         db.execute(
             insert(SessionFilteredNameIds).from_select(
@@ -99,3 +116,21 @@ class FilterService:
                 name_ids_for_all_filters
             )
         )
+
+    def delete_filter(self, entity: str):
+        self._clean_up_filter_for_entity(entity)
+        del self._filter_status.filters[entity]
+        self._record_name_ids_for_all_filters()
+        self._session_service.touch()
+        self._database_session.commit()
+
+    def apply_filter(self, table, query: Query):
+        db = self._database_session
+        if len(self._filter_status.filters) != 0:
+            join = db.query(table) \
+                .join(SessionFilteredNameIds, table.name_id == SessionFilteredNameIds.name_id)
+            query = query.select_from(join)
+        return query
+
+    def dict(self):
+        return self._filter_status.dict()
