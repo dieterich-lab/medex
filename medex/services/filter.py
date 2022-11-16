@@ -1,8 +1,9 @@
 from typing import Optional, Union
 
-from sqlalchemy import delete, select, func, literal_column
+from sqlalchemy import delete, select, func, literal_column, join, and_
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.orm import Query
+from sqlalchemy.testing import in_
 
 from medex.dto.filter import FilterStatus, CategoricalFilter, NumericalFilter
 from medex.services.session import SessionService
@@ -60,12 +61,19 @@ class FilterService:
 
     def _record_name_ids_for_categorical_filter(self, entity, new_filter: CategoricalFilter):
         data_table = TableCategorical
+        session_id = self._session_service.get_id()
         name_ids_for_filter = (
             select(
-                self._session_service.get_id(), entity, data_table.name_id
+                literal_column(f"'{session_id}'"),
+                literal_column(f"'{entity}'"),
+                data_table.name_id
             ).distinct()
-            .where(data_table.key == entity)
-            .where(data_table.value in new_filter.categories)
+            .where(
+                and_(
+                    data_table.key == entity,
+                    data_table.value.in_(new_filter.categories)
+                )
+            )
         )
         self._database_session.execute(
             insert(SessionNameIdsMatchingFilter).from_select(
@@ -125,11 +133,15 @@ class FilterService:
         self._database_session.commit()
 
     def apply_filter(self, table, query: Query):
-        db = self._database_session
         if len(self._filter_status.filters) != 0:
-            join = db.query(table) \
-                .join(SessionFilteredNameIds, table.name_id == SessionFilteredNameIds.name_id)
-            query = query.select_from(join)
+            join_with_filtered_name_ids = join(
+                table, SessionFilteredNameIds,
+                and_(
+                    table.name_id == SessionFilteredNameIds.name_id,
+                    SessionFilteredNameIds.session_id == self._session_service.get_id()
+                )
+            )
+            query = query.select_from(join_with_filtered_name_ids)
         return query
 
     def dict(self):

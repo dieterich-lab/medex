@@ -1,11 +1,12 @@
 import pytest
+from sqlalchemy import select
 from sqlalchemy.orm import Query, InstrumentedAttribute
 
-from medex.dto.filter import FilterStatus, NumericalFilter
+from modules.models import Patient, NameType, TableCategorical, TableNumerical
+from medex.dto.filter import FilterStatus, NumericalFilter, CategoricalFilter
 from medex.services.session import SessionService
-from modules.models import Patient, NameType, TableCategorical, TableNumerical, \
-    SessionFilteredNameIds
 from medex.services.filter import FilterService
+from tests.fixtures.db_session import db_session
 
 
 @pytest.fixture
@@ -90,9 +91,41 @@ def get_result_set_as_dict(query: Query):
 def test_numerical_filter(filter_service: FilterService, db_session, populate_data):
     new_filter = NumericalFilter(from_value=39, to_value=43, min=30, max=43)
     filter_service.add_filter(entity='temperature', new_filter=new_filter)
-    assert len(filter_service._filter_status.filters) == 1
-    actual = get_result_set_as_dict(
-        db_session.query(SessionFilteredNameIds)
-    )
-    expected = [{'session_id': MY_SESSION_ID, 'name_id': 'p2'}]
-    assert actual == expected
+
+    numerical_query_raw = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.value)
+    numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
+    numerical_result = db_session.execute(numerical_query_cooked).all()
+    assert len(numerical_result) == 1
+    assert numerical_result[0].name_id == 'p2'
+    assert numerical_result[0].key == 'temperature'
+    assert float(numerical_result[0].value) == 40.7
+
+    categorical_query_raw = select(TableCategorical.name_id, TableCategorical.key, TableCategorical.value)
+    categorical_query_cooked = filter_service.apply_filter(TableCategorical, categorical_query_raw)
+    categorical_result = db_session.execute(categorical_query_cooked).all()
+    assert len(categorical_result) == 1
+    assert categorical_result[0].name_id == 'p2'
+    assert categorical_result[0].key == 'diabetes'
+    assert categorical_result[0].value == 'ja'
+
+
+def test_categorical_filter(filter_service: FilterService, db_session, populate_data):
+    new_filter = CategoricalFilter(categories=['nein'])
+    filter_service.add_filter(entity='diabetes', new_filter=new_filter)
+
+    numerical_query_raw = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.value)
+    numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
+    numerical_result = db_session.execute(numerical_query_cooked).all()
+    assert len(numerical_result) == 2
+    for i in [0, 1]:
+        assert numerical_result[i].name_id == 'p1'
+        assert numerical_result[i].key in ['temperature', 'blood pressure']
+        assert float(numerical_result[0].value) in [37.5, 135]
+
+    categorical_query_raw = select(TableCategorical.name_id, TableCategorical.key, TableCategorical.value)
+    categorical_query_cooked = filter_service.apply_filter(TableCategorical, categorical_query_raw)
+    categorical_result = db_session.execute(categorical_query_cooked).all()
+    assert len(categorical_result) == 1
+    assert categorical_result[0].name_id == 'p1'
+    assert categorical_result[0].key == 'diabetes'
+    assert categorical_result[0].value == 'nein'

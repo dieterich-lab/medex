@@ -29,6 +29,7 @@ flask-sqlalchemy = "*"
 
 [dev-packages]
 pylint = "*"
+freezegun = "*"
 
 [requires]
 python_version = "*"
