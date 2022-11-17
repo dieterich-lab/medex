@@ -1,32 +1,14 @@
 from flask import request, session, jsonify, Blueprint
 
-from medex.controller.helpers import get_session_id
-from medex.dto.filter import FilterStatus, DeleteFilterRequest, AddCategoricalFilterRequest, CategoricalFilter, \
+from medex.controller.helpers import get_filter_service
+from medex.dto.filter import DeleteFilterRequest, AddCategoricalFilterRequest, CategoricalFilter, \
     AddNumericalFilterRequest, NumericalFilter
 from medex.services.database import get_db_session
 from medex.services.filter import FilterService
-from medex.services.session import SessionService
 from url_handlers import filtering as filtering
 from webserver import app
 
 filter_controller = Blueprint('filter_controller', __name__)
-
-
-def get_filter_service():
-    database_session = get_db_session()
-    session_service = SessionService(
-        database_session=database_session,
-        session_id=get_session_id()
-    )
-    if 'filter_status' in session:
-        filter_status = FilterStatus.parse_obj(session['filter_status'])
-    else:
-        filter_status = FilterStatus(filters={})
-    return FilterService(
-        database_session=database_session,
-        filter_status=filter_status,
-        session_service=session_service
-    )
 
 
 def store_filter_status_in_session(filter_service: FilterService):

@@ -3,7 +3,6 @@ from typing import Optional, Union
 from sqlalchemy import delete, select, func, literal_column, join, and_
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.orm import Query
-from sqlalchemy.testing import in_
 
 from medex.dto.filter import FilterStatus, CategoricalFilter, NumericalFilter
 from medex.services.session import SessionService
@@ -132,7 +131,7 @@ class FilterService:
         self._session_service.touch()
         self._database_session.commit()
 
-    def apply_filter(self, table, query: Query):
+    def apply_filter(self, table, query: Query) -> Query:
         if len(self._filter_status.filters) != 0:
             join_with_filtered_name_ids = join(
                 table, SessionFilteredNameIds,
@@ -146,3 +145,16 @@ class FilterService:
 
     def dict(self):
         return self._filter_status.dict()
+
+    def apply_filter_to_compex_query(self, query: Query) -> Query:
+        if len(self._filter_status.filters) != 0:
+            cte = query.cte('cte')
+            join_with_filtered_name_ids = join(
+                cte, SessionFilteredNameIds,
+                and_(
+                    cte.name_id == SessionFilteredNameIds.name_id,
+                    SessionFilteredNameIds.session_id == self._session_service.get_id()
+                )
+            )
+            query = select(cte.c).select_from(join_with_filtered_name_ids)
+        return query
