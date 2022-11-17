@@ -60,21 +60,21 @@ def start_import():
 
     settings = ImportSettings()
     print('starting import', datetime.now().strftime('%H:%M:%S'))
-    dataset = './import/dataset.csv'
-    entities = './import/entities.csv'
-    header = './import/header.csv'
+    dataset_path = './import/dataset.csv'
+    entities_path = './import/entities.csv'
+    header_path = './import/header.csv'
 
-    if not os.path.isfile(dataset) or not os.path.isfile(entities):
+    if not os.path.isfile(dataset_path) or not os.path.isfile(entities_path):
         models.check_if_tables_exists()
         return print("Could not import to database either or entities.csv and dataset.csv is missing", file=sys.stderr)
-    elif not settings.is_dataset_changed(dataset) and not settings.is_entity_changed(entities):
+    elif not settings.is_dataset_changed(dataset_path) and not settings.is_entity_changed(entities_path):
         models.check_if_tables_exists()
         return print("Data set not changed", file=sys.stderr)
     else:
-        if not os.path.isfile(header):
+        if not os.path.isfile(header_path):
             header = ['Name_ID', 'Case_ID', 'measurement']
         else:
-            with open(header, 'r') as in_file:
+            with open(header_path, 'r') as in_file:
                 for row in in_file:
                     header = row.replace("\n", "").split(",")
                 header = header[0:3]
@@ -84,14 +84,14 @@ def start_import():
         models.create_tables()
         print("Start load data ")
         ld.load_header(header)
-        ld.load_data(entities, dataset, header)
+        ld.load_data(entities_path, dataset_path, header)
         ld.patient_table()
         print("Start cluster_table ")
         ca.cluster_table()
         ca.analyze_table()
         ca.alter_system()
 
-        settings.update(dataset_path=dataset, entities_path=entities)
+        settings.update(dataset_path=dataset_path, entities_path=entities_path)
         settings.save()
         print("End load data")
 

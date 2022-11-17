@@ -1,4 +1,4 @@
-from medex.services.database import get_db_session
+from medex.services.database import get_db_session, get_db_engine
 
 
 def cluster_table():
@@ -16,6 +16,10 @@ def analyze_table():
 
 
 def alter_system():
-    db_session = get_db_session()
-    db_session.execute(""" ALTER SYSTEM SET work_mem='2GB' """)
-    db_session.execute(""" ALTER SYSTEM SET max_parallel_workers_per_gather=7 """)
+    engine = get_db_engine()
+    c = engine.connect().execution_options(isolation_level="AUTOCOMMIT")
+    for command in [
+        "ALTER SYSTEM SET work_mem='2GB'",
+        "ALTER SYSTEM SET max_parallel_workers_per_gather=7",
+    ]:
+        c.execute(command)

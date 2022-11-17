@@ -1,6 +1,7 @@
 from flask import Flask, send_file, request, redirect, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
+from medex.controller.helpers import get_filter_service
 from modules.import_scheduler import Scheduler, start_import
 from medex.services.database import get_db_session, get_database_url, init_db
 import modules.load_data_to_select as ps
@@ -169,13 +170,14 @@ def login_get():
 @app.route("/download/<path:filename>", methods=['GET', 'POST'])
 def download(filename):
     session_db = get_db_session()
+    filter_service = get_filter_service()
     if filename == 'basic_stats_data.csv':
         csv = session.get('basic_stats_table')
     elif filename == 'table_browser_data.csv':
         update_filter = session.get('filtering')
         table_browser = session.get('table_browser')
         date_filter = session.get('date_filter')
-        csv = get_data_download(table_browser, date_filter, update_filter, session_db)
+        csv = get_data_download(table_browser, date_filter, filter_service, session_db)
     # elif filename == 'case_ids.csv':
     #     csv = get_case_ids(session_db)
     else:

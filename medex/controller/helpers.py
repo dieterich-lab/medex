@@ -9,7 +9,7 @@ from medex.services.session import SessionService
 
 def get_session_id():
     if 'session_id' not in session:
-        session['session_id'] = os.urandom(10)
+        session['session_id'] = os.urandom(10).hex()
     return session['session_id']
 
 
