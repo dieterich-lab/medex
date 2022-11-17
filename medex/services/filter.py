@@ -145,7 +145,7 @@ class FilterService:
         return query
 
     def dict(self):
-        return self._filter_status.dict()
+        return self._filter_status.dict()['filters']
 
     def apply_filter_to_compex_query(self, query: Query) -> Query:
         if len(self._filter_status.filters) != 0:

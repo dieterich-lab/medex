@@ -101,11 +101,7 @@ def test_categorical_filter(filter_service: FilterService, db_session, populate_
 
 
 def test_delete_all_filters(filter_service: FilterService, db_session, populate_data):
-    for entity, new_filter in [
-        ('diabetes', CategoricalFilter(categories=['nein'])),
-        ('temperature', NumericalFilter(from_value=39, to_value=43, min=30, max=43))
-    ]:
-        filter_service.add_filter(entity=entity, new_filter=new_filter)
+    _setup_filters_filtering_eveything(filter_service)
 
     numerical_query_raw = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.value)
     numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
@@ -117,3 +113,35 @@ def test_delete_all_filters(filter_service: FilterService, db_session, populate_
     numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
     numerical_result = db_session.execute(numerical_query_cooked).all()
     assert len(numerical_result) == 3
+
+
+def _setup_filters_filtering_eveything(filter_service):
+    for entity, new_filter in [
+        ('diabetes', CategoricalFilter(categories=['nein'])),
+        ('temperature', NumericalFilter(from_value=39, to_value=43, min=30, max=43))
+    ]:
+        filter_service.add_filter(entity=entity, new_filter=new_filter)
+
+
+def test_delete_one_filter(filter_service: FilterService, db_session, populate_data):
+    _setup_filters_filtering_eveything(filter_service)
+
+    numerical_query_raw = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.value)
+    numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
+    numerical_result = db_session.execute(numerical_query_cooked).all()
+    assert len(numerical_result) == 0
+
+    filter_service.delete_filter('temperature')
+
+    numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
+    numerical_result = db_session.execute(numerical_query_cooked).all()
+    assert len(numerical_result) == 2
+
+
+def test_dict(filter_service: FilterService, db_session, populate_data):
+    _setup_filters_filtering_eveything(filter_service)
+
+    assert filter_service.dict() == {
+        'diabetes': { 'categories': ['nein']},
+        'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}
+    }
