@@ -15,8 +15,6 @@ $(function () {
         min = 10,
         max = 100
 
-
-
     $('#range').ionRangeSlider({
         type: "double",
         skin: "big",
@@ -201,7 +199,6 @@ $(function () {
                 headers:{
                     'Content-Type': 'application/json',
                 },
-                // the parameters from_num and to_num need to be checked else need to be created
                 body: JSON.stringify([{'entity': entity}, {'from_value': from_num}, {'to_value': to_num}, {'min': min}, {'max': max}]),
             }).then(response => {
                 let content = `

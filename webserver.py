@@ -1,4 +1,4 @@
-from flask import Flask, send_file, request, redirect, session, send_from_directory, has_app_context
+from flask import Flask, send_file, request, redirect, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
 from modules.import_scheduler import Scheduler, start_import
@@ -6,7 +6,6 @@ from medex.services.database import get_db_session, get_database_url, init_db
 import modules.load_data_to_select as ps
 from modules.get_data_to_table_browser import get_data_download
 import url_handlers.filtering as filtering
-from modules.filtering import get_case_ids
 from flask_cors import CORS
 import requests
 import os
@@ -127,7 +126,6 @@ def message_count():
                 )
 
 
-# import a Blueprint
 from url_handlers.data import data_page
 from url_handlers.basic_stats import basic_stats_page
 from url_handlers.histogram import histogram_page
@@ -138,7 +136,6 @@ from url_handlers.heatmap import heatmap_plot_page
 from url_handlers.logout import logout_page
 from url_handlers.tutorial import tutorial_page
 
-# register blueprints here:\
 app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
 app.register_blueprint(tutorial_page)
@@ -149,7 +146,6 @@ app.register_blueprint(scatter_plot_page)
 app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(filter_controller, url_prefix='/filter')
-import medex.controller.filter
 
 
 @app.route('/_session', methods=['GET'])
@@ -180,8 +176,8 @@ def download(filename):
         table_browser = session.get('table_browser')
         date_filter = session.get('date_filter')
         csv = get_data_download(table_browser, date_filter, update_filter, session_db)
-    elif filename == 'case_ids.csv':
-        csv = get_case_ids(session_db)
+    # elif filename == 'case_ids.csv':
+    #     csv = get_case_ids(session_db)
     else:
         csv = ''
     # Create a bytes buffer from the string buffer
