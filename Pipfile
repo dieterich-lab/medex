@@ -30,6 +30,8 @@ flask-sqlalchemy = "*"
 [dev-packages]
 pylint = "*"
 freezegun = "*"
+pytest = "*"
+pytest-mock = "*"
 
 [requires]
-python_version = "*"
+python_version = ">=3.7"

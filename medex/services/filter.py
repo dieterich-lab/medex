@@ -145,9 +145,9 @@ class FilterService:
         return query
 
     def dict(self):
-        return self._filter_status.dict()['filters']
+        return self._filter_status.dict()
 
-    def apply_filter_to_compex_query(self, query: Query) -> Query:
+    def apply_filter_to_complex_query(self, query: Query) -> Query:
         if len(self._filter_status.filters) != 0:
             cte = query.cte('cte')
             join_with_filtered_name_ids = join(

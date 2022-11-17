@@ -142,6 +142,8 @@ def test_dict(filter_service: FilterService, db_session, populate_data):
     _setup_filters_filtering_eveything(filter_service)
 
     assert filter_service.dict() == {
-        'diabetes': { 'categories': ['nein']},
-        'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}
+        'filters': {
+            'diabetes': { 'categories': ['nein']},
+            'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}
+        }
     }

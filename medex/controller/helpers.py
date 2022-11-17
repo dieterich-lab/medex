@@ -28,3 +28,7 @@ def get_filter_service():
         filter_status=filter_status,
         session_service=session_service
     )
+
+
+def store_filter_status_in_session(filter_service: FilterService):
+    session['filter_status'] = filter_service.dict()
