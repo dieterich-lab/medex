@@ -1,14 +1,15 @@
+from medex.services.filter import FilterService
 from modules.models import TableCategorical
 from sqlalchemy.sql import select, distinct
 from sqlalchemy import and_, literal_column, func
 import pandas as pd
-from modules.filtering import apply_filter_to_sql, checking_date_filter, apply_limit_to_sql_query
+from modules.filtering import checking_date_filter, apply_limit_to_sql_query
 
 
-def get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, update_filter, session_db):
+def get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, filter_service: FilterService, session_db):
     subquery = select(func.string_agg(distinct(TableCategorical.value), literal_column("'<br>'")).label('value'),
                       TableCategorical.measurement)
-    subquery_apply_filter = apply_filter_to_sql(update_filter, TableCategorical, subquery)
+    subquery_apply_filter = filter_service.apply_filter(TableCategorical, subquery)
     subquery_with_where_group = subquery_apply_filter.\
         where(and_(TableCategorical.key == categorical_entities[0],
                    TableCategorical.value.in_(categorical_entities[1]),

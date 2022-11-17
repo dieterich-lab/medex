@@ -1,0 +1,13 @@
+version: '3.6'
+services:
+  database_medex:
+    image: postgres
+    container_name: database_medex_int_test
+    shm_size: 1g
+    ports:
+      - "127.0.0.1:5477:5432"
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=example
+    restart: always

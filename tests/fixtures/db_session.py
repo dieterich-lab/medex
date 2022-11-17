@@ -8,7 +8,6 @@ from medex.services.database import init_db
 
 @pytest.fixture
 def db_session():
-
     engine = create_engine('sqlite:///:memory:')
     session_maker = sessionmaker(bind=engine)
     session = session_maker()

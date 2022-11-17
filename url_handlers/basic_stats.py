@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, session
 
-from medex.controller.helpers import get_session_id
+from medex.controller.helpers import get_filter_service
 from medex.services.database import get_db_session
 from modules.get_data_to_basic_stats import get_num_basic_stats, get_cat_date_basic_stats
 import url_handlers.filtering as filtering
@@ -48,8 +48,8 @@ def get_basic_stats():
         elif not numeric_entities:
             error = "Please select numeric entities"
         elif numeric_entities:
-            df, error = get_num_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, update_filter,
-                                            session_db)
+            filter_service = get_filter_service()
+            df, error = get_num_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, filter_service)
             df['measurement'] = df['measurement'].astype(str)
 
             # calculation basic stats

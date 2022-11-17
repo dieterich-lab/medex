@@ -1,44 +1,49 @@
 from typing import List
 
+from medex.services.database import get_db_engine
+from medex.services.filter import FilterService
 from modules.models import TableNumerical, TableCategorical, TableDate, Patient
 from sqlalchemy.sql import union, select, distinct, label
 from sqlalchemy import and_, func
 import pandas as pd
-from modules.filtering import checking_date_filter, apply_filter_to_sql
+from modules.filtering import checking_date_filter
 
 
-def get_num_basic_stats(entities: List[str], measurement: List[str], date_filter, limit_filter, update_filter, db_session):
+def get_num_basic_stats(
+        entities: List[str], measurement: List[str], date_filter, limit_filter, filter_service: FilterService
+):
     select_numerical_values_sql = select(
         TableNumerical.key, TableNumerical.measurement, TableNumerical.name_id,
         func.avg(TableNumerical.value).label('value')
     )
-    select_numerical_values_with_filter_sql = apply_filter_to_sql(
-        update_filter, TableNumerical, select_numerical_values_sql
-    )
+    select_numerical_values_with_filter_sql = filter_service.apply_filter(TableNumerical, select_numerical_values_sql)
     raw_data_sql = _get_raw_data_sql(entities, limit_filter, measurement, select_numerical_values_with_filter_sql,
                                      checking_date_filter(date_filter, TableNumerical))
     with_raw_data = raw_data_sql.cte('raw_data')
-    sql = select(with_raw_data.c.key, with_raw_data.c.measurement,
-                 func.count(with_raw_data.c.name_id).label('count'), func.min(with_raw_data.c.value).label('min'),
-                 func.max(with_raw_data.c.value).label('max'),
-                 func.avg(with_raw_data.c.value).label('mean'),
-                 func.stddev(with_raw_data.c.value).label('stddev'),
-                 label('stderr', func.stddev(with_raw_data.c.value).label('stddev')/func.sqrt(func.count(with_raw_data.c.value))
-                       ),
-                 func.percentile_cont(0.5).within_group(with_raw_data.c.value).label('median')
-                 ).\
+    sql = select(
+        with_raw_data.c.key, with_raw_data.c.measurement,
+        func.count(with_raw_data.c.name_id).label('count'),
+        func.min(with_raw_data.c.value).label('min'),
+        func.max(with_raw_data.c.value).label('max'),
+        func.avg(with_raw_data.c.value).label('mean'),
+        func.stddev(with_raw_data.c.value).label('stddev'),
+        label(
+            'stderr', func.stddev(with_raw_data.c.value).label('stddev')/func.sqrt(func.count(with_raw_data.c.value))
+        ),
+        func.percentile_cont(0.5).within_group(with_raw_data.c.value).label('median')
+    ).\
         group_by(with_raw_data.c.key, with_raw_data.c.measurement).\
         order_by(with_raw_data.c.key, with_raw_data.c.measurement)
-    df = pd.read_sql(sql, db_session.connection())
-    n = _get_patient_count(db_session)
+    df = pd.read_sql(sql, get_db_engine())
+    n = _get_patient_count()
     df['count NaN'] = n - df['count']
     df = df.round(2)
     return df, None
 
 
-def _get_patient_count(db_session):
+def _get_patient_count():
     patient_count_sql = select(func.count(distinct(Patient.name_id)).label('count'))
-    patient_count_result = pd.read_sql(patient_count_sql, db_session.connection())
+    patient_count_result = pd.read_sql(patient_count_sql, get_db_engine())
     return int(patient_count_result['count'])
 
 

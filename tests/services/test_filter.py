@@ -3,10 +3,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Query, InstrumentedAttribute
 
 from modules.models import Patient, NameType, TableCategorical, TableNumerical
-from medex.dto.filter import FilterStatus, NumericalFilter, CategoricalFilter
-from medex.services.session import SessionService
+from medex.dto.filter import NumericalFilter, CategoricalFilter
 from medex.services.filter import FilterService
+
+# noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
+# noinspection PyUnresolvedReferences
+from tests.fixtures.services import session_service, filter_service, filter_status
 
 
 @pytest.fixture
@@ -39,40 +42,6 @@ def populate_data(db_session):
         ),
     ])
     db_session.commit()
-
-
-@pytest.fixture
-def filter_status():
-    return FilterStatus(filters=[])
-
-
-MY_SESSION_ID = 'my_session_id'
-
-
-class SessionServiceMock(SessionService):
-
-    def __init__(self):  # noqa
-        pass
-
-    def touch(self):
-        pass
-
-    def get_id(self):
-        return MY_SESSION_ID
-
-
-@pytest.fixture
-def session_service():
-    yield SessionServiceMock()
-
-
-@pytest.fixture
-def filter_service(db_session, filter_status, session_service):
-    yield FilterService(
-        database_session=db_session,
-        filter_status=filter_status,
-        session_service=session_service
-    )
 
 
 def get_result_set_as_dict(query: Query):

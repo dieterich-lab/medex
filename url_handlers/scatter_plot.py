@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, request, session
 
-from medex.controller.helpers import get_session_id
 from medex.services.database import get_db_session
 from modules.get_data_to_scatter_plot import get_scatter_plot
 from webserver import all_measurement, measurement_name, block_measurement, start_date, end_date

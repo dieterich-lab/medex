@@ -1,18 +1,21 @@
+from medex.services.filter import FilterService
 from modules.models import TableNumerical, TableCategorical
 from sqlalchemy.sql import select, distinct
 from sqlalchemy.orm import aliased
 from sqlalchemy import and_, literal_column, func
 import pandas as pd
-from modules.filtering import apply_filter_to_sql, checking_date_filter, apply_limit_to_sql_query
+from modules.filtering import checking_date_filter, apply_limit_to_sql_query
 
 
-def get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date_filter, limit_filter, update_filter,
-                     session_db):
+def get_scatter_plot(
+            add_group_by, axis, measurement, categorical_entities, date_filter, limit_filter,
+            filter_service: FilterService, session_db
+):
     adalias2 = aliased(TableNumerical)
 
     sql_select = select(TableNumerical.name_id, func.avg(TableNumerical.value).label('value1'),
                         func.avg(adalias2.value).label('value2'))
-    sql_with_filter = apply_filter_to_sql(update_filter, TableNumerical, sql_select)
+    sql_with_filter = filter_service.apply_filter(TableNumerical, sql_select)
     sql_with_where = sql_with_filter.where(and_(TableNumerical.key == axis[0], 
                                                 TableNumerical.measurement == measurement[0], adalias2.key == axis[1], 
                                                 adalias2.measurement == measurement[1],

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, session
 
-from medex.controller.helpers import get_session_id
+from medex.controller.helpers import get_filter_service
 from medex.services.database import get_db_session
 from modules.get_data_to_histogrm import get_histogram_box_plot
 import plotly.express as px
@@ -47,7 +47,8 @@ def post_statistics():
         error = "Please select subcategory"
     else:
         session_db = get_db_session()
-        df, error = get_histogram_box_plot(entities, measurement, date_filter, limit_filter, update_filter, session_db)
+        filter_service = get_filter_service()
+        df, error = get_histogram_box_plot(entities, measurement, date_filter, limit_filter, filter_service, session_db)
 
     # handling errors if number of bins is less then 2
     bin_numbers = 20
