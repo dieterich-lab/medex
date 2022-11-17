@@ -98,3 +98,22 @@ def test_categorical_filter(filter_service: FilterService, db_session, populate_
     assert categorical_result[0].name_id == 'p1'
     assert categorical_result[0].key == 'diabetes'
     assert categorical_result[0].value == 'nein'
+
+
+def test_delete_all_filters(filter_service: FilterService, db_session, populate_data):
+    for entity, new_filter in [
+        ('diabetes', CategoricalFilter(categories=['nein'])),
+        ('temperature', NumericalFilter(from_value=39, to_value=43, min=30, max=43))
+    ]:
+        filter_service.add_filter(entity=entity, new_filter=new_filter)
+
+    numerical_query_raw = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.value)
+    numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
+    numerical_result = db_session.execute(numerical_query_cooked).all()
+    assert len(numerical_result) == 0
+
+    filter_service.delete_all_filters()
+
+    numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
+    numerical_result = db_session.execute(numerical_query_cooked).all()
+    assert len(numerical_result) == 3

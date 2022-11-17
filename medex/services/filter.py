@@ -57,6 +57,7 @@ class FilterService:
                 .where(table.session_id == self._session_service.get_id())
             )
         self._database_session.commit()
+        self._filter_status.filters = {}
 
     def _record_name_ids_for_categorical_filter(self, entity, new_filter: CategoricalFilter):
         data_table = TableCategorical
