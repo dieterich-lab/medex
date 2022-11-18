@@ -80,22 +80,22 @@ class SessionFilteredNameIds(Base):
     __tablename__ = 'session_filtered_name_ids'
     session_id = Column(String, ForeignKey('sessions.id'), primary_key=True)
     name_id = Column(String, primary_key=True)
-    __table_args__ = None #(Index('idx_session_filtered_name_ids_by_session_id', 'session_id'))
+    __table_args__ = tuple([Index('idx_session_filtered_name_ids_by_session_id', 'session_id')])
 
 
 class SessionFilteredCaseIds(Base):
     __tablename__ = 'session_filtered_case_ids'
     session_id = Column(String, ForeignKey('sessions.id'), primary_key=True)
     case_id = Column(String, primary_key=True)
-    __table_args__ = None #(Index('idx_session_filtered_case_ids_by_session_id', 'session_id'))
+    __table_args__ = tuple([Index('idx_session_filtered_case_ids_by_session_id', 'session_id')])
 
 
 class SessionNameIdsMatchingFilter(Base):
     __tablename__ = 'session_name_ids_matching_filter'
     session_id = Column(String, ForeignKey('sessions.id'), primary_key=True)
     name_id = Column(String, primary_key=True)
-    filter = Column(String)
-    __table_args__ = None #(Index('idx_session_name_ids_matching_filter_by_session_id', 'session_id'))
+    filter = Column(String, primary_key=True)
+    __table_args__ = tuple([Index('idx_session_name_ids_matching_filter_by_session_id', 'session_id')])
 
 
 def drop_tables():

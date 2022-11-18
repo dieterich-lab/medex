@@ -111,7 +111,7 @@
             </div>
         </div>
         <br>
-        <button id="add_filter" type="button" class="btn btn-outline-info" value="{{ filter_update }}">Add Filter
+        <button id="add_filter" type="button" class="btn btn-outline-info">Add Filter
         </button>
     </div>
 </div>
@@ -123,26 +123,7 @@
         <button id="clean" type="button" name='clean' value="clean" class="btn btn-outline-info" style="float: right">
             Clear All
         </button>
-        <div id="demo">
-            {% for key, value in categorical_filter_results.items() %}
-            <div class='categorical_filter_results'>
-                <button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;'
-                        class='btn btn-outline-primary text-left' value= '{{ key }}' >
-                    <span class='close' onclick='remove_filter(this)'>x </span>
-                    {{key}} is {{value}}
-                </button>
-            </div>
-            {% endfor %}
-        </div>
-        <div id="demo2">
-            {% for key, value in numerical_filter_results.items() %}
-            <div class="numerical_filter_results">
-                <span onclick='remove_filter(this)' class='close'> x </span>
-                <input type="hidden" class="name" value='{{ key }}'/>{{ key }}
-                <input type='text' class='range' name='loan_term' data-min="{{ value[2] }}" data-max='{{ value[3] }}'
-                       data-from='{{ value[0] }}' data-to='{{ value[1] }}'/>
-            </div>
-            {% endfor %}
+        <div id="active_filters">
         </div>
     </div>
 </div>

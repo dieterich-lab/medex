@@ -7,7 +7,13 @@ from medex.dto.filter import DeleteFilterRequest, AddCategoricalFilterRequest, C
 filter_controller = Blueprint('filter_controller', __name__)
 
 
-@filter_controller.route('/delete_all', methods=['DELETE'])
+@filter_controller.route('/all', methods=['GET'])
+def get_all_filters():
+    service = get_filter_service()
+    return jsonify(service.dict())
+
+
+@filter_controller.route('/all', methods=['DELETE'])
 def delete_all_filters():
     service = get_filter_service()
     service.delete_all_filters()

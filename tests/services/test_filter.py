@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Query, InstrumentedAttribute
 
-from modules.models import Patient, NameType, TableCategorical, TableNumerical
+from modules.models import Patient, NameType, TableCategorical, TableNumerical, SessionNameIdsMatchingFilter
 from medex.dto.filter import NumericalFilter, CategoricalFilter
 from medex.services.filter import FilterService
 
@@ -39,6 +39,12 @@ def populate_data(db_session):
         TableNumerical(
             id=5, name_id='p1', case_id='case_p1', measurement='baseline', date='2015-03-05',
             key='blood pressure', value=135
+        ),
+        SessionNameIdsMatchingFilter(
+            session_id='unrelated-session', name_id='p1', filter='diabetes'
+        ),
+        SessionNameIdsMatchingFilter(
+            session_id='unrelated-session', name_id='p2', filter='temperature'
         ),
     ])
     db_session.commit()

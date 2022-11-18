@@ -25,6 +25,7 @@ class FilterService:
             self._filter_status = filter_status
 
     def add_filter(self, entity: str, new_filter: Union[CategoricalFilter, NumericalFilter]):
+        self._session_service.touch()
         self._clean_up_filter_for_entity(entity)
         if isinstance(new_filter, CategoricalFilter):
             self._record_name_ids_for_categorical_filter(entity, new_filter)
@@ -35,7 +36,6 @@ class FilterService:
         self._database_session.commit()
         self._filter_status.filters[entity] = new_filter
         self._record_name_ids_for_all_filters()
-        self._session_service.touch()
         self._database_session.commit()
 
     def _clean_up_filter_for_entity(self, entity):
@@ -104,17 +104,18 @@ class FilterService:
     def _record_name_ids_for_all_filters(self):
         db = self._database_session
         table = SessionNameIdsMatchingFilter
+        session_id = self._session_service.get_id()
         db.execute(
             delete(SessionFilteredNameIds)
-            .where(SessionFilteredNameIds.session_id == self._session_service.get_id())
+            .where(SessionFilteredNameIds.session_id == session_id)
         )
 
         number_of_matching_filters = func.count(table.name_id).label('number_of_matching_filters')
-        session_id = self._session_service.get_id()
         name_ids_for_all_filters = (
             select(
                 literal_column(f"'{session_id}'"), table.name_id
             )
+            .where(table.session_id == session_id)
             .group_by(table.name_id)
             .having(number_of_matching_filters == len(self._filter_status.filters))
         )
@@ -126,10 +127,10 @@ class FilterService:
         )
 
     def delete_filter(self, entity: str):
+        self._session_service.touch()
         self._clean_up_filter_for_entity(entity)
         del self._filter_status.filters[entity]
         self._record_name_ids_for_all_filters()
-        self._session_service.touch()
         self._database_session.commit()
 
     def apply_filter(self, table, query: Query) -> Query:
@@ -153,7 +154,7 @@ class FilterService:
             join_with_filtered_name_ids = join(
                 cte, SessionFilteredNameIds,
                 and_(
-                    cte.name_id == SessionFilteredNameIds.name_id,
+                    cte.c.name_id == SessionFilteredNameIds.name_id,
                     SessionFilteredNameIds.session_id == self._session_service.get_id()
                 )
             )

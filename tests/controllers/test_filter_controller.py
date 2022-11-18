@@ -53,7 +53,7 @@ def test_delete_one_filter(helper_mock, test_client):
 
 
 def test_delete_all_filters(helper_mock, test_client):
-    rv = test_client.delete('/delete_all')
+    rv = test_client.delete('/all')
     assert rv.status == '200 OK'
     assert stored_filter_status == {'filters': {}}
 
@@ -84,3 +84,9 @@ def test_add_numerical_filter(helper_mock, test_client):
             'Größe cm': {'from_value': 170, 'to_value': 180, 'min': 30, 'max': 300},
         }
     }
+
+
+def test_get_all(helper_mock, test_client):
+    rv = test_client.get('/all')
+    assert rv.status == '200 OK'
+    assert rv.get_json() == DEFAULT_FILTER_STATUS

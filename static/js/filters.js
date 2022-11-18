@@ -1,6 +1,4 @@
 $(function () {
-
-
     function cd(start, end) {
             $('#Date span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
         }
@@ -137,22 +135,92 @@ $(function () {
         $filter.html('<option value="Select all">Select all</option>'+html)
     });
 
-
-
     $("#clean").click(function(){
-        fetch('/filter/delete_all', {
+        fetch('/filter/all', {
             method: 'DELETE',
         }).then(response => {
-                $("#demo").empty();
-                $("#demo2").empty();
-        }).catch(
-            error => {
-                console.log(error)
-            }
-        );
+            refresh_filter_panel();
+        }).catch(error => {
+            console.log(error);
+            refresh_filter_panel();
+        });
     });
 
-    remove_filter = function(entity) {
+    $( document ).ready(refresh_filter_panel)
+
+    function refresh_filter_panel() {
+        fetch('/filter/all', {method: 'GET'})
+        .then(response => response.json())
+        .then(data => {
+            clear_filter_panel();
+            const filters = data['filters'];
+            const filter_entities_sorted = Object.keys(filters).sort();
+            filter_entities_sorted.forEach(entity => {
+                const filter = filters[entity];
+                if ('categories' in filter) {
+                    render_categorical_filter(entity, filter);
+                } else {
+                    render_numerical_filter(entity, filter);
+                }
+            })
+        })
+        .catch(error => {
+            console.log(error)
+        })
+    }
+
+    function clear_filter_panel() {
+        let div = document.getElementById('active_filters');
+        let child = div.lastElementChild;
+        while (child) {
+            div.removeChild(child);
+            child = div.lastElementChild;
+        }
+    }
+
+    function render_categorical_filter(entity, filter) {
+        const categories = filter['categories'].join(', ');
+        render_filter(entity, `
+             <button type="button" style="width: 100%; word-wrap: break-word; white-space: normal;"
+                     class="btn btn-outline-primary text-left" value="${entity}">
+                  <span class="close" id="remove_filter/${entity}">x</span>
+                  ${entity} is ${categories}
+             </button>
+        `);
+    }
+
+    function render_filter(entity, inner_html) {
+        let div = document.getElementById('active_filters');
+        let child = document.createElement('div');
+        child.setAttribute('id', `filter/${entity}`);
+        child.setAttribute('class', 'categorical_filter');
+        child.innerHTML = inner_html;
+        div.appendChild(child);
+        let remover = document.getElementById(`remove_filter/${entity}`);
+        remover.addEventListener('click', () => { remove_filter(entity) }, false);
+    }
+
+    function render_numerical_filter(entity, filter) {
+        let div = document.getElementById('active_filters');
+        render_filter(entity, `
+            <span class="close" id="remove_filter/${entity}">x</span>
+            <input type="hidden" class="name" value="${entity}"/> ${entity}
+            <input type="text" class="range"  name="loan_term"  data-min="${filter.min}" data-max="${filter.max}" 
+                   data-from="${filter.from_value}" data-to="${filter.to_value}"/>
+        `);
+        // ToDo: The following lines are ugly - and jquery
+        $(".range").ionRangeSlider({
+            type: "double",
+            skin: "big",
+            grid: true,
+            grid_num: 4,
+            step: 0.001,
+            to_fixed: true,//block the top
+            from_fixed: true//block the from
+        });
+    }
+
+    function remove_filter(entity) {
         fetch('/filter/delete', {
             method: 'DELETE',
             headers: {
@@ -160,12 +228,12 @@ $(function () {
             },
             body: JSON.stringify({'entity': entity}),
         }).then(response => {
-            document.getElementById(`filter/${entity}`).remove();
+            refresh_filter_panel();
         }).catch(error => {
-            console.log(error)
+            console.log(error);
+            refresh_filter_panel();
         })
     }
-
 
     $("#add_filter").click(function() {
         if (document.getElementById("categorical_filter_check").checked){
@@ -176,53 +244,36 @@ $(function () {
                 headers:{
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify([{'entity': entity}, {'category': categories}]),
+                body: JSON.stringify({'entity': entity, 'categories': categories}),
             }).then(response => {
-                let content = `
-                        <div class="categorical_filter" id="filter/${entity}">
-                             <button type='button' style='width: 100%; word-wrap: break-word; white-space: normal;'
-                                     class='btn btn-outline-primary text-left' value='${entity}'>
-                                  <span class='close' onclick='remove_filter(${entity})'>x</span>
-                                  ${entity} is ${categories}
-                             </button>
-                        </div>`;
-                document.getElementById("add_filter").value = response.update_filter
-                $("#demo").append(content)
+                refresh_filter_panel();
             }).catch(error => {
                 console.log(error)
+                refresh_filter_panel();
             })
-        }
-        else{
-            let entity = document.getElementById("id_numerical_filter").value;
+        } else{
+            const entity = document.getElementById("id_numerical_filter").value;
+            const from_to = document.getElementById("range").value.split(';');
+            const request_json = {
+                'entity': entity,
+                'from_value': parseFloat(from_to[0]),
+                'to_value': parseFloat(from_to[1]),
+                'min': min,
+                'max': max,
+            };
             fetch('/filter/add_numerical', {
                 method: 'POST',
                 headers:{
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify([{'entity': entity}, {'from_value': from_num}, {'to_value': to_num}, {'min': min}, {'max': max}]),
+                body: JSON.stringify(request_json),
             }).then(response => {
-                let content = `
-                        <div class="numerical_filter" id="filter/${entity}">
-                            <span class='close' onclick='remove_filter(${entity})'>x</span>
-                            <input type='hidden' class='name' value='${entity}'/> ${entity}
-                            <input type='text' class='range'  name='loan_term'  data-min='${min}' data-max='${max}' 
-                                   data-from='${response.from_num}' data-to='${response.to_num}'/>
-                        </div>`;
-                $("#demo2").append(content)
-                document.getElementById("add_filter").value = response.update_filter
-            }).then(response => {
-                $(".range").ionRangeSlider({
-                    type: "double",
-                    skin: "big",
-                    grid: true,
-                    grid_num: 4,
-                    step: 0.001,
-                    to_fixed: true,//block the top
-                    from_fixed: true//block the from
-                })
+                refresh_filter_panel();
             }).catch(error => {
-                console.log(error)
+                console.log(error);
+                refresh_filter_panel();
             })
         }
     });
 });
+

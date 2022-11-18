@@ -121,8 +121,6 @@ def message_count():
                 date=session.get('date_filter'),
                 case_display=case_display,
                 filter_update=session.get('filtering')['filter_update'],
-                categorical_filter_results=session.get('filtering')['filter_cat'],
-                numerical_filter_results=session.get('filtering')['filter_num'],
                 limit_offset=session.get('limit_offset')
                 )
 

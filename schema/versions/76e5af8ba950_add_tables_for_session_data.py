@@ -38,7 +38,7 @@ def upgrade() -> None:
         'session_name_ids_matching_filter',
         sa.Column('session_id', sa.String, sa.ForeignKey('sessions.id'), primary_key=True),
         sa.Column('name_id', sa.String, primary_key=True),
-        sa.Column('filter', sa.String),
+        sa.Column('filter', sa.String, primary_key=True),
     )
     op.create_index(
         'idx_session_name_ids_matching_filter_by_session_id',
