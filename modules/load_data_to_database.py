@@ -112,7 +112,6 @@ def _do_insert(db_session, stmt, columns, items):
 
 
 def patient_table():
-
     s_union = union(select(TableCategorical.name_id, TableCategorical.case_id),
                     select(TableNumerical.name_id, TableNumerical.case_id),
                     select(TableDate.name_id, TableDate.case_id)).subquery()
@@ -120,3 +119,4 @@ def patient_table():
     sql_statement = insert(Patient).from_select(['name_id', 'case_id'], s_select)
     db_session = get_db_session()
     db_session.execute(sql_statement)
+    db_session.commit()

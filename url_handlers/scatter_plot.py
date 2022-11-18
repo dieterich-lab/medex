@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, session
 
+from medex.controller.helpers import get_filter_service
 from medex.services.database import get_db_session
 from modules.get_data_to_scatter_plot import get_scatter_plot
 from webserver import all_measurement, measurement_name, block_measurement, start_date, end_date
@@ -18,7 +19,7 @@ def get_plots():
 
 @scatter_plot_page.route('/scatter_plot', methods=['POST'])
 def post_plots():
-
+    filter_service = get_filter_service()
     # get request values
     if block_measurement == 'none':
         measurement = (all_measurement[0], all_measurement[0])
@@ -35,7 +36,6 @@ def post_plots():
     check_for_date_filter_post(start_date, end_date)
     date_filter = session.get('date_filter')
     limit_filter = check_for_limit_offset()
-    update_filter = session.get('filtering')
 
     # handling errors and load data from database
     df = pd.DataFrame()
@@ -54,7 +54,7 @@ def post_plots():
     else:
         session_db = get_db_session()
         df, error = get_scatter_plot(add_group_by, axis, measurement, categorical_entities, date_filter, limit_filter,
-                                     update_filter, session_db)
+                                     filter_service, session_db)
 
     if error:
         return render_template('scatter_plot.html',

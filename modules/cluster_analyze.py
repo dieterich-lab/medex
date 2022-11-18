@@ -6,6 +6,7 @@ def cluster_table():
     db_session.execute(""" CLUSTER examination_date USING idx_key_date""")
     db_session.execute(""" CLUSTER examination_numerical USING idx_key_num""")
     db_session.execute(""" CLUSTER examination_categorical USING idx_key_cat""")
+    db_session.commit()
 
 
 def analyze_table():
@@ -13,6 +14,7 @@ def analyze_table():
     db_session.execute(""" ANALYZE examination_numerical""")
     db_session.execute(""" ANALYZE examination_categorical""")
     db_session.execute(""" ANALYZE examination_date""")
+    db_session.commit()
 
 
 def alter_system():
