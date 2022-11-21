@@ -1,8 +1,11 @@
 from flask import Blueprint, render_template, request, session
+
+from medex.controller.helpers import get_filter_service
+from medex.services.database import get_db_session
 from modules.get_data_to_barchart import get_bar_chart
 import plotly.express as px
 from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
-from webserver import all_measurement, measurement_name, block_measurement, factory, start_date, end_date
+from webserver import all_measurement, measurement_name, block_measurement, start_date, end_date
 import pandas as pd
 import textwrap
 
@@ -39,8 +42,9 @@ def post_statistics():
     elif not categorical_entities[1]:
         error = "Please select subcategory"
     else:
-        session_db = factory.get_session(session.get('session_id'))
-        df, error = get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, update_filter,
+        session_db = get_db_session()
+        filter_service = get_filter_service()
+        df, error = get_bar_chart(categorical_entities, measurement, date_filter, limit_filter, filter_service,
                                   session_db)
     if error:
         return render_template('barchart.html',

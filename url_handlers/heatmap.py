@@ -1,10 +1,13 @@
 from flask import Blueprint, render_template, request, session
 import pandas as pd
 from scipy.stats import pearsonr
+
+from medex.controller.helpers import get_filter_service
+from medex.services.database import get_db_session
 from modules.get_data_to_heatmap import get_heat_map
 from url_handlers.filtering import check_for_date_filter_post, check_for_limit_offset
 import plotly.graph_objects as go
-from webserver import factory, start_date, end_date
+from webserver import start_date, end_date
 
 heatmap_plot_page = Blueprint('heatmap', __name__, template_folder='tepmlates')
 
@@ -29,8 +32,9 @@ def post_plots():
     # handling errors and load data from database
     df = pd.DataFrame()
     if len(numeric_entities) > 1:
-        session_db = factory.get_session(session.get('session_id'))
-        df, error = get_heat_map(numeric_entities, date_filter, limit_filter, update_filter, session_db)
+        session_db = get_db_session()
+        filter_service = get_filter_service()
+        df, error = get_heat_map(numeric_entities, date_filter, limit_filter, filter_service, session_db)
         if not error:
             if len(df.index) == 0:
                 error = "This two entities don't have common values"
