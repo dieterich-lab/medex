@@ -21,7 +21,6 @@ services:
       - ./import:/app/import
     restart: always
 
-
   database_medex:
     image: postgres
     container_name: database_medex

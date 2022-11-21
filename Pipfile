@@ -25,6 +25,8 @@ register = "*"
 alembic = "*"
 pydantic = "*"
 flask-sqlalchemy = "*"
+"backports.weakref" = "*"
+"backports.zoneinfo" = "*"
 
 [dev-packages]
 pylint = "*"
