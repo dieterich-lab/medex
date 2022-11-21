@@ -1,9 +1,8 @@
 version: '3.6'
 services:
   medex:
-    image: aljoschak1/medex
+    image: fedex:latest
     container_name: medex
-    build: .
     ports:
       - "8000:8000"
     depends_on: # other containers it needs in order to run
