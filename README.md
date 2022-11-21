@@ -3,13 +3,15 @@ This project provides a dashboard tool to allow a quick exploratory data analysi
 It was developed to allow a quick insight into our medical research-data-warehouse without the need of knowing how to use SQL or programming languages. 
 However, it is not limited to clinical data, but can be used to do exploratory data analysis on many kind of datasets. 
 
-## Setup production ###
+## Setup production
 
-#### Requirements ####
+### Requirements
+
 * [Docker-CE](https://docs.docker.com/install/) >= 18.09.07
 * [docker-compose](https://docs.docker.com/compose/overview/) >= 1.24.0
 
-#### Usage ####
+### Usage
+
 1.Open Terminal (in Windows: Command window(cmd))
 
 2.Go to medex directory
@@ -27,14 +29,14 @@ It is not necessary to clone the GitHub repository.
 ## Setup Development [(detailed documentation)](https://github.com/dieterich-lab/medex/tree/master/documentation) ## 
 Not recommended for pure deployment.
 
-#### Requirements ####
+### Requirements
 * [Python](https://www.python.org/) >= 3.8
 * [pipenv](https://docs.pipenv.org/en/latest/) >= 22.2.1
 * [Docker-CE](https://docs.docker.com/install/) >= 18.09.07
 * [docker-compose](https://docs.docker.com/compose/overview/) >= 1.24.0
 * Linux/MacOS
 
-#### Usage ####
+### Usage
 1.Open Terminal 
 
 2.Go to medex directory
@@ -53,7 +55,23 @@ Test it out at http://localhost:5000. The "web" folder is mounted into the conta
 * Database imports run every night at 5:05 and at start.
 * The database is only updated if there is new data to import.
 
-## Citation ##
+## Running the Tests
+
+Before running any tests you need to install the development dependencies
+in your virtual environment:
+
+     pipenv install --dev
+
+The **unit tests** are just pytest tests located in the **'tests'** folder. They use
+sqlite to simulate database when needed. That limits their ability to test code,
+which uses Postgres features.
+
+The **integration tests** are als pytest tests but are located in **'integrations_tests'**
+and will use docker to run a Postgres Database on port 5477. Either the old
+docker-compose binary or a modern docker with the plugin for compose subcommand
+must be installed.
+
+## Citation
 
 Aljoscha Kindermann, Ekaterina Stepanova, Hauke Hund, Nicolas Geis, Brandon Malone, Christoph Dieterich (2019) 
 **MedEx - Data Analytics for Medical Domain Experts in Real-Time**

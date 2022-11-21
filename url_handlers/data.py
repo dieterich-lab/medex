@@ -1,19 +1,22 @@
 from flask import Blueprint, render_template, request, jsonify, session
+
+from medex.controller.helpers import get_session_id, get_filter_service
+from medex.services.database import get_db_session
 from serverside.serverside_table import ServerSideTable
 from url_handlers.filtering import check_for_date_filter_post
 from webserver import block_measurement, all_entities, measurement_name,\
-    all_measurement, factory, start_date, end_date
+    all_measurement, start_date, end_date
 
 data_page = Blueprint('data', __name__, template_folder='templates')
 
 
 @data_page.route('/data/data1', methods=['GET', 'POST'])
 def table_data():
-    session_db = factory.get_session(session.get('session_id'))
-    update_filter = session.get('filtering')
+    db_session = get_db_session()
     table_browser = session.get('table_browser')
     date_filter = session.get('date_filter')
-    dat = ServerSideTable(request, table_browser, date_filter, update_filter, session_db).output_result()
+    filter_service = get_filter_service()
+    dat = ServerSideTable(request, table_browser, date_filter, filter_service, db_session).output_result()
 
     """
     if Meddusa == 'block':

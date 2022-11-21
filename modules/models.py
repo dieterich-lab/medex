@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Date,  Numeric, ForeignKey, Index, text
+from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, Index, text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
+from medex.services.database import get_db_engine, get_db_session
 
 Base = declarative_base()
 
@@ -68,20 +69,49 @@ class TableDate(Base):
     __table_args__ = (Index('idx_key_date', 'key'), Index('idx_name_id_date', 'name_id'))
 
 
-def drop_tables(rdb):
-    Base.metadata.drop_all(rdb)
+class Sessions(Base):
+    __tablename__ = 'sessions'
+    id = Column(String, primary_key=True)
+    created = Column(DateTime)
+    last_touched = Column(DateTime)
 
 
-def create_tables(rdb):
-    Base.metadata.create_all(rdb)
+class SessionFilteredNameIds(Base):
+    __tablename__ = 'session_filtered_name_ids'
+    session_id = Column(String, ForeignKey('sessions.id'), primary_key=True)
+    name_id = Column(String, primary_key=True)
+    __table_args__ = tuple([Index('idx_session_filtered_name_ids_by_session_id', 'session_id')])
 
 
-def check_if_tables_exists(rdb):
+class SessionFilteredCaseIds(Base):
+    __tablename__ = 'session_filtered_case_ids'
+    session_id = Column(String, ForeignKey('sessions.id'), primary_key=True)
+    case_id = Column(String, primary_key=True)
+    __table_args__ = tuple([Index('idx_session_filtered_case_ids_by_session_id', 'session_id')])
+
+
+class SessionNameIdsMatchingFilter(Base):
+    __tablename__ = 'session_name_ids_matching_filter'
+    session_id = Column(String, ForeignKey('sessions.id'), primary_key=True)
+    name_id = Column(String, primary_key=True)
+    filter = Column(String, primary_key=True)
+    __table_args__ = tuple([Index('idx_session_name_ids_matching_filter_by_session_id', 'session_id')])
+
+
+def drop_tables():
+    Base.metadata.drop_all(get_db_engine())
+
+
+def create_tables():
+    Base.metadata.create_all(get_db_engine())
+
+
+def check_if_tables_exists():
     table = ''
-    connection = rdb.connect()
-    result = connection.execute(text("SELECT to_regclass('public.examination_numerical')"))
+    result = get_db_session().execute(text("SELECT to_regclass('public.examination_numerical')"))
     for row in result:
         table = row[0]
     if table != 'examination_numerical':
-        create_tables(rdb)
+        create_tables()
+
 
