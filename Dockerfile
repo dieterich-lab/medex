@@ -18,7 +18,6 @@ COPY . /app
 ENV FLASK_ENV production
 ENV TZ=Europe/Berlin
 
-EXPOSE 5428
 EXPOSE 8000
 
 
