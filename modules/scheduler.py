@@ -1,3 +1,5 @@
+from medex.services.database import get_db_session
+from medex.services.session import SessionService
 from modules import models, load_data_to_database as ld, cluster_analyze as ca
 from configparser import ConfigParser
 import os
@@ -96,6 +98,10 @@ def start_import():
         print("End load data")
 
 
+def expire_old_sessions():
+    SessionService.expire_old_sessions(get_db_session())
+
+
 class Scheduler:
     """
     BackgroundScheduler runs in a thread inside existing application.
@@ -105,6 +111,7 @@ class Scheduler:
     def __init__(self, day_of_week, hour, minute):
         self.bgs = BackgroundScheduler(timezone=str(tzlocal.get_localzone()))
         self.bgs.add_job(start_import, 'cron', [], day_of_week=day_of_week, hour=hour, minute=minute)
+        self.bgs.add_job(expire_old_sessions, 'interval', minutes=30)
 
     def start(self):
         self.bgs.start()

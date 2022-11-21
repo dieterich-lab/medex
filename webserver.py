@@ -2,7 +2,7 @@ from flask import Flask, send_file, request, redirect, session, send_from_direct
 from flask_sqlalchemy import SQLAlchemy
 
 from medex.controller.helpers import get_filter_service
-from modules.import_scheduler import Scheduler, start_import
+from modules.scheduler import Scheduler, start_import
 from medex.services.database import get_db_session, get_database_url, init_db
 import modules.load_data_to_select as ps
 from modules.get_data_to_table_browser import get_data_download
