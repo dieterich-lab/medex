@@ -18,8 +18,8 @@ COPY . /app
 ENV FLASK_ENV production
 ENV TZ=Europe/Berlin
 
-EXPOSE 5429
-EXPOSE 7000
+EXPOSE 5428
+EXPOSE 8000
 
 
 CMD [ "waitress-serve","--threads","6","--port","7000","--call", "webserver:main" ]
