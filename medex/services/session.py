@@ -36,6 +36,7 @@ class SessionService:
 
     @classmethod
     def expire_old_sessions(cls, db_session):
+        print('Checking for expired sessions ...')
         now = datetime.now()
         expire_time = now - cls.EXPIRATION_TIME
         rv = db_session.query(Sessions.id).where(Sessions.last_touched < expire_time).all()

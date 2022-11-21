@@ -2,7 +2,8 @@ from flask import Flask, send_file, request, redirect, session, send_from_direct
 from flask_sqlalchemy import SQLAlchemy
 
 from medex.controller.helpers import get_filter_service
-from modules.scheduler import Scheduler, start_import
+from medex.services.scheduler import Scheduler
+from modules.import_data import start_import
 from medex.services.database import get_db_session, get_database_url, init_db
 import modules.load_data_to_select as ps
 from modules.get_data_to_table_browser import get_data_download
@@ -37,18 +38,9 @@ def check_for_env(key: str, default=None, cast=None):
 with app.app_context():
     start_import()
 
-# ToDo: Do we need an App Context for scheduled runs of "start_import" too?
-
-# date and hours to import data
-day_of_week = check_for_env('IMPORT_DAY_OF_WEEK', default='mon-sun')
-hour = check_for_env('IMPORT_HOUR', default=5)
-minute = check_for_env('IMPORT_MINUTE', default=5)
-
-# Import data using function scheduler from package modules
 if os.environ.get('IMPORT_DISABLED') is None:
-    scheduler = Scheduler(day_of_week=day_of_week, hour=hour, minute=minute)
+    scheduler = Scheduler(app)
     scheduler.start()
-    scheduler.stop()
 
 # get all numeric and categorical entities from database
 Name_ID, measurement_name = ps.get_header()
