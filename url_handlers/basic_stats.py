@@ -27,7 +27,7 @@ def get_basic_stats():
     check_for_date_filter_post(start_date, end_date)
     date_filter = session.get('date_filter')
     limit_filter = filtering.check_for_limit_offset()
-    update_filter = session.get('filtering')
+    filter_service = get_filter_service()
     session_db = get_db_session()
 
     if 'basic_stats' in request.form:
@@ -48,7 +48,6 @@ def get_basic_stats():
         elif not numeric_entities:
             error = "Please select numeric entities"
         elif numeric_entities:
-            filter_service = get_filter_service()
             df, error = get_num_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, filter_service)
             df['measurement'] = df['measurement'].astype(str)
 
@@ -104,7 +103,7 @@ def get_basic_stats():
             error = "Please select entities"
         else:
             df, error = get_cat_date_basic_stats(categorical_entities, measurement, date_filter, limit_filter,
-                                                 update_filter, 'examination_categorical', session_db)
+                                                 filter_service, 'examination_categorical', session_db)
             df['measurement'] = df['measurement'].astype(str)
 
         if error:
@@ -148,7 +147,7 @@ def get_basic_stats():
             error = "Please select entities"
         else:
             df, error = get_cat_date_basic_stats(date_entities, measurement_d, date_filter, limit_filter,
-                                                 update_filter, 'examination_date', session_db)
+                                                 filter_service, 'examination_date', session_db)
             df['measurement'] = df['measurement'].astype(str)
 
         if error:

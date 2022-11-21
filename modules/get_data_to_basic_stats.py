@@ -64,7 +64,7 @@ def _get_raw_data_sql(entities, limit_filter, measurement, select_numerical_valu
             group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement)
 
 
-def get_cat_date_basic_stats(entities, measurement, date_filter, limit_filter, update_filter, table, db_session):
+def get_cat_date_basic_stats(entities, measurement, date_filter, limit_filter, filter_service: FilterService, table, db_session):
     if table == 'examination_categorical':
         name = TableCategorical
     else:
@@ -72,7 +72,7 @@ def get_cat_date_basic_stats(entities, measurement, date_filter, limit_filter, u
 
     values = checking_date_filter(date_filter, name)
     select_values_sql = select(name.key, name.measurement, name.name_id)
-    select_numerical_values_with_filter_sql = apply_filter_to_sql(update_filter, name, select_values_sql)
+    select_numerical_values_with_filter_sql = filter_service.apply_filter(name, select_values_sql)
     
     if limit_filter.get('selected') is not None:
         raw_data = union(*[select_numerical_values_with_filter_sql.
@@ -92,7 +92,7 @@ def get_cat_date_basic_stats(entities, measurement, date_filter, limit_filter, u
         group_by(with_raw_data.c.key, with_raw_data.c.measurement).\
         order_by(with_raw_data.c.key, with_raw_data.c.measurement)
 
-    n = _get_patient_count(db_session)
+    n = _get_patient_count()
     df = pd.read_sql(sql, db_session.connection())
     df['count NaN'] = n - df['count']
     return df, None
