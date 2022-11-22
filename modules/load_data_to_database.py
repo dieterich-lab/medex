@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy.exc import SQLAlchemyError
 
 from medex.services.database import get_db_session
@@ -64,30 +66,22 @@ def load_data(entities_path, dataset_path, header):
     load_dataset(dataset_path, header, numerical_entities, date_entities)
 
 
-_NUMERICAL_COLUMN_LIST = _get_columns_of_table(TableNumerical)
-_CATEGORICAL_COLUM_LIST = _get_columns_of_table(TableCategorical)
-_DATE_COLUMN_LIST = _get_columns_of_table(TableDate)
+class ImportValidationError(Exception):
+    pass
 
 
 def load_dataset(dataset, header, numerical_entities, date_entities):
     db_session = get_db_session()
     with open(dataset, 'r', encoding="utf8") as in_file:
         line_number = 0
-        stmt_numerical = insert(TableNumerical)
-        stmt_categorical = insert(TableCategorical)
-        stmt_date = insert(TableDate)
         add_visit_flag = 'Visit' not in header
         for row in in_file:
             line_number += 1
             entity, items = _get_data_from_row(row, line_number, add_visit_flag)
             if entity is None:
-                pass
-            elif entity in numerical_entities:
-                _do_insert(db_session, stmt_numerical, _NUMERICAL_COLUMN_LIST, items)
-            elif entity in date_entities:
-                _do_insert(db_session, stmt_date, _DATE_COLUMN_LIST, items)
-            else:
-                _do_insert(db_session, stmt_categorical, _CATEGORICAL_COLUM_LIST, items)
+                continue
+            meta_data = _get_meta_data_for_entity(entity, numerical_entities, date_entities)
+            _do_insert(db_session, meta_data, items, line_number)
     db_session.commit()
 
 
@@ -106,9 +100,65 @@ def _get_data_from_row(row, line_number, add_visit_flag):
     return items[6], items
 
 
-def _do_insert(db_session, stmt, columns, items):
+def _validate_numerical(x):
+    try:
+        float(x)
+    except ValueError:
+        raise ImportValidationError(f"Value '{x} is not numerical!")
+
+
+def _validate_date(x):
+    try:
+        datetime.strptime(x, '%Y-%m-%d')   # Is that good enough?
+    except Exception:
+        raise ImportValidationError(f"Value '{x} is not a Date in format YYYY-MM-DD!")
+
+
+def _validate_categorical(x):
+    pass
+
+
+_META_DATA_BY_ENITITY_TYPE = {
+    'categorical': {
+        'columns': _get_columns_of_table(TableCategorical),
+        'statement': insert(TableCategorical),
+        'validator': _validate_categorical,
+    },
+    'numerical': {
+        'columns': _get_columns_of_table(TableNumerical),
+        'statement': insert(TableNumerical),
+        'validator': _validate_numerical,
+    },
+    'date': {
+        'columns': _get_columns_of_table(TableDate),
+        'statement': insert(TableDate),
+        'validator': _validate_date,
+    }
+}
+
+
+def _get_meta_data_for_entity(entity, numerical_entities, date_entities):
+    if entity in numerical_entities:
+        entity_type = 'numerical'
+    elif entity in date_entities:
+        entity_type = 'date'
+    else:
+        entity_type = 'categorical'
+    return _META_DATA_BY_ENITITY_TYPE[entity_type]
+
+
+def _do_insert(db_session, meta_data, items, line_number):
+    validator = meta_data['validator']
+    try:
+        validator(items[7])
+    except ImportValidationError as e:
+        print(f"Warning: Failed to load dataset.csv, line {line_number} - skipping: {str(e)}")
+        return
+
+    columns = meta_data['columns']
+    statement = meta_data['statement']
     params = {columns[i]: items[i] for i in range(8)}
-    db_session.execute(stmt, params)
+    db_session.execute(statement , params)
 
 
 def patient_table():
