@@ -7,6 +7,7 @@ from medex.services.filter import FilterService
 
 
 DEFAULT_FILTER_STATUS = {
+    'filtered_patient_count': 4711,
     'filters': {
         'diabetes': { 'categories': ['nein']},
         'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}
@@ -23,6 +24,7 @@ class FilterServiceMock(FilterService):
 
     def delete_all_filters(self):
         self._filter_status.filters = {}
+        self._filter_status.filtered_patient_count = None
 
     def delete_filter(self, entity: str):
         del self._filter_status.filters[entity]

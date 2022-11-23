@@ -17,9 +17,11 @@ def populate_data(db_session):
     db_session.add_all([
         Patient(name_id='p1', case_id='case_p1'),
         Patient(name_id='p2', case_id='case_p2'),
+
         NameType(orders=1, key='temperature', type='Double'),
         NameType(orders=2, key='diabetes', type='String'),
         NameType(orders=3, key='blood pressure', type='Double'),
+
         TableCategorical(
             id=1, name_id='p1', case_id='case_p1', measurement='baseline', date='2015-03-05',
             key='diabetes', value='nein'
@@ -28,6 +30,7 @@ def populate_data(db_session):
             id=2, name_id='p2', case_id='case_p2', measurement='baseline', date='2015-04-05',
             key='diabetes', value='ja'
         ),
+
         TableNumerical(
             id=3, name_id='p1', case_id='case_p1', measurement='baseline', date='2015-03-05',
             key='temperature', value=37.5
@@ -40,6 +43,7 @@ def populate_data(db_session):
             id=5, name_id='p1', case_id='case_p1', measurement='baseline', date='2015-03-05',
             key='blood pressure', value=135
         ),
+
         SessionNameIdsMatchingFilter(
             session_id='unrelated-session', name_id='p1', filter='diabetes'
         ),
@@ -148,6 +152,7 @@ def test_dict(filter_service: FilterService, db_session, populate_data):
     _setup_filters_filtering_eveything(filter_service)
 
     assert filter_service.dict() == {
+        'filtered_patient_count': 0,
         'filters': {
             'diabetes': { 'categories': ['nein']},
             'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}

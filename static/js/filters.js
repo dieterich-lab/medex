@@ -166,6 +166,7 @@ $(function () {
                     render_numerical_filter(entity, filter);
                 }
             })
+            update_filtered_patient_count(data['filtered_patient_count']);
         })
         .catch(error => {
             console.log(error)
@@ -204,7 +205,6 @@ $(function () {
     }
 
     function render_numerical_filter(entity, filter) {
-        let div = document.getElementById('active_filters');
         render_filter(entity, `
             <span class="close" id="remove_filter/${entity}">x</span>
             <input type="hidden" class="name" value="${entity}"/> ${entity}
@@ -221,6 +221,15 @@ $(function () {
             to_fixed: true,//block the top
             from_fixed: true//block the from
         });
+    }
+
+    function update_filtered_patient_count(filtered_patient_count) {
+        let span = document.getElementById('filtered_patient_count');
+        if (filtered_patient_count === null) {
+            span.innerHTML = '';
+        } else {
+            span.innerHTML = ` (${filtered_patient_count} patients)`;
+        }
     }
 
     function remove_filter(entity) {
