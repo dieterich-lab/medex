@@ -115,7 +115,6 @@ def message_count():
     return dict(date_block=date_block,
                 date=session.get('date_filter'),
                 case_display=case_display,
-                filter_update=session.get('filtering')['filter_update'],
                 limit_offset=session.get('limit_offset')
                 )
 
