@@ -3,8 +3,9 @@ from flask import session
 
 from medex.dto.filter import FilterStatus
 from medex.services.database import get_db_session
-from medex.services.filter import FilterService
 from medex.services.session import SessionService
+from medex.services.filter import FilterService
+from medex.services.entity import EntityService
 
 
 def get_session_id():
@@ -32,3 +33,8 @@ def get_filter_service():
 
 def store_filter_status_in_session(filter_service: FilterService):
     session['filter_status'] = filter_service.dict()
+
+
+def get_entity_service():
+    database_session = get_db_session()
+    return EntityService(database_session)

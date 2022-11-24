@@ -1,6 +1,7 @@
 from flask import Flask, send_file, request, redirect, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
+from medex.controller.entity import entity_controller
 from medex.controller.helpers import get_filter_service
 from medex.services.scheduler import Scheduler
 from modules.import_data import start_import
@@ -139,6 +140,7 @@ app.register_blueprint(scatter_plot_page)
 app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(filter_controller, url_prefix='/filter')
+app.register_blueprint(entity_controller, url_prefix='/entity')
 
 
 @app.route('/_session', methods=['GET'])
