@@ -47,10 +47,10 @@ class SessionService:
     def _kill_session(cls, db_session, session_id):
         print(f"Deleting old session {session_id} ...")
         for stmt in [
-            delete(Sessions).where(Sessions.id == session_id),
             delete(SessionFilteredNameIds).where(SessionFilteredNameIds.session_id == session_id),
             delete(SessionNameIdsMatchingFilter).where(SessionNameIdsMatchingFilter.session_id == session_id),
-            delete(SessionFilteredCaseIds).where(SessionFilteredCaseIds.session_id == session_id)
+            delete(SessionFilteredCaseIds).where(SessionFilteredCaseIds.session_id == session_id),
+            delete(Sessions).where(Sessions.id == session_id),
         ]:
             db_session.execute(stmt)
         db_session.commit()
