@@ -59,6 +59,7 @@ class FilterService:
             )
         self._database_session.commit()
         self._filter_status.filters = {}
+        self._filter_status.filtered_patient_count = None
 
     def _record_name_ids_for_categorical_filter(self, entity, new_filter: CategoricalFilter):
         data_table = TableCategorical
@@ -131,6 +132,9 @@ class FilterService:
         )
 
     def _update_patient_count(self):
+        if len (self._filter_status.filters) == 0:
+            self._filter_status.filtered_patient_count = None
+            return
         table = SessionFilteredNameIds
         result = self._database_session.execute(
             select(func.count(table.name_id)).where(table.session_id == self._session_id)
