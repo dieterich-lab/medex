@@ -59,6 +59,7 @@ class FilterService:
             )
         self._database_session.commit()
         self._filter_status.filters = {}
+        self._filter_status.filtered_patient_count = None
 
     def _record_name_ids_for_categorical_filter(self, entity, new_filter: CategoricalFilter):
         data_table = TableCategorical
@@ -143,6 +144,8 @@ class FilterService:
         del self._filter_status.filters[entity]
         self._record_name_ids_for_all_filters()
         self._database_session.commit()
+        if len(self._filter_status.filters) == 0:
+            self._filter_status.filtered_patient_count = None
 
     def apply_filter(self, table, query: Query) -> Query:
         if len(self._filter_status.filters) != 0:

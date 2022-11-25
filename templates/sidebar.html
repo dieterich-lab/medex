@@ -1,14 +1,11 @@
 {% block content %}
 
 <script src="{{ url_for('static', filename='js/subcategories.js') }}"></script>
-<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
 
 
 {# pretty multiselect inputs #}
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-
-
 <script type="text/javascript" src="{{ url_for('static', filename='moment.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='daterangepicker.min.js') }}"></script>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='daterangepicker.css') }}" />
@@ -41,7 +38,6 @@
     </div>
 </div>
 
-
 <div class="card">
     <div class="card-body">
         <label>Filter</label>
@@ -63,69 +59,60 @@
                    value="{{ limit_offset[1] }}">
         </div>
 
-        <div class="form-check mt-4">
-            <input class="form-check-input" type="radio" onclick="filter_check(this)" id="categorical_filter_check"
-                   name="categorical_filter_check" value="categorical">
-            <label style="margin-right:30px">Categorical</label>
+        <label for="selected_filter">Entity</label>
+        <select id="selected_filter" style="width: 100%" class="js-example-basic-single" onchange="patient_filter.select_filter()">
+        </select>
 
-            <input class="form-check-input" type="radio" onclick="filter_check(this)" id="numerical_filter_check"
-                   name="categorical_filter_check" value="numerical">
-            <label>Numerical</label>
-        </div>
-
-        <div id="categorical_filter_check_block" style="display:none">
-            <label>Categorical:</label>
-            <select id="categorical_filter" name="categorical_filter" style="width: 100%"
-                    class="js-example-basic-single">
-                <option>Search entity</option>
-                {% for entity in entities[1] %}
-                <option title="{{ entities[1][entity].description }}"
-                        value="{{ entities[1][entity].key }}">{{ entities[1][entity].key }}
-                </option>
-                {% endfor %}
-            </select>
-            <br>
-            <label>is</label>
-            <script type="text/javascript">
-                var filter = {{entities[2]|safe}};
-            </script>
-            <select multiple id="subcategory_filter" name="subcategory_filter" style="width: 100%"
+        <div id="categorical_filter_panel" style="display:none">
+            <label for="categorical_filter_panel_categories">is</label>
+            <select multiple id="categorical_filter_panel_categories" name="subcategory_filter" style="width: 100%"
                     class="form-control">
-                <option value="Select all">Select all</option>
-                {% for entity in entities[2][categorical_filter] %}
-                <option value="{{ entity }}" {% if entity in entities[2] %}selected{% endif %}>{{ entity }}</option>
-                {% endfor %}
-            </select>
-            <br><br>
+            </select><!-- filled by patient_filter.js -->
+            <br/><br/>
+            <button id="add_or_update_categorical_filter_btn" type="button" class="btn btn-outline-info"
+                onclick="patient_filter.add_or_update_categorical_filter()"
+            >
+                Add or Update Filter
+            </button>
         </div>
 
-        <div style="display:none" id="numerical_filter_check_block">
-            {{ m.entity_form_single(id_single="id_numerical_filter",name =entities[0],value=entity,d="Numerical:") }}
-            <script type="text/javascript">
-                var df = {{df_min_max|safe }};
-            </script>
+        <div style="display:none" id="numerical_filter_panel">
+            <br/>
             <div class="range-slider">
-                <input type="text" name="my-slider" id="range" class="js-range-slider" value=""/>
+                <input type="text" name="my-slider" id="numerical_filter_panel_range_slider" class="js-range-slider"/>
             </div>
             <br>
             <div class="extra-controls">
-                from <input style="width: 30%" id="input1" type="text" class="js-input-from" value="{{ from_num }}"/>
-                to <input style="width: 30%" id="input2" type="text" class="js-input-to" value="{{ to_num }}"/>
+                from
+                <input style="width: 30%" id="numerical_filter_settings_from_field" type="text" class="js-input-from"
+                    onchange="patient_filter.set_numerical_filter_from()"
+                />
+                to
+                <input style="width: 30%" id="numerical_filter_settings_to_field" type="text" class="js-input-to"
+                    onchange="patient_filter.set_numerical_filter_to()"
+                />
             </div>
+            <br/>
+            <button id="add_or_update_numerical_filter_btn" type="button" class="btn btn-outline-info"
+                onclick="patient_filter.add_or_update_numerical_filter()"
+            >
+                Add or Update Filter
+            </button>
         </div>
         <br>
-        <button id="add_filter" type="button" class="btn btn-outline-info">Add Filter
-        </button>
     </div>
 </div>
 
-
 <div id='id_filter_results' class="card" style="display: block ">
     <div class="card-body">
-        <label>Filters<span id="filtered_patient_count"></span>:</label>
-        <button id="clean" type="button" name='clean' value="clean" class="btn btn-outline-info" style="float: right">
-            Clear All
-        </button>
+        <p>
+            <label>Filters<span id="filtered_patient_count"></span>:</label>
+            <button id="clean" type="button" name='clean' value="clean" class="btn btn-outline-info" style="float: right"
+                onclick="patient_filter.clear_all_filters()"
+            >
+                Clear All
+            </button>
+        </p>
         <div id="active_filters">
         </div>
     </div>
