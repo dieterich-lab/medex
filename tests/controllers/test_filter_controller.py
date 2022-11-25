@@ -48,7 +48,7 @@ def test_delete_one_filter(helper_mock, test_client):
     assert stored_filter_status == {
         'filtered_patient_count': DEFAULT_FILTER_STATUS['filtered_patient_count'],
         'filters': {
-            'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}
+            'temperature': {'from_value': 39.0, 'to_value': 43.0}
         },
         'measurement': None,
     }
@@ -83,14 +83,14 @@ def test_add_categorical_filter(helper_mock, test_client):
 def test_add_numerical_filter(helper_mock, test_client):
     rv = test_client.post(
         '/add_numerical',
-        json={'entity': 'Größe cm', 'from_value': 170, 'to_value': 180, 'min': 30, 'max': 300},
+        json={'entity': 'Größe cm', 'from_value': 170, 'to_value': 180},
     )
     assert rv.status == '200 OK'
     assert stored_filter_status == {
         'filtered_patient_count': DEFAULT_FILTER_STATUS['filtered_patient_count'],
         'filters': {
             **DEFAULT_FILTER_STATUS['filters'],
-            'Größe cm': {'from_value': 170, 'to_value': 180, 'min': 30, 'max': 300},
+            'Größe cm': {'from_value': 170, 'to_value': 180},
         },
         'measurement': None,
     }
