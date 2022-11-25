@@ -14,8 +14,6 @@ class AddCategoricalFilterRequest(CategoricalFilter):
 class NumericalFilter(BaseModel):
     from_value: float
     to_value: float
-    min: float
-    max: float
 
 
 class AddNumericalFilterRequest(NumericalFilter):

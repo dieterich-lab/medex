@@ -10,7 +10,7 @@ DEFAULT_FILTER_STATUS = {
     'filtered_patient_count': 4711,
     'filters': {
         'diabetes': { 'categories': ['nein']},
-        'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}
+        'temperature': {'from_value': 39.0, 'to_value': 43.0}
     }
 }
 
