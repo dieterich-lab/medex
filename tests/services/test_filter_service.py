@@ -159,6 +159,7 @@ def test_dict(filter_service: FilterService, db_session, populate_data):
         }
     }
 
+
 def test_dict_after_deleting_last_filter(filter_service: FilterService, db_session, populate_data):
     _setup_filters_filtering_everything(filter_service)
     filter_service.delete_filter('diabetes')
