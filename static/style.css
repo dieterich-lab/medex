@@ -45,7 +45,7 @@ button {
   overflow-x: hidden !important;
 }
 
-.foo { color: #808080; text-size: smaller; }
+.description { color: #808080; text-size: smaller; }
 
 .columns {
   display: flex;

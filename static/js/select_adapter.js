@@ -23,7 +23,7 @@ function matchCustom(params, data) {
 }
 function formatCustom(state) {
     return $(
-        '<div><div>' + state.text + '</div><div class="foo">'
+        '<div><div>' + state.text + '</div><div class="description">'
             + state.value
             + '</div></div>'
     );

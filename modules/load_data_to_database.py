@@ -158,7 +158,7 @@ def _do_insert(db_session, meta_data, items, line_number):
     columns = meta_data['columns']
     statement = meta_data['statement']
     params = {columns[i]: items[i] for i in range(8)}
-    db_session.execute(statement , params)
+    db_session.execute(statement, params)
 
 
 def patient_table():

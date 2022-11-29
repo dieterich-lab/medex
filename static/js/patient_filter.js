@@ -17,8 +17,8 @@ async function render_select_filter_box() {
 }
 
 function get_entity_display_name(entity) {
-    if ( entity.description ) {
-        return `${entity.description} (${entity.key})`;
+    if ( entity.key ) {
+        return `${entity.key} <div class="description">${entity.description}</div>`;
     } else {
         return entity.key;
     }
@@ -105,8 +105,8 @@ function hide_specific_filter_panels() {
 }
 
 async function set_numerical_filter_from() {
-    let new_value = document.getElementById('numerical_filter_settings_from_field').valueOf();
-    let to_value = document.getElementById('numerical_filter_settings_to_field').valueOf();
+    let new_value = parseFloat(document.getElementById('numerical_filter_settings_from_field').value);
+    let to_value = parseFloat(document.getElementById('numerical_filter_settings_to_field').value);
     const entity = await get_selected_entity();
     if ( new_value < entity.min ) {
         new_value = entity.min;
@@ -114,12 +114,13 @@ async function set_numerical_filter_from() {
     if ( new_value > to_value ) {
         new_value = to_value;
     }
-    get_numerical_filter_range_slider().update({from: new_value});
+    const update_value = {from: new_value};
+    get_numerical_filter_range_slider().update(update_value);
 }
 
 async function set_numerical_filter_to() {
-    let new_value = document.getElementById('numerical_filter_settings_to_field').valueOf();
-    let from_value = document.getElementById('numerical_filter_settings_from_field').valueOf();
+    let new_value = parseFloat(document.getElementById('numerical_filter_settings_to_field').value);
+    let from_value = parseFloat(document.getElementById('numerical_filter_settings_from_field').value);
     const entity = await get_selected_entity();
     if ( new_value > entity.max ) {
         new_value = entity.max;
@@ -185,8 +186,8 @@ function render_filter(entity_key, inner_html) {
     child.setAttribute('class', 'card');
     child.innerHTML = `
         <div class="card-body" style="display: flex; justify-content: space-between">
-            <span>${entity_key}:&nbsp;&nbsp;&nbsp; ${inner_html}</span>
-            <button type="button" style="word-wrap: break-word; white-space: normal; text-align: right"
+            <span>${entity_key}:&nbsp;&nbsp;&nbsp;&#32; ${inner_html}</span>
+            <button type="button" style="word-wrap: normal; white-space: normal; text-align: right; height: min-content"
              class="btn btn-outline-info btn-sm" id="remove_filter_${entity_key}"
             >
              Delete
@@ -216,7 +217,7 @@ function remove_filter(entity_key) {
 async function render_numerical_filter(entity_key, filter) {
     const entity = await get_entity_by_key(entity_key);
     const slider_id = `active_filter_${entity_key}`;
-    render_filter(entity_key, `${filter.from_value} - ${filter.to_value}`);
+    render_filter(entity_key, `${filter.from_value}&nbsp;-&nbsp;${filter.to_value}`);
 }
 
 function update_filtered_patient_count(filtered_patient_count) {

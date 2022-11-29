@@ -21,7 +21,7 @@ def db_session():
             break
         except Exception as e:
             retry_count += 1
-            if retry_count >=5:
+            if retry_count >= 5:
                 raise Exception('Failed to connect to Postgres: ' + str(e))
             print(f"Postgres not responding - retying ({retry_count})")
             sleep(1)
