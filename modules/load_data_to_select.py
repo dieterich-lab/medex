@@ -51,7 +51,7 @@ def get_date():
 def get_number_of_patients():
     db = get_db_session()
     rv = db.execute(
-        select(func.count(Patient.name_id))
+        select(func.count(func.distinct(Patient.name_id)))
     )
     return rv.first()[0]
 
