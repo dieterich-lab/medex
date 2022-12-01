@@ -11,7 +11,8 @@ DEFAULT_FILTER_STATUS = {
     'filters': {
         'diabetes': { 'categories': ['nein']},
         'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}
-    }
+    },
+    'measurement': None,
 }
 
 

@@ -111,9 +111,26 @@ $(function () {
     $("#id_numerical_filter").select2({
     placeholder:"Search entity"
     });
-    $("#filter_measurement").select2({
-    placeholder:"Search entity"
+    let filter_measurement_select = $("#filter_measurement");
+    filter_measurement_select.select2({
+        placeholder:"Search entity"
     });
+    filter_measurement_select.change( () =>{
+        const new_measurement = $(this).val();
+          fetch('/filter/set_measurement', {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({'measurement': new_measurement}),
+        }).then(response => {
+            refresh_filter_panel();
+        }).catch(error => {
+            console.log(error);
+            refresh_filter_panel();
+        });
+    });
+
 
     var $filter = $('#subcategory_filter').select2({
     placeholder:"Search entity"

@@ -48,10 +48,10 @@ size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information()
 start_date, end_date = ps.get_date()
 with app.app_context():
     number_of_patients = ps.get_number_of_patients()
+    all_measurement, block_measurement = ps.get_measurement()
 all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities()
 df_min_max = ps.min_max_value_numeric_entities()
 all_subcategory_entities = ps.get_subcategories_from_categorical_entities()
-all_measurement, block_measurement = ps.get_measurement()
 
 # change this
 try:

@@ -49,7 +49,8 @@ def test_delete_one_filter(helper_mock, test_client):
         'filtered_patient_count': DEFAULT_FILTER_STATUS['filtered_patient_count'],
         'filters': {
             'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}
-        }
+        },
+        'measurement': None,
     }
 
 
@@ -58,7 +59,8 @@ def test_delete_all_filters(helper_mock, test_client):
     assert rv.status == '200 OK'
     assert stored_filter_status == {
         'filtered_patient_count': None,
-        'filters': {}
+        'filters': {},
+        'measurement': None,
     }
 
 
@@ -73,7 +75,8 @@ def test_add_categorical_filter(helper_mock, test_client):
         'filters': {
             **DEFAULT_FILTER_STATUS['filters'],
             'ebola': {'categories': ['ja', 'vielleicht']},
-        }
+        },
+        'measurement': None,
     }
 
 
@@ -88,7 +91,8 @@ def test_add_numerical_filter(helper_mock, test_client):
         'filters': {
             **DEFAULT_FILTER_STATUS['filters'],
             'Größe cm': {'from_value': 170, 'to_value': 180, 'min': 30, 'max': 300},
-        }
+        },
+        'measurement': None,
     }
 
 
@@ -105,4 +109,5 @@ def test_get_all_for_cleared_filter(helper_mock, test_client):
     assert rv.get_json() == {
         'filtered_patient_count': None,
         'filters': {},
+        'measurement': None,
     }

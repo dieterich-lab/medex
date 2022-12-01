@@ -28,12 +28,7 @@ class FilterService:
     def add_filter(self, entity: str, new_filter: Union[CategoricalFilter, NumericalFilter]):
         self._session_service.touch()
         self._clean_up_filter_for_entity(entity)
-        if isinstance(new_filter, CategoricalFilter):
-            self._record_name_ids_for_categorical_filter(entity, new_filter)
-        elif isinstance(new_filter, NumericalFilter):
-            self._record_name_ids_for_numerical_filter(entity, new_filter)
-        else:
-            raise Exception('Unexpected Data Type')
+        self._record_name_ids_for_filter(entity, new_filter)
         self._database_session.commit()
         self._filter_status.filters[entity] = new_filter
         self._record_name_ids_for_all_filters()
@@ -50,7 +45,23 @@ class FilterService:
                 .where(table.filter == entity)
             )
 
+    def _record_name_ids_for_filter(self, entity, new_filter):
+        if isinstance(new_filter, CategoricalFilter):
+            data_table = TableCategorical
+            entity_condition = data_table.value.in_(new_filter.categories)
+        elif isinstance(new_filter, NumericalFilter):
+            data_table = TableNumerical
+            entity_condition = data_table.value.between(new_filter.from_value, new_filter.to_value)
+        else:
+            raise Exception('Unexpected Data Type')
+        self._record_name_ids_for_entity(data_table, entity, entity_condition)
+
     def delete_all_filters(self):
+        self._purge_filter_tables_for_session()
+        self._filter_status.filters = {}
+        self._filter_status.filtered_patient_count = None
+
+    def _purge_filter_tables_for_session(self):
         db = self._database_session
         for table in [SessionFilteredNameIds, SessionNameIdsMatchingFilter]:
             db.execute(
@@ -58,11 +69,8 @@ class FilterService:
                 .where(table.session_id == self._session_id)
             )
         self._database_session.commit()
-        self._filter_status.filters = {}
-        self._filter_status.filtered_patient_count = None
 
-    def _record_name_ids_for_categorical_filter(self, entity, new_filter: CategoricalFilter):
-        data_table = TableCategorical
+    def _record_name_ids_for_entity(self, data_table, entity, entity_condition):
         name_ids_for_filter = (
             select(
                 literal_column(f"'{self._session_id}'"),
@@ -70,10 +78,7 @@ class FilterService:
                 data_table.name_id
             ).distinct()
             .where(
-                and_(
-                    data_table.key == entity,
-                    data_table.value.in_(new_filter.categories)
-                )
+                self._get_filter_criteria(data_table, entity, entity_condition)
             )
         )
         self._database_session.execute(
@@ -83,23 +88,14 @@ class FilterService:
             )
         )
 
-    def _record_name_ids_for_numerical_filter(self, entity, new_filter: NumericalFilter):
-        data_table = TableNumerical
-        name_ids_for_filter = (
-            select(
-                literal_column(f"'{self._session_id}'"),
-                literal_column(f"'{entity}'"),
-                data_table.name_id
-            ).distinct()
-            .where(data_table.key == entity)
-            .where(data_table.value.between(new_filter.from_value, new_filter.to_value))
-        )
-        self._database_session.execute(
-            insert(SessionNameIdsMatchingFilter).from_select(
-                ['session_id', 'filter', 'name_id'],
-                name_ids_for_filter
-            )
-        )
+    def _get_filter_criteria(self, data_table, entity, entity_condition):
+        criteria = [
+            data_table.key == entity,
+            entity_condition,
+        ]
+        if self._filter_status.measurement is not None:
+            criteria.append(data_table.measurement == self._filter_status.measurement)
+        return and_(*criteria)
 
     def _record_name_ids_for_all_filters(self):
         self._reset_name_ids_for_all_filters()
@@ -175,3 +171,12 @@ class FilterService:
             )
             query = select(cte.c).select_from(join_with_filtered_name_ids)
         return query
+
+    def set_measurement(self, new_measurement: Optional[str]):
+        self._filter_status.measurement = new_measurement
+        self._session_service.touch()
+        self._purge_filter_tables_for_session()
+        for entity, existing_filter in self._filter_status.filters.items():
+            self._record_name_ids_for_filter(entity, existing_filter)
+        self._record_name_ids_for_all_filters()
+        self._database_session.commit()
