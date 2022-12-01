@@ -20,11 +20,15 @@ def load_entities(entities):
     db_session = get_db_session()
     stmt = insert(NameType)
     with open(entities, 'r', encoding="utf8") as in_file:
-        head = next(in_file)
-        add_index_flag = 'order' not in head
+        column_list = next(in_file).split(',')
+        if 'orders' not in column_list:
+            add_index_flag = True
+            column_list.insert(0, 'orders')
+        else:
+            add_index_flag = False
         line_number = 1
         for row in in_file:
-            params = _get_entity_dict_from_row(row, add_index_flag, line_number)
+            params = _get_entity_dict_from_row(row, add_index_flag, line_number, column_list)
             line_number += 1
             try:
                 db_session.execute(stmt, params)
@@ -39,20 +43,13 @@ def load_entities(entities):
     return numerical_entities, date_entities
 
 
-def _get_columns_of_table(table):
-    return [column.key for column in table.__table__.columns]
-
-
-_ENTITY_COLUMN_LIST = _get_columns_of_table(NameType)
-
-
-def _get_entity_dict_from_row(row, add_index_flag, index):
+def _get_entity_dict_from_row(row, add_index_flag, index, column_list):
     items = [x.strip() for x in row.split(',')]
     if add_index_flag:
         items.insert(0, str(index))
     items = items + [''] * (7 - len(items))
     return {
-        _ENTITY_COLUMN_LIST[i]: items[i]
+        column_list[i]: items[i]
         for i in range(7)
     }
 
@@ -114,11 +111,15 @@ def _validate_date(x):
         raise ImportValidationError(f"Value '{x} is not a Date in format YYYY-MM-DD!")
 
 
-def _validate_categorical():
+def _validate_categorical(x):
     pass
 
 
-_META_DATA_BY_ENTITY_TYPE = {
+def _get_columns_of_table(table):
+    return [column.key for column in table.__table__.columns]
+
+
+_META_DATA_BY_ENITITY_TYPE = {
     'categorical': {
         'columns': _get_columns_of_table(TableCategorical),
         'statement': insert(TableCategorical),
@@ -144,7 +145,7 @@ def _get_meta_data_for_entity(entity, numerical_entities, date_entities):
         entity_type = 'date'
     else:
         entity_type = 'categorical'
-    return _META_DATA_BY_ENTITY_TYPE[entity_type]
+    return _META_DATA_BY_ENITITY_TYPE[entity_type]
 
 
 def _do_insert(db_session, meta_data, items, line_number):
