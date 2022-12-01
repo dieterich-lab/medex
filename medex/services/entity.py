@@ -23,7 +23,7 @@ class EntityService:
             self._get_entity_from_row(x, categories_by_entity, min_max_by_entity)
             for x in rv.all()
         ]
-        sorted_result = sorted(raw_result, key=lambda x: x.key if x.description is None or x.description =='' else x.description)
+        sorted_result = sorted(raw_result, key=lambda x: x.key)
         return sorted_result
 
     def get_all_as_dict(self) -> List[Dict[str, any]]:

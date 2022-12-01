@@ -60,7 +60,10 @@
         </div>
 
         <label for="selected_filter">Entity</label>
-        <select id="selected_filter" style="width: 100%" class="js-example-basic-single" onchange="patient_filter.select_filter()">
+        <select id="selected_filter" style="width: 100%" class="js-example-basic-single"
+                onchange="patient_filter.select_filter()"
+                data-entity-types="String,Double,Date"
+        >
         </select>
 
         <div id="categorical_filter_panel" style="display:none">

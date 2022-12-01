@@ -1,4 +1,5 @@
 import {get_entity_list, get_entity_by_key} from './entity.js';
+import {configure_entity_selection} from "./entity_selection";
 
 async function init() {
     refresh_filter_panel();
@@ -17,7 +18,7 @@ async function render_select_filter_box() {
 }
 
 function get_entity_display_name(entity) {
-    if ( entity.key ) {
+    if ( entity.description ) {
         return `${entity.key} <div class="description">${entity.description}</div>`;
     } else {
         return entity.key;
