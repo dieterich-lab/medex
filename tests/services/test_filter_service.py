@@ -30,6 +30,10 @@ def populate_data(db_session):
             id=2, name_id='p2', case_id='case_p2', measurement='baseline', date='2015-04-05',
             key='diabetes', value='ja'
         ),
+        TableCategorical(
+            id=7, name_id='p2', case_id='case_p2', measurement='follow up1', date='2016-04-05',
+            key='diabetes', value='ja'
+        ),
 
         TableNumerical(
             id=3, name_id='p1', case_id='case_p1', measurement='baseline', date='2015-03-05',
@@ -42,6 +46,10 @@ def populate_data(db_session):
         TableNumerical(
             id=5, name_id='p1', case_id='case_p1', measurement='baseline', date='2015-03-05',
             key='blood pressure', value=135
+        ),
+        TableNumerical(
+            id=6, name_id='p1', case_id='case_p1', measurement='follow up1', date='2016-03-06',
+            key='blood pressure', value=138
         ),
 
         SessionNameIdsMatchingFilter(
@@ -79,13 +87,21 @@ def test_numerical_filter(filter_service: FilterService, db_session, populate_da
     assert numerical_result[0].key == 'temperature'
     assert float(numerical_result[0].value) == 40.7
 
-    categorical_query_raw = select(TableCategorical.name_id, TableCategorical.key, TableCategorical.value)
-    categorical_query_cooked = filter_service.apply_filter(TableCategorical, categorical_query_raw)
+    categorical_query_raw = select(
+        TableCategorical.name_id, TableCategorical.key, TableCategorical.value, TableCategorical.measurement
+    )
+    categorical_query_cooked = (
+        filter_service.apply_filter(TableCategorical, categorical_query_raw)
+        .order_by(TableCategorical.date)
+    )
     categorical_result = db_session.execute(categorical_query_cooked).all()
-    assert len(categorical_result) == 1
-    assert categorical_result[0].name_id == 'p2'
-    assert categorical_result[0].key == 'diabetes'
-    assert categorical_result[0].value == 'ja'
+    assert len(categorical_result) == 2
+    measurements = ['baseline', 'follow up1']
+    for i in range(2):
+        assert categorical_result[i].name_id == 'p2'
+        assert categorical_result[i].key == 'diabetes'
+        assert categorical_result[i].value == 'ja'
+        assert categorical_result[i].measurement == measurements[i]
 
 
 def test_categorical_filter(filter_service: FilterService, db_session, populate_data):
@@ -95,11 +111,11 @@ def test_categorical_filter(filter_service: FilterService, db_session, populate_
     numerical_query_raw = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.value)
     numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
     numerical_result = db_session.execute(numerical_query_cooked).all()
-    assert len(numerical_result) == 2
-    for i in [0, 1]:
+    assert len(numerical_result) == 3
+    for i in [0, 1, 2]:
         assert numerical_result[i].name_id == 'p1'
         assert numerical_result[i].key in ['temperature', 'blood pressure']
-        assert float(numerical_result[0].value) in [37.5, 135]
+        assert float(numerical_result[0].value) in [37.5, 135, 138]
 
     categorical_query_raw = select(TableCategorical.name_id, TableCategorical.key, TableCategorical.value)
     categorical_query_cooked = filter_service.apply_filter(TableCategorical, categorical_query_raw)
@@ -122,7 +138,7 @@ def test_delete_all_filters(filter_service: FilterService, db_session, populate_
 
     numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
     numerical_result = db_session.execute(numerical_query_cooked).all()
-    assert len(numerical_result) == 3
+    assert len(numerical_result) == 4
 
 
 def _setup_filters_filtering_everything(filter_service):
@@ -145,7 +161,7 @@ def test_delete_one_filter(filter_service: FilterService, db_session, populate_d
 
     numerical_query_cooked = filter_service.apply_filter(TableNumerical, numerical_query_raw)
     numerical_result = db_session.execute(numerical_query_cooked).all()
-    assert len(numerical_result) == 2
+    assert len(numerical_result) == 3
 
 
 def test_dict(filter_service: FilterService, db_session, populate_data):
@@ -153,6 +169,7 @@ def test_dict(filter_service: FilterService, db_session, populate_data):
 
     assert filter_service.dict() == {
         'filtered_patient_count': 0,
+        'measurement': 'baseline',
         'filters': {
             'diabetes': { 'categories': ['nein']},
             'temperature': {'from_value': 39.0, 'to_value': 43.0}
