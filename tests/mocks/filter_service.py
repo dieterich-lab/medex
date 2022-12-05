@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 from flask_sqlalchemy.query import Query
 
@@ -35,3 +35,6 @@ class FilterServiceMock(FilterService):
 
     def apply_filter_to_complex_query(self, query: Query) -> Query:
         raise NotImplemented()
+
+    def set_measurement(self, new_measurement: Optional[str]):
+        self._filter_status.measurement = new_measurement

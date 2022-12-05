@@ -128,7 +128,7 @@ class FilterService:
         )
 
     def _update_patient_count(self):
-        if len (self._filter_status.filters) == 0:
+        if len(self._filter_status.filters) == 0:
             self._filter_status.filtered_patient_count = None
             return
         table = SessionFilteredNameIds

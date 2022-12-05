@@ -114,6 +114,6 @@ def test_get_all_for_cleared_filter(helper_mock, test_client):
 
 
 def test_set_measurement(helper_mock, test_client):
-    rv = test_client.post('/set_measurement', json='{"measurement": "foo"}')
+    rv = test_client.post('/set_measurement', json={"measurement": "foo"})
     assert rv.status == '200 OK'
     assert stored_filter_status['measurement'] == 'foo'

@@ -25,7 +25,7 @@ class AddNumericalFilterRequest(NumericalFilter):
 class FilterStatus(BaseModel):
     filtered_patient_count: Optional[int]
     measurement: Optional[str]
-    filters: Dict[str, Union[CategoricalFilter, NumericalFilter]]
+    filters: Dict[str, Union[CategoricalFilter, NumericalFilter], ]
 
 
 class DeleteFilterRequest(BaseModel):

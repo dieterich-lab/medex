@@ -115,9 +115,11 @@ $(function () {
     filter_measurement_select.select2({
         placeholder:"Search entity"
     });
-    filter_measurement_select.change( () =>{
-        const new_measurement = $(this).val();
-          fetch('/filter/set_measurement', {
+    filter_measurement_select.change( () => {
+        set_filter_measurement(filter_measurement_select.val());
+    });
+    window.set_filter_measurement = function (new_measurement) {
+        fetch('/filter/set_measurement', {
             method: 'POST',
             headers:{
                 'Content-Type': 'application/json',
@@ -129,7 +131,7 @@ $(function () {
             console.log(error);
             refresh_filter_panel();
         });
-    });
+    }
 
 
     var $filter = $('#subcategory_filter').select2({
