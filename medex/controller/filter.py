@@ -1,8 +1,8 @@
 from flask import request, jsonify, Blueprint
 
 from medex.controller.helpers import get_filter_service, store_filter_status_in_session
-from medex.dto.filter import SetMeasurementRequest, DeleteFilterRequest, AddCategoricalFilterRequest, CategoricalFilter, \
-    AddNumericalFilterRequest, NumericalFilter
+from medex.dto.filter import SetMeasurementRequest, DeleteFilterRequest, AddCategoricalFilterRequest, \
+    CategoricalFilter, AddNumericalFilterRequest, NumericalFilter
 
 filter_controller = Blueprint('filter_controller', __name__)
 
@@ -59,6 +59,3 @@ def set_measurement():
     service.set_measurement(measurement_request.measurement)
     store_filter_status_in_session(service)
     return jsonify({})
-
-
-
