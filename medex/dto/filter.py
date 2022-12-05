@@ -30,3 +30,7 @@ class FilterStatus(BaseModel):
 
 class DeleteFilterRequest(BaseModel):
     entity: str
+
+
+class SetMeasurementRequest(BaseModel):
+    measurement: Optional[str]
