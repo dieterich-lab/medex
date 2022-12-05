@@ -4,6 +4,7 @@ import {configure_entity_selection} from "./entity_selection";
 async function init() {
     refresh_filter_panel();
     await render_select_filter_box();
+    setup_measurement_filter_select();
     setup_categorical_filter_panel_categories();
 }
 
@@ -32,6 +33,16 @@ function setup_categorical_filter_panel_categories() {
         placeholder:"Search entity"
     });
     cat_select.on("select2:select", handle_select_categories);
+}
+
+function setup_measurement_filter_select() {
+    let filter_measurement_select = $("#filter_measurement");
+    filter_measurement_select.select2({
+        placeholder: "Search entity"
+    });
+    filter_measurement_select.change(() => {
+        set_filter_measurement(filter_measurement_select.val());
+    });
 }
 
 function handle_select_categories(event) {
@@ -275,6 +286,21 @@ async function add_or_update_numerical_filter() {
         console.log(error);
         refresh_filter_panel();
     })
+}
+
+function set_filter_measurement(new_measurement) {
+    fetch('/filter/set_measurement', {
+        method: 'POST',
+        headers:{
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({'measurement': new_measurement}),
+    }).then(response => {
+        refresh_filter_panel();
+    }).catch(error => {
+        console.log(error);
+        refresh_filter_panel();
+    });
 }
 
 $(function () {
