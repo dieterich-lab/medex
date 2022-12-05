@@ -24,12 +24,9 @@ def get_data(table_browser, date_filter, filter_service: FilterService):
                         name.value.cast(String).label('value')).
                       where(and_(name.key.in_(table_browser[0]), name.measurement.in_(table_browser[1]),
                                  checking_date_filter(date_filter, name)))
-
                         for i, name in enumerate([TableCategorical, TableNumerical, TableDate])
                         ])
-
     sql_statement = _get_what_type_of_table_print(table_browser[0], sql_union, filter_service, table_browser[2])
-
     return sql_statement
 
 

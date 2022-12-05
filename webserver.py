@@ -46,11 +46,12 @@ if os.environ.get('IMPORT_DISABLED') is None:
 Name_ID, measurement_name = ps.get_header()
 size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information()
 start_date, end_date = ps.get_date()
-all_patient = ps.patient()
+with app.app_context():
+    number_of_patients = ps.get_number_of_patients()
+    all_measurement, block_measurement = ps.get_measurement()
 all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities()
 df_min_max = ps.min_max_value_numeric_entities()
 all_subcategory_entities = ps.get_subcategories_from_categorical_entities()
-all_measurement, block_measurement = ps.get_measurement()
 
 # change this
 try:
@@ -79,8 +80,10 @@ def data_information():
     size_numeric = 'the size of the numeric table: ' + str(size_num_tab) + ' rows'
     len_categorical = 'number of categorical entities: ' + length[1]
     size_categorical = 'the size of the categorical table: ' + str(size_cat_tab) + ' rows'
+    number_of_patients_str = 'Number of all patients: ' + str(number_of_patients)
 
-    return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical),
+    return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical,
+                                      number_of_patients_str),
                 entities=(all_num_entities, all_cat_entities, all_subcategory_entities, all_date_entities),
                 measurement_tuple=(all_measurement, '{}:'.format(measurement_name), block_measurement),
                 df_min_max=df_min_max,
@@ -179,6 +182,17 @@ def download(filename):
                      mimetype="text/csv",
                      as_attachment=True,
                      download_name=filename)
+
+
+def create_string():
+    string = 'date range:' + str(session.get('date_filter')[3]) + ' ' + str(session.get('date_filter')[4]) + '\n' + \
+             'Filters: ' + '\n' + 'categorical ' + str(session.get('filtering')['filter_cat']) + '\n' + \
+             'numerical: ' + str(session.get('filtering')['filter_num']) + '\n' +\
+             'selected values:' + '\n' + \
+             'Visits: ' + str(session.get('table_browser')[1]) + '\n' + \
+             'entities: ' + str(session.get('table_browser')[0]) + '\n' + \
+             'Table: ' + str(session.get('table_browser')[2])
+    return string
 
 
 def main():

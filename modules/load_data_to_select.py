@@ -1,8 +1,11 @@
-from medex.services.database import get_db_engine
-from modules.models import Header
-from sqlalchemy.sql import select
-import pandas as pd
 import datetime
+
+import pandas as pd
+from sqlalchemy import func, union
+from sqlalchemy.sql import select
+
+from medex.services.database import get_db_engine, get_db_session
+from modules.models import Header, Patient, TableCategorical, TableNumerical, TableDate
 
 
 def get_header():
@@ -45,13 +48,12 @@ def get_date():
     return start_date, end_date
 
 
-def patient():
-    sql = """SELECT * FROM Patient"""
-    try:
-        df = pd.read_sql(sql, get_db_engine())
-        return df['name_id'], None
-    except (Exception,):
-        return None, "Problem with load data from database"
+def get_number_of_patients():
+    db = get_db_session()
+    rv = db.execute(
+        select(func.count(func.distinct(Patient.name_id)))
+    )
+    return rv.first()[0]
 
 
 def get_entities():
@@ -85,8 +87,8 @@ def min_max_value_numeric_entities():
 
 
 def get_subcategories_from_categorical_entities():
-    all_subcategories = """SELECT key,array_agg(distinct value) as value FROM examination_categorical 
-    WHERE key in (select key from name_type where type ='String') Group by key 
+    all_subcategories = """SELECT key,array_agg(distinct value) as value FROM examination_categorical
+    WHERE key in (select key from name_type where type ='String') Group by key
                             ORDER by key """
     try:
         df = pd.read_sql(all_subcategories, get_db_engine())
@@ -99,16 +101,19 @@ def get_subcategories_from_categorical_entities():
 
 
 def get_measurement():
-    sql = """SELECT DISTINCT measurement FROM examination_numerical ORDER BY measurement """
-    try:
-        df = pd.read_sql(sql, get_db_engine())
-        measurement_list = df['measurement'].astype(str)
-        # show all hide measurement selector when was only one measurement for all entities
-        if len(df['measurement']) < 2:
-            block_measurement = 'none'
-        else:
-            block_measurement = 'block'
-    except (Exception,):
-        measurement_list = []
-        block_measurement = 'none'
-    return measurement_list, block_measurement
+    all_measurements = union(
+        select(TableCategorical.measurement.label('measurement'), TableCategorical.date.label('date')),
+        select(TableNumerical.measurement.label('measurement'), TableNumerical.date.label('date')),
+        select(TableDate.measurement.label('measurement'), TableDate.date.label('date')),
+    ).cte('all_measurements')
+    first_date = func.min(all_measurements.c.date)
+    ordered_list = (
+        select(all_measurements.c.measurement, first_date)
+        .group_by(all_measurements.c.measurement)
+        .order_by(first_date)
+    )
+    db = get_db_session()
+    rv = db.execute(ordered_list).all()
+    measurement_list = [x['measurement'] for x in rv]
+    measurement_display = 'block' if len(rv) > 1 else 'none'
+    return measurement_list, measurement_display

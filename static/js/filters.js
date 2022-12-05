@@ -111,6 +111,28 @@ $(function () {
     $("#id_numerical_filter").select2({
     placeholder:"Search entity"
     });
+    let filter_measurement_select = $("#filter_measurement");
+    filter_measurement_select.select2({
+        placeholder:"Search entity"
+    });
+    filter_measurement_select.change( () => {
+        set_filter_measurement(filter_measurement_select.val());
+    });
+    window.set_filter_measurement = function (new_measurement) {
+        fetch('/filter/set_measurement', {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({'measurement': new_measurement}),
+        }).then(response => {
+            refresh_filter_panel();
+        }).catch(error => {
+            console.log(error);
+            refresh_filter_panel();
+        });
+    }
+
 
     var $filter = $('#subcategory_filter').select2({
     placeholder:"Search entity"
@@ -163,6 +185,7 @@ $(function () {
                     render_numerical_filter(entity, filter);
                 }
             })
+            update_filtered_patient_count(data['filtered_patient_count']);
         })
         .catch(error => {
             console.log(error)
@@ -201,11 +224,10 @@ $(function () {
     }
 
     function render_numerical_filter(entity, filter) {
-        let div = document.getElementById('active_filters');
         render_filter(entity, `
             <span class="close" id="remove_filter/${entity}">x</span>
             <input type="hidden" class="name" value="${entity}"/> ${entity}
-            <input type="text" class="range"  name="loan_term"  data-min="${filter.min}" data-max="${filter.max}" 
+            <input type="text" class="range"  name="loan_term"  data-min="${filter.min}" data-max="${filter.max}"
                    data-from="${filter.from_value}" data-to="${filter.to_value}"/>
         `);
         // ToDo: The following lines are ugly - and jquery
@@ -218,6 +240,15 @@ $(function () {
             to_fixed: true,//block the top
             from_fixed: true//block the from
         });
+    }
+
+    function update_filtered_patient_count(filtered_patient_count) {
+        let span = document.getElementById('filtered_patient_count');
+        if (filtered_patient_count === null) {
+            span.innerHTML = '';
+        } else {
+            span.innerHTML = ` (${filtered_patient_count} patients)`;
+        }
     }
 
     function remove_filter(entity) {

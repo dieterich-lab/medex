@@ -1,4 +1,4 @@
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Optional
 
 from pydantic import BaseModel
 
@@ -23,8 +23,14 @@ class AddNumericalFilterRequest(NumericalFilter):
 
 
 class FilterStatus(BaseModel):
-    filters: Dict[str, Union[CategoricalFilter, NumericalFilter]]
+    filtered_patient_count: Optional[int]
+    measurement: Optional[str]
+    filters: Dict[str, Union[CategoricalFilter, NumericalFilter], ]
 
 
 class DeleteFilterRequest(BaseModel):
     entity: str
+
+
+class SetMeasurementRequest(BaseModel):
+    measurement: Optional[str]

@@ -73,7 +73,7 @@ def get_cat_date_basic_stats(entities, measurement, date_filter, limit_filter, f
     values = checking_date_filter(date_filter, name)
     select_values_sql = select(name.key, name.measurement, name.name_id)
     select_numerical_values_with_filter_sql = filter_service.apply_filter(name, select_values_sql)
-    
+
     if limit_filter.get('selected') is not None:
         raw_data = union(*[select_numerical_values_with_filter_sql.
                          where(and_(name.key == e, name.measurement.in_(measurement), values)).

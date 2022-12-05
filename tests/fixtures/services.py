@@ -26,7 +26,7 @@ def session_service():
 
 @pytest.fixture
 def filter_status():
-    return FilterStatus(filters=[])
+    return FilterStatus(filters=[], measurement='baseline')
 
 
 @pytest.fixture

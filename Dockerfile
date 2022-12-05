@@ -21,4 +21,4 @@ ENV TZ=Europe/Berlin
 EXPOSE 8000
 
 
-CMD [ "waitress-serve","--threads","6","--port","8000","--call", "webserver:main" ]
+CMD [ "waitress-serve", "--threads", "6", "--port", "8000", "--call", "webserver:main" ]

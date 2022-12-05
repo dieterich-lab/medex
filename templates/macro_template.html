@@ -19,7 +19,6 @@
                 {% if select and name[entity].key in select %} selected {% endif %}>{{ name[entity].key }}
         </option>
         {% endfor %}
-
     </select>
 </div>
 {%- endmacro %}
@@ -62,7 +61,6 @@
     <label for="{{ id_single_measurement }}">{{ d }}</label>
     <select name="{{ id_single_measurement }}" id="{{ id_single_measurement }}" class="js-example-basic-single"
             style="width: 100%">
-        <option {% if not select %} selected {% endif %}>Search entity</option>
         {% for entity in name %}
         <option value="{{ entity }}" {% if entity== select %}selected{% endif %}>{{ entity }}</option>
         {% endfor %}

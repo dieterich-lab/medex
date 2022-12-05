@@ -16,3 +16,4 @@ def apply_limit_to_sql_query(limit_filter, sql):
     else:
         sql = sql
     return sql
+
