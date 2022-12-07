@@ -15,17 +15,18 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='ion.rangeSlider.min.css') }}" />
 <script src="{{ url_for('static', filename='ion.rangeSlider.min.js') }}" ></script>
+<input type="hidden" id="default_measurement" value="{{ measurement_tuple[0][0] }}" />
 
 {% import 'macro_template.html' as m %}
+
+<script type="text/javascript">
+    var start = moment({{date[0]}});
+    var end =  moment({{date[1]}});
+</script>
 
 <div class="card" style="display: {{ date_block }}">
     <div class="card-body">
         <label>Date range</label>
-        <script type="text/javascript">
-            var start = moment({{date[0]}});
-            var end =  moment({{date[1]}});
-
-        </script>
         <input id="Date" name="Date"
                style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
     </div>

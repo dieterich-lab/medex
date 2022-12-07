@@ -1,10 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
+
+<script type="module" src="{{ url_for('static', filename='js/table_browser.js') }}"></script>
+
 <form action="" method="POST">
     <div id="menu">
         {% include 'sidebar.html' %}
     </div>
-
 
     {# imports #}
     {# our own js #}
@@ -22,7 +24,6 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='datatables/datatables.min.css') }}"/>
     <script type="text/javascript" src="{{ url_for('static', filename='datatables/datatables.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='dataTables.select.min.js') }}"></script>
-
     {# end of imports #}
 
     <div id="content">
@@ -47,8 +48,11 @@
 
                     {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name
                     =measurement_tuple[0],class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
-                    {{ m.entity_form_multiple(id_multiple="entities",name=all_entities,
-                    value=entity,select=entities_selected,d="Entities:") }}
+                    <label for="table_browser_entities_select">Entities:</label>
+                    <select id="table_browser_entities_select" name="entities" multiple style="width: 100%" class="js-example-basic-single"
+                            data-entity-types="String,Double,Date"
+                    >
+                    </select>
                     <label>Table: </label>
                     <div class="custom-control custom-radio">
                         <input type="radio" class="custom-control-input" id="long" name="what_table" value="long"

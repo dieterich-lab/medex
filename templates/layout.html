@@ -12,7 +12,29 @@
     <script type="text/javascript" src="{{ url_for('static', filename='popper.min.js') }}"
                 integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
                 crossorigin="anonymous"></script>
-
+    <script type="module" src="{{ url_for('static', filename='js/setup.js') }}"></script>
+    <script>
+        window.table_browser_data_selected_entities = [
+            {% for entity_id in entities_selected %}
+                '{{ entity_id }}',
+            {% endfor %}
+        ];
+        window.basic_stats_selected_numerical_entities = [
+            {% for entity_id in numeric_entities %}
+                '{{ entity_id }}',
+            {% endfor %}
+        ];
+        window.basic_stats_selected_categorical_entities = [
+            {% for entity_id in categorical_entities %}
+                '{{ entity_id }}',
+            {% endfor %}
+        ];
+        window.basic_stats_selected_date_entities = [
+            {% for entity_id in date_entities %}
+                '{{ entity_id }}',
+            {% endfor %}
+        ];
+    </script>
 </head>
 <body>
 {# custom style #}

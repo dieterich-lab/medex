@@ -1,29 +1,11 @@
-import {get_entity_list, get_entity_by_key} from './entity.js';
-import {configure_entity_selection} from "./entity_selection";
+import {get_entity_by_key} from './entity.js';
+import {configure_entity_selection} from "./entity_selection.js";
 
 async function init() {
     refresh_filter_panel();
-    await render_select_filter_box();
+    await configure_entity_selection('selected_filter', [], false, false);
     setup_measurement_filter_select();
     setup_categorical_filter_panel_categories();
-}
-
-async function render_select_filter_box() {
-    let select_box = document.getElementById('selected_filter');
-    const all_entities = await get_entity_list();
-    const html = '<option>Search entity</option>'
-        + all_entities.map((x) => `
-        <option value="${x.key}">${get_entity_display_name(x)}</option>`).join('')
-        + '\n';
-    select_box.innerHTML = html;
-}
-
-function get_entity_display_name(entity) {
-    if ( entity.description ) {
-        return `${entity.key} <div class="description">${entity.description}</div>`;
-    } else {
-        return entity.key;
-    }
 }
 
 function setup_categorical_filter_panel_categories() {
@@ -37,6 +19,8 @@ function setup_categorical_filter_panel_categories() {
 
 function setup_measurement_filter_select() {
     let filter_measurement_select = $("#filter_measurement");
+    const default_value = document.getElementById('default_measurement').value;
+    set_filter_measurement(default_value);
     filter_measurement_select.select2({
         placeholder: "Search entity"
     });
@@ -329,5 +313,5 @@ $(function () {
 
 export {
     init, select_filter, add_or_update_categorical_filter, set_numerical_filter_from, set_numerical_filter_to,
-    clear_all_filters, add_or_update_numerical_filter
+    clear_all_filters, add_or_update_numerical_filter, set_filter_measurement
 };
