@@ -56,6 +56,7 @@ def set_measurement():
     service = get_filter_service()
     data = request.get_json()
     measurement_request = SetMeasurementRequest.parse_obj(data)
-    service.set_measurement(measurement_request.measurement)
-    store_filter_status_in_session(service)
+    if service.get_measurement() != measurement_request.measurement:
+        service.set_measurement(measurement_request.measurement)
+        store_filter_status_in_session(service)
     return jsonify({})
