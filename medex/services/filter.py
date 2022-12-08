@@ -103,9 +103,11 @@ class FilterService:
         self._update_patient_count()
 
     def _reset_name_ids_for_all_filters(self):
-        self._database_session.select(SessionFilteredNameIds) \
-            .where(SessionFilteredNameIds.session_id == self._session_id) \
+        self._database_session.execute(
+            select(SessionFilteredNameIds)
+            .where(SessionFilteredNameIds.session_id == self._session_id)
             .with_for_update()
+        )
         self._database_session.execute(
             select(SessionFilteredNameIds)
             .where(SessionFilteredNameIds.session_id == self._session_id)
