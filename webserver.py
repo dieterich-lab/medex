@@ -1,7 +1,7 @@
 from flask import Flask, send_file, request, redirect, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
-from medex.controller.helpers import get_filter_service
+from medex.controller.helpers import get_filter_service, init_controller_helper
 from medex.services.scheduler import Scheduler
 from modules.import_data import start_import
 from medex.services.database import get_db_session, get_database_url, init_db
@@ -90,6 +90,9 @@ def data_information():
                 df_min_max=df_min_max,
                 meddusa=(Meddusa, MEDDUSA_URL),
                 )
+
+
+init_controller_helper(all_measurement[0])
 
 
 # information about database
