@@ -17,17 +17,6 @@ class ServerSideTable(object):
         self.result_data, self.cardinality = self._custom_paging(table_browser, date_filter)
 
     def _custom_paging(self, table_browser, date_filter):
-
-        def requires_pagination():
-            # Check if the table is going to be paginated
-            if self.request_values['iDisplayStart'] != "":
-                if int(self.request_values['iDisplayLength']) != -1:
-                    return True
-            return False
-
-        if not requires_pagination():
-            data = """SELECT * FROM examination """
-            return data
         information_from_request = (self.request_values['sEcho'],
                                     int(self.request_values['iDisplayLength']),
                                     int(self.request_values['iDisplayStart']),

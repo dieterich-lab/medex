@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, session
 
-from medex.controller.helpers import get_session_id, get_filter_service
+from medex.controller.helpers import get_filter_service
 from medex.services.database import get_db_session
 from serverside.serverside_table import ServerSideTable
 from url_handlers.filtering import check_for_date_filter_post

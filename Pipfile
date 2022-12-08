@@ -19,11 +19,11 @@ statsmodels = "*"
 flask_cors = "*"
 requests = "*"
 sqlalchemy = "*"
-pytest-mock = "*"
 register = "*"
 alembic = "*"
 pydantic = "*"
 flask-sqlalchemy = "*"
+
 
 [dev-packages]
 pylint = "*"
@@ -33,4 +33,4 @@ pytest-mock = "*"
 pytest-freezegun = "*"
 
 [requires]
-python_version = "==3.10"
+python_version = ">=3.7"
