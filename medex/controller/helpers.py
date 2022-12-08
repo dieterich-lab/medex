@@ -23,6 +23,7 @@ def get_session_id():
 
 def get_filter_service():
     database_session = get_db_session()
+    print(f"PROXID: {database_session._proxied} - {request.url}\n")
     session_service = SessionService(
         database_session=database_session,
         session_id=get_session_id()

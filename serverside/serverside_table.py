@@ -1,5 +1,6 @@
+from medex.services.database import get_db_session
 from medex.services.filter import FilterService
-from modules.get_data_to_table_browser import get_data_print, get_table_size
+from modules.get_data_to_table_browser import get_data_print, get_table_size, get_data, _sort_and_limit
 from flask import session
 
 
