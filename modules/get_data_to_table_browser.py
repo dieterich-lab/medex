@@ -1,3 +1,4 @@
+from medex.services.database import get_db_engine
 from medex.services.filter import FilterService
 from modules.models import TableNumerical, TableCategorical, TableDate
 from sqlalchemy.sql import union, select
