@@ -1,10 +1,18 @@
 import os
-from flask import session
+from flask import session, request
 
 from medex.dto.filter import FilterStatus
 from medex.services.database import get_db_session
 from medex.services.filter import FilterService
 from medex.services.session import SessionService
+
+
+_default_measurement = None
+
+
+def init_controller_helper(default_measurement):
+    global _default_measurement
+    _default_measurement = default_measurement
 
 
 def get_session_id():
@@ -22,7 +30,7 @@ def get_filter_service():
     if 'filter_status' in session:
         filter_status = FilterStatus.parse_obj(session['filter_status'])
     else:
-        filter_status = FilterStatus(filters={})
+        filter_status = FilterStatus(filters={}, measurement=_default_measurement)
     return FilterService(
         database_session=database_session,
         filter_status=filter_status,

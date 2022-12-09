@@ -1,7 +1,7 @@
 from flask import Flask, send_file, request, redirect, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
-from medex.controller.helpers import get_filter_service
+from medex.controller.helpers import get_filter_service, init_controller_helper
 from medex.services.scheduler import Scheduler
 from modules.import_data import start_import
 from medex.services.database import get_db_session, get_database_url, init_db
@@ -19,6 +19,7 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
 app.config["SQLALCHEMY_DATABASE_URI"] = get_database_url()
+# app.config["SQLALCHEMY_ECHO"] = True
 db = SQLAlchemy()
 db.init_app(app)
 
@@ -44,14 +45,14 @@ if os.environ.get('IMPORT_DISABLED') is None:
 
 # get all numeric and categorical entities from database
 Name_ID, measurement_name = ps.get_header()
-size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information()
-start_date, end_date = ps.get_date()
 with app.app_context():
+    size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information()
+    start_date, end_date = ps.get_date()
     number_of_patients = ps.get_number_of_patients()
-all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities()
-df_min_max = ps.min_max_value_numeric_entities()
-all_subcategory_entities = ps.get_subcategories_from_categorical_entities()
-all_measurement, block_measurement = ps.get_measurement()
+    all_measurement, block_measurement = ps.get_measurement()
+    all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities()
+    df_min_max = ps.min_max_value_numeric_entities()
+    all_subcategory_entities = ps.get_subcategories_from_categorical_entities()
 
 # change this
 try:
@@ -89,6 +90,9 @@ def data_information():
                 df_min_max=df_min_max,
                 meddusa=(Meddusa, MEDDUSA_URL),
                 )
+
+
+init_controller_helper(all_measurement[0])
 
 
 # information about database

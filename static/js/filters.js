@@ -111,9 +111,35 @@ $(function () {
     $("#id_numerical_filter").select2({
     placeholder:"Search entity"
     });
-    $("#filter_measurement").select2({
-    placeholder:"Search entity"
+    let filter_measurement_select = $("#filter_measurement");
+    filter_measurement_select.select2({
+        placeholder:"Search entity"
     });
+    filter_measurement_select.change( () => {
+        set_filter_measurement(filter_measurement_select.val());
+    });
+
+    let present_filter_measurement = null;
+
+    window.set_filter_measurement = function (new_measurement) {
+        if ( new_measurement === present_filter_measurement ) {
+            return;
+        }
+        fetch('/filter/set_measurement', {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({'measurement': new_measurement}),
+        }).then(response => {
+            present_filter_measurement = new_measurement;
+            refresh_filter_panel();
+        }).catch(error => {
+            console.log(error);
+            refresh_filter_panel();
+        });
+    }
+
 
     var $filter = $('#subcategory_filter').select2({
     placeholder:"Search entity"
@@ -156,6 +182,7 @@ $(function () {
         .then(response => response.json())
         .then(data => {
             clear_filter_panel();
+            update_measurement_select(data.measurement);
             const filters = data['filters'];
             const filter_entities_sorted = Object.keys(filters).sort();
             filter_entities_sorted.forEach(entity => {
@@ -181,6 +208,13 @@ $(function () {
             child = div.lastElementChild;
         }
     }
+
+    function update_measurement_select(measurement) {
+        let select_box = $('#filter_measurement');
+        select_box.val(measurement);
+        select_box.trigger('change');
+    }
+
 
     function render_categorical_filter(entity, filter) {
         const categories = filter['categories'].join(', ');
