@@ -15,7 +15,7 @@
     {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-
+    <script type="module" src="{{ url_for('static', filename='js/barchart.js') }}"></script>
 
     {# end of imports #}
     <div id="content">
@@ -38,13 +38,13 @@
 
                     {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name
                     =measurement_tuple[0],class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
-                    {{ m.entity_form_single(id_single= "categorical_entities",class="categorical_entities",name
-                    =entities[1],select=categorical_entities,value=entity,d="Group by:") }}
-
-                    <!-- Send dictionary with subcategory data to javascript -->
-                    <script type="text/javascript">
-                        var cat = {{entities[2]|safe}};
-                    </script>
+                    <div class="form-group">
+                        <label for="barchart_categorical_entities_select">Group by:</label>
+                        <select id="barchart_categorical_entities_select" name="categorical_entities" style="width: 100%" class="js-example-basic-single"
+                                data-entity-types="String"
+                        >
+                        </select>
+                    </div>
 
                     <div class="tooltips" title="Please select category and next subcategory">
                         <label>Subcategory: </label>

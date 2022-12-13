@@ -39,7 +39,7 @@ def post_plots():
             if len(df.index) == 0:
                 error = "This two entities don't have common values"
     elif len(numeric_entities) < 2:
-        error = "Please select more then one category"
+        error = "Please select more than one entity"
     else:
         error = "Please select numeric entities"
 

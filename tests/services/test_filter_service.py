@@ -175,3 +175,14 @@ def test_dict(filter_service: FilterService, db_session, populate_data):
             'temperature': {'from_value': 39.0, 'to_value': 43.0, 'min': 30.0, 'max': 43.0}
         }
     }
+
+
+def test_dict_after_deleting_last_filter(filter_service: FilterService, db_session, populate_data):
+    _setup_filters_filtering_everything(filter_service)
+    filter_service.delete_filter('diabetes')
+    filter_service.delete_filter('temperature')
+    assert filter_service.dict() == {
+        'filtered_patient_count': None,
+        'filters': {},
+        'measurement': 'baseline'
+    }

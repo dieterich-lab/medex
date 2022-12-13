@@ -1,20 +1,11 @@
 import {get_entity_by_key} from './entity.js';
 import {configure_entity_selection} from "./entity_selection.js";
+import {configure_category_selection} from "./categories_selection.js";
 
 async function init() {
     refresh_filter_panel();
     await configure_entity_selection('selected_filter', [], false, false);
     setup_measurement_filter_select();
-    setup_categorical_filter_panel_categories();
-}
-
-function setup_categorical_filter_panel_categories() {
-    // ToDo: Purge Jquery
-    let cat_select = $("#categorical_filter_panel_categories");
-    cat_select.select2({
-        placeholder:"Search entity"
-    });
-    cat_select.on("select2:select", handle_select_categories);
 }
 
 function setup_measurement_filter_select() {
@@ -27,15 +18,6 @@ function setup_measurement_filter_select() {
     filter_measurement_select.change(() => {
         set_filter_measurement(filter_measurement_select.val());
     });
-}
-
-function handle_select_categories(event) {
-    const selected_item = event.params.data.text;
-    if ( selected_item === 'Select all') {
-        $("#categorical_filter_panel_categories> option").prop("selected","selected");
-        $('#categorical_filter_panel_categories> option[value="Select all"]').prop("selected", false);
-        $("#categorical_filter_panel_categories").trigger("change");
-    }
 }
 
 async function get_selected_entity() {
@@ -59,13 +41,7 @@ async function select_filter() {
 }
 
 function display_categorical_filter_settings(entity) {
-    let select_categories = document.getElementById('categorical_filter_panel_categories');
-    select_categories.innerHTML = `
-        <option value="Select all" id="categorical_filter_panel_select_all_categories">Select all</option>`
-        + entity.categories.map( x => `
-        <option value="${x}">${x}</option>`
-    ) + '\n';
-    $("#categorical_filter_panel_categories").trigger("change");
+    configure_category_selection('categorical_filter_panel_categories', entity);
     document.getElementById('numerical_filter_panel').style.display = 'none';
     document.getElementById('categorical_filter_panel').style.display = 'block';
 }

@@ -17,6 +17,7 @@
     {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/scatter_plot.js') }}"></script>
 
     {# end of imports #}
     <div id="content">
@@ -41,12 +42,22 @@
 
                     {{ m.entity_form_single_measurement(id_single_measurement= "x_measurement",name =
                     measurement_tuple[0],value=entity,select=x_measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
-                    {{ m.entity_form_single(id_single= "x_axis",class="numeric_entities",name
-                    =entities[0],value=entity,select=x_axis,d="X axis:") }}
+                    <div class="form-group">
+                        <label for="scatter_plot_x_axis_numerical_entities_select">X axis:</label>
+                        <select id="scatter_plot_x_axis_numerical_entities_select" name="x_axis" style="width: 100%" class="js-example-basic-single"
+                                data-entity-types="Double"
+                        >
+                        </select>
+                    </div>
                     {{ m.entity_form_single_measurement(id_single_measurement= "y_measurement",name =
                     measurement_tuple[0],value=entity,select=y_measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
-                    {{ m.entity_form_single(id_single= "y_axis",class="numeric_entities",name
-                    =entities[0],value=entity,select=y_axis,d="Y axis:") }}
+                    <div class="form-group">
+                        <label for="scatter_plot_y_axis_numerical_entities_select">Y axis:</label>
+                        <select id="scatter_plot_y_axis_numerical_entities_select" name="y_axis" multiple style="width: 100%" class="js-example-basic-single"
+                                data-entity-types="Double"
+                        >
+                        </select>
+                    </div>
 
                     <label>Scale</label>
                     <table>
@@ -90,15 +101,15 @@
                         <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
                     </div>
                     <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox"
-                         value="true">
-                        {{ m.entity_form_single(id_single= "categorical_entities",class="categorical_entities",name
-                        =entities[1],select=categorical_entities,value=entity,d="Group by:") }}
+                         value="true" style="width: 100%">
 
-                        <!-- Send dictionary with subcategory data to javascript -->
-                        <script type="text/javascript">
-                        var cat = {{entities[2]|safe}};
-
-                        </script>
+                        <div class="form-group" style="width: 100%">
+                            <label for="scatter_plot_categorical_entities_select">Group by:</label>
+                            <select id="scatter_plot_categorical_entities_select" name="categorical_entities" class="js-example-basic-single"
+                                    data-entity-types="String" style="width: 100%"
+                            >
+                            </select>
+                        </div>
 
                         <div class="tooltips" title="Please select category and next subcategory">
                             <label>Subcategory: </label>

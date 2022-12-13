@@ -21,7 +21,7 @@ class FilterService:
         self._session_id = session_service.get_id()
 
         if filter_status is None:
-            self._filter_status = FilterStatus(filtered_patient_count=None, filters={})
+            self._filter_status = FilterStatus(measurement=None, filtered_patient_count=None, filters={})
         else:
             self._filter_status = filter_status
 
