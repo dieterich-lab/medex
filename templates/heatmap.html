@@ -12,8 +12,10 @@
     {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/heatmap.js') }}"></script>
 
     {# end of imports #}
+
 <form action="" method="POST">
     <div id="menu">
         {% include 'sidebar.html' %}
@@ -38,8 +40,14 @@
                     {{ m.show_error(error) }}
                     {% endif %}
 
-                    {{ m.entity_form_multiple(id_multiple="numeric_entities_multiple",name=entities[0],value=entity,
-                    select=numeric_entities,d="Numeric entities:") }}
+                    <div class="form-group">
+                        <label for="heatmap_numerical_entities_select">Numeric entities:</label>
+                        <select id="heatmap_numerical_entities_select" name="numeric_entities_multiple" multiple style="width: 100%" class="js-example-basic-single"
+                                data-entity-types="Double"
+                        >
+                        </select>
+                    </div>
+
                     <button id="Result" name="heatmap" class="btn btn-outline-info">Result</button>
                 </div>
             </div>

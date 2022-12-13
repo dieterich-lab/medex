@@ -19,7 +19,7 @@ function contains(text, search_string) {
 }
 
 function is_valid_entity(entity, valid_entity_types, search_string) {
-	if ( ! entity['type'] in valid_entity_types ) {
+	if ( ! valid_entity_types.includes(entity['type']) ) {
 		return false;
 	}
 	if ( !search_string ) {
@@ -69,11 +69,14 @@ $.fn.select2.amd.define('select2/data/EntityData',
 });
 
 async function configure_entity_selection(element_id, selected_entity_ids, multiple_allowed, allow_select_all) {
+	if ( ! document.getElementById(element_id) ) {
+		return;
+	}
 	await render_select_entity_box(element_id, selected_entity_ids);
 	const select2_parameters = {
 		ajax:{},
 		allowClear: allow_select_all,
-		width: "element",
+		width: "100%",
 		multiple: multiple_allowed,
 		dataAdapter:$.fn.select2.amd.require('select2/data/EntityData'),
 		templateResult: format_entity,

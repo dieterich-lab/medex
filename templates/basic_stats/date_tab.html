@@ -26,12 +26,13 @@ are defined in basic_stats.html #}
 
                     {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_date",name
                     =measurement_tuple[0],class="measurement",value=entity,select=measurement_date,d=measurement_tuple[1],block=measurement_tuple[2]) }}
-                    <label for="basic_stats_date_entities_select">Date entities:</label>
-                    <select id="basic_stats_date_entities_select" name="date_entities" multiple style="width: 100%" class="js-example-basic-single"
-                            data-entity-types="String,Double,Date"
-                    >
-                    </select>
-
+                    <div class="form-group">
+                        <label for="basic_stats_date_entities_select">Date entities:</label>
+                        <select id="basic_stats_date_entities_select" name="date_entities" multiple style="width: 100%" class="js-example-basic-single"
+                                data-entity-types="Date"
+                        >
+                        </select>
+                    </div>
                     <button id="Result_date" name="basic_stats_d" class="btn btn-outline-info" >Result</button>
                 </div>
             </div>

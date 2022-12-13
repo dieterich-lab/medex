@@ -70,3 +70,7 @@ figcaption {
 }
 
 select { white-space: pre-wrap;}
+
+.select2-container {
+    width: 100%;
+}

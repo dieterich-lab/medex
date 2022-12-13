@@ -183,5 +183,6 @@ def test_dict_after_deleting_last_filter(filter_service: FilterService, db_sessi
     filter_service.delete_filter('temperature')
     assert filter_service.dict() == {
         'filtered_patient_count': None,
-        'filters': {}
+        'filters': {},
+        'measurement': 'baseline'
     }
