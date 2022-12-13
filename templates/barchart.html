@@ -50,12 +50,6 @@
                         <label>Subcategory: </label>
                         <select multiple id="subcategory_entities" class="subcategory_entities"
                                 name="subcategory_entities"  style="width: 100%">
-                            <option value="Select all">Select all</option>
-                            {% for entity in entities[2][categorical_entities] %}
-                            <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{
-                                entity }}
-                            </option>
-                            {% endfor %}
                         </select>
                     </div>
                     <div class="card-body">
