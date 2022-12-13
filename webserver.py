@@ -85,7 +85,6 @@ def data_information():
 
     return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical,
                                       number_of_patients_str),
-                entities=(all_num_entities, all_cat_entities, all_subcategory_entities, all_date_entities),
                 measurement_tuple=(all_measurement, '{}:'.format(measurement_name), block_measurement),
                 df_min_max=df_min_max,
                 meddusa=(Meddusa, MEDDUSA_URL),

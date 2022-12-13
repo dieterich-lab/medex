@@ -9,7 +9,7 @@ from url_handlers.filtering import check_for_date_filter_post, check_for_limit_o
 import plotly.graph_objects as go
 from webserver import start_date, end_date
 
-heatmap_plot_page = Blueprint('heatmap', __name__, template_folder='tepmlates')
+heatmap_plot_page = Blueprint('heatmap', __name__, template_folder='templates')
 
 
 @heatmap_plot_page.route('/heatmap', methods=['GET'])
@@ -27,7 +27,6 @@ def post_plots():
     check_for_date_filter_post(start_date, end_date)
     date_filter = session.get('date_filter')
     limit_filter = check_for_limit_offset()
-    update_filter = session.get('filtering')
 
     # handling errors and load data from database
     df = pd.DataFrame()
@@ -37,11 +36,9 @@ def post_plots():
         df, error = get_heat_map(numeric_entities, date_filter, limit_filter, filter_service, session_db)
         if not error:
             if len(df.index) == 0:
-                error = "This two entities don't have common values"
+                error = "These two entities don't have common values"
     elif len(numeric_entities) < 2:
-        error = "Please select more than one entity"
-    else:
-        error = "Please select numeric entities"
+        error = "Please select two or more entities"
 
     if error:
         return render_template('heatmap.html',

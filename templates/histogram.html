@@ -60,12 +60,6 @@
                     <div class="tooltips" title="Please select category and next subcategory">
                         <label>Subcategory: </label>
                         <select id="histogram_subcategory_entities" style="width: 100%" multiple class="subcategory_entities" name="subcategory_entities">
-                            <option value="Select all">Select all</option>
-                            {% for entity in entities[2][categorical_entities] %}
-                            <option value="{{ entity }}" {% if entity in subcategory_entities %}selected{% endif %}>{{
-                                entity }}
-                            </option>
-                            {% endfor %}
                         </select>
                     </div>
 
