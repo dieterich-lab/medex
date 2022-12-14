@@ -1,57 +1,23 @@
-import {get_entity_list, get_entity_by_key} from './entity.js';
-import {configure_entity_selection} from "./entity_selection";
+import {get_entity_by_key} from './entity.js';
+import {configure_entity_selection} from "./entity_selection.js";
+import {configure_category_selection} from "./categories_selection.js";
 
 async function init() {
     refresh_filter_panel();
-    await render_select_filter_box();
+    await configure_entity_selection('selected_filter', [], false, false);
     setup_measurement_filter_select();
-    setup_categorical_filter_panel_categories();
-}
-
-async function render_select_filter_box() {
-    let select_box = document.getElementById('selected_filter');
-    const all_entities = await get_entity_list();
-    const html = '<option>Search entity</option>'
-        + all_entities.map((x) => `
-        <option value="${x.key}">${get_entity_display_name(x)}</option>`).join('')
-        + '\n';
-    select_box.innerHTML = html;
-}
-
-function get_entity_display_name(entity) {
-    if ( entity.description ) {
-        return `${entity.key} <div class="description">${entity.description}</div>`;
-    } else {
-        return entity.key;
-    }
-}
-
-function setup_categorical_filter_panel_categories() {
-    // ToDo: Purge Jquery
-    let cat_select = $("#categorical_filter_panel_categories");
-    cat_select.select2({
-        placeholder:"Search entity"
-    });
-    cat_select.on("select2:select", handle_select_categories);
 }
 
 function setup_measurement_filter_select() {
     let filter_measurement_select = $("#filter_measurement");
+    const default_value = document.getElementById('default_measurement').value;
+    set_filter_measurement(default_value);
     filter_measurement_select.select2({
         placeholder: "Search entity"
     });
     filter_measurement_select.change(() => {
         set_filter_measurement(filter_measurement_select.val());
     });
-}
-
-function handle_select_categories(event) {
-    const selected_item = event.params.data.text;
-    if ( selected_item === 'Select all') {
-        $("#categorical_filter_panel_categories> option").prop("selected","selected");
-        $('#categorical_filter_panel_categories> option[value="Select all"]').prop("selected", false);
-        $("#categorical_filter_panel_categories").trigger("change");
-    }
 }
 
 async function get_selected_entity() {
@@ -75,13 +41,7 @@ async function select_filter() {
 }
 
 function display_categorical_filter_settings(entity) {
-    let select_categories = document.getElementById('categorical_filter_panel_categories');
-    select_categories.innerHTML = `
-        <option value="Select all" id="categorical_filter_panel_select_all_categories">Select all</option>`
-        + entity.categories.map( x => `
-        <option value="${x}">${x}</option>`
-    ) + '\n';
-    $("#categorical_filter_panel_categories").trigger("change");
+    configure_category_selection('categorical_filter_panel_categories', entity);
     document.getElementById('numerical_filter_panel').style.display = 'none';
     document.getElementById('categorical_filter_panel').style.display = 'block';
 }
@@ -146,7 +106,7 @@ async function set_numerical_filter_to() {
 function clear_all_filters() {
     fetch('/filter/all', {
         method: 'DELETE',
-    }).then(response => {
+    }).then(() => {
         refresh_filter_panel();
     }).catch(error => {
         console.log(error);
@@ -165,6 +125,7 @@ function refresh_filter_panel() {
 
 async function render_all_filters(data) {
     clear_filter_panel();
+    update_measurement_select(data.measurement);
     const filters = data['filters'];
     const filter_entities_sorted = Object.keys(filters).sort();
     filter_entities_sorted.forEach(entity_key => {
@@ -185,6 +146,12 @@ function clear_filter_panel() {
         div.removeChild(child);
         child = div.lastElementChild;
     }
+}
+
+function update_measurement_select(measurement) {
+    let select_box = $('#filter_measurement');
+    select_box.val(measurement);
+    select_box.trigger('change');
 }
 
 function render_categorical_filter(entity_key, filter) {
@@ -218,7 +185,7 @@ function remove_filter(entity_key) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({'entity': entity_key}),
-    }).then(response => {
+    }).then(() => {
         refresh_filter_panel();
     }).catch(error => {
         console.log(error);
@@ -227,8 +194,6 @@ function remove_filter(entity_key) {
 }
 
 async function render_numerical_filter(entity_key, filter) {
-    const entity = await get_entity_by_key(entity_key);
-    const slider_id = `active_filter_${entity_key}`;
     render_filter(entity_key, `${filter.from_value}&nbsp;-&nbsp;${filter.to_value}`);
 }
 
@@ -251,7 +216,7 @@ async function add_or_update_categorical_filter() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({'entity': entity['key'], 'categories': categories}),
-    }).then(response => {
+    }).then(() => {
         refresh_filter_panel();
     }).catch(error => {
         console.log(error)
@@ -280,7 +245,7 @@ async function add_or_update_numerical_filter() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(request_json),
-    }).then(response => {
+    }).then(() => {
         refresh_filter_panel();
     }).catch(error => {
         console.log(error);
@@ -288,14 +253,20 @@ async function add_or_update_numerical_filter() {
     })
 }
 
+let present_filter_measurement = null;
+
 function set_filter_measurement(new_measurement) {
+    if ( new_measurement === present_filter_measurement ) {
+        return;
+    }
     fetch('/filter/set_measurement', {
         method: 'POST',
         headers:{
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({'measurement': new_measurement}),
-    }).then(response => {
+    }).then(() => {
+        present_filter_measurement = new_measurement;
         refresh_filter_panel();
     }).catch(error => {
         console.log(error);
@@ -329,5 +300,5 @@ $(function () {
 
 export {
     init, select_filter, add_or_update_categorical_filter, set_numerical_filter_from, set_numerical_filter_to,
-    clear_all_filters, add_or_update_numerical_filter
+    clear_all_filters, add_or_update_numerical_filter, set_filter_measurement
 };
