@@ -5,8 +5,8 @@ pipeline {
             steps {
                 sh '''
                     python3 -m venv venv
-                    pip install pipenv
                     . ./venv/bin/activate
+                    pip install pipenv
                     pipenv install --dev
                 '''
             }
