@@ -1,4 +1,3 @@
-import modules.filtering as ps
 from flask import request, session
 import datetime
 

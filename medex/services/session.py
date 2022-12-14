@@ -54,4 +54,3 @@ class SessionService:
         ]:
             db_session.execute(stmt)
         db_session.commit()
-

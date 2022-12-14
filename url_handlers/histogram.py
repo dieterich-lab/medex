@@ -51,9 +51,10 @@ def post_statistics():
     else:
         session_db = get_db_session()
         filter_service = get_filter_service()
-        df, error = get_histogram_box_plot([numerical_entity, group_by_entity, categories], measurement, date_filter, limit_filter, filter_service, session_db)
+        df, error = get_histogram_box_plot([numerical_entity, group_by_entity, categories], measurement, date_filter,
+                                           limit_filter, filter_service, session_db)
 
-    # handling errors if number of bins is less then 2
+    # handling errors if number of bins is less than 2
     bin_numbers = 20
     if number_of_bins.isdigit() and int(number_of_bins) > 2:
         bin_numbers = int(number_of_bins)
@@ -95,5 +96,3 @@ def post_statistics():
                            subcategory_entities=categories,
                            plot=fig,
                            )
-
-

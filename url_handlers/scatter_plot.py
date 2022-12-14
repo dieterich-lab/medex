@@ -10,7 +10,7 @@ import pandas as pd
 import textwrap
 import plotly.graph_objects as go
 
-scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='tepmlates')
+scatter_plot_page = Blueprint('scatter_plot', __name__, template_folder='templates')
 
 
 @scatter_plot_page.route('/scatter_plot', methods=['GET'])
@@ -58,7 +58,8 @@ def post_plots():
         error = "Please select subcategory"
     else:
         session_db = get_db_session()
-        df, error = get_scatter_plot(add_group_by, [x_axis_entity, y_axis_entity], measurement, [group_by_entity, categories], date_filter, limit_filter,
+        df, error = get_scatter_plot(add_group_by, [x_axis_entity, y_axis_entity], measurement,
+                                     [group_by_entity, categories], date_filter, limit_filter,
                                      filter_service, session_db)
 
     if error:
@@ -93,8 +94,10 @@ def post_plots():
                                    "<br> Number of Points: " + str(number_of_points))
 
     else:
-        split_text = textwrap.wrap("Compare values of <b>" + x_axis_entity + "</b> : " + measurement_name + " <b>" +
-                                   measurement[0] + "</b> and <b>" + y_axis_entity + "</b> : " + measurement_name + " <b>" +
+        split_text = textwrap.wrap("Compare values of <b>" + x_axis_entity + "</b> : " +
+                                   measurement_name + " <b>" +
+                                   measurement[0] + "</b> and <b>" + y_axis_entity + "</b> : " +
+                                   measurement_name + " <b>" +
                                    measurement[1] + "</b>" + "<br> Number of Points: " + str(number_of_points),
                                    width=100)
 

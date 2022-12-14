@@ -113,5 +113,3 @@ def check_if_tables_exists():
         table = row[0]
     if table != 'examination_numerical':
         create_tables()
-
-

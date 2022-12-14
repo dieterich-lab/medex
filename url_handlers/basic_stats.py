@@ -8,7 +8,6 @@ from url_handlers.filtering import check_for_date_filter_post
 from webserver import all_measurement, measurement_name, block_measurement, start_date, end_date
 import pandas as pd
 
-
 basic_stats_page = Blueprint('basic_stats', __name__, template_folder='basic_stats')
 
 
@@ -22,7 +21,6 @@ def get_statistics():
 
 @basic_stats_page.route('/basic_stats', methods=['POST'])
 def get_basic_stats():
-
     # get_filter
     check_for_date_filter_post(start_date, end_date)
     date_filter = session.get('date_filter')
@@ -52,14 +50,22 @@ def get_basic_stats():
             df['measurement'] = df['measurement'].astype(str)
 
             # calculation basic stats
-            if not 'count NaN' in request.form: df = df.drop(['count NaN'], axis=1)
-            if not 'count' in request.form: df = df.drop(['count'], axis=1)
-            if not 'mean' in request.form: df = df.drop(['mean'], axis=1)
-            if not 'min' in request.form: df = df.drop(['min'], axis=1)
-            if not 'max' in request.form: df = df.drop(['max'], axis=1)
-            if not 'std_dev' in request.form: df = df.drop(['stddev'], axis=1)
-            if not 'std_err' in request.form: df = df.drop(['stderr'], axis=1)
-            if not 'median' in request.form: df = df.drop(['median'], axis=1)
+            if 'count NaN' not in request.form:
+                df = df.drop(['count NaN'], axis=1)
+            if 'count' not in request.form:
+                df = df.drop(['count'], axis=1)
+            if 'mean' not in request.form:
+                df = df.drop(['mean'], axis=1)
+            if 'min' not in request.form:
+                df = df.drop(['min'], axis=1)
+            if 'max' not in request.form:
+                df = df.drop(['max'], axis=1)
+            if 'std_dev' not in request.form:
+                df = df.drop(['stddev'], axis=1)
+            if 'std_err' not in request.form:
+                df = df.drop(['stderr'], axis=1)
+            if 'median' not in request.form:
+                df = df.drop(['median'], axis=1)
             n = df.shape[1]
             if n == 2:
                 error = "Please select at least one basic statistic"
@@ -126,7 +132,7 @@ def get_basic_stats():
                                all_measurement=all_measurement,
                                categorical_entities=categorical_entities,
                                measurement_categorical=measurement,
-                               basic_stats_c=basic_stats_c,)
+                               basic_stats_c=basic_stats_c, )
 
     if 'basic_stats_d' in request.form:
         """ calculation for date values"""
