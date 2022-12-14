@@ -1,19 +1,23 @@
+let entity_list_promise = null;
 let entity_list = null;
 let entities_by_key = null;
 
 async function init() {
-    await fetch('/entity/all', {method: 'GET'})
-    .then(response => response.json())
-    .then(async new_entity_list => {
-        entity_list = await new_entity_list;
-        entities_by_key = {};
-        for (const entity of entity_list) {
-            entities_by_key[entity[['key']]] = entity;
-        }
-    })
-    .catch(error => {
-        console.log(error)
-    })
+    if ( ! entity_list_promise ) {
+         entity_list_promise = fetch('/entity/all', {method: 'GET'})
+            .then(response => response.json())
+            .then(async new_entity_list => {
+                entity_list = await new_entity_list;
+                entities_by_key = {};
+                for (const entity of entity_list) {
+                    entities_by_key[entity[['key']]] = entity;
+                }
+            })
+            .catch(error => {
+                console.log(error)
+        })
+    }
+    await entity_list_promise;
 }
 
 async function get_entity_list() {

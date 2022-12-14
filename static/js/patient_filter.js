@@ -106,7 +106,7 @@ async function set_numerical_filter_to() {
 function clear_all_filters() {
     fetch('/filter/all', {
         method: 'DELETE',
-    }).then(response => {
+    }).then(() => {
         refresh_filter_panel();
     }).catch(error => {
         console.log(error);
@@ -185,7 +185,7 @@ function remove_filter(entity_key) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({'entity': entity_key}),
-    }).then(response => {
+    }).then(() => {
         refresh_filter_panel();
     }).catch(error => {
         console.log(error);
@@ -194,8 +194,6 @@ function remove_filter(entity_key) {
 }
 
 async function render_numerical_filter(entity_key, filter) {
-    const entity = await get_entity_by_key(entity_key);
-    const slider_id = `active_filter_${entity_key}`;
     render_filter(entity_key, `${filter.from_value}&nbsp;-&nbsp;${filter.to_value}`);
 }
 
@@ -218,7 +216,7 @@ async function add_or_update_categorical_filter() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({'entity': entity['key'], 'categories': categories}),
-    }).then(response => {
+    }).then(() => {
         refresh_filter_panel();
     }).catch(error => {
         console.log(error)
@@ -247,7 +245,7 @@ async function add_or_update_numerical_filter() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(request_json),
-    }).then(response => {
+    }).then(() => {
         refresh_filter_panel();
     }).catch(error => {
         console.log(error);
@@ -267,7 +265,7 @@ function set_filter_measurement(new_measurement) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({'measurement': new_measurement}),
-    }).then(response => {
+    }).then(() => {
         present_filter_measurement = new_measurement;
         refresh_filter_panel();
     }).catch(error => {
