@@ -1,7 +1,4 @@
 import pytest
-from datetime import datetime
-
-from sqlalchemy import select
 
 from modules.models import Sessions, SessionNameIdsMatchingFilter, SessionFilteredNameIds
 from medex.services.session import SessionService

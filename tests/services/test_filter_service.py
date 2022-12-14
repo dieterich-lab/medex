@@ -171,7 +171,7 @@ def test_dict(filter_service: FilterService, db_session, populate_data):
         'filtered_patient_count': 0,
         'measurement': 'baseline',
         'filters': {
-            'diabetes': { 'categories': ['nein']},
+            'diabetes': {'categories': ['nein']},
             'temperature': {'from_value': 39.0, 'to_value': 43.0}
         }
     }
