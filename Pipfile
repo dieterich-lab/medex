@@ -24,13 +24,13 @@ alembic = "*"
 pydantic = "*"
 flask-sqlalchemy = "*"
 
-
 [dev-packages]
 pylint = "*"
 freezegun = "*"
 pytest = "*"
 pytest-mock = "*"
 pytest-freezegun = "*"
+flake8 = "*"
 
 [requires]
 python_version = ">=3.7"
