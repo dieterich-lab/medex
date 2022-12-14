@@ -6,7 +6,7 @@ function format_entity(state) {
 	if ( !entity ) {
 		return `<div>(not loaded yet)</div>`;
 	}
-    return $(
+	return $(
 		`<div>
 			 <div>${entity.key}</div>
 			 <div class="description">${entity.description}</div>
@@ -94,17 +94,9 @@ async function render_select_entity_box(element_id, selected_entities, multiple_
 		.map((x) => {
 			const selected_marker = selected_entities.includes(x.key) ? ' selected' : '';
 			return `
-        	<option value="${x.key}"${selected_marker}>${get_entity_display_name(x)}</option>`
+        	<option value="${x.key}"${selected_marker}>${x.key}</option>`
 		});
     select_box.innerHTML = prefix + options_html.join('') + '\n';
-}
-
-function get_entity_display_name(entity) {
-    if ( entity.description ) {
-        return `${entity.key} <div class="description">${entity.description}</div>`;
-    } else {
-        return entity.key;
-    }
 }
 
 export {configure_entity_selection};
