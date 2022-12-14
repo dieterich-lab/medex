@@ -16,10 +16,10 @@ def get_scatter_plot(
     sql_select = select(TableNumerical.name_id, func.avg(TableNumerical.value).label('value1'),
                         func.avg(adalias2.value).label('value2'))
     sql_with_filter = filter_service.apply_filter(TableNumerical, sql_select)
-    sql_with_where = sql_with_filter.where(and_(TableNumerical.key == axis[0], 
-                                                TableNumerical.measurement == measurement[0], adalias2.key == axis[1], 
+    sql_with_where = sql_with_filter.where(and_(TableNumerical.key == axis[0],
+                                                TableNumerical.measurement == measurement[0], adalias2.key == axis[1],
                                                 adalias2.measurement == measurement[1],
-                                                TableNumerical.name_id == adalias2.name_id, 
+                                                TableNumerical.name_id == adalias2.name_id,
                                                 checking_date_filter(date_filter, TableNumerical))).\
         group_by(TableNumerical.name_id)
     sql_with_group = _add_group_by(add_group_by, categorical_entities, sql_with_where)

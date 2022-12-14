@@ -24,4 +24,3 @@ def get_histogram_box_plot(entities, measurement, date_filter, limit_filter, fil
     df[entities[1]] = df[entities[1]].str.wrap(30).replace(to_replace=[r"\\n", "\n"], value=["<br>", "<br>"],
                                                            regex=True)
     return df, None
-

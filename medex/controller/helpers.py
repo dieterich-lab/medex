@@ -1,5 +1,5 @@
 import os
-from flask import session, request
+from flask import session
 
 from medex.dto.filter import FilterStatus
 from medex.services.database import get_db_session

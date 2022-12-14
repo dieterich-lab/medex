@@ -22,7 +22,6 @@ def get_boxplots():
 
 @boxplot_page.route('/boxplot', methods=['POST'])
 def post_boxplots():
-    
     # get request values
     if block_measurement == 'none':
         measurement = [all_measurement[0]]

@@ -111,7 +111,7 @@ def _validate_date(x):
         raise ImportValidationError(f"Value '{x} is not a Date in format YYYY-MM-DD!")
 
 
-def _validate_categorical(x):
+def _validate_categorical():
     pass
 
 
@@ -119,7 +119,7 @@ def _get_columns_of_table(table):
     return [column.key for column in table.__table__.columns]
 
 
-_META_DATA_BY_ENITITY_TYPE = {
+_META_DATA_BY_ENTITY_TYPE = {
     'categorical': {
         'columns': _get_columns_of_table(TableCategorical),
         'statement': insert(TableCategorical),
@@ -145,7 +145,7 @@ def _get_meta_data_for_entity(entity, numerical_entities, date_entities):
         entity_type = 'date'
     else:
         entity_type = 'categorical'
-    return _META_DATA_BY_ENITITY_TYPE[entity_type]
+    return _META_DATA_BY_ENTITY_TYPE[entity_type]
 
 
 def _do_insert(db_session, meta_data, items, line_number):

@@ -1,4 +1,4 @@
-from sqlalchemy import text, join, select
+from sqlalchemy import text
 
 
 def checking_date_filter(date_filter, table):
@@ -16,4 +16,3 @@ def apply_limit_to_sql_query(limit_filter, sql):
     else:
         sql = sql
     return sql
-

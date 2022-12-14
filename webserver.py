@@ -13,7 +13,17 @@ from flask_cors import CORS
 import requests
 import os
 import io
+
 from medex.controller.filter import filter_controller
+from url_handlers.data import data_page
+from url_handlers.basic_stats import basic_stats_page
+from url_handlers.histogram import histogram_page
+from url_handlers.boxplot import boxplot_page
+from url_handlers.scatter_plot import scatter_plot_page
+from url_handlers.barchart import barchart_page
+from url_handlers.heatmap import heatmap_plot_page
+from url_handlers.logout import logout_page
+from url_handlers.tutorial import tutorial_page
 
 # create the application object
 app = Flask(__name__)
@@ -22,7 +32,6 @@ app.secret_key = os.urandom(24)
 app.config["SQLALCHEMY_DATABASE_URI"] = get_database_url()
 db = SQLAlchemy()
 db.init_app(app)
-
 
 with app.app_context():
     init_db(db.engine, lambda: db.session)
@@ -122,16 +131,6 @@ def message_count():
                 )
 
 
-from url_handlers.data import data_page
-from url_handlers.basic_stats import basic_stats_page
-from url_handlers.histogram import histogram_page
-from url_handlers.boxplot import boxplot_page
-from url_handlers.scatter_plot import scatter_plot_page
-from url_handlers.barchart import barchart_page
-from url_handlers.heatmap import heatmap_plot_page
-from url_handlers.logout import logout_page
-from url_handlers.tutorial import tutorial_page
-
 app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
 app.register_blueprint(tutorial_page)
@@ -169,7 +168,6 @@ def download(filename):
     if filename == 'basic_stats_data.csv':
         csv = session.get('basic_stats_table')
     elif filename == 'table_browser_data.csv':
-        update_filter = session.get('filtering')
         table_browser = session.get('table_browser')
         date_filter = session.get('date_filter')
         csv = get_data_download(table_browser, date_filter, filter_service, session_db)
@@ -189,7 +187,7 @@ def download(filename):
 def create_string():
     string = 'date range:' + str(session.get('date_filter')[3]) + ' ' + str(session.get('date_filter')[4]) + '\n' + \
              'Filters: ' + '\n' + 'categorical ' + str(session.get('filtering')['filter_cat']) + '\n' + \
-             'numerical: ' + str(session.get('filtering')['filter_num']) + '\n' +\
+             'numerical: ' + str(session.get('filtering')['filter_num']) + '\n' + \
              'selected values:' + '\n' + \
              'Visits: ' + str(session.get('table_browser')[1]) + '\n' + \
              'entities: ' + str(session.get('table_browser')[0]) + '\n' + \
