@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from sqlalchemy import select, inspect, func, alias
+from sqlalchemy import select, inspect, func
 from sqlalchemy.orm import Session
 
 from modules.models import NameType, TableCategorical, TableNumerical
