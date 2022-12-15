@@ -1,7 +1,6 @@
 from flask import Flask, send_file, request, redirect, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
-from medex.controller.entity import entity_controller
 from medex.controller.helpers import get_filter_service, init_controller_helper
 from medex.services.scheduler import Scheduler
 from modules.import_data import start_import
@@ -14,16 +13,6 @@ import requests
 import os
 import io
 
-from medex.controller.filter import filter_controller
-from url_handlers.data import data_page
-from url_handlers.basic_stats import basic_stats_page
-from url_handlers.histogram import histogram_page
-from url_handlers.boxplot import boxplot_page
-from url_handlers.scatter_plot import scatter_plot_page
-from url_handlers.barchart import barchart_page
-from url_handlers.heatmap import heatmap_plot_page
-from url_handlers.logout import logout_page
-from url_handlers.tutorial import tutorial_page
 
 # create the application object
 app = Flask(__name__)
@@ -130,6 +119,18 @@ def message_count():
                 limit_offset=session.get('limit_offset')
                 )
 
+
+from medex.controller.entity import entity_controller
+from medex.controller.filter import filter_controller
+from url_handlers.data import data_page
+from url_handlers.basic_stats import basic_stats_page
+from url_handlers.histogram import histogram_page
+from url_handlers.boxplot import boxplot_page
+from url_handlers.scatter_plot import scatter_plot_page
+from url_handlers.barchart import barchart_page
+from url_handlers.heatmap import heatmap_plot_page
+from url_handlers.logout import logout_page
+from url_handlers.tutorial import tutorial_page
 
 app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
