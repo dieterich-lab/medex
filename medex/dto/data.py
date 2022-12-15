@@ -1,16 +1,33 @@
+from enum import Enum
 from typing import List, Dict
 
 from pydantic import BaseModel
 
 
-class FilteredDataRequest(BaseModel):
-    measurements: List[str]
-    entities: List[str]
-
-
 class PaginationInfo(BaseModel):
     offset: int
     limit: int
+
+
+class SortDirection(Enum):
+    ASC = 'asc'
+    DESC = 'desc'
+
+
+class SortItem(BaseModel):
+    column: str
+    direction: SortDirection
+
+
+class SortOrder(BaseModel):
+    item: List[SortItem]
+
+
+class FilteredDataRequest(BaseModel):
+    measurements: List[str]
+    entities: List[str]
+    pagination_info: PaginationInfo
+    sort_order: SortOrder
 
 
 class SingleDataItem(BaseModel):
@@ -21,7 +38,6 @@ class SingleDataItem(BaseModel):
 
 
 class FilteredDataFlatResponse(BaseModel):
-    pagination_info: PaginationInfo
     data: List[SingleDataItem]
 
 
