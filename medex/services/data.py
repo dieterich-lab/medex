@@ -1,7 +1,8 @@
 from typing import List, Optional
 
-from sqlalchemy import union, select
+from sqlalchemy import union, select, and_
 
+from medex.dto.data import SortOrder
 from medex.services.filter import FilterService
 from modules.models import TableCategorical, TableNumerical, TableDate
 
@@ -11,8 +12,6 @@ class DataService:
             self,
             database_session,
             filter_service: FilterService,
-            limit=None,
-            offset=None
     ):
         self._database_session = database_session
         self._filter_service = filter_service
@@ -22,14 +21,17 @@ class DataService:
             measurements: List[str],
             entities: List[str],
             limit: Optional[int] = None,
-            offset: Optional[int] = None
+            offset: Optional[int] = None,
+            sort_order: Optional[SortOrder] = None,
     ):
         db = self._database_session
         sql_union = self._get_union_of_tables()
         sql_select = (
             select(sql_union.c)
-            .where(sql_union.c.measurement == measurements)
-            .where(sql_union.c.key == entities)
+            .where(and_(
+                sql_union.c.measurement.in_(measurements),
+                sql_union.c.key.in_(entities)
+            ))
             .order_by(sql_union.c.name_id, sql_union.c.key)
         )
         query_with_filter = self._filter_service.apply_filter_to_complex_query(sql_select)
