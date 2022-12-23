@@ -64,7 +64,8 @@ def _get_raw_data_sql(entities, limit_filter, measurement, select_numerical_valu
             group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement)
 
 
-def get_cat_date_basic_stats(entities, measurement, date_filter, limit_filter, filter_service: FilterService, table, db_session):
+def get_cat_date_basic_stats(entities, measurement, date_filter, limit_filter, filter_service: FilterService,
+                             table, db_session):
     if table == 'examination_categorical':
         name = TableCategorical
     else:

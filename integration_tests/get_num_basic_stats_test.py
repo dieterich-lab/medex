@@ -36,4 +36,3 @@ def test_it(db_session, filter_service):
     db_session.close()
     df, error = get_num_basic_stats(['Bmi'], ['baseline'], (1, 1, 0), {'selected': None}, filter_service)
     assert df.shape[0] == 1
-

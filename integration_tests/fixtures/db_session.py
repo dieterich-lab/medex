@@ -17,6 +17,7 @@ def db_session():
             session_maker = sessionmaker(bind=engine)
             session = session_maker()
             init_db(engine, lambda: session)
+            drop_tables()
             create_tables()
             break
         except Exception as e:
@@ -26,4 +27,3 @@ def db_session():
             print(f"Postgres not responding - retying ({retry_count})")
             sleep(1)
     yield session
-    drop_tables()
