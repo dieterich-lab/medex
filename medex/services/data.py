@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional
 
 from sqlalchemy import union, select, and_, desc, literal_column, func, case, cast, String, Date, Float
@@ -91,10 +92,9 @@ class DataService:
 
     @staticmethod
     def _get_union_of_tables(entities, measurements) -> query:
-        tables = [TableCategorical, TableNumerical, TableDate]
         list_query_tables = [
             select(table.name_id, table.measurement, table.key, table.value)
-            for table in tables
+            for table in [TableCategorical, TableNumerical, TableDate]
         ]
         query_union = union(*list_query_tables)
         query_select = (
@@ -109,10 +109,9 @@ class DataService:
 
     @staticmethod
     def _get_union_of_tables_postgres(entities, measurements) -> query:
-        tables = [TableCategorical, TableNumerical, TableDate]
         list_query_tables = [
             select(table.name_id, table.measurement, table.key, cast(table.value, String))
-            for table in tables
+            for table in [TableCategorical, TableNumerical, TableDate]
         ]
         query_union = union(*list_query_tables)
         query_select = (
