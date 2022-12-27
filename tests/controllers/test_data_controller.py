@@ -3,7 +3,7 @@ from flask import Flask
 
 from medex.controller.data import data_controller
 from medex.dto.data import SingleDataItem, MeasurementDataItem
-from tests.mocks.data_service import DataServiceMock, DEFAULT_FILTERED_FLAT_DATA, DEFAULT_FILTERED_BY_MEASUREMENT_DATA
+from tests.mocks.data_service import DataServiceMock
 
 
 @pytest.fixture
