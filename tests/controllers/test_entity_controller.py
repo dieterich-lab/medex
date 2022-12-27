@@ -4,7 +4,6 @@ import pytest
 from flask import Flask
 
 from medex.controller.entity import entity_controller
-from medex.dto.entity import Entity, EntityType
 from medex.services.entity import EntityService
 
 

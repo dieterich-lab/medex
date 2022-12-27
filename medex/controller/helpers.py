@@ -2,11 +2,11 @@ import os
 from flask import session
 
 from medex.dto.filter import FilterStatus
+from medex.services.data import DataService
 from medex.services.database import get_db_session
 from medex.services.session import SessionService
 from medex.services.filter import FilterService
 from medex.services.entity import EntityService
-
 
 _default_measurement = None
 
@@ -46,3 +46,9 @@ def store_filter_status_in_session(filter_service: FilterService):
 def get_entity_service():
     database_session = get_db_session()
     return EntityService(database_session)
+
+
+def get_data_service():
+    database_session = get_db_session()
+    filter_service = get_filter_service()
+    return DataService(database_session, filter_service)
