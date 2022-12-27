@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 
 from medex.controller.helpers import get_data_service
-from medex.dto.data import FilteredDataRequest, FilteredDataFlatResponse
+from medex.dto.data import FilteredDataRequest
 
 data_controller = Blueprint('data_controller', __name__)
 

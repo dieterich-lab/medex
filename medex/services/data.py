@@ -1,4 +1,3 @@
-import json
 from typing import List, Optional
 
 from sqlalchemy import union, select, and_, desc, literal_column, func, case, cast, String, Date, Float
