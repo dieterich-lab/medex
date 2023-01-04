@@ -55,53 +55,76 @@
                     </select>
                     <label>Table: </label>
                     <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="long" name="what_table" value="long"
-                               {% if what_table=="long" or not what_table %}checked{% endif %}>
+                        <input type="radio" class="custom-control-input" id="long" name="what_table" value="long">
+<!--                               {% if what_table=="long" or not what_table %} checked {% endif %}>-->
                         <label class="custom-control-label" for="long">long format</label>
                     </div>
                     <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="short" name="what_table" value="short"
-                               {% if what_table=="short" %} checked {% endif %}>
+                        <input type="radio" class="custom-control-input" id="short" name="what_table" value="short">
+<!--                               {% if what_table=="short" %} checked {% endif %}>-->
                         <label class="custom-control-label" for="short">entities as columns</label>
                     </div>
-                    <button id="Result" name="Result" class="btn btn-outline-info">Result</button>
+                    <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="display_table_with_selected_type()"
+                    >
+                        Result
+                    </button>
                 </div>
             </div>
         </div>
 
-
         <div class="card-header" id="results_header">
             <h5 class="mb-0">
-                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                        {% if entities_selected %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results">
                     Results
                 </button>
             </h5>
         </div>
 
-        <div id="numeric_results" class="collapse show " aria-labelledby="n_results_header"
-             data-parent="#numeric_accordion">
+        <div id="numeric_results" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
             <div class="card-body">
-                {% if name_column %}
                 <a href="{{url_for('download', filename = 'table_browser_data.csv')}}" id="download" class="btn btn-outline-info">Download</a>
                 <button id="send_id" name="send_id" onclick="location.href='{{ meddusa[1] }}'" type="button"
-                        class="btn btn-outline-info" style="float: right; display: none" value="Yes"> Meddusa
+                        class="btn btn-outline-info" style="float: right; display: none" value="Yes">
+                    Meddusa
                 </button>
                 <br><br>
-                <div id="tab" column="{{ column }}"></div>
-                <table id="serverside_table" class="display" width="100%">
-                    <thead>
-                    <tr>
-                        {% for i in name_column %}
-                        <th>{{ i }}</th>
-                        {% endfor %}
-                    </tr>
-                    </thead>
-                </table>
-                {% endif %}
+                <table id="serverside_table" class="display" width="100%"></table>
             </div>
         </div>
     </div>
-    </div>
 </form>
 {% endblock %}
+
+<!--        <div class="card-header" id="results_header">-->
+<!--            <h5 class="mb-0">-->
+<!--                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"-->
+<!--                        {% if entities_selected %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">-->
+<!--                    Results-->
+<!--                </button>-->
+<!--            </h5>-->
+<!--        </div>-->
+
+<!--        <div id="numeric_results" class="collapse show " aria-labelledby="n_results_header"-->
+<!--             data-parent="#numeric_accordion">-->
+<!--            <div class="card-body">-->
+<!--                {% if name_column %}-->
+<!--                <a href="{{url_for('download', filename = 'table_browser_data.csv')}}" id="download" class="btn btn-outline-info">Download</a>-->
+<!--                <button id="send_id" name="send_id" onclick="location.href='{{ meddusa[1] }}'" type="button"-->
+<!--                        class="btn btn-outline-info" style="float: right; display: none" value="Yes"> Meddusa-->
+<!--                </button>-->
+<!--                <br><br>-->
+<!--                <div id="tab" column="{{ column }}"></div>-->
+<!--                <table id="serverside_table" class="display" width="100%">-->
+<!--                    <thead>-->
+<!--                    <tr>-->
+<!--                        {% for i in name_column %}-->
+<!--                        <th>{{ i }}</th>-->
+<!--                        {% endfor %}-->
+<!--                    </tr>-->
+<!--                    </thead>-->
+<!--                </table>-->
+<!--                {% endif %}-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</form>-->

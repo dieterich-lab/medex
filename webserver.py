@@ -13,13 +13,11 @@ import requests
 import os
 import io
 
-
 # create the application object
 app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
 app.config["SQLALCHEMY_DATABASE_URI"] = get_database_url()
-# app.config["SQLALCHEMY_ECHO"] = True
 db = SQLAlchemy()
 db.init_app(app)
 
@@ -117,11 +115,11 @@ def message_count():
     return dict(date_block=date_block,
                 date=session.get('date_filter'),
                 case_display=case_display,
-                filter_update=session.get('filtering')['filter_update'],
                 limit_offset=session.get('limit_offset')
                 )
 
 
+from medex.controller.data import data_controller
 from medex.controller.entity import entity_controller
 from medex.controller.filter import filter_controller
 from url_handlers.data import data_page
@@ -144,6 +142,8 @@ app.register_blueprint(scatter_plot_page)
 app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(filter_controller, url_prefix='/filter')
+app.register_blueprint(entity_controller, url_prefix='/entity')
+app.register_blueprint(data_controller, url_prefix='/data')
 
 
 @app.route('/_session', methods=['GET'])
@@ -154,7 +154,6 @@ def get_cases():
     case_ids = cases_get.json()
     session_db = get_db_session()
     filtering.add_case_id(case_ids, session_db)
-    session['filtering'] = session.get('filtering')
     return redirect('/')
 
 

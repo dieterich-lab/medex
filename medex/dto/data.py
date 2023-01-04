@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
 
 from pydantic import BaseModel
 
@@ -27,8 +27,8 @@ class SortOrder(BaseModel):
 class FilteredDataRequest(BaseModel):
     measurements: List[str]
     entities: List[str]
-    pagination_info: PaginationInfo
-    sort_order: SortOrder
+    pagination_info: Optional[PaginationInfo]
+    sort_order: Optional[SortOrder]
 
 
 class SingleDataItem(BaseModel):

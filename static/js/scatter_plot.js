@@ -20,8 +20,11 @@ async function init() {
         'scatter_plot_categorical_entities_select', [],
         false, false
     );
+    if (!document.getElementById('subcategory_entities')) {
+        return;
+    }
     configure_category_selection('subcategory_entities', entity_placeholder);
-    document.getElementById('scatter_plot_categorical_entities_select').onchange = ( async () => {
+    document.getElementById('scatter_plot_categorical_entities_select').onchange = (async () => {
         let element = document.getElementById('scatter_plot_categorical_entities_select');
         const entity_key = element.value;
         const categorical_entity = entity_key ? await get_entity_by_key(entity_key) : entity_placeholder;

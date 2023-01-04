@@ -27,7 +27,7 @@ def test_client():
 
 
 def test_get_filtered_flat_data(helper_mock, test_client):
-    rv = test_client.get(
+    rv = test_client.post(
         '/filtered_data_flat',
         json={
             'measurements': ['baseline'],
