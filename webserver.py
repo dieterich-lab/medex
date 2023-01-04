@@ -13,7 +13,6 @@ import requests
 import os
 import io
 
-
 # create the application object
 app = Flask(__name__)
 CORS(app)
@@ -120,6 +119,7 @@ def message_count():
                 )
 
 
+from medex.controller.data import data_controller
 from medex.controller.entity import entity_controller
 from medex.controller.filter import filter_controller
 from url_handlers.data import data_page
@@ -143,6 +143,7 @@ app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(filter_controller, url_prefix='/filter')
 app.register_blueprint(entity_controller, url_prefix='/entity')
+app.register_blueprint(data_controller, url_prefix='/data')
 
 
 @app.route('/_session', methods=['GET'])

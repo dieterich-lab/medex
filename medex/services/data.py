@@ -25,7 +25,7 @@ class DataService:
             offset: Optional[int] = None,
             sort_order: Optional[SortOrder] = None,
     ) -> List[SingleDataItem]:
-        query_select = self._get_union_of_tables(entities, measurements)
+        query_select = self._get_union_of_tables_postgres(entities, measurements)
         query_select = self._get_ordered_data(query_select, sort_order)
         query_with_filter = self._filter_service.apply_filter_to_complex_query(query_select)
 

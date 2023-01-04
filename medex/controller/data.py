@@ -6,7 +6,7 @@ from medex.dto.data import FilteredDataRequest
 data_controller = Blueprint('data_controller', __name__)
 
 
-@data_controller.route('/filtered_data_flat', methods=['GET'])
+@data_controller.route('/filtered_data_flat', methods=['POST'])
 def get_filtered_data_flat():
     data_service = get_data_service()
     request_json = request.get_json()
@@ -16,7 +16,7 @@ def get_filtered_data_flat():
         data_request.entities,
     )
     result = [
-        item.dict()
+        tuple(item)
         for item in filtered_data_flat
     ]
     return jsonify(result)
