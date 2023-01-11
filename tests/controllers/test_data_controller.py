@@ -1,8 +1,9 @@
+import json
+
 import pytest
 from flask import Flask
 
 from medex.controller.data import data_controller
-from medex.dto.data import SingleDataItem, MeasurementDataItem
 from tests.mocks.data_service import DataServiceMock
 
 
@@ -27,34 +28,32 @@ def test_client():
 
 
 def test_get_filtered_flat_data(helper_mock, test_client):
-    rv = test_client.post(
-        '/filtered_data_flat',
-        json={
-            'measurements': ['baseline'],
-            'entities': ['cat1', 'num1'],
-            'pagination_info': {'offset': 1, 'limit': 2},
-            'sort_order': {'items': [{'column': 'name_id', 'direction': 'desc'}]}
-        }
-    )
+    url = '/flat?columns%5B0%5D%5Bdata%5D=name_id&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start=0&length' \
+          '=10&table_data=%7B%22measurements%22%3A%5B%22baseline%22%2C%221%20year%20followup%22%5D%2C%22entities%22' \
+          '%3A%5B%22basis_ahf%22%5D%7D'
+
+    rv = test_client.get(url)
+    rv_json = json.loads(rv.get_data(as_text=True))
     assert rv.status == '200 OK'
-    assert rv.get_json() == [
-        SingleDataItem(name_id='p1', measurement='baseline', key='cat1', value='ja'),
-        SingleDataItem(name_id='p2', measurement='baseline', key='num1', value=120)
+    assert rv_json['data'] == [
+        {'name_id': 'p1', 'measurement': 'baseline', 'key': 'cat1', 'value': 'ja'},
+        {'name_id': 'p2', 'measurement': 'baseline', 'key': 'num1', 'value': '120'},
     ]
+    assert rv_json['iTotalDisplayRecords'] == 2
+    assert rv_json['iTotalRecords'] == 2
 
 
 def test_get_filtered_by_measurement_data(helper_mock, test_client):
-    rv = test_client.get(
-        '/filtered_data_by_measurement',
-        json={
-            'measurements': ['baseline'],
-            'entities': ['cat1', 'num1'],
-            'pagination_info': {'offset': 1, 'limit': 2},
-            'sort_order': {'items': [{'column': 'name_id', 'direction': 'desc'}]}
-        }
-    )
+    url = '/by_measurement?columns%5B0%5D%5Bdata%5D=name_id&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc' \
+          '&start=0&length=10&table_data=%7B%22measurements%22%3A%5B%22baseline%22%2C%221%20year%20followup%22%5D%2C' \
+          '%22entities%22%3A%5B%22basis_ahf%22%5D%7D'
+
+    rv = test_client.get(url)
+    rv_json = rv.get_json()
     assert rv.status == '200 OK'
-    assert rv.get_json() == [
-        MeasurementDataItem(name_id='p1', measurement='baseline', data_by_entity_id={'cat1': 'ja', 'num1': 135}),
-        MeasurementDataItem(name_id='p2', measurement='baseline', data_by_entity_id={'cat1': 'nein', 'num1': 128})
+    assert rv_json['data'] == [
+        {'name_id': 'p1', 'measurement': 'baseline', 'cat1': 'ja', 'num1': '135', 'total': 3},
+        {'name_id': 'p2', 'measurement': 'baseline', 'cat1': 'nein', 'num1': '128', 'total': 3}
     ]
+    assert rv_json['iTotalDisplayRecords'] == 3
+    assert rv_json['iTotalRecords'] == 3
