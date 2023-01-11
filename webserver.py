@@ -119,18 +119,18 @@ def message_count():
                 )
 
 
-from medex.controller.data import data_controller
-from medex.controller.entity import entity_controller
-from medex.controller.filter import filter_controller
-from url_handlers.data import data_page
-from url_handlers.basic_stats import basic_stats_page
-from url_handlers.histogram import histogram_page
-from url_handlers.boxplot import boxplot_page
-from url_handlers.scatter_plot import scatter_plot_page
-from url_handlers.barchart import barchart_page
-from url_handlers.heatmap import heatmap_plot_page
-from url_handlers.logout import logout_page
-from url_handlers.tutorial import tutorial_page
+from medex.controller.data import data_controller  # noqa
+from medex.controller.entity import entity_controller  # noqa
+from medex.controller.filter import filter_controller  # noqa
+from url_handlers.data import data_page  # noqa
+from url_handlers.basic_stats import basic_stats_page  # noqa
+from url_handlers.histogram import histogram_page  # noqa
+from url_handlers.boxplot import boxplot_page  # noqa
+from url_handlers.scatter_plot import scatter_plot_page  # noqa
+from url_handlers.barchart import barchart_page  # noqa
+from url_handlers.heatmap import heatmap_plot_page  # noqa
+from url_handlers.logout import logout_page  # noqa
+from url_handlers.tutorial import tutorial_page  # noqa
 
 app.register_blueprint(data_page)
 app.register_blueprint(logout_page)
@@ -143,7 +143,7 @@ app.register_blueprint(barchart_page)
 app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(filter_controller, url_prefix='/filter')
 app.register_blueprint(entity_controller, url_prefix='/entity')
-app.register_blueprint(data_controller, url_prefix='/data')
+app.register_blueprint(data_controller, url_prefix='/filtered_data')
 
 
 @app.route('/_session', methods=['GET'])

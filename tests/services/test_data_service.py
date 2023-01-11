@@ -42,7 +42,7 @@ def test_data_service_simple(db_session, filter_service_mock):
         database_session=db_session,
         filter_service=filter_service_mock
     )
-    actual_result = service.get_filtered_data_flat(
+    actual_result, total = service.get_filtered_data_flat(
         entities=['diabetes'],
         measurements=['baseline'],
     )
@@ -54,7 +54,7 @@ def test_get_filtered_data_flat(db_session, filter_service_mock, setup_data):
         database_session=db_session,
         filter_service=filter_service_mock
     )
-    actual_result = service.get_filtered_data_flat(
+    actual_result, total = service.get_filtered_data_flat(
         entities=['diabetes', 'blood pressure'],
         measurements=['baseline', 'follow up1'],
         limit=3,
@@ -67,7 +67,8 @@ def test_get_filtered_data_flat(db_session, filter_service_mock, setup_data):
         )
     )
     assert actual_result == [
-        ('p2', 'baseline', 'blood pressure', 138),
-        ('p2', 'follow up1', 'blood pressure', 135),
-        ('p1', 'baseline', 'diabetes', 'nein')
+        {'key': 'blood pressure', 'measurement': 'baseline', 'name_id': 'p2', 'total': 6, 'value': '138'},
+        {'key': 'blood pressure', 'measurement': 'follow up1', 'name_id': 'p2', 'total': 6, 'value': '135'},
+        {'key': 'diabetes', 'measurement': 'baseline', 'name_id': 'p1', 'total': 6, 'value': 'nein'}
     ]
+    assert total == 6

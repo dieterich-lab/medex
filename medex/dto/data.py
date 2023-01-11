@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union
 
 from pydantic import BaseModel
 
@@ -27,8 +27,6 @@ class SortOrder(BaseModel):
 class FilteredDataRequest(BaseModel):
     measurements: List[str]
     entities: List[str]
-    pagination_info: Optional[PaginationInfo]
-    sort_order: Optional[SortOrder]
 
 
 class SingleDataItem(BaseModel):
@@ -40,6 +38,8 @@ class SingleDataItem(BaseModel):
 
 class FilteredDataFlatResponse(BaseModel):
     data: List[SingleDataItem]
+    iTotalDisplayRecords: int
+    iTotalRecords: int
 
 
 class MeasurementDataItem(BaseModel):
@@ -50,3 +50,5 @@ class MeasurementDataItem(BaseModel):
 
 class FilteredDataByMeasurementResponse(BaseModel):
     data: List[MeasurementDataItem]
+    iTotalDisplayRecords: int
+    iTotalRecords: int

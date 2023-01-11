@@ -1,40 +1,14 @@
 function display_table_with_selected_type() {
     const all_table_types = document.querySelectorAll('input[name="what_table"]');
+    const measurements = get_selected_measurements();
+    const entities = get_selected_entities();
     let selected_table;
     for (const table_type of all_table_types) {
         if (table_type.checked) {
             selected_table = table_type.value;
-            if (selected_table === 'long') {
-                get_filtered_data_flat(selected_table);
-            } else if (selected_table === 'short') {
-                get_filtered_data_by_measurement(selected_table);
-            }
+            create_datatable(selected_table, measurements, entities);
         }
     }
-}
-
-function get_filtered_data_flat(selected_table) {
-    const measurements = get_selected_measurements();
-    const entities = get_selected_entities();
-    fetch('/data/filtered_data_flat', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({'measurements': measurements, 'entities': entities})
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            create_datatable(data, selected_table)
-        })
-        .catch(error => {
-            console.log(error)
-        })
-}
-
-function get_filtered_data_by_measurement(selected_table) {
-
 }
 
 function get_selected_measurements() {
@@ -49,42 +23,55 @@ function get_selected_entities() {
     return children.filter((x) => x.selected).map((x) => x.value);
 }
 
-function create_datatable(data, selected_table) {
-    let column;
-    if (selected_table === 'long') {
-        column = [
-             {title: 'name_id'},
-             {title: 'measurement'},
-             {title: 'key'},
-             {title: 'values'}
-         ]
-    } else if (selected_table === 'short') {
-        // column = ?
+function create_datatable(selected_table, measurements, entities) {
+    const url = selected_table === 'long' ? '/filtered_data/flat' : '/filtered_data/by_measurement';
+    const column = define_table_columns(selected_table);
+    const element = $('#serverside_table');
+    if ($.fn.DataTable.isDataTable('#serverside_table')) {
+        let table = element.DataTable();
+        table.destroy();
+        element.empty();
     }
-     $('#serverside_table').DataTable({
-         destroy: true,
-         data: data,
-         Dom: 'lrtip',
-         select: {style: 'multi'},
-         scrollX: true,
-         sPaginationType: 'full_numbers',
-         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-         columns: column,
+
+    element.DataTable({
+        destroy: true,
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: url,
+            data: function (raw_data) {
+                raw_data.table_data = JSON.stringify({
+                    measurements: measurements,
+                    entities: entities,
+
+                });
+            },
+        },
+        columns: column,
+        sDom: 'lrtip',
+        select: {style: 'multi'},
+        scrollX: true,
+        sPaginationType: 'full_numbers',
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
      });
-    // const column = $('#tab').attr('column');
-    // if (column !== undefined){
-    //     const column =  JSON.parse($('#tab').attr('column').replace(/'/g, '"'));
-    //     $('#serverside_table').DataTable({
-    //         data: data,
-    //         select: {style: 'multi'},
-    //         sDom: 'lrtip',
-    //         bProcessing: true,
-    //         bServerSide: true,
-    //         scrollX: true,
-    //         sPaginationType: "full_numbers",
-    //         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    //         bjQueryUI: true,
-    //         columns: column
-    //     });
-    // }
+}
+
+function define_table_columns(selected_table) {
+    let column = [
+        {data: 'name_id', title: 'name_id'},
+        {data: 'measurement', title: 'measurement'},
+    ]
+    if (selected_table === 'long') {
+        column = column.concat([
+            {data: 'key', title: 'key'},
+            {data: 'value', title: 'value'},
+        ]);
+    } else if (selected_table === 'short') {
+        const entities = get_selected_entities();
+        const entity_columns = entities.map((x) => {
+            return {data: `${x}`, title: `${x}`};
+        });
+        column = column.concat(entity_columns);
+    }
+    return column;
 }

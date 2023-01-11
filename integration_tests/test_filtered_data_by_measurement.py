@@ -54,7 +54,7 @@ def test_get_filtered_data_by_measurement(db_session, filter_service_mock, setup
         database_session=db_session,
         filter_service=filter_service_mock
     )
-    actual_result = service.get_filtered_data_by_measurement(
+    actual_result, total = service.get_filtered_data_by_measurement(
         entities=['diabetes', 'blood pressure'],
         measurements=['baseline', 'follow up1'],
         limit=4,
@@ -68,8 +68,9 @@ def test_get_filtered_data_by_measurement(db_session, filter_service_mock, setup
         )
     )
     assert actual_result == [
-        ('p3', 'baseline', 'ja', None),
-        ('p2', 'follow up1', 'ja', 135),
-        ('p2', 'baseline', 'ja', 138),
-        ('p1', 'baseline', 'nein', 129)
+        {'blood pressure': None, 'diabetes': 'ja', 'measurement': 'baseline', 'name_id': 'p3', 'total': 5},
+        {'blood pressure': '135', 'diabetes': 'ja', 'measurement': 'follow up1', 'name_id': 'p2', 'total': 5},
+        {'blood pressure': '138', 'diabetes': 'ja', 'measurement': 'baseline', 'name_id': 'p2', 'total': 5},
+        {'blood pressure': '129', 'diabetes': 'nein', 'measurement': 'baseline', 'name_id': 'p1', 'total': 5}
     ]
+    assert total == 5
