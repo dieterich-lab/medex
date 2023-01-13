@@ -7,6 +7,7 @@ function display_table_with_selected_type() {
         if (table_type.checked) {
             selected_table = table_type.value;
             create_datatable(selected_table, measurements, entities);
+            set_url_for_download(selected_table, measurements, entities);
         }
     }
 }
@@ -43,7 +44,6 @@ function create_datatable(selected_table, measurements, entities) {
                 raw_data.table_data = JSON.stringify({
                     measurements: measurements,
                     entities: entities,
-
                 });
             },
         },
@@ -74,4 +74,23 @@ function define_table_columns(selected_table) {
         column = column.concat(entity_columns);
     }
     return column;
+}
+
+
+function set_url_for_download(selected_table, measurements, entities) {
+    const base_url = selected_table === 'long' ? '/filtered_data/flat_csv?' : '/filtered_data/by_measurement_csv?';
+    const search_params = new URLSearchParams({
+        data: JSON.stringify({
+            measurements: measurements,
+            entities: entities,
+        })
+    });
+    const url = base_url + search_params;
+
+    let div = document.getElementById('csv_download');
+    div.innerHTML = `
+        <div class="card-body">
+            <a href="${url}" class="btn btn-outline-info">Download</a>
+        </div>
+    `;
 }
