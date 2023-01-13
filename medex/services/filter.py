@@ -109,11 +109,6 @@ class FilterService:
             .with_for_update()
         )
         self._database_session.execute(
-            select(SessionFilteredNameIds)
-            .where(SessionFilteredNameIds.session_id == self._session_id)
-            .with_for_update()
-        )
-        self._database_session.execute(
             delete(SessionFilteredNameIds)
             .where(SessionFilteredNameIds.session_id == self._session_id)
         )
