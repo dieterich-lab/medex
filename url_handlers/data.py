@@ -39,7 +39,7 @@ def table_data():
 def get_data():
     return render_template('data.html',
                            all_entities=all_entities,
-                           measurement = [all_measurement[0]])
+                           measurement=[all_measurement[0]])
 
 
 @data_page.route('/data', methods=['POST'])
