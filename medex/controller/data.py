@@ -1,6 +1,8 @@
+import csv
 import json
+import io
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_file
 
 from medex.controller.helpers import get_data_service
 from medex.dto.data import FilteredDataRequest, SortOrder, SortDirection, SortItem, FilteredDataFlatResponse
@@ -67,3 +69,46 @@ def _get_sort_order(sort_column_idx, sort_direction) -> SortOrder:
         ]
     )
     return sort_order
+
+
+@data_controller.route('/flat_csv', methods=['GET'])
+def get_filtered_data_flat_csv():
+    data_service = get_data_service()
+    args = request.args
+    filtered_data_request = FilteredDataRequest.parse_obj(json.loads(args.get('data')))
+    result, total = data_service.get_filtered_data_flat(
+        filtered_data_request.measurements,
+        filtered_data_request.entities,
+    )
+    buf_byt = _get_dict_to_csv(result)
+    return send_file(buf_byt,
+                     mimetype="text/csv",
+                     as_attachment=True,
+                     download_name='filtered_data_flat.csv')
+
+
+@data_controller.route('/by_measurement_csv', methods=['GET'])
+def get_filtered_data_by_measurement_csv():
+    data_service = get_data_service()
+    args = request.args
+    filtered_data_request = FilteredDataRequest.parse_obj(json.loads(args.get('data')))
+    result, total = data_service.get_filtered_data_by_measurement(
+        filtered_data_request.measurements,
+        filtered_data_request.entities,
+    )
+    buf_byt = _get_dict_to_csv(result)
+    return send_file(buf_byt,
+                     mimetype="text/csv",
+                     as_attachment=True,
+                     download_name='filtered_data_by_measurement_.csv')
+
+
+def _get_dict_to_csv(result):
+    field_names = [key for key in result[0].keys()]
+    with io.StringIO() as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=field_names)
+        writer.writeheader()
+        writer.writerows(result)
+        data = csvfile.getvalue()
+    buf_byt = io.BytesIO(data.encode("utf-8"))
+    return buf_byt
