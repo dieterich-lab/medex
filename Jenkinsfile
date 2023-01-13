@@ -25,7 +25,7 @@ pipeline {
                 sh '''
                     . ./venv/bin/activate
                     export PYTHONPATH=$(pwd)
-                    pytest --junitxml results.xml tests
+                    pytest --junitxml results.xml tests --cov=medex --cov-report xml
                 '''
             }
         }
@@ -33,6 +33,7 @@ pipeline {
     post {
         always {
             junit 'results.xml'
+            cobertura coberturaReportFile: 'coverage.xml'
         }
         failure {
             emailext to: "medex@dieterichlab.org",
