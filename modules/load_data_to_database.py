@@ -111,7 +111,7 @@ def _validate_date(x):
         raise ImportValidationError(f"Value '{x} is not a Date in format YYYY-MM-DD!")
 
 
-def _validate_categorical():
+def _validate_categorical(x):
     pass
 
 
