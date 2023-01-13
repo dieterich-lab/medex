@@ -38,7 +38,8 @@ def table_data():
 @data_page.route('/data', methods=['GET'])
 def get_data():
     return render_template('data.html',
-                           all_entities=all_entities)
+                           all_entities=all_entities,
+                           measurement = [all_measurement[0]])
 
 
 @data_page.route('/data', methods=['POST'])

@@ -20,7 +20,7 @@ def load_entities(entities):
     db_session = get_db_session()
     stmt = insert(NameType)
     with open(entities, 'r', encoding="utf8") as in_file:
-        column_list = next(in_file).split(',')
+        column_list = [x.strip() for x in next(in_file).split(',')]
         if 'orders' not in column_list:
             add_index_flag = True
             column_list.insert(0, 'orders')
@@ -47,10 +47,10 @@ def _get_entity_dict_from_row(row, add_index_flag, index, column_list):
     items = [x.strip() for x in row.split(',')]
     if add_index_flag:
         items.insert(0, str(index))
-    items = items + [''] * (7 - len(items))
+    items = items + [''] * (len(column_list) - len(items))
     return {
         column_list[i]: items[i]
-        for i in range(7)
+        for i in range(len(column_list))
     }
 
 
@@ -111,7 +111,7 @@ def _validate_date(x):
         raise ImportValidationError(f"Value '{x} is not a Date in format YYYY-MM-DD!")
 
 
-def _validate_categorical():
+def _validate_categorical(x):
     pass
 
 
