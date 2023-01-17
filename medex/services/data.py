@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import union, select, and_, desc, literal_column, func, case, cast, String, Date, Float
+from sqlalchemy import union, select, and_, desc, literal_column, func, case, cast, String
 from sqlalchemy.orm import query
 
 from medex.dto.data import SortOrder
@@ -81,9 +81,6 @@ class DataService:
             ])).label(i)
             for i in entities
         ]
-        # case_when = []
-        # for entity in entities:
-        #     case_when.append(self._get_valid_case_for_entity(entity, query_group_by))
 
         query_select = (
             select(query_group_by.c.name_id, query_group_by.c.measurement, *case_when)
@@ -91,19 +88,6 @@ class DataService:
         )
 
         return query_select
-
-    def _get_valid_case_for_entity(self, entity, query_group_by):
-        db = self._database_session
-        entity_list_numeric = db.execute(select(TableNumerical.key).distinct()).all()
-        entity_list_numeric = [i[0] for i in entity_list_numeric]
-        entity_list_date = db.execute(select(TableDate.key).distinct()).all()
-        entity_list_date = [i[0] for i in entity_list_date]
-        if entity in entity_list_numeric:
-            return func.min(case([(query_group_by.c.key == entity, cast(query_group_by.c.value, Float))])).label(entity)
-        elif entity in entity_list_date:
-            return func.min(case([(query_group_by.c.key == entity, cast(query_group_by.c.value, Date))])).label(entity)
-        else:
-            return func.min(case([(query_group_by.c.key == entity, query_group_by.c.value)])).label(entity)
 
     @staticmethod
     def _get_ordered_data(query_select, sort_order) -> query:
