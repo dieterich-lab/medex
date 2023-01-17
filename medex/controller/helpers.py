@@ -4,6 +4,7 @@ from flask import session
 from medex.dto.filter import FilterStatus
 from medex.services.data import DataService
 from medex.services.database import get_db_session
+from medex.services.scatter_plot import ScatterPlotService
 from medex.services.session import SessionService
 from medex.services.filter import FilterService
 from medex.services.entity import EntityService
@@ -52,3 +53,9 @@ def get_data_service():
     database_session = get_db_session()
     filter_service = get_filter_service()
     return DataService(database_session, filter_service)
+
+
+def get_scatter_plot_service():
+    database_session = get_db_session()
+    filter_service = get_filter_service()
+    return ScatterPlotService(database_session, filter_service)

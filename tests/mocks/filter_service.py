@@ -31,7 +31,7 @@ class FilterServiceMock(FilterService):
         del self._filter_status.filters[entity]
 
     def apply_filter(self, table, query: Query) -> Query:
-        raise NotImplemented()
+        return query
 
     def apply_filter_to_complex_query(self, query: Query) -> Query:
         return query

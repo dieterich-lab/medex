@@ -23,6 +23,7 @@ register = "*"
 alembic = "*"
 pydantic = "*"
 flask-sqlalchemy = "*"
+kaleido = "*"
 
 [dev-packages]
 pylint = "*"
