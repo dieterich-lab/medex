@@ -27,3 +27,4 @@ def db_session():
             print(f"Postgres not responding - retying ({retry_count})")
             sleep(1)
     yield session
+    session.close()
