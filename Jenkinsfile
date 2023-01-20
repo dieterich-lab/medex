@@ -16,7 +16,7 @@ pipeline {
             steps {
                 sh '''
                     . ./venv/bin/activate
-                    flake8 medex url_handlers modules serverside webserver.py --max-line-length 140
+                    flake8 medex url_handlers modules webserver.py --max-line-length 140
                 '''
             }
         }
