@@ -1,17 +1,14 @@
-from flask import Flask, send_file, request, redirect, session, send_from_directory
+import os
+import requests
+from flask import Flask, request, redirect, session, send_from_directory
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-
-from medex.controller.helpers import get_filter_service, init_controller_helper
+import modules.load_data_to_select as ps
+import url_handlers.filtering as filtering
+from medex.controller.helpers import init_controller_helper
+from medex.services.database import get_db_session, get_database_url, init_db
 from medex.services.scheduler import Scheduler
 from modules.import_data import start_import
-from medex.services.database import get_db_session, get_database_url, init_db
-import modules.load_data_to_select as ps
-from modules.get_data_to_table_browser import get_data_download
-import url_handlers.filtering as filtering
-from flask_cors import CORS
-import requests
-import os
-import io
 
 # create the application object
 app = Flask(__name__)
@@ -162,40 +159,6 @@ def get_cases():
 @app.route('/', methods=['GET'])
 def login_get():
     return redirect('/data')
-
-
-@app.route("/download/<path:filename>", methods=['GET', 'POST'])
-def download(filename):
-    session_db = get_db_session()
-    filter_service = get_filter_service()
-    if filename == 'basic_stats_data.csv':
-        csv = session.get('basic_stats_table')
-    elif filename == 'table_browser_data.csv':
-        table_browser = session.get('table_browser')
-        date_filter = session.get('date_filter')
-        csv = get_data_download(table_browser, date_filter, filter_service, session_db)
-    # elif filename == 'case_ids.csv':
-    #     csv = get_case_ids(session_db)
-    else:
-        csv = ''
-    # Create a bytes buffer from the string buffer
-    buf_str = io.StringIO(csv)
-    buf_byt = io.BytesIO(buf_str.read().encode("utf-8"))
-    return send_file(buf_byt,
-                     mimetype="text/csv",
-                     as_attachment=True,
-                     download_name=filename)
-
-
-def create_string():
-    string = 'date range:' + str(session.get('date_filter')[3]) + ' ' + str(session.get('date_filter')[4]) + '\n' + \
-             'Filters: ' + '\n' + 'categorical ' + str(session.get('filtering')['filter_cat']) + '\n' + \
-             'numerical: ' + str(session.get('filtering')['filter_num']) + '\n' + \
-             'selected values:' + '\n' + \
-             'Visits: ' + str(session.get('table_browser')[1]) + '\n' + \
-             'entities: ' + str(session.get('table_browser')[0]) + '\n' + \
-             'Table: ' + str(session.get('table_browser')[2])
-    return string
 
 
 def main():

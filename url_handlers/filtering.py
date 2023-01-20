@@ -27,12 +27,3 @@ def check_for_date_filter_post(start_date, end_date):
 
     session['date_filter'] = (date[0], date[1], date_filter, s_date, e_date)
     return session.get('date_filter')
-
-
-def checking_for_block(block, df, name_id, measurement_name):
-    if block == 'none':
-        df = df.drop(columns=['measurement'])
-        df = df.rename(columns={"Name_ID": "{}".format(name_id)})
-    else:
-        df = df.rename(columns={"Name_ID": "{}".format(name_id), "measurement": "{}".format(measurement_name)})
-    return df
