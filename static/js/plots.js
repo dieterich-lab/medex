@@ -20,9 +20,9 @@ function display_scatter_plot() {
 }
 
 function get_svg_download() {
-    const search_params = get_search_params();
+    const result = get_search_params();
     const base_uri = '/plot/scatter_plot/download?';
-    const uri = base_uri + search_params;
+    const uri = base_uri + result.search_params;
     let div = document.getElementById('svg_download');
     div.innerHTML = `
         <div class="card-body">
