@@ -1,7 +1,5 @@
 import json
-
 from flask import Blueprint, request, make_response
-
 from medex.controller.helpers import get_scatter_plot_service
 from medex.dto.scatter_plot import ScatterPlotDataRequest
 
@@ -29,7 +27,6 @@ def get_scatter_plot_svg_for_download():
 def _get_parsed_request():
     args = request.args
     data = args.get('scatter_plot_data')
-    json_string = data.replace("'", "\"")
-    json_data = json.loads(json_string)
+    json_data = json.loads(data)
     scatter_plot_request = ScatterPlotDataRequest.parse_obj(json_data)
     return scatter_plot_request

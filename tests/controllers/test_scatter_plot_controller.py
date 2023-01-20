@@ -1,7 +1,6 @@
+from urllib.parse import urlencode
 import pytest
 from flask import Flask
-from urllib.parse import urlencode
-
 from medex.controller.scatter_plot import scatter_plot_controller
 from tests.mocks.scatter_plot_service import ScatterPlotServiceMock
 
@@ -32,6 +31,7 @@ def test_get_image_json(test_client, helper_mock):
     }
     query_string = urlencode(request_dict)
     url = '/scatter_plot/json?' + query_string
+    url = url.replace('%27', '%22')
     rv = test_client.get(url)
     assert rv.status == '200 OK'
 
@@ -47,5 +47,6 @@ def test_get_svg_download(test_client, helper_mock):
     }
     query_string = urlencode(request_dict)
     url = '/scatter_plot/download?' + query_string
+    url = url.replace('%27', '%22')
     rv = test_client.get(url)
     assert rv.status == '200 OK'
