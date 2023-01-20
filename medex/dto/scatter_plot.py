@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -21,9 +21,13 @@ class DateRange(BaseModel):
 
 class ScatterPlotDataRequest(BaseModel):
     measurement_x_axis: str
-    key_x_axis: str
+    entity_x_axis: str
     measurement_y_axis: str
-    key_y_axis: str
+    entity_y_axis: str
     scale: Optional[ScaleScatterPlot]
     add_group_by: Optional[GroupByCategoricalEntity]
     date_range: Optional[DateRange]
+
+
+def convert_date_to_string(dt: datetime) -> str:
+    return dt.strftime('%Y-%m-%d')

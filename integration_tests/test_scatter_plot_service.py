@@ -1,7 +1,5 @@
-import io
-
 import pytest
-from medex.dto.scatter_plot import DateRange, GroupByCategoricalEntity, ScaleScatterPlot
+from medex.dto.scatter_plot import DateRange, GroupByCategoricalEntity, ScaleScatterPlot, ScatterPlotDataRequest
 from medex.services.scatter_plot import ScatterPlotService
 from modules.models import TableCategorical, TableNumerical, NameType
 from tests.mocks.filter_service import FilterServiceMock
@@ -53,14 +51,14 @@ def test_scatter_plot_service(db_session, filter_service_mock, setup_scatter_plo
         database_session=db_session,
         filter_service=filter_service_mock
     )
-    figure = service.get_scatter_plot(
+    scatter_plot_data = ScatterPlotDataRequest(
         measurement_x_axis='baseline',
         entity_x_axis='blood_pressure',
         measurement_y_axis='baseline',
         entity_y_axis='temperature',
         scale=ScaleScatterPlot(log_x=True, log_y=False),
         date_range=DateRange(from_date='2021-05-15', to_date='2021-06-23'),
-        add_group_by=GroupByCategoricalEntity(key='diabetes', categories=['ja', 'nein'])
-    )
-
-    assert type(figure) == bytes
+        add_group_by=GroupByCategoricalEntity(key='diabetes', categories=['ja', 'nein']))
+    figure = service.get_image_svg(scatter_plot_data)
+    byte_string = figure.decode('utf-8')
+    assert byte_string.find('<svg')

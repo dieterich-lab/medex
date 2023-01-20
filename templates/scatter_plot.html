@@ -1,107 +1,77 @@
 {% extends "layout.html" %}
 {% block body %}
-<form action="" method="POST">
-    <div id="menu">
-        {% include 'sidebar.html' %}
-    </div>
-    {# imports #}
-    {# our own js #}
-    <script src="{{ url_for('static', filename='js/plots_plotly.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
+
+<script type="module" src="{{ url_for('static', filename='js/scatter_plot.js') }}" xmlns="http://www.w3.org/1999/html"></script>
 
 
-    {# plotly and jquery #}
-    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+<div id="menu">
+    {% include 'sidebar.html' %}
+</div>
+{# imports #}
+{# our own js #}
+<script src="{{ url_for('static', filename='js/plots_plotly.js') }}"></script>
+<script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
+<script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plots.js') }}"></script>
 
-    {# pretty multiselect inputs #}
-    <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
-    <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/scatter_plot.js') }}"></script>
 
-    {# end of imports #}
-    <div id="content">
-        <div class="card">
-            <div class="card-header" id="settings_header">
-                <h5 class="mb-0">
-                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
-                            aria-expanded="true" aria-controls="settings">
-                        Settings
-                    </button>
+{# plotly and jquery #}
+<script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
 
-                </h5>
-            </div>
-            <div id="settings" class="collapse show "
-                 aria-labelledby="c_settings_header" data-parent="#accordion">
-                <div class="card-body">
-                    {% import 'macro_template.html' as m %}
+{# pretty multiselect inputs #}
+<link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
+<script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
-                    {% if error %}
-                    {{ m.show_error(error) }}
-                    {% endif %}
+{# end of imports #}
+<div id="content">
+    <div class="card">
+        <div class="card-header" id="settings_header">
+            <h5 class="mb-0">
+                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                        aria-expanded="true" aria-controls="settings">
+                    Settings
+                </button>
 
-                    {{ m.entity_form_single_measurement(id_single_measurement= "x_measurement",name =
-                    measurement_tuple[0],value=entity,select=x_measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
-                    <div class="form-group">
-                        <label for="scatter_plot_x_axis_numerical_entities_select">X axis:</label>
-                        <select id="scatter_plot_x_axis_numerical_entities_select" name="x_axis" style="width: 100%" class="js-example-basic-single"
-                                data-entity-types="Double"
-                        >
-                        </select>
-                    </div>
-                    {{ m.entity_form_single_measurement(id_single_measurement= "y_measurement",name =
-                    measurement_tuple[0],value=entity,select=y_measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
-                    <div class="form-group">
-                        <label for="scatter_plot_y_axis_numerical_entities_select">Y axis:</label>
-                        <select id="scatter_plot_y_axis_numerical_entities_select" name="y_axis" multiple style="width: 100%" class="js-example-basic-single"
-                                data-entity-types="Double"
-                        >
-                        </select>
-                    </div>
+            </h5>
+        </div>
+        <div id="settings" class="collapse show "
+             aria-labelledby="c_settings_header" data-parent="#accordion">
+            <div class="card-body">
+                <div id="error">
+                </div>
+                {% import 'macro_template.html' as m %}
 
-                    <label>Scale</label>
-                    <table>
-                        <tr>
-                            <td>
-                                <div class="custom-control custom-radio">
-                                    <input type="radio" class="custom-control-input" id="linear" name="how_to_plot"
-                                           value="linear"
-                                           {% if how_to_plot=="linear" or not how_to_plot %}checked{% endif %}>
-                                    <label class="custom-control-label" for="linear">linear</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="custom-control custom-radio">
-                                    <input type="radio" class="custom-control-input" id="log" name="how_to_plot"
-                                           value="log"
-                                           {% if how_to_plot=="log" %} checked {% endif %}>
-                                    <label class="custom-control-label" for="log">log</label>
-                                </div>
-                            </td>
-                            <td>
+                {{ m.entity_form_single_measurement(id_single_measurement= "x_measurement",name =
+                measurement_tuple[0],value=entity,select=x_measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                <div class="form-group">
+                    <label for="scatter_plot_x_axis_numerical_entities_select">X axis:</label>
+                    <select id="scatter_plot_x_axis_numerical_entities_select" name="x_axis" style="width: 100%" class="js-example-basic-single"
+                            data-entity-types="Double"
+                    >
+                    </select>
+                </div>
+                {{ m.entity_form_single_measurement(id_single_measurement= "y_measurement",name =
+                measurement_tuple[0],value=entity,select=y_measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                <div class="form-group">
+                    <label for="scatter_plot_y_axis_numerical_entities_select">Y axis:</label>
+                    <select id="scatter_plot_y_axis_numerical_entities_select" name="y_axis" multiple style="width: 100%" class="js-example-basic-single"
+                            data-entity-types="Double"
+                    >
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Scale:</label>
+                    <input id="log_x" type="checkbox" name="log_x" value="log_x">
+                    <label for="log_x">log_x</label>&nbsp
+                    <input id="log_y" type="checkbox" name="log_y" value="log_y">
+                    <label for="log_y">log_y</label>
+                </div>
 
-                                <div class="form-check mt-4" id="log2">
-                                    <input class="form-check-input" type="checkbox" name="log_x" value="log_x"
-                                           id="log_x"
-                                           {% if how_to_plot=="log" and log[0] %} checked {% endif %}>
-                                    <label class="form-check-label" for="log_x">log x</label><br/>
-                                    <input class="form-check-input" type="checkbox" name="log_y" value="log_y"
-                                           id="log_y"
-                                           {% if how_to_plot=="log" and log[1] %} checked {% endif %}>
-                                    <label class="form-check-label" for="log_y">log y</label>
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
-
-                    <div class="form-check mt-4">
-                        <input class="form-check-input" type="checkbox" value="true" id="add_group_by"
-                               name="add_group_by"
-                               {% if add_group_by %} checked {% endif %}>
-                        <label class="form-check-label" for="add_group_by">Add grouping by categorical value</label>
-                    </div>
+                <div class="form-group">
+                    <input type="checkbox" value="true" id="add_group_by" name="add_group_by">
+                    <label for="add_group_by">Add grouping by categorical value</label>
                     <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox"
-                         value="true" style="width: 100%">
+                         style="width: 100%">
 
                         <div class="form-group" style="width: 100%">
                             <label for="scatter_plot_categorical_entities_select">Group by:</label>
@@ -112,35 +82,34 @@
                         </div>
 
                         <div class="tooltips" title="Please select category and next subcategory">
-                            <label>Subcategory: </label>
-                            <select style="width: 100%" multiple id="subcategory_entities" class="subcategory_entities"
-                                    name="subcategory_entities" class="form-control">
+                            <label for="subcategory_entities">Subcategory: </label>
+                            <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control">
                             </select>
                         </div>
                     </div>
-                    <button id="Result" name="scatter_plot" class="btn btn-outline-info">Result</button>
                 </div>
-            </div>
-        </div>
 
-        <div class="card-header" id="results_header">
-            <h5 class="mb-0">
-                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                        {% if x_measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
-                    Results
+                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="display_scatter_plot()"
+                >
+                    Result
                 </button>
-            </h5>
-        </div>
-        <div id="numeric_results" class="collapse {% if x_measurement %} show {% endif %}"
-             aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-            <div class="card-body">
-                {% if plot %}
-                <div id="scatter_plot" >
-                    {{plot | safe}}
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
-</form>
+
+    <div class="card-header" id="results_header">
+        <h5 class="mb-0">
+            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                    {% if x_measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                Results
+            </button>
+        </h5>
+    </div>
+    <div id="numeric_results" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+        <div id="svg_download">
+        </div>
+        <div id="scatter_plot">
+        </div>
+    </div>
+</div>
 {% endblock %}
