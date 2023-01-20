@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request, send_file
+from flask import Blueprint, request, make_response
 
 from medex.controller.helpers import get_scatter_plot_service
 from medex.dto.scatter_plot import ScatterPlotDataRequest
@@ -8,18 +8,28 @@ from medex.dto.scatter_plot import ScatterPlotDataRequest
 scatter_plot_controller = Blueprint('scatter_plot_controller', __name__)
 
 
-@scatter_plot_controller.route('/scatter_plot', methods=['GET'])
-def get_scatter_plot():
+@scatter_plot_controller.route('/scatter_plot/json', methods=['GET'])
+def get_scatter_plot_json():
     scatter_plot_service = get_scatter_plot_service()
+    scatter_plot_request = _get_parsed_request()
+    image_json = scatter_plot_service.get_image_json(scatter_plot_request)
+    return image_json
+
+
+@scatter_plot_controller.route('/scatter_plot/download', methods=['GET'])
+def get_scatter_plot_svg_for_download():
+    scatter_plot_service = get_scatter_plot_service()
+    scatter_plot_request = _get_parsed_request()
+    image_data = scatter_plot_service.get_image_svg(scatter_plot_request)
+    response = make_response(image_data)
+    response.headers.set('content-type', 'attachment')
+    return response
+
+
+def _get_parsed_request():
     args = request.args
-    scatter_plot_request = ScatterPlotDataRequest.parse_obj(json.loads(args.get('scatter_plot_data')))
-    figure = scatter_plot_service.get_scatter_plot(
-        scatter_plot_request.measurement_x_axis,
-        scatter_plot_request.key_x_axis,
-        scatter_plot_request.measurement_y_axis,
-        scatter_plot_request.key_y_axis,
-        scatter_plot_request.date_range,
-        scatter_plot_request.scale,
-        scatter_plot_request.add_group_by
-    )
-    return send_file(figure, mimetype='image/svg')
+    data = args.get('scatter_plot_data')
+    json_string = data.replace("'", "\"")
+    json_data = json.loads(json_string)
+    scatter_plot_request = ScatterPlotDataRequest.parse_obj(json_data)
+    return scatter_plot_request
