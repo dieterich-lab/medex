@@ -115,6 +115,7 @@ def message_count():
                 limit_offset=session.get('limit_offset')
                 )
 
+from medex.controller.barchart import barchart_controller # noqa
 from medex.controller.scatter_plot import scatter_plot_controller # noqa
 from medex.controller.data import data_controller  # noqa
 from medex.controller.entity import entity_controller  # noqa
@@ -142,6 +143,7 @@ app.register_blueprint(filter_controller, url_prefix='/filter')
 app.register_blueprint(entity_controller, url_prefix='/entity')
 app.register_blueprint(data_controller, url_prefix='/filtered_data')
 app.register_blueprint(scatter_plot_controller, url_prefix='/plot')
+app.register_blueprint(barchart_controller, url_prefix='/plot')
 
 
 @app.route('/_session', methods=['GET'])

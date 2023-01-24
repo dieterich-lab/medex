@@ -1,103 +1,91 @@
 {% extends "layout.html" %}
 {% block body %}
-<form action="" method="POST">
-    <div id="menu">
-        {% include 'sidebar.html' %}
-    </div>
-    {# imports #}
-    {# our own js #}
-    <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
 
-    {# plotly and jquery #}
-    <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/barchart.js') }}"></script>
+
+<div id="menu">
+    {% include 'sidebar.html' %}
+</div>
+{# imports #}
+{# our own js #}
+<script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
+
+{# plotly and jquery #}
+<script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
 
 
-    {# pretty multiselect inputs #}
-    <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
-    <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/barchart.js') }}"></script>
+{# pretty multiselect inputs #}
+<link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
+<script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plots/barchart.js') }}"></script>
 
-    {# end of imports #}
-    <div id="content">
-        <div class="card">
-            <div class="card-header" id="settings_header">
-                <h5 class="mb-0">
-                    <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
-                            aria-expanded="true" aria-controls="settings">
-                        Settings
-                    </button>
-                </h5>
-            </div>
-            <div id="settings" class="collapse show" aria-labelledby="c_settings_header" data-parent="#accordion">
-                <div class="card-body">
-                    {% import 'macro_template.html' as m %}
 
-                    {% if error %}
-                    {{ m.show_error(error) }}
-                    {% endif %}
-
-                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name
-                    =measurement_tuple[0],class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
-                    <div class="form-group">
-                        <label for="barchart_categorical_entities_select">Group by:</label>
-                        <select id="barchart_categorical_entities_select" name="categorical_entities" style="width: 100%" class="js-example-basic-single"
-                                data-entity-types="String"
-                        >
-                        </select>
-                    </div>
-
-                    <div class="tooltips" title="Please select category and next subcategory">
-                        <label>Subcategory: </label>
-                        <select multiple id="subcategory_entities" class="subcategory_entities"
-                                name="subcategory_entities"  style="width: 100%">
-                        </select>
-                    </div>
-                    <div class="card-body">
-                        <label>Show in: </label>
-                        <table>
-                            <tr>
-                                <td>
-                                    <div class="custom-control custom-radio">
-                                        <input type="radio" class="custom-control-input" id="count" name="how_to_plot"
-                                               value="count"
-                                               {% if how_to_plot=="count" %}checked{% endif %}>
-                                        <label class="custom-control-label" for="count">count</label>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="custom-control custom-radio">
-                                        <input type="radio" class="custom-control-input" id="%" name="how_to_plot"
-                                               value="%"
-                                               {% if how_to_plot=="%" or not how_to_plot %}checked{% endif %}>
-                                        <label class="custom-control-label" for="%">%</label>
-                                    </div>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <button id="Result" name="barchart" class="btn btn-outline-info" >Result</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-header" id="results_header">
+{# end of imports #}
+<div id="content">
+    <div class="card">
+        <div class="card-header" id="settings_header">
             <h5 class="mb-0">
-                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                        {% if barchart %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
-                    Results
+                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                        aria-expanded="true" aria-controls="settings">
+                    Settings
                 </button>
             </h5>
         </div>
-        <div id="numeric_results" class="collapse {% if plot %} show {% endif %}" aria-labelledby="n_results_header"
-             data-parent="#numeric_accordion">
+        <div id="settings" class="collapse show" aria-labelledby="c_settings_header" data-parent="#accordion">
             <div class="card-body">
-                {% if plot %}
-                <div class="chart" id="barchart">
-                    {{plot | safe}}
+                <div id="error_barchart">
                 </div>
+                {% import 'macro_template.html' as m %}
+
+                {% if error %}
+                {{ m.show_error(error) }}
                 {% endif %}
+
+                {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name
+                =measurement_tuple[0],class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                <div class="form-group">
+                    <label for="barchart_categorical_entities_select">Group by:</label>
+                    <select id="barchart_categorical_entities_select" name="categorical_entities" style="width: 100%" class="js-example-basic-single"
+                            data-entity-types="String"
+                    >
+                    </select>
+                </div>
+
+                <div class="form-group" title="Please select category and next subcategory">
+                    <label>Subcategory: </label>
+                    <select multiple id="subcategory_entities" class="subcategory_entities"
+                            name="subcategory_entities"  style="width: 100%">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Show in: </label>
+                    <div class="custom-control custom-radio">
+                        <input id="percent" type="radio" class="custom-control-input" name="plot_type" value="percent" checked="checked">
+                        <label for="percent" class="custom-control-label">%</label>&nbsp
+                    </div>
+                    <div class="custom-control custom-radio">
+                        <input type="radio" id="count" class="custom-control-input" name="plot_type" value="count">
+                        <label for="count" class="custom-control-label">count</label>
+                    </div>
+                </div>
+                <button id="Result" name="barchart" class="btn btn-outline-info" onclick="display_barchart()">Result</button>
             </div>
         </div>
     </div>
-</form>
+
+    <div class="card-header" id="results_header">
+        <h5 class="mb-0">
+            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+                    {% if barchart %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                Results
+            </button>
+        </h5>
+    </div>
+    <div id="numeric_results" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+        <div id="barchart_svg_download">
+        </div>
+        <div id="barchart">
+        </div>
+    </div>
+</div>
 {% endblock %}
