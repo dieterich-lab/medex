@@ -2,6 +2,7 @@ import os
 from flask import session
 
 from medex.dto.filter import FilterStatus
+from medex.services.barchart import BarChartService
 from medex.services.data import DataService
 from medex.services.database import get_db_session
 from medex.services.scatter_plot import ScatterPlotService
@@ -59,3 +60,9 @@ def get_scatter_plot_service():
     database_session = get_db_session()
     filter_service = get_filter_service()
     return ScatterPlotService(database_session, filter_service)
+
+
+def get_barchart_service():
+    database_session = get_db_session()
+    filter_service = get_filter_service()
+    return BarChartService(database_session, filter_service)
