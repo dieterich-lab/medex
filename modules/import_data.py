@@ -11,7 +11,7 @@ class ImportSettings:
     Class which create file dev_import necessary to import data.
     Inside the file we have two unique cods for files dataset and entities.
     The codes change every time we change anything in the files dataset and entities.
-    If the codes has been changed the program loads new data.
+    If the codes have been changed the program loads new data.
     More about th code : https://www.computerhope.com/unix/sha512sum.htm
     """
     def __init__(self):
@@ -30,7 +30,8 @@ class ImportSettings:
         self.config.set('hashes', 'dataset', "")
         self.config.set('hashes', 'date', "")
 
-    def get_hash(self, path):
+    @staticmethod
+    def get_hash(path):
         return os.popen(f"sha512sum {path}").read().split(' ')[0]
 
     def update(self, entities_path, dataset_path):
