@@ -70,7 +70,6 @@ def favicon():
 @app.context_processor
 def data_information():
     database = '{} data'.format(os.environ['POSTGRES_DB'])
-
     len_numeric = 'number of numerical entities: ' + length[0]
     size_numeric = 'the size of the numeric table: ' + str(size_num_tab) + ' rows'
     len_categorical = 'number of categorical entities: ' + length[1]
