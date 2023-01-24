@@ -3,7 +3,6 @@
 
 <script type="module" src="{{ url_for('static', filename='js/scatter_plot.js') }}" xmlns="http://www.w3.org/1999/html"></script>
 
-
 <div id="menu">
     {% include 'sidebar.html' %}
 </div>
@@ -12,7 +11,7 @@
 <script src="{{ url_for('static', filename='js/plots_plotly.js') }}"></script>
 <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
 <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
-<script src="{{ url_for('static', filename='js/plots.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plots/scatter_plot.js') }}"></script>
 
 
 {# plotly and jquery #}
@@ -37,7 +36,7 @@
         <div id="settings" class="collapse show "
              aria-labelledby="c_settings_header" data-parent="#accordion">
             <div class="card-body">
-                <div id="error">
+                <div id="error_scatter_plot">
                 </div>
                 {% import 'macro_template.html' as m %}
 
