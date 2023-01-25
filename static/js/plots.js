@@ -46,11 +46,15 @@ function get_search_params() {
         log_x: !!document.querySelector('input[name="log_x"]').checked,
         log_y: !!document.querySelector('input[name="log_y"]').checked
     };
-    const add_group_by = {
-        key: document.getElementById('scatter_plot_categorical_entities_select').value,
-        categories: get_categories()
-    };
-    let error = perform_error_handling(entity_x_axis, entity_y_axis, add_group_by);
+    let add_group_by;
+    if (document.querySelector('input[name="add_group_by"]').checked) {
+        add_group_by = {
+            key: document.getElementById('scatter_plot_categorical_entities_select').value,
+            categories: get_categories()
+        };
+    }
+
+    let error = perform_error_handling(entity_x_axis, entity_y_axis, add_group_by, measurement_x_axis, measurement_y_axis);
     const search_parameter_string = get_parameter_string(measurement_x_axis, entity_x_axis, measurement_y_axis, entity_y_axis,
                                                         date_dict, scale, add_group_by);
     return {
@@ -65,14 +69,14 @@ function get_categories() {
     return children.filter((x) => x.selected).map((x) => x.value);
 }
 
-function perform_error_handling(entity_x_axis, entity_y_axis, add_group_by) {
+function perform_error_handling(entity_x_axis, entity_y_axis, add_group_by, measurement_x_axis, measurement_y_axis) {
     let group_by = !!document.querySelector('input[name="add_group_by"]').checked;
     if (!is_valid_entity(entity_x_axis)) {
         return "Please select x_axis";
     } else if (!is_valid_entity(entity_y_axis)) {
         return "Please select y_axis";
-    } else if (entity_x_axis === entity_y_axis) {
-        return "You can't compare the same entity";
+    } else if (entity_x_axis === entity_y_axis && measurement_x_axis === measurement_y_axis) {
+        return "You can't compare same entity for the same visit";
     } else if (group_by && !is_valid_entity(add_group_by.key)) {
         return "Please select 'group by' entity";
     } else if (group_by && !add_group_by.categories.length) {
