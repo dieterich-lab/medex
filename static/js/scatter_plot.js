@@ -20,9 +20,6 @@ async function init() {
         'scatter_plot_categorical_entities_select', [],
         false, false
     );
-    if (!document.getElementById('subcategory_entities')) {
-        return;
-    }
     configure_category_selection('subcategory_entities', entity_placeholder);
     document.getElementById('scatter_plot_categorical_entities_select').onchange = (async () => {
         let element = document.getElementById('scatter_plot_categorical_entities_select');
@@ -33,5 +30,3 @@ async function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
-
-export {init};
