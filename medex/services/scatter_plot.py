@@ -63,7 +63,7 @@ class ScatterPlotService:
 
     @staticmethod
     def _get_group_by(add_group_by, query_with_filter):
-        if add_group_by.key != 'Search Entity':
+        if add_group_by:
             query_with_filter = select(
                 query_with_filter.c.name_id,
                 func.avg(query_with_filter.c.value1).label('value1'),
@@ -110,7 +110,7 @@ class ScatterPlotService:
 
     @staticmethod
     def _add_trace_to_figure(add_group_by, df, fig, x_axis, y_axis):
-        if add_group_by.key != 'Search Entity':
+        if add_group_by:
             for category in add_group_by.categories:
                 df_new = df[df[add_group_by.key] == category]
                 fig.add_trace(
