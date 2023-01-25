@@ -1,24 +1,24 @@
 {% extends "layout.html" %}
 {% block body %}
 
-{# imports #}
-{# our own js #}
-<script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
-<script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
-
-{# pretty multiselect inputs #}
-<link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
-<script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/basic_stats_numerical.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/basic_stats_categorical.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/basic_stats_date.js') }}"></script>
-
-{# end of imports #}
-
 <form action="" method="POST">
+    <script type="module" src="{{ url_for('static', filename='js/basic_stats_numerical.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/basic_stats_categorical.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/basic_stats_date.js') }}"></script>
+
     <div id="menu">
         {% include 'sidebar.html' %}
     </div>
+
+    {# imports #}
+    {# our own js #}
+    <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
+
+    {# pretty multiselect inputs #}
+    <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+
+    {# end of imports #}
     <div id="content">
         {# navigation controls #}
         <ul class="nav nav-tabs" id="statistics_tab" role="tablist">

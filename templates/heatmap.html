@@ -1,5 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
+
+<form action="" method="POST">
+    <script type="module" src="{{ url_for('static', filename='js/heatmap.js') }}"></script>
+
+    <div id="menu">
+        {% include 'sidebar.html' %}
+    </div>
     {# imports #}
     {# our own js #}
     <script src="{{ url_for('static', filename='js/select_adapter.js') }}"></script>
@@ -12,14 +19,8 @@
     {# pretty multiselect inputs #}
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/heatmap.js') }}"></script>
 
     {# end of imports #}
-
-<form action="" method="POST">
-    <div id="menu">
-        {% include 'sidebar.html' %}
-    </div>
 
     <div id="content">
         <div class="card">
