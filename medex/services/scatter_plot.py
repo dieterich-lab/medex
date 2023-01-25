@@ -134,7 +134,7 @@ class ScatterPlotService:
                                    scatter_plot_data.entity_y_axis + "</b> : " + 'Visit' + " <b>" +
                                    scatter_plot_data.measurement_y_axis + "</b>" + "<br> Number of Points: " +
                                    str(number_of_points),
-                                   width=100)
+                                   width=200)
         x_axis = textwrap.wrap(x_axis)
         y_axis = textwrap.wrap(y_axis, width=40)
         if scatter_plot_data.add_group_by is not None:
