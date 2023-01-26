@@ -5,6 +5,7 @@ from medex.dto.filter import FilterStatus
 from medex.services.barchart import BarChartService
 from medex.services.data import DataService
 from medex.services.database import get_db_session
+from medex.services.histogram import HistogramService
 from medex.services.scatter_plot import ScatterPlotService
 from medex.services.session import SessionService
 from medex.services.filter import FilterService
@@ -66,3 +67,9 @@ def get_barchart_service():
     database_session = get_db_session()
     filter_service = get_filter_service()
     return BarChartService(database_session, filter_service)
+
+
+def get_histogram_service():
+    database_session = get_db_session()
+    filter_service = get_filter_service()
+    return HistogramService(database_session, filter_service)
