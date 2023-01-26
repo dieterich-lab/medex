@@ -40,7 +40,7 @@ function get_search_params() {
     const date_dict = get_date_dict();
     const scale = get_scale_type();
     const add_group_by = get_group_by_data();
-    const error = perform_error_handling(entity_x_axis, entity_y_axis, add_group_by);
+    const error = perform_error_handling(entity_x_axis, entity_y_axis, add_group_by, measurement_x_axis, measurement_y_axis);
     const search_parameter_string = get_parameter_string(measurement_x_axis, entity_x_axis, measurement_y_axis, entity_y_axis,
                                                         date_dict, scale, add_group_by);
     return {
