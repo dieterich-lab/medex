@@ -74,32 +74,6 @@ def get_entities():
     return all_entities, all_num_entities, all_cat_entities, all_date_entities, length
 
 
-def min_max_value_numeric_entities():
-    min_max = """SELECT key,max(value),min(value) FROM examination_numerical GROUP BY key """
-    try:
-        df_min_max = pd.read_sql(min_max, get_db_engine())
-        df_min_max = df_min_max.set_index('key')
-        df_min_max = df_min_max.to_dict('index')
-    except (Exception,):
-        df_min_max = pd.DataFrame()
-        df_min_max = df_min_max.to_dict('index')
-    return df_min_max
-
-
-def get_subcategories_from_categorical_entities():
-    all_subcategories = """SELECT key,array_agg(distinct value) as value FROM examination_categorical
-    WHERE key in (select key from name_type where type ='String') Group by key
-                            ORDER by key """
-    try:
-        df = pd.read_sql(all_subcategories, get_db_engine())
-        df.set_index('key', inplace=True)
-        df_dict = df.to_dict()
-        df_dict_values = df_dict['value']
-    except (Exception,):
-        df_dict_values = {}
-    return df_dict_values
-
-
 def get_measurement():
     all_measurements = union(
         select(TableCategorical.measurement.label('measurement'), TableCategorical.date.label('date')),
