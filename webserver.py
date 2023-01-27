@@ -1,12 +1,10 @@
 import os
-import requests
-from flask import Flask, request, redirect, session, send_from_directory
+from flask import Flask, redirect, session, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import modules.load_data_to_select as ps
-import url_handlers.filtering as filtering
 from medex.controller.helpers import init_controller_helper
-from medex.services.database import get_db_session, get_database_url, init_db
+from medex.services.database import get_database_url, init_db
 from medex.services.scheduler import Scheduler
 from modules.import_data import start_import
 
@@ -45,8 +43,6 @@ with app.app_context():
     number_of_patients = ps.get_number_of_patients()
     all_measurement, block_measurement = ps.get_measurement()
     all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities()
-    df_min_max = ps.min_max_value_numeric_entities()
-    all_subcategory_entities = ps.get_subcategories_from_categorical_entities()
 
 # change this
 try:
@@ -79,7 +75,6 @@ def data_information():
     return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical,
                                       number_of_patients_str),
                 measurement_tuple=(all_measurement, '{}:'.format(measurement_name), block_measurement),
-                df_min_max=df_min_max,
                 meddusa=(Meddusa, MEDDUSA_URL),
                 )
 
@@ -145,17 +140,6 @@ app.register_blueprint(data_controller, url_prefix='/filtered_data')
 app.register_blueprint(scatter_plot_controller, url_prefix='/plot')
 app.register_blueprint(barchart_controller, url_prefix='/plot')
 app.register_blueprint(histogram_controller, url_prefix='/plot')
-
-
-@app.route('/_session', methods=['GET'])
-def get_cases():
-    session_id = request.args.get('sessionid')
-    session_id_json = {"session_id": "{}".format(session_id)}
-    cases_get = requests.post(EXPRESS_MEDEX_MEDDUSA_URL + '/result/cases/get', json=session_id_json)
-    case_ids = cases_get.json()
-    session_db = get_db_session()
-    filtering.add_case_id(case_ids, session_db)
-    return redirect('/')
 
 
 # Direct to Data browser website during opening the program.
