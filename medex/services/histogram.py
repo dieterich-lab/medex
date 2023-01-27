@@ -81,9 +81,9 @@ class HistogramService:
         fig.update_layout(
             font=dict(size=16),
             legend_title='<br>'.join(legend),
-            height=600,
+            height=1000,
             title={'text': '<b>' + histogram_data.numerical_entity + '</b> grouped by '
-                                                                     '<b>' + histogram_data.categorical_entity + '</b>',
+                           '<b>' + histogram_data.categorical_entity + '</b>',
                    'x': 0.5,
                    'xanchor': 'center'}
         )
