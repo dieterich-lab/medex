@@ -119,7 +119,7 @@ class DataService:
         if len(all_results) > 0:
             total = all_results[0].total
         result_dict = [
-            dict(item)
+            item._asdict()  # noqa - workaround
             for item in all_results
         ]
         return result_dict, total
