@@ -2,10 +2,10 @@ from typing import List
 
 from pandas import DataFrame
 
-from medex.services.database import get_db_engine, get_db_session
+from medex.services.database import get_db_session
 from medex.services.filter import FilterService
 from modules.models import TableNumerical, TableCategorical, TableDate, Patient
-from sqlalchemy.sql import union, select, distinct, label
+from sqlalchemy.sql import union, select, label
 from sqlalchemy import and_, func
 import pandas as pd
 from modules.filtering import checking_date_filter
