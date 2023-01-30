@@ -17,7 +17,7 @@ class EntityService:
         categories_by_entity = self._get_categories_by_entity()
         min_max_by_entity = self._get_min_max_by_entity()
         rv = self._db.execute(
-            select(self.ENTITY_COLUMNS)
+            select(*self.ENTITY_COLUMNS)
         )
         raw_result = [
             self._get_entity_from_row(x, categories_by_entity, min_max_by_entity)
@@ -41,8 +41,8 @@ class EntityService:
         )
         result = {}
         for row in rv.all():
-            entity_key = row['key']
-            entity_value = row['value']
+            entity_key = row.key
+            entity_value = row.value
             if entity_key in result:
                 result[entity_key].append(entity_value)
             else:
@@ -61,7 +61,7 @@ class EntityService:
             .group_by(TableNumerical.key)
         )
         return {
-            x['key']: (x['min_value'], x['max_value'])
+            x.key: (x.min_value, x.max_value)
             for x in rv.all()
         }
 

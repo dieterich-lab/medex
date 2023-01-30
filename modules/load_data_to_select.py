@@ -1,50 +1,35 @@
 import datetime
-
-import pandas as pd
 from sqlalchemy import func, union
 from sqlalchemy.sql import select
 
-from medex.services.database import get_db_engine, get_db_session
-from modules.models import Header, Patient, TableCategorical, TableNumerical, TableDate
+from medex.services.database import get_db_session
+from modules.models import Header, Patient, TableCategorical, TableNumerical, TableDate, NameType
 
 
 def get_header():
-    sql = select(Header)
-    try:
-        df = pd.read_sql(sql, get_db_engine())
-        name_id, measurement_name = df['name_id'][0], df['measurement'][0]
-    except (Exception,):
-        name_id, measurement_name = 'name_id', 'measurement'
-    return name_id, measurement_name
+    sql = select(Header.name_id, Header.measurement)
+    db = get_db_session()
+    rv = db.execute(sql).first()
+    return rv.name_id, rv.measurement
 
 
 def get_database_information():
-    db_engine = get_db_engine()
-    size_num_table = """SELECT count(*) FROM examination_numerical"""
-    size_date_table = """SELECT count(*) FROM examination_date"""
-    size_cat_table = """SELECT count(*) FROM examination_categorical"""
-    try:
-        size_num_tab, size_date_tab, size_cat_tab = pd.read_sql(size_num_table, db_engine), \
-                                                    pd.read_sql(size_date_table, db_engine), \
-                                                    pd.read_sql(size_cat_table, db_engine)
-        size_num_tab, size_date_tab, size_cat_tab = \
-            size_num_tab.iloc[0]['count'], size_date_tab.iloc[0]['count'], \
-            size_cat_tab.iloc[0]['count']
-    except (Exception,):
-        size_num_tab, size_date_tab, size_cat_tab = 0, 0, 0
+    db_session = get_db_session()
+    query_num = select(func.count(TableNumerical.name_id))
+    query_cat = select(func.count(TableCategorical.name_id))
+    query_date = select(func.count(TableDate.name_id))
+    size_num_tab = db_session.execute(query_num).scalar()
+    size_cat_tab = db_session.execute(query_cat).scalar()
+    size_date_tab = db_session.execute(query_date).scalar()
     return size_num_tab, size_date_tab, size_cat_tab
 
 
 def get_date():
-    sql = """ SELECT min("date"),max("date") FROM examination_numerical """
-    try:
-        df = pd.read_sql(sql, get_db_engine())
-        start_date = datetime.datetime.strptime(df['min'][0], '%Y-%m-%d').timestamp() * 1000
-        end_date = datetime.datetime.strptime(df['max'][0], '%Y-%m-%d').timestamp() * 1000
-    except (Exception,):
-        now = datetime.datetime.now().strftime('%Y-%d-%m')
-        start_date = datetime.datetime.strptime(now, '%Y-%d-%m').timestamp() * 1000
-        end_date = datetime.datetime.strptime(now, '%Y-%d-%m').timestamp() * 1000
+    db_session = get_db_session()
+    query = select(func.min(TableNumerical.date), func.max(TableNumerical.date))
+    results = db_session.execute(query).first()
+    start_date = datetime.datetime.strptime(results[0], '%Y-%m-%d').timestamp() * 1000
+    end_date = datetime.datetime.strptime(results[1], '%Y-%m-%d').timestamp() * 1000
     return start_date, end_date
 
 
@@ -53,25 +38,18 @@ def get_number_of_patients():
     rv = db.execute(
         select(func.count(func.distinct(Patient.name_id)))
     )
-    return rv.first()[0]
+    return rv.scalar()
 
 
 def get_entities():
-    all_entities = """SELECT key,type,description,synonym FROM name_type ORDER BY orders """
-    try:
-        entities = pd.read_sql(all_entities, get_db_engine())
-        entities = entities.replace([None], ' ')
-        num_entities = entities[entities['type'] == 'Double'].drop(columns=['type'])
-        cat_entities = entities[entities['type'] == 'String'].drop(columns=['type'])
-        date_entities = entities[entities['type'] == 'Date'].drop(columns=['type'])
-        entities = entities.drop(columns=['type'])
-
-        all_num_entities, all_cat_entities = num_entities.to_dict('index'), cat_entities.to_dict('index')
-        all_date_entities, all_entities = date_entities.to_dict('index'), entities.to_dict('index')
-        length = (str(len(num_entities)), str(len(cat_entities)), str(len(date_entities)))
-    except (Exception,):
-        all_entities, all_num_entities, all_cat_entities, all_date_entities, length = {}, {}, {}, {}, ('0', '0', '0')
-    return all_entities, all_num_entities, all_cat_entities, all_date_entities, length
+    db_session = get_db_session()
+    query_select = select(NameType.key, NameType.type, NameType.description, NameType.synonym).order_by(NameType.orders)
+    results = db_session.execute(query_select).all()
+    num_entities = [row.type == 'Double' for row in results]
+    cat_entities = [row.type == 'String' for row in results]
+    date_entities = [row.type == 'Date' for row in results]
+    length = (str(sum(num_entities)), str(sum(cat_entities)), str(sum(date_entities)))
+    return length
 
 
 def get_measurement():
@@ -88,6 +66,6 @@ def get_measurement():
     )
     db = get_db_session()
     rv = db.execute(ordered_list).all()
-    measurement_list = [x['measurement'] for x in rv]
+    measurement_list = [getattr(x, 'measurement') for x in rv]
     measurement_display = 'block' if len(rv) > 1 else 'none'
     return measurement_list, measurement_display

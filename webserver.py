@@ -36,13 +36,13 @@ if os.environ.get('IMPORT_DISABLED') is None:
     scheduler.start()
 
 # get all numeric and categorical entities from database
-Name_ID, measurement_name = ps.get_header()
 with app.app_context():
+    Name_ID, measurement_name = ps.get_header()
     size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information()
     start_date, end_date = ps.get_date()
     number_of_patients = ps.get_number_of_patients()
     all_measurement, block_measurement = ps.get_measurement()
-    all_entities, all_num_entities, all_cat_entities, all_date_entities, length = ps.get_entities()
+    length = ps.get_entities()
 
 # change this
 try:
