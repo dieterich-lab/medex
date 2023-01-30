@@ -1,6 +1,8 @@
 from typing import List
 
-from medex.services.database import get_db_engine
+from pandas import DataFrame
+
+from medex.services.database import get_db_engine, get_db_session
 from medex.services.filter import FilterService
 from modules.models import TableNumerical, TableCategorical, TableDate, Patient
 from sqlalchemy.sql import union, select, distinct, label
@@ -34,7 +36,8 @@ def get_num_basic_stats(
     ).\
         group_by(with_raw_data.c.key, with_raw_data.c.measurement).\
         order_by(with_raw_data.c.key, with_raw_data.c.measurement)
-    df = pd.read_sql(sql, get_db_engine())
+    db_session = get_db_session()
+    df = DataFrame(db_session.execute(sql).all())
     n = _get_patient_count()
     df['count NaN'] = n - df['count']
     df = df.round(2)
@@ -42,9 +45,10 @@ def get_num_basic_stats(
 
 
 def _get_patient_count():
-    patient_count_sql = select(func.count(distinct(Patient.name_id)).label('count'))
-    patient_count_result = pd.read_sql(patient_count_sql, get_db_engine())
-    return int(patient_count_result['count'])
+    db_session = get_db_session()
+    patient_count_sql = select(func.count(func.distinct(Patient.name_id)))
+    patient_count_result = db_session.execute(patient_count_sql).scalar()
+    return patient_count_result
 
 
 def _get_raw_data_sql(entities, limit_filter, measurement, select_numerical_values_with_filter_sql, values):

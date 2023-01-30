@@ -76,9 +76,7 @@ class DataService:
         )
 
         case_when = [
-            func.min(case([
-                (query_group_by.c.key == i, query_group_by.c.value)
-            ])).label(i)
+            func.min(case((query_group_by.c.key == i, query_group_by.c.value))).label(i)
             for i in entities
         ]
 
