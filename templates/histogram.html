@@ -40,10 +40,6 @@
                 </div>
                 {% import 'macro_template.html' as m %}
 
-                {% if error %}
-                {{ m.show_error(error) }}
-                {% endif %}
-
                 {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name=measurement_tuple[0],
                 class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
                 <div class="form-group">
