@@ -30,12 +30,16 @@ class HistogramService:
         return self.SVG_HEADER + image_svg
 
     def _get_histogram_plot(self, histogram_data):
+        df = self.get_dataframe_for_histogram_and_boxplot(histogram_data)
+        fig = self._get_figure_with_layout(df, histogram_data)
+        return fig
+
+    def get_dataframe_for_histogram_and_boxplot(self, histogram_data):
         query_select = self._select_table_columns(histogram_data)
         query_select_with_where = self._get_columns_with_data(histogram_data, query_select)
         query_with_filter = self._filter_service.apply_filter(TableNumerical, query_select_with_where)
         df = self._get_dataframe(histogram_data, query_with_filter)
-        fig = self._get_figure_with_layout(df, histogram_data)
-        return fig
+        return df
 
     @staticmethod
     def _select_table_columns(histogram_data):
