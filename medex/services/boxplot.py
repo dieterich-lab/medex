@@ -24,9 +24,12 @@ class BoxplotService:
         fig_table = self._get_boxplot_count_table(boxplot_data, df)
         figure = self._get_boxplot_figure(boxplot_data, df)
         figure = self._update_figure_layout(boxplot_data, figure)
-        table_json = json.dumps(fig_table, cls=plotly.utils.PlotlyJSONEncoder)
-        image_json = json.dumps(figure, cls=plotly.utils.PlotlyJSONEncoder)
-        return image_json, table_json
+        merged_json = {
+            'image_json': figure,
+            'table_json': fig_table
+        }
+        merged_json = json.dumps(merged_json, cls=plotly.utils.PlotlyJSONEncoder)
+        return merged_json
 
     def get_boxplot_svg(self, boxplot_data):
         df = self._histogram_service.get_dataframe_for_histogram_and_boxplot(boxplot_data)
