@@ -37,10 +37,6 @@
                 </div>
                 {% import 'macro_template.html' as m %}
 
-                {% if error %}
-                {{ m.show_error(error) }}
-                {% endif %}
-
                 {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name
                 =measurement_tuple[0],class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
                 <div class="form-group">
@@ -58,14 +54,10 @@
                 </div>
                 <div class="form-group">
                     <label>Show in: </label>
-                    <div class="custom-control custom-radio">
-                        <input id="percent" type="radio" class="custom-control-input" name="plot_type" value="percent" checked="checked">
-                        <label for="percent" class="custom-control-label">%</label>&nbsp
-                    </div>
-                    <div class="custom-control custom-radio">
-                        <input type="radio" id="count" class="custom-control-input" name="plot_type" value="count">
-                        <label for="count" class="custom-control-label">count</label>
-                    </div>
+                    <input id="percent" type="radio" name="plot_type" value="percent" checked="checked">
+                    <label for="percent">%</label>&nbsp
+                    <input type="radio" id="count" name="plot_type" value="count">
+                    <label for="count">count</label>
                 </div>
                 <button id="Result" name="barchart" class="btn btn-outline-info" onclick="display_barchart()">Result</button>
             </div>
