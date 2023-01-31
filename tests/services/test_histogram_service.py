@@ -9,7 +9,7 @@ from tests.fixtures.db_session import db_session
 
 
 @pytest.fixture
-def setup_data(db_session):
+def setup_histogram_data(db_session):
     db_session.add_all([
         TableNumerical(
             name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=129
@@ -38,14 +38,14 @@ def filter_service_mock():
     yield FilterServiceMock()
 
 
-def test_get_histogram_json(db_session, filter_service_mock, setup_data):
+def test_get_histogram_json(db_session, filter_service_mock, setup_histogram_data):
     service = HistogramService(db_session, filter_service_mock)
     histogram_data = _get_parsed_data()
     image_json = service.get_image_json(histogram_data)
     assert image_json.startswith('{"data"')
 
 
-def test_get_histogram_svg(db_session, filter_service_mock, setup_data):
+def test_get_histogram_svg(db_session, filter_service_mock, setup_histogram_data):
     service = HistogramService(db_session, filter_service_mock)
     histogram_data = _get_parsed_data()
     image_data = service.get_image_svg(histogram_data)
