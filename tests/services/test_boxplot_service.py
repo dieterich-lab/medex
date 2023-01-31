@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from medex.dto.boxplot import BoxplotDataRequest, DateRange
@@ -19,10 +21,10 @@ def test_get_boxplot_json(db_session, filter_service_mock, setup_histogram_data)
     histogram_service = HistogramService(db_session, filter_service_mock)
     service = BoxplotService(db_session, filter_service_mock, histogram_service)
     boxplot_data = _get_parsed_data()
-    image_json, table_json = service.get_boxplot_json(boxplot_data)
-    assert image_json.startswith('{"data"')
-    assert table_json.startswith('{"data"')
-    assert table_json.find("table")
+    merged_json = service.get_boxplot_json(boxplot_data)
+    assert merged_json.startswith('{"image_json": {"data": ')
+    assert merged_json.find("table")
+    assert json.loads(merged_json)
 
 
 def test_get_boxplot_svg(db_session, filter_service_mock, setup_histogram_data):

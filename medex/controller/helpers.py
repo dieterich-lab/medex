@@ -3,6 +3,7 @@ from flask import session
 
 from medex.dto.filter import FilterStatus
 from medex.services.barchart import BarChartService
+from medex.services.boxplot import BoxplotService
 from medex.services.data import DataService
 from medex.services.database import get_db_session
 from medex.services.histogram import HistogramService
@@ -73,3 +74,10 @@ def get_histogram_service():
     database_session = get_db_session()
     filter_service = get_filter_service()
     return HistogramService(database_session, filter_service)
+
+
+def get_boxplot_service():
+    database_session = get_db_session()
+    filter_service = get_filter_service()
+    histogram_service = get_histogram_service()
+    return BoxplotService(database_session, filter_service, histogram_service)
