@@ -109,6 +109,7 @@ def message_count():
                 limit_offset=session.get('limit_offset')
                 )
 
+from medex.controller.heatmap import heatmap_controller  # noqa
 from medex.controller.boxplot import boxplot_controller  # noqa
 from medex.controller.histogram import histogram_controller # noqa
 from medex.controller.barchart import barchart_controller # noqa
@@ -142,6 +143,7 @@ app.register_blueprint(scatter_plot_controller, url_prefix='/plot')
 app.register_blueprint(barchart_controller, url_prefix='/plot')
 app.register_blueprint(histogram_controller, url_prefix='/plot')
 app.register_blueprint(boxplot_controller, url_prefix='/plot')
+app.register_blueprint(heatmap_controller, url_prefix='/plot')
 
 
 # Direct to Data browser website during opening the program.

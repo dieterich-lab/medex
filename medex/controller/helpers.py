@@ -6,6 +6,7 @@ from medex.services.barchart import BarChartService
 from medex.services.boxplot import BoxplotService
 from medex.services.data import DataService
 from medex.services.database import get_db_session
+from medex.services.heatmap import HeatmapService
 from medex.services.histogram import HistogramService
 from medex.services.scatter_plot import ScatterPlotService
 from medex.services.session import SessionService
@@ -81,3 +82,9 @@ def get_boxplot_service():
     filter_service = get_filter_service()
     histogram_service = get_histogram_service()
     return BoxplotService(database_session, filter_service, histogram_service)
+
+
+def get_heatmap_service():
+    db_session = get_db_session()
+    filter_service = get_filter_service()
+    return HeatmapService(db_session, filter_service)
