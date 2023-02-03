@@ -7,6 +7,7 @@ from sqlalchemy import func, case, select
 from medex.services.filter import FilterService
 from modules.models import TableNumerical
 import plotly.graph_objects as go
+import plotly.figure_factory as ff
 
 
 class HeatmapService:
@@ -80,11 +81,10 @@ class HeatmapService:
         correlated_values_list = correlated_values.T.values.tolist()
         number_of_values_list = number_of_values.T.values.tolist()
         fig = go.Figure(
-            data=go.Heatmap(
-                x=heatmap_data.entities, y=heatmap_data.entities, z=correlated_values_list,
-                colorscale='Viridis')
+            data=ff.create_annotated_heatmap(
+                z=correlated_values_list, x=heatmap_data.entities, y=heatmap_data.entities,
+                annotation_text=number_of_values_list, colorscale='Viridis', showscale=True)
         )
         fig.update_traces(text=number_of_values_list, texttemplate="%{text}")
-        fig.update_layout(height=600,
-                          title='Heatmap shows Pearson correlation')
+        fig.update_layout(height=600, title='Heatmap shown with Pearson Correlation')
         return fig
