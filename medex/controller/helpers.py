@@ -3,6 +3,7 @@ from flask import session
 
 from medex.dto.filter import FilterStatus
 from medex.services.barchart import BarChartService
+from medex.services.basic_stats import BasicStatisticsService
 from medex.services.boxplot import BoxplotService
 from medex.services.data import DataService
 from medex.services.database import get_db_session
@@ -88,3 +89,9 @@ def get_heatmap_service():
     db_session = get_db_session()
     filter_service = get_filter_service()
     return HeatmapService(db_session, filter_service)
+
+
+def get_basic_stats_service():
+    db_session = get_db_session()
+    filter_service = get_filter_service()
+    return BasicStatisticsService(db_session, filter_service)

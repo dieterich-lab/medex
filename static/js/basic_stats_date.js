@@ -7,4 +7,10 @@ async function init() {
     );
 }
 
-$('a[data-toggle="tab"]').on('shown.bs.tab', init);
+$('a[data-toggle="tab"]').on('shown.bs.tab', async (e) => {
+    if ( e.target.hash === '#date_tab' ) {
+        await init();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', init);
