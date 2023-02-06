@@ -33,54 +33,9 @@ are defined in basic_stats.html. #}
                         >
                         </select>
                     </div>
-
-                    <label>Include following statistics:</label>
-                    <div class="row ml-2">
-                        <div class="custom-control custom-checkbox mr-2">
-                            <input type="checkbox" class="custom-control-input" id="count" name="count"
-                                   checked="{% if basic_stats and 'count' not in basic_stats %}false{% else %}true{% endif %}">
-                            <label class="custom-control-label" for="count">Counts</label>
-                        </div>
-                        <div class="custom-control custom-checkbox mr-2">
-                            <input type="checkbox" class="custom-control-input" id="count NaN" name="count NaN"
-                                   checked="{% if basic_stats and 'count NaN' not in basic_stats %}false{% else %}true{% endif %}">
-                            <label class="custom-control-label" for="count NaN">Counts NaN</label>
-                        </div>
-                        <div class="custom-control custom-checkbox mr-2">
-                            <input type="checkbox" class="custom-control-input" id="mean" name="mean"
-                                   checked="{% if basic_stats and 'mean' not in basic_stats %}false{% else %}true{% endif %}">
-                            <label class="custom-control-label" for="mean">Mean</label>
-                        </div>
-                        <div class="custom-control custom-checkbox mr-2">
-                            <input type="checkbox" class="custom-control-input" id="median" name="median"
-                                   checked="{% if basic_stats and 'median' not in basic_stats %}false{% else %}true{% endif %}">
-                            <label class="custom-control-label" for="median">Median</label>
-                        </div>
-                        <div class="custom-control custom-checkbox mr-2">
-                            <input type="checkbox" class="custom-control-input" id="min" name="min"
-                                   checked="{% if basic_stats and 'min' not in basic_stats %}false{% else %}true{% endif %}">
-                            <label class="custom-control-label" for="min">Min</label>
-                        </div>
-                        <div class="custom-control custom-checkbox mr-2">
-                            <input type="checkbox" class="custom-control-input" id="max" name="max"
-                                   checked="{% if basic_stats and 'max' not in basic_stats %}false{% else %}true{% endif %}">
-                            <label class="custom-control-label" for="max">Max</label>
-                        </div>
-                        <div class="custom-control custom-checkbox mr-2">
-                            <input type="checkbox" class="custom-control-input" id="std_err" name="std_err"
-                                   checked="{% if basic_stats and 'std_err' not in basic_stats %}false{% else %}true{% endif %}">
-                            <label class="custom-control-label" for="std_err">Std. Error</label>
-                        </div>
-                        <div class="custom-control custom-checkbox mr-2">
-                            <input type="checkbox" class="custom-control-input" id="std_dev" name="std_dev"
-                                   checked="{% if basic_stats and 'std_dev' not in basic_stats %}false{% else %}true{% endif %}">
-                            <label class="custom-control-label" for="std_dev">Std. Deviation</label>
-                        </div>
-                    </div>
                     <button id="Result_categorical" name="basic_stats" class="btn btn-outline-info" >Result</button>
                 </div>
             </div>
-
 
             <div class="card">
                 <div class="card-header" id="results_header">
