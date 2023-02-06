@@ -1,6 +1,6 @@
 from pandas import DataFrame
 from pydantic import json
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, label
 
 from medex.services.filter import FilterService
 from modules.models import TableNumerical, Patient
@@ -43,7 +43,7 @@ class BasicStatisticsService:
             query_raw_data_with_filter.c.key,
             query_raw_data_with_filter.c.measurement,
             *self._get_aggregated_columns(query_raw_data_with_filter)
-        ) \
+        )\
             .group_by(query_raw_data_with_filter.c.key, query_raw_data_with_filter.c.measurement) \
             .order_by(query_raw_data_with_filter.c.key, query_raw_data_with_filter.c.measurement)
         return query_select_stats
@@ -57,10 +57,11 @@ class BasicStatisticsService:
             func.avg(query_raw_data_with_filter.c.value).label('mean'),
             func.percentile_cont(0.5).within_group(query_raw_data_with_filter.c.value).label('median'),
             func.stddev(query_raw_data_with_filter.c.value).label('stddev'),
-            (
-                    func.stddev(query_raw_data_with_filter.c.value).label('stddev') /
-                    func.sqrt(func.count(query_raw_data_with_filter.c.value))
-            ).label('stderr')
+            label(
+                'stderr',
+                func.stddev(query_raw_data_with_filter.c.value).label('stddev') /
+                func.sqrt(func.count(query_raw_data_with_filter.c.value))
+            )
         ]
         return aggregated_columns
 

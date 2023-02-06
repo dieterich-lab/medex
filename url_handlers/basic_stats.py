@@ -66,9 +66,13 @@ def get_basic_stats():
                 df = df.drop(['stderr'], axis=1)
             if 'median' not in request.form:
                 df = df.drop(['median'], axis=1)
-            df = df.set_index(['key', 'measurement'])
-            session['basic_stats_table'] = df.to_csv()
-            result = df.to_dict()
+            n = df.shape[1]
+            if n == 2:
+                error = "Please select at least one basic statistic"
+            else:
+                df = df.set_index(['key', 'measurement'])
+                session['basic_stats_table'] = df.to_csv()
+                result = df.to_dict()
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
