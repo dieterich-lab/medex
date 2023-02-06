@@ -1,14 +1,14 @@
 from typing import List
 
+import pandas as pd
 from pandas import DataFrame
+from sqlalchemy import and_, func
+from sqlalchemy.sql import union, select, label
 
 from medex.services.database import get_db_session
 from medex.services.filter import FilterService
-from modules.models import TableNumerical, TableCategorical, TableDate, Patient
-from sqlalchemy.sql import union, select, label
-from sqlalchemy import and_, func
-import pandas as pd
 from modules.filtering import checking_date_filter
+from modules.models import TableNumerical, TableCategorical, TableDate, Patient
 
 
 def get_num_basic_stats(

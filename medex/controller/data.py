@@ -15,17 +15,13 @@ def get_filtered_data_flat():
     data_service = get_data_service()
     args = request.args
     filtered_data_request = FilteredDataRequest.parse_obj(json.loads(args.get('table_data')))
-    limit = args.get('length')
-    offset = args.get('start')
-    sort_column_idx = args.get('order[0][column]')
-    sort_direction = args.get('order[0][dir]')
-    sort_order = _get_sort_order(sort_column_idx, sort_direction)
+    sort_order = _get_sort_order(args)
     result, total = data_service.get_filtered_data_flat(
-        filtered_data_request.measurements,
-        filtered_data_request.entities,
-        limit,
-        offset,
-        sort_order
+        measurements=filtered_data_request.measurements,
+        entities=filtered_data_request.entities,
+        limit=args.get('length'),
+        offset=args.get('start'),
+        sort_order=sort_order
     )
     filtered_data_flat_response = FilteredDataFlatResponse(
         data=result,
@@ -40,17 +36,13 @@ def get_filtered_data_by_measurement():
     data_service = get_data_service()
     args = request.args
     filtered_data_request = FilteredDataRequest.parse_obj(json.loads(args.get('table_data')))
-    limit = args.get('length')
-    offset = args.get('start')
-    sort_column_idx = args.get('order[0][column]')
-    sort_direction = args.get('order[0][dir]')
-    sort_order = _get_sort_order(sort_column_idx, sort_direction)
+    sort_order = _get_sort_order(args)
     result, total = data_service.get_filtered_data_by_measurement(
-        filtered_data_request.measurements,
-        filtered_data_request.entities,
-        limit,
-        offset,
-        sort_order
+        measurements=filtered_data_request.measurements,
+        entities=filtered_data_request.entities,
+        limit=args.get('length'),
+        offset=args.get('start'),
+        sort_order=sort_order
     )
 
     filtered_data_by_measurement_response = {
@@ -61,7 +53,9 @@ def get_filtered_data_by_measurement():
     return jsonify(filtered_data_by_measurement_response)
 
 
-def _get_sort_order(sort_column_idx, sort_direction) -> SortOrder:
+def _get_sort_order(args) -> SortOrder:
+    sort_column_idx = args.get('order[0][column]')
+    sort_direction = args.get('order[0][dir]')
     column = request.args.get('columns[{}][data]'.format(sort_column_idx))
     sort_order = SortOrder(
         items=[
