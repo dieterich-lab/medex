@@ -13,3 +13,15 @@ class BasicStatsNumericalDataRequest(BaseModel):
     measurements: List[str]
     entities: List[str]
     date_range: Optional[DateRange]
+
+
+class BasicStatsCategoricalDataRequest(BaseModel):
+    measurements: List[str]
+    entities: List[str]
+    date_range: Optional[DateRange]
+
+
+class BasicStatsDateRequest(BaseModel):
+    measurements: List[str]
+    entities: List[str]
+    date_range: Optional[DateRange]
