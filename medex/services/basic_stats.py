@@ -1,5 +1,6 @@
+from typing import List
+
 from pandas import DataFrame
-from pydantic import json
 from sqlalchemy import select, func, and_
 from medex.services.filter import FilterService
 from modules.models import TableNumerical, Patient
@@ -10,15 +11,13 @@ class BasicStatisticsService:
         self._database_session = database_session
         self._filter_service = filter_service
 
-    def get_basic_stats_for_numerical_entities(self, basis_stats_data) -> json:
+    def get_basic_stats_for_numerical_entities(self, basis_stats_data) -> List[dict]:
         query_raw_data = self._get_raw_data_query(basis_stats_data)
         query_raw_data_with_filter = self._filter_service.apply_filter(TableNumerical, query_raw_data)
         query_select_stats = self._get_basic_statistics(query_raw_data_with_filter)
         df = self._get_dataframe(query_select_stats)
-        df['measurement'] = df['measurement'].astype(str)
-        df = df.set_index(['key', 'measurement'])
-        result = df.to_json(orient='columns')
-        return result
+        result_dict = df.to_dict(orient='records')
+        return result_dict
 
     @staticmethod
     def _get_raw_data_query(basis_stats_data):
@@ -68,7 +67,9 @@ class BasicStatisticsService:
         df = DataFrame(rv.all())
         total_patient_count = self._get_patient_count()
         df['count NaN'] = total_patient_count - df['count']
-        df = df.round(decimals=2)
+        df[['min', 'max', 'mean', 'median', 'stddev', 'stderr']] = df[
+            ['min', 'max', 'mean', 'median', 'stddev', 'stderr']
+        ].astype(float).round(decimals=2)
         return df
 
     def _get_patient_count(self):

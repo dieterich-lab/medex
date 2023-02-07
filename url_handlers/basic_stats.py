@@ -48,31 +48,9 @@ def get_basic_stats():
         elif numeric_entities:
             df, error = get_num_basic_stats(numeric_entities, measurement1, date_filter, limit_filter, filter_service)
             df['measurement'] = df['measurement'].astype(str)
-
-            # calculation basic stats
-            if 'count NaN' not in request.form:
-                df = df.drop(['count NaN'], axis=1)
-            if 'count' not in request.form:
-                df = df.drop(['count'], axis=1)
-            if 'mean' not in request.form:
-                df = df.drop(['mean'], axis=1)
-            if 'min' not in request.form:
-                df = df.drop(['min'], axis=1)
-            if 'max' not in request.form:
-                df = df.drop(['max'], axis=1)
-            if 'std_dev' not in request.form:
-                df = df.drop(['stddev'], axis=1)
-            if 'std_err' not in request.form:
-                df = df.drop(['stderr'], axis=1)
-            if 'median' not in request.form:
-                df = df.drop(['median'], axis=1)
-            n = df.shape[1]
-            if n == 2:
-                error = "Please select at least one basic statistic"
-            else:
-                df = df.set_index(['key', 'measurement'])
-                session['basic_stats_table'] = df.to_csv()
-                result = df.to_dict()
+            df = df.set_index(['key', 'measurement'])
+            session['basic_stats_table'] = df.to_csv()
+            result = df.to_dict()
         if error:
             return render_template('basic_stats/basic_stats.html',
                                    numeric_tab=True,
