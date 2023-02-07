@@ -1,7 +1,4 @@
-import json
-
 import pytest
-
 from medex.dto.basic_stats import BasicStatsNumericalDataRequest, DateRange
 from medex.services.basic_stats import BasicStatisticsService
 from modules.models import TableNumerical, NameType, Patient
@@ -46,10 +43,8 @@ def test_get_basic_stats_for_numerical_entities(setup_basic_stats_data, db_sessi
     service = BasicStatisticsService(db_session, filter_service_mock)
     basic_stats_data = _get_parsed_data()
     actual_result = service.get_basic_stats_for_numerical_entities(basic_stats_data)
-    result_json = json.loads(actual_result)
-    assert len(result_json) == 8
-    assert len(result_json['count']) == 4
-    assert result_json['count']["('blood pressure', 'baseline')"] == 2
+    assert len(actual_result) == 4
+    assert actual_result[0]['count'] == 2
 
 
 def _get_parsed_data():
