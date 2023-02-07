@@ -1,9 +1,8 @@
 from typing import List
-
 from pandas import DataFrame
 from sqlalchemy import select, func, and_
 from medex.services.filter import FilterService
-from modules.models import TableNumerical, Patient
+from modules.models import TableNumerical, Patient, TableCategorical, TableDate
 
 
 class BasicStatisticsService:
@@ -19,18 +18,64 @@ class BasicStatisticsService:
         result_dict = df.to_dict(orient='records')
         return result_dict
 
+    def get_basic_stats_for_categorical_entities(self, basic_stats_data) -> List[dict]:
+        query_select = self._select_raw_data(TableCategorical, basic_stats_data)
+        query_with_filter = self._filter_service.apply_filter(TableCategorical, query_select)
+        result_dict = self._get_dataframe_to_dict(query_with_filter)
+        return result_dict
+
+    def get_basic_stats_for_date_entities(self, basic_stats_data) -> List[dict]:
+        query_select = self._select_raw_data(TableDate, basic_stats_data)
+        query_with_filter = self._filter_service.apply_filter(TableDate, query_select)
+        result_dict = self._get_dataframe_to_dict(query_with_filter)
+        return result_dict
+
+    def _get_dataframe_to_dict(self, query_with_filter):
+        query_statistics = self._get_statistics(query_with_filter)
+        rv = self._database_session.execute(query_statistics)
+        df = DataFrame(rv.all())
+        n = self._get_patient_count()
+        df['count NaN'] = n - df['count']
+        result_dict = df.to_dict(orient='records')
+        return result_dict
+
     @staticmethod
-    def _get_raw_data_query(basis_stats_data):
+    def _select_raw_data(table, basic_stats_data):
+        query_select = select(
+            table.key, table.measurement, table.name_id
+        ).where(
+            and_(
+                table.key.in_(basic_stats_data.entities), table.measurement.in_(basic_stats_data.measurements),
+                table.date.between(
+                    basic_stats_data.date_range.from_date.strftime('%Y-%m-%d'),
+                    basic_stats_data.date_range.to_date.strftime('%Y-%m-%d')
+                )
+            )
+        ).group_by(table.name_id, table.key, table.measurement)
+        return query_select
+
+    @staticmethod
+    def _get_statistics(query_with_filter):
+        query_statistics = select(
+            query_with_filter.c.key, query_with_filter.c.measurement,
+            func.count(query_with_filter.c.name_id).label('count')
+        ) \
+            .group_by(query_with_filter.c.key, query_with_filter.c.measurement) \
+            .order_by(query_with_filter.c.key, query_with_filter.c.measurement)
+        return query_statistics
+
+    @staticmethod
+    def _get_raw_data_query(basic_stats_data):
         query_select = select(
             TableNumerical.key, TableNumerical.measurement, TableNumerical.name_id,
             func.avg(TableNumerical.value).label('value')
         ).where(
             and_(
-                TableNumerical.key.in_(basis_stats_data.entities),
-                TableNumerical.measurement.in_(basis_stats_data.measurements),
+                TableNumerical.key.in_(basic_stats_data.entities),
+                TableNumerical.measurement.in_(basic_stats_data.measurements),
                 TableNumerical.date.between(
-                    basis_stats_data.date_range.from_date.strftime('%Y-%m-%d'),
-                    basis_stats_data.date_range.to_date.strftime('%Y-%m-%d')
+                    basic_stats_data.date_range.from_date.strftime('%Y-%m-%d'),
+                    basic_stats_data.date_range.to_date.strftime('%Y-%m-%d')
                 )
             )
         ).group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement)
@@ -41,7 +86,7 @@ class BasicStatisticsService:
             query_raw_data_with_filter.c.key,
             query_raw_data_with_filter.c.measurement,
             *self._get_aggregated_columns(query_raw_data_with_filter)
-        )\
+        ) \
             .group_by(query_raw_data_with_filter.c.key, query_raw_data_with_filter.c.measurement) \
             .order_by(query_raw_data_with_filter.c.key, query_raw_data_with_filter.c.measurement)
         return query_select_stats
@@ -56,8 +101,8 @@ class BasicStatisticsService:
             func.percentile_cont(0.5).within_group(query_raw_data_with_filter.c.value).label('median'),
             func.stddev(query_raw_data_with_filter.c.value).label('stddev'),
             (
-                func.stddev(query_raw_data_with_filter.c.value).label('stddev') /
-                func.sqrt(func.count(query_raw_data_with_filter.c.value))
+                    func.stddev(query_raw_data_with_filter.c.value).label('stddev') /
+                    func.sqrt(func.count(query_raw_data_with_filter.c.value))
             ).label('stderr')
         ]
         return aggregated_columns
