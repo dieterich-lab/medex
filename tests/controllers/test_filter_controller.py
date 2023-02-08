@@ -48,9 +48,8 @@ def test_delete_one_filter(helper_mock, test_client):
     assert stored_filter_status == {
         'filtered_patient_count': DEFAULT_FILTER_STATUS['filtered_patient_count'],
         'filters': {
-            'temperature': {'from_value': 39.0, 'to_value': 43.0}
+            'temperature': {'measurement': None, 'from_value': 39.0, 'to_value': 43.0}
         },
-        'measurement': None,
     }
 
 
@@ -60,39 +59,36 @@ def test_delete_all_filters(helper_mock, test_client):
     assert stored_filter_status == {
         'filtered_patient_count': None,
         'filters': {},
-        'measurement': None,
     }
 
 
 def test_add_categorical_filter(helper_mock, test_client):
     rv = test_client.post(
         '/add_categorical',
-        json={'entity': 'ebola', 'categories': ['ja', 'vielleicht']},
+        json={'entity': 'ebola', 'measurement': 'baseline', 'categories': ['ja', 'vielleicht']},
     )
     assert rv.status == '200 OK'
     assert stored_filter_status == {
         'filtered_patient_count': DEFAULT_FILTER_STATUS['filtered_patient_count'],
         'filters': {
             **DEFAULT_FILTER_STATUS['filters'],
-            'ebola': {'categories': ['ja', 'vielleicht']},
+            'ebola': {'measurement': 'baseline', 'categories': ['ja', 'vielleicht']},
         },
-        'measurement': None,
     }
 
 
 def test_add_numerical_filter(helper_mock, test_client):
     rv = test_client.post(
         '/add_numerical',
-        json={'entity': 'Größe cm', 'from_value': 170, 'to_value': 180},
+        json={'entity': 'Größe cm', 'measurement': 'follow up1', 'from_value': 170, 'to_value': 180},
     )
     assert rv.status == '200 OK'
     assert stored_filter_status == {
         'filtered_patient_count': DEFAULT_FILTER_STATUS['filtered_patient_count'],
         'filters': {
             **DEFAULT_FILTER_STATUS['filters'],
-            'Größe cm': {'from_value': 170, 'to_value': 180},
+            'Größe cm': {'measurement': 'follow up1', 'from_value': 170, 'to_value': 180},
         },
-        'measurement': None,
     }
 
 
@@ -109,11 +105,4 @@ def test_get_all_for_cleared_filter(helper_mock, test_client):
     assert rv.get_json() == {
         'filtered_patient_count': None,
         'filters': {},
-        'measurement': None,
     }
-
-
-def test_set_measurement(helper_mock, test_client):
-    rv = test_client.post('/set_measurement', json={"measurement": "foo"})
-    assert rv.status == '200 OK'
-    assert stored_filter_status['measurement'] == 'foo'

@@ -3,7 +3,11 @@ from typing import List, Union, Dict, Optional
 from pydantic import BaseModel
 
 
-class CategoricalFilter(BaseModel):
+class GenericFilter(BaseModel):
+    measurement: Optional[str]
+
+
+class CategoricalFilter(GenericFilter):
     categories: List[str]
 
 
@@ -11,7 +15,7 @@ class AddCategoricalFilterRequest(CategoricalFilter):
     entity: str
 
 
-class NumericalFilter(BaseModel):
+class NumericalFilter(GenericFilter):
     from_value: float
     to_value: float
 
@@ -22,8 +26,7 @@ class AddNumericalFilterRequest(NumericalFilter):
 
 class FilterStatus(BaseModel):
     filtered_patient_count: Optional[int]
-    measurement: Optional[str]
-    filters: Dict[str, Union[CategoricalFilter, NumericalFilter], ]
+    filters: Dict[str, Union[CategoricalFilter, NumericalFilter]]
 
 
 class DeleteFilterRequest(BaseModel):

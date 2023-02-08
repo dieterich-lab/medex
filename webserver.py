@@ -3,7 +3,6 @@ from flask import Flask, redirect, session, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import modules.load_data_to_select as ps
-from medex.controller.helpers import init_controller_helper
 from medex.services.database import get_database_url, init_db
 from medex.services.scheduler import Scheduler
 from modules.import_data import start_import
@@ -77,9 +76,6 @@ def data_information():
                 measurement_tuple=(all_measurement, '{}:'.format(measurement_name), block_measurement),
                 meddusa=(Meddusa, MEDDUSA_URL),
                 )
-
-
-init_controller_helper(all_measurement[0])
 
 
 # information about database

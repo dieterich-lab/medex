@@ -21,7 +21,7 @@ class FilterService:
         self._session_id = session_service.get_id()
 
         if filter_status is None:
-            self._filter_status = FilterStatus(measurement=None, filtered_patient_count=None, filters={})
+            self._filter_status = FilterStatus(filtered_patient_count=None, filters={})
         else:
             self._filter_status = filter_status
 
@@ -48,12 +48,18 @@ class FilterService:
     def _record_name_ids_for_filter(self, entity, new_filter):
         if isinstance(new_filter, CategoricalFilter):
             data_table = TableCategorical
-            entity_condition = data_table.value.in_(new_filter.categories)
+            entity_condition = [
+                data_table.value.in_(new_filter.categories),
+            ]
         elif isinstance(new_filter, NumericalFilter):
             data_table = TableNumerical
-            entity_condition = data_table.value.between(new_filter.from_value, new_filter.to_value)
+            entity_condition = [
+                data_table.value.between(new_filter.from_value, new_filter.to_value),
+            ]
         else:
             raise Exception('Unexpected Data Type')
+        if new_filter.measurement is not None:
+            entity_condition.append(data_table.measurement == new_filter.measurement)
         self._record_name_ids_for_entity(data_table, entity, entity_condition)
 
     def delete_all_filters(self):
@@ -88,13 +94,12 @@ class FilterService:
             )
         )
 
-    def _get_filter_criteria(self, data_table, entity, entity_condition):
+    @staticmethod
+    def _get_filter_criteria(data_table, entity, entity_condition):
         criteria = [
             data_table.key == entity,
-            entity_condition,
+            *entity_condition
         ]
-        if self._filter_status.measurement is not None:
-            criteria.append(data_table.measurement == self._filter_status.measurement)
         return and_(*criteria)
 
     def _record_name_ids_for_all_filters(self):
@@ -176,15 +181,3 @@ class FilterService:
             )
             query = select(cte.c).select_from(join_with_filtered_name_ids)
         return query
-
-    def set_measurement(self, new_measurement: Optional[str]):
-        self._filter_status.measurement = new_measurement
-        self._session_service.touch()
-        self._purge_filter_tables_for_session()
-        for entity, existing_filter in self._filter_status.filters.items():
-            self._record_name_ids_for_filter(entity, existing_filter)
-        self._record_name_ids_for_all_filters()
-        self._database_session.commit()
-
-    def get_measurement(self) -> Optional[str]:
-        return self._filter_status.measurement

@@ -9,10 +9,9 @@ from medex.services.filter import FilterService
 DEFAULT_FILTER_STATUS = {
     'filtered_patient_count': 4711,
     'filters': {
-        'diabetes': {'categories': ['nein']},
-        'temperature': {'from_value': 39.0, 'to_value': 43.0}
+        'diabetes': {'measurement': None, 'categories': ['nein']},
+        'temperature': {'measurement': None, 'from_value': 39.0, 'to_value': 43.0}
     },
-    'measurement': None,
 }
 
 
