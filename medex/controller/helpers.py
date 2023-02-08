@@ -37,7 +37,7 @@ def get_filter_service():
     if 'filter_status' in session:
         filter_status = FilterStatus.parse_obj(session['filter_status'])
     else:
-        filter_status = FilterStatus(filters={}, measurement=_default_measurement)
+        filter_status = FilterStatus(filters={})
     return FilterService(
         database_session=database_session,
         filter_status=filter_status,

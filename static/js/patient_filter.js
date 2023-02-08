@@ -10,8 +10,6 @@ async function init() {
 
 function setup_measurement_filter_select() {
     let filter_measurement_select = $("#filter_measurement");
-    const default_value = document.getElementById('default_measurement').value;
-    set_filter_measurement(default_value);
     filter_measurement_select.select2({
         placeholder: "Search entity"
     });
@@ -125,7 +123,6 @@ function refresh_filter_panel() {
 
 async function render_all_filters(data) {
     clear_filter_panel();
-    update_measurement_select(data.measurement);
     const filters = data['filters'];
     const filter_entities_sorted = Object.keys(filters).sort();
     filter_entities_sorted.forEach(entity_key => {
@@ -148,24 +145,23 @@ function clear_filter_panel() {
     }
 }
 
-function update_measurement_select(measurement) {
-    let select_box = $('#filter_measurement');
-    select_box.val(measurement);
-    select_box.trigger('change');
-}
-
 function render_categorical_filter(entity_key, filter) {
+    const measurement = filter['measurement'];
     const categories = filter['categories'].join(', ');
-    render_filter(entity_key, `${categories}`);
+    render_filter(entity_key, measurement, `${categories}`);
 }
 
-function render_filter(entity_key, inner_html) {
+function render_filter(entity_key, measurement, inner_html) {
     let div = document.getElementById('active_filters');
     let child = document.createElement('div');
     child.setAttribute('class', 'card');
+    let span_entity = `${entity_key} (${measurement})`;
+    if (!measurement) {
+        span_entity = `${entity_key}`;
+    }
     child.innerHTML = `
         <div class="card-body" style="display: flex; justify-content: space-between">
-            <span>${entity_key}:&nbsp;&nbsp;&nbsp;&#32; ${inner_html}</span>
+            <span> ${span_entity}:&nbsp;&nbsp;&nbsp;&#32; ${inner_html}</span>
             <button type="button" style="word-wrap: normal; white-space: normal; text-align: right; height: min-content"
              class="btn btn-outline-info btn-sm" id="remove_filter_${entity_key}"
             >
@@ -194,7 +190,8 @@ function remove_filter(entity_key) {
 }
 
 async function render_numerical_filter(entity_key, filter) {
-    render_filter(entity_key, `${filter.from_value}&nbsp;-&nbsp;${filter.to_value}`);
+    const measurement = filter.measurement;
+    render_filter(entity_key, measurement, `${filter.from_value}&nbsp;-&nbsp;${filter.to_value}`);
 }
 
 function update_filtered_patient_count(filtered_patient_count) {
@@ -207,6 +204,10 @@ function update_filtered_patient_count(filtered_patient_count) {
 }
 
 async function add_or_update_categorical_filter() {
+    let measurement = document.getElementById('filter_measurement').value;
+    if (!measurement) {
+        measurement = null;
+    }
     const entity = await get_selected_entity();
     const categories = get_selected_categories();
 
@@ -215,7 +216,7 @@ async function add_or_update_categorical_filter() {
         headers:{
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({'entity': entity['key'], 'categories': categories}),
+        body: JSON.stringify({'entity': entity['key'], 'measurement': measurement, 'categories': categories}),
     }).then(() => {
         refresh_filter_panel();
     }).catch(error => {
@@ -223,7 +224,6 @@ async function add_or_update_categorical_filter() {
         refresh_filter_panel();
     })
 }
-
 function get_selected_categories() {
     const parent = document.getElementById('categorical_filter_panel_categories');
     const children = Array.from(parent.childNodes);
@@ -231,10 +231,15 @@ function get_selected_categories() {
 }
 
 async function add_or_update_numerical_filter() {
+    let measurement = document.getElementById('filter_measurement').value;
+    if (!measurement) {
+        measurement = null;
+    }
     const entity = await get_selected_entity();
     const from_to = document.getElementById("numerical_filter_panel_range_slider").value.split(';');
     const request_json = {
         'entity': entity['key'],
+        'measurement': measurement,
         'from_value': parseFloat(from_to[0]),
         'to_value': parseFloat(from_to[1]),
     };
@@ -259,19 +264,8 @@ function set_filter_measurement(new_measurement) {
     if ( new_measurement === present_filter_measurement ) {
         return;
     }
-    fetch('/filter/set_measurement', {
-        method: 'POST',
-        headers:{
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({'measurement': new_measurement}),
-    }).then(() => {
-        present_filter_measurement = new_measurement;
-        refresh_filter_panel();
-    }).catch(error => {
-        console.log(error);
-        refresh_filter_panel();
-    });
+    present_filter_measurement = new_measurement;
+    refresh_filter_panel();
 }
 
 $(function () {

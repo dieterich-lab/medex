@@ -76,7 +76,7 @@ def get_result_set_as_dict(query: Query):
 
 
 def test_numerical_filter(filter_service: FilterService, db_session, populate_data):
-    new_filter = NumericalFilter(from_value=39, to_value=43, min=30, max=43)
+    new_filter = NumericalFilter(measurement='baseline', from_value=39, to_value=43, min=30, max=43)
     filter_service.add_filter(entity='temperature', new_filter=new_filter)
 
     numerical_query_raw = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.value)
@@ -105,7 +105,7 @@ def test_numerical_filter(filter_service: FilterService, db_session, populate_da
 
 
 def test_categorical_filter(filter_service: FilterService, db_session, populate_data):
-    new_filter = CategoricalFilter(categories=['nein'])
+    new_filter = CategoricalFilter(measurement='baseline', categories=['nein'])
     filter_service.add_filter(entity='diabetes', new_filter=new_filter)
 
     numerical_query_raw = select(TableNumerical.name_id, TableNumerical.key, TableNumerical.value)
@@ -143,8 +143,8 @@ def test_delete_all_filters(filter_service: FilterService, db_session, populate_
 
 def _setup_filters_filtering_everything(filter_service):
     for entity, new_filter in [
-        ('diabetes', CategoricalFilter(categories=['nein'])),
-        ('temperature', NumericalFilter(from_value=39, to_value=43))
+        ('diabetes', CategoricalFilter(measurement='baseline', categories=['nein'])),
+        ('temperature', NumericalFilter(measurement='baseline', from_value=39, to_value=43))
     ]:
         filter_service.add_filter(entity=entity, new_filter=new_filter)
 
@@ -169,10 +169,9 @@ def test_dict(filter_service: FilterService, db_session, populate_data):
 
     assert filter_service.dict() == {
         'filtered_patient_count': 0,
-        'measurement': 'baseline',
         'filters': {
-            'diabetes': {'categories': ['nein']},
-            'temperature': {'from_value': 39.0, 'to_value': 43.0}
+            'diabetes': {'measurement': 'baseline', 'categories': ['nein']},
+            'temperature': {'measurement': 'baseline', 'from_value': 39.0, 'to_value': 43.0}
         }
     }
 
@@ -184,5 +183,4 @@ def test_dict_after_deleting_last_filter(filter_service: FilterService, db_sessi
     assert filter_service.dict() == {
         'filtered_patient_count': None,
         'filters': {},
-        'measurement': 'baseline'
     }

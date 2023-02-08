@@ -61,8 +61,9 @@
     <label for="{{ id_single_measurement }}">{{ d }}</label>
     <select name="{{ id_single_measurement }}" id="{{ id_single_measurement }}" class="js-example-basic-single"
             style="width: 100%">
+        <option value="" disabled selected>Search entity</option>
         {% for entity in name %}
-        <option value="{{ entity }}" {% if entity== select %}selected{% endif %}>{{ entity }}</option>
+        <option value="{{ entity }}">{{ entity }}</option>
         {% endfor %}
     </select>
 </div>
