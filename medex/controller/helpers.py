@@ -14,13 +14,6 @@ from medex.services.session import SessionService
 from medex.services.filter import FilterService
 from medex.services.entity import EntityService
 
-_default_measurement = None
-
-
-def init_controller_helper(default_measurement):
-    global _default_measurement
-    _default_measurement = default_measurement
-
 
 def get_session_id():
     if 'session_id' not in session:
