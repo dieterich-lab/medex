@@ -12,19 +12,21 @@ class EntityService:
 
     def __init__(self, database_session: Session):
         self._db = database_session
+        self._cache = None
 
     def get_all(self) -> List[Entity]:
-        categories_by_entity = self._get_categories_by_entity()
-        min_max_by_entity = self._get_min_max_by_entity()
-        rv = self._db.execute(
-            select(*self.ENTITY_COLUMNS)
-        )
-        raw_result = [
-            self._get_entity_from_row(x, categories_by_entity, min_max_by_entity)
-            for x in rv.all()
-        ]
-        sorted_result = sorted(raw_result, key=lambda x: x.key)
-        return sorted_result
+        if self._cache is None:
+            categories_by_entity = self._get_categories_by_entity()
+            min_max_by_entity = self._get_min_max_by_entity()
+            rv = self._db.execute(
+                select(*self.ENTITY_COLUMNS)
+            )
+            raw_result = [
+                self._get_entity_from_row(x, categories_by_entity, min_max_by_entity)
+                for x in rv.all()
+            ]
+            self._cache = sorted(raw_result, key=lambda x: x.key)
+        return self._cache
 
     def get_all_as_dict(self) -> List[Dict[str, any]]:
         result = [
@@ -84,3 +86,6 @@ class EntityService:
                 raw_entity['min'], raw_entity['max'] = 0.0, 1.0
 
         return Entity.parse_obj(raw_entity)
+
+    def refresh(self):
+        self._cache = None

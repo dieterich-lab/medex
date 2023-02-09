@@ -18,9 +18,9 @@ def populate_data(db_session):
         Patient(name_id='p1', case_id='case_p1'),
         Patient(name_id='p2', case_id='case_p2'),
 
-        NameType(orders=1, key='temperature', type='Double'),
-        NameType(orders=2, key='diabetes', type='String'),
-        NameType(orders=3, key='blood pressure', type='Double'),
+        NameType(key='temperature', type='Double'),
+        NameType(key='diabetes', type='String'),
+        NameType(key='blood pressure', type='Double'),
 
         TableCategorical(
             id=1, name_id='p1', case_id='case_p1', measurement='baseline', date='2015-03-05',
