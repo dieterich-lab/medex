@@ -10,11 +10,11 @@ from medex.services.entity import EntityService
 DEFAULT_ENTITIES = [
     {
         'key': 'cat1', 'type': 'String', 'description': None, 'categories': ['a', 'b'],
-        'orders': 1, 'show': None, 'synonym': None, 'unit': None
+        'show': None, 'synonym': None, 'unit': None
     },
     {
         'key': 'num1', 'type': 'Double', 'unit': None,
-        'description': None, 'categories': None, 'orders': None, 'show': None, 'synonym': None
+        'description': None, 'categories': None, 'show': None, 'synonym': None
     },
 ]
 

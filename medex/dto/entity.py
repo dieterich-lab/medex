@@ -1,4 +1,5 @@
-from typing import Optional, List
+from dataclasses import Field
+from typing import Optional, List, Literal
 
 from pydantic import BaseModel, root_validator
 from enum import Enum
@@ -12,7 +13,6 @@ class EntityType(Enum):
 
 class Entity(BaseModel):
     key: str
-    orders: Optional[int]
     type: EntityType
     synonym: Optional[str]
     description: Optional[str]
