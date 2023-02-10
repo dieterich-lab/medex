@@ -31,7 +31,7 @@ class DatabaseSetup:
 
     def _check_if_legacy_setup(self):
         if not self._db_engine.dialect.has_table(self._db_engine, 'alembic_version'):
-            print(f"Database is legacy (no table alembic_version) - forcing data import.")
+            print('Database is legacy (no table alembic_version) - forcing data import.')
             self._is_import_required = True
 
     def _check_if_data_files_updated(self):
