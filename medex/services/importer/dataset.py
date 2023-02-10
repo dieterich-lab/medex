@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import TextIO, Dict, List
+from typing import TextIO, Dict
 
 from sqlalchemy import inspect, union, select, insert, text
 from sqlalchemy.orm import Session
 
-from medex.dto.entity import Entity, EntityType
+from medex.dto.entity import EntityType
 from medex.services.entity import EntityService
 from medex.services.importer.generic_importer import GenericImporter
 from modules.models import Base, TableNumerical, TableCategorical, TableDate, Patient
@@ -42,13 +42,13 @@ class DatasetImporter(GenericImporter):
         elif entity_type == EntityType.DATE:
             return self._parse_date_row(cooked_values)
         else:
-            raise NotImplemented(f"Not implemented: {entity_type.value}")
+            raise NotImplementedError(f"Not implemented: {entity_type.value}")
 
     def _check_isolated_values(self, values):
         if len(values['name_id']) < 1:
             raise ValueError('Gote empty name_id')
         if 'date' in values and not self._date_is_ok(values['date']):
-            raise ValueError(f"Date column not in format YYYY-MM-DD")
+            raise ValueError('Date column not in format YYYY-MM-DD')
 
     def _get_validated_entity_type(self, values):
         entity_key = values['key']
@@ -71,7 +71,7 @@ class DatasetImporter(GenericImporter):
         try:
             cooked_values['value'] = float(cooked_values['value'])
         except ValueError:
-            raise ValueError(f"The 'value' column must be numeric for this key'")
+            raise ValueError("The 'value' column must be numeric for this key'")
         return cooked_values, TableNumerical
 
     @staticmethod
@@ -79,7 +79,7 @@ class DatasetImporter(GenericImporter):
         try:
             cooked_values['value'] = datetime.strptime(cooked_values['value'], '%Y-%m-%d')
         except ValueError:
-            raise ValueError(f"The 'value' column must be in the format YYYY-MM-DD for this key'")
+            raise ValueError("The 'value' column must be in the format YYYY-MM-DD for this key'")
         return cooked_values, TableDate
 
     @staticmethod
