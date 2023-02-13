@@ -85,11 +85,14 @@ def test_minimal_import(db_session, entity_service):
 
     importer.import_all()
 
-    result = db_session.execute(select(TableCategorical.name_id, TableCategorical.key, TableCategorical.value)).all()
+    result = db_session.execute(select(
+        TableCategorical.name_id, TableCategorical.key, TableCategorical.value, TableCategorical.measurement
+    )).all()
     assert len(result) == 1
     assert result[0].name_id == 'some_patient'
     assert result[0].key == 'Diabetes'
     assert result[0].value == 'Type II'
+    assert result[0].measurement == '1'
 
 
 ALL_FIELDS_IMPORT = """name_id,case_id,measurement,date,time,key,value

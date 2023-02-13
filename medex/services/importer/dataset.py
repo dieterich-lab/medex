@@ -33,6 +33,7 @@ class DatasetImporter(GenericImporter):
     def parse_row(self, values: Dict[str, str]) -> (Dict[str, any], Base):
         cooked_values: Dict[str, any] = {**values}
         self._check_isolated_values(values)
+        self._add_defaults(cooked_values)
         entity_type = self._get_validated_entity_type(values)
 
         if entity_type == EntityType.NUMERICAL:
@@ -49,6 +50,11 @@ class DatasetImporter(GenericImporter):
             raise ValueError('Gote empty name_id')
         if 'date' in values and not self._date_is_ok(values['date']):
             raise ValueError('Date column not in format YYYY-MM-DD')
+
+    @staticmethod
+    def _add_defaults(cooked_values):
+        if 'measurement' not in cooked_values:
+            cooked_values['measurement'] = '1'
 
     def _get_validated_entity_type(self, values):
         entity_key = values['key']
