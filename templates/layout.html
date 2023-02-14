@@ -34,8 +34,6 @@
 {# custom style #}
 {# requirements for bootstrap #}
 
-
-
 <div class="w3-bar w3-border w3-light-blue">
     <div class="w3-bar-item">{{ database_information[0] }}</div>
     <div class="w3-bar-item">{{ database_information[1] }}</div>
@@ -46,36 +44,33 @@
 </div>
 <div id="page" class="mx-4">
     <nav class="navbar navbar-light bg-light  ">
-        <a class="navbar-brand" href="/tutorial">Tutorial</a>
+        <a class="navbar-brand" href="/tutorial/">Tutorial</a>
         <ul class="nav mx-auto">
             <li class="nav-item">
-                <a class="nav-link" href="/filtered_data">Table browser</a>
+                <a class="nav-link" href="/filtered_data/">Table browser</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/basic_stats">Basic Stats</a>
+                <a class="nav-link" href="/basic_stats/">Basic Stats</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/scatter_plot">Scatter plot</a>
+                <a class="nav-link" href="/scatter_plot/">Scatter plot</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/barchart">Barchart</a>
+                <a class="nav-link" href="/barchart/">Barchart</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/histogram">Histogram</a>
+                <a class="nav-link" href="/histogram/">Histogram</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/boxplot">Boxplot</a>
+                <a class="nav-link" href="/boxplot/">Boxplot</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/heatmap">Heatmap</a>
+                <a class="nav-link" href="/heatmap/">Heatmap</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/logout">Logout</a>
+                <a class="nav-link" href="/logout/">Logout</a>
             </li>
         </ul>
-        <button onclick="location.href='{{ meddusa[0] }}'" type="button" class="btn btn-outline-info"
-                style="display: none"> Meddusa
-        </button>
     </nav>
     {% block body %}
     {% endblock %}
