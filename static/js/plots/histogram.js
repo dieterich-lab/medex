@@ -9,7 +9,7 @@ function display_histogram_plot() {
             </div>
         `;
     } else {
-        const uri = '/plot/histogram/json?' + result.search_params;
+        const uri = '/histogram/json?' + result.search_params;
         fetch(uri, {method: 'GET'})
         .then(response => response.json())
         .then(data => {
@@ -37,7 +37,7 @@ function get_query_parameters() {
 
 function get_svg_for_download() {
     const result = get_query_parameters();
-    const base_uri = '/plot/histogram/download?';
+    const base_uri = '/histogram/download?';
     const uri = base_uri + result.search_params;
     let div = document.getElementById('histogram_svg_download');
     div.innerHTML = `

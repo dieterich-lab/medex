@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request, make_response
+from flask import Blueprint, request, make_response, render_template
 
 from medex.controller.helpers import get_histogram_service
 from medex.dto.histogram import HistogramDataRequest
@@ -8,7 +8,14 @@ from medex.dto.histogram import HistogramDataRequest
 histogram_controller = Blueprint('histogram_controller', __name__)
 
 
-@histogram_controller.route('/histogram/json', methods=['GET'])
+@histogram_controller.route('/', methods=['GET'])
+def init_histogram():
+    number_of_bins = 20
+    return render_template('histogram.html',
+                           number_of_bins=number_of_bins)
+
+
+@histogram_controller.route('/json', methods=['GET'])
 def get_histogram_json():
     service = get_histogram_service()
     histogram_request = _get_parsed_request()
@@ -16,7 +23,7 @@ def get_histogram_json():
     return image_json
 
 
-@histogram_controller.route('/histogram/download', methods=['GET'])
+@histogram_controller.route('/download', methods=['GET'])
 def get_histogram_svg_download():
     service = get_histogram_service()
     histogram_request = _get_parsed_request()

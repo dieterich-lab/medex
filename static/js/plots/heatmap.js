@@ -9,7 +9,7 @@ function display_heatmap_plot() {
             </div>
         `;
     } else {
-        const uri = '/plot/heatmap/json?' + result.search_params;
+        const uri = '/heatmap/json?' + result.search_params;
         fetch(uri, {method: 'GET'})
         .then(response => response.json())
         .then(data => {
@@ -22,7 +22,7 @@ function display_heatmap_plot() {
 
 function get_svg_download() {
     const result = get_query_parameter_string();
-    const base_uri = '/plot/heatmap/download?';
+    const base_uri = '/heatmap/download?';
     const uri = base_uri + result.search_params;
     let div = document.getElementById('heatmap_svg_download');
     div.innerHTML = `

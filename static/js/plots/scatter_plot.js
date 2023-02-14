@@ -9,7 +9,7 @@ function display_scatter_plot() {
             </div>
         `;
     } else {
-        const uri = '/plot/scatter_plot/json?' + result.search_params;
+        const uri = '/scatter_plot/json?' + result.search_params;
         fetch(uri, {method: 'GET'})
         .then(response => response.json())
         .then(data => {
@@ -22,7 +22,7 @@ function display_scatter_plot() {
 
 function get_svg_download() {
     const result = get_search_params();
-    const base_uri = '/plot/scatter_plot/download?';
+    const base_uri = '/scatter_plot/download?';
     const uri = base_uri + result.search_params;
     let div = document.getElementById('svg_download');
     div.innerHTML = `

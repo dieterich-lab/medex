@@ -1,12 +1,17 @@
 import csv
 import io
 import json
-from flask import Blueprint, request, send_file, jsonify
+from flask import Blueprint, request, send_file, jsonify, render_template
 from medex.controller.helpers import get_basic_stats_service
 from medex.dto.basic_stats import BasicStatsNumericalDataRequest, BasicStatsCategoricalDataRequest, \
     BasicStatsDateRequest
 
 basic_stats_controller = Blueprint('basic_stats_controller', __name__)
+
+
+@basic_stats_controller.route('/', methods=['GET'])
+def init_basic_stats():
+    return render_template('basic_stats/basic_stats.html')
 
 
 @basic_stats_controller.route('/numerical', methods=['GET'])

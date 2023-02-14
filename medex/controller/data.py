@@ -2,12 +2,17 @@ import csv
 import json
 import io
 
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify, send_file, render_template
 
 from medex.controller.helpers import get_data_service
 from medex.dto.data import FilteredDataRequest, SortOrder, SortDirection, SortItem, FilteredDataFlatResponse
 
 data_controller = Blueprint('data_controller', __name__)
+
+
+@data_controller.route('/', methods=['GET'])
+def init_data():
+    return render_template('data.html')
 
 
 @data_controller.route('/flat', methods=['GET'])

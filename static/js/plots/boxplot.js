@@ -9,7 +9,7 @@ function display_boxplot() {
             </div>
         `;
     } else {
-        const uri = '/plot/boxplot/json?' + result.search_params;
+        const uri = '/boxplot/json?' + result.search_params;
         fetch(uri, {method: 'GET'})
         .then(response => response.json())
         .then(data => {
@@ -38,7 +38,7 @@ function get_query_parameters() {
 
 function get_svg_for_download() {
     const result = get_query_parameters();
-    const base_uri = '/plot/boxplot/download?';
+    const base_uri = '/boxplot/download?';
     const uri = base_uri + result.search_params;
     let div = document.getElementById('boxplot_svg_download');
     div.innerHTML = `
