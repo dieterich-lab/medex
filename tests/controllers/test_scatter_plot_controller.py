@@ -22,7 +22,7 @@ def test_client():
 
 def test_get_image_json(test_client, helper_mock):
     query_string = _get_query_parameter_string()
-    url = '/scatter_plot/json?' + query_string
+    url = '/json?' + query_string
     url = url.replace('%27', '%22')
     rv = test_client.get(url)
     assert rv.status == '200 OK'
@@ -30,7 +30,7 @@ def test_get_image_json(test_client, helper_mock):
 
 def test_get_svg_download(test_client, helper_mock):
     query_string = _get_query_parameter_string()
-    url = '/scatter_plot/download?' + query_string
+    url = '/download?' + query_string
     url = url.replace('%27', '%22')
     rv = test_client.get(url)
     assert rv.status == '200 OK'

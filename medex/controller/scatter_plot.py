@@ -1,12 +1,17 @@
 import json
-from flask import Blueprint, request, make_response
+from flask import Blueprint, request, make_response, render_template
 from medex.controller.helpers import get_scatter_plot_service
 from medex.dto.scatter_plot import ScatterPlotDataRequest
 
 scatter_plot_controller = Blueprint('scatter_plot_controller', __name__)
 
 
-@scatter_plot_controller.route('/scatter_plot/json', methods=['GET'])
+@scatter_plot_controller.route('/', methods=['GET'])
+def init_scatter_plot():
+    return render_template('scatter_plot.html')
+
+
+@scatter_plot_controller.route('/json', methods=['GET'])
 def get_scatter_plot_json():
     scatter_plot_service = get_scatter_plot_service()
     scatter_plot_request = _get_parsed_request()
@@ -14,7 +19,7 @@ def get_scatter_plot_json():
     return image_json
 
 
-@scatter_plot_controller.route('/scatter_plot/download', methods=['GET'])
+@scatter_plot_controller.route('/download', methods=['GET'])
 def get_scatter_plot_svg_for_download():
     scatter_plot_service = get_scatter_plot_service()
     scatter_plot_request = _get_parsed_request()

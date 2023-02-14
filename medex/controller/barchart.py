@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request, make_response
+from flask import Blueprint, request, make_response, render_template
 
 from medex.controller.helpers import get_barchart_service
 from medex.dto.barchart import BarChartDataRequest
@@ -8,7 +8,12 @@ from medex.dto.barchart import BarChartDataRequest
 barchart_controller = Blueprint('barchart_controller', __name__)
 
 
-@barchart_controller.route('/barchart/json', methods=['GET'])
+@barchart_controller.route('/', methods=['GET'])
+def init_barchart():
+    return render_template('barchart.html')
+
+
+@barchart_controller.route('/json', methods=['GET'])
 def get_barchart_json():
     service = get_barchart_service()
     barchart_request = _get_parsed_request()
@@ -16,7 +21,7 @@ def get_barchart_json():
     return image_json
 
 
-@barchart_controller.route('/barchart/download', methods=['GET'])
+@barchart_controller.route('/download', methods=['GET'])
 def get_barchart_svg():
     service = get_barchart_service()
     barchart_request = _get_parsed_request()

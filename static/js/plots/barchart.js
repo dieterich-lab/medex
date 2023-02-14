@@ -9,7 +9,7 @@ function display_barchart() {
             </div>
         `;
     } else {
-        const uri = '/plot/barchart/json?' + result.search_params;
+        const uri = '/barchart/json?' + result.search_params;
         fetch(uri, {method: 'GET'})
         .then(response => response.json())
         .then(data => {
@@ -22,7 +22,7 @@ function display_barchart() {
 
 function get_svg_download() {
     const result = get_search_parameters();
-    const base_uri = '/plot/barchart/download?';
+    const base_uri = '/barchart/download?';
     const uri = base_uri + result.search_params;
     let div = document.getElementById('barchart_svg_download');
     div.innerHTML = `

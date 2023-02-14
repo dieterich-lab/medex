@@ -105,49 +105,35 @@ def message_count():
                 limit_offset=session.get('limit_offset')
                 )
 
-from medex.controller.basic_stats import basic_stats_controller  # noqa
-from medex.controller.heatmap import heatmap_controller  # noqa
-from medex.controller.boxplot import boxplot_controller  # noqa
-from medex.controller.histogram import histogram_controller # noqa
-from medex.controller.barchart import barchart_controller # noqa
-from medex.controller.scatter_plot import scatter_plot_controller # noqa
-from medex.controller.data import data_controller  # noqa
-from medex.controller.entity import entity_controller  # noqa
 from medex.controller.filter import filter_controller  # noqa
-from url_handlers.data import data_page  # noqa
-from url_handlers.basic_stats import basic_stats_page  # noqa
-from url_handlers.histogram import histogram_page  # noqa
-from url_handlers.boxplot import boxplot_page  # noqa
-from url_handlers.scatter_plot import scatter_plot_page  # noqa
-from url_handlers.barchart import barchart_page  # noqa
-from url_handlers.heatmap import heatmap_plot_page  # noqa
-from url_handlers.logout import logout_page  # noqa
-from url_handlers.tutorial import tutorial_page  # noqa
+from medex.controller.entity import entity_controller  # noqa
+from medex.controller.data import data_controller  # noqa
+from medex.controller.basic_stats import basic_stats_controller  # noqa
+from medex.controller.scatter_plot import scatter_plot_controller # noqa
+from medex.controller.barchart import barchart_controller # noqa
+from medex.controller.histogram import histogram_controller # noqa
+from medex.controller.boxplot import boxplot_controller  # noqa
+from medex.controller.heatmap import heatmap_controller  # noqa
+from medex.controller.tutorial import tutorial_controller  # noqa
+from medex.controller.logout import logout_controller  # noqa
 
-app.register_blueprint(data_page)
-app.register_blueprint(logout_page)
-app.register_blueprint(tutorial_page)
-app.register_blueprint(basic_stats_page)
-app.register_blueprint(histogram_page)
-app.register_blueprint(boxplot_page)
-app.register_blueprint(scatter_plot_page)
-app.register_blueprint(barchart_page)
-app.register_blueprint(heatmap_plot_page)
 app.register_blueprint(filter_controller, url_prefix='/filter')
 app.register_blueprint(entity_controller, url_prefix='/entity')
 app.register_blueprint(data_controller, url_prefix='/filtered_data')
-app.register_blueprint(scatter_plot_controller, url_prefix='/plot')
-app.register_blueprint(barchart_controller, url_prefix='/plot')
-app.register_blueprint(histogram_controller, url_prefix='/plot')
-app.register_blueprint(boxplot_controller, url_prefix='/plot')
-app.register_blueprint(heatmap_controller, url_prefix='/plot')
 app.register_blueprint(basic_stats_controller, url_prefix='/basic_stats')
+app.register_blueprint(scatter_plot_controller, url_prefix='/scatter_plot')
+app.register_blueprint(barchart_controller, url_prefix='/barchart')
+app.register_blueprint(histogram_controller, url_prefix='/histogram')
+app.register_blueprint(boxplot_controller, url_prefix='/boxplot')
+app.register_blueprint(heatmap_controller, url_prefix='/heatmap')
+app.register_blueprint(tutorial_controller, url_prefix='/tutorial')
+app.register_blueprint(logout_controller, url_prefix='/logout')
 
 
 # Direct to Data browser website during opening the program.
 @app.route('/', methods=['GET'])
 def login_get():
-    return redirect('/data')
+    return redirect('/filtered_data')
 
 
 def main():

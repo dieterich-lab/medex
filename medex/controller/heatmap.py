@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request, make_response
+from flask import Blueprint, request, make_response, render_template
 
 from medex.controller.helpers import get_heatmap_service
 from medex.dto.heatmap import HeatmapDataRequest
@@ -8,7 +8,12 @@ from medex.dto.heatmap import HeatmapDataRequest
 heatmap_controller = Blueprint('heatmap_controller', __name__)
 
 
-@heatmap_controller.route('/heatmap/json', methods=['GET'])
+@heatmap_controller.route('/', methods=['GET'])
+def init_heatmap():
+    return render_template('heatmap.html')
+
+
+@heatmap_controller.route('/json', methods=['GET'])
 def get_heatmap_plot_json():
     service = get_heatmap_service()
     heatmap_request = _get_parsed_request()
@@ -16,7 +21,7 @@ def get_heatmap_plot_json():
     return image_json
 
 
-@heatmap_controller.route('/heatmap/download', methods=['GET'])
+@heatmap_controller.route('/download', methods=['GET'])
 def get_heatmap_svg_for_download():
     service = get_heatmap_service()
     heatmap_request = _get_parsed_request()

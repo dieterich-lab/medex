@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request, make_response
+from flask import Blueprint, request, make_response, render_template
 
 from medex.controller.helpers import get_boxplot_service
 from medex.dto.boxplot import BoxplotDataRequest
@@ -8,7 +8,12 @@ from medex.dto.boxplot import BoxplotDataRequest
 boxplot_controller = Blueprint('boxplot_controller', __name__)
 
 
-@boxplot_controller.route('/boxplot/json', methods=['GET'])
+@boxplot_controller.route('/', methods=['GET'])
+def init_boxplot():
+    return render_template('boxplot.html')
+
+
+@boxplot_controller.route('/json', methods=['GET'])
 def get_json():
     service = get_boxplot_service()
     boxplot_request = _get_boxplot_request()
@@ -16,7 +21,7 @@ def get_json():
     return merged_json
 
 
-@boxplot_controller.route('/boxplot/download', methods=['GET'])
+@boxplot_controller.route('/download', methods=['GET'])
 def get_svg():
     service = get_boxplot_service()
     boxplot_request = _get_boxplot_request()
