@@ -117,3 +117,14 @@ function get_parameter_string(measurement_x_axis, entity_x_axis, measurement_y_a
 function is_valid_entity(x){
     return (!!x && x !== '' && x !== 'Search Entity')
 }
+
+$(function () {
+    // apply filters for add group by
+    $(document).on('change', '#add_group_by', function() {
+        if(this.checked === false) {
+          $('#add_group').addClass('d-none');
+        } else {
+            $('#add_group').removeClass('d-none');
+        }
+    });
+});
