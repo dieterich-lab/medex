@@ -1,4 +1,4 @@
-from os import unlink
+from os import unlink, stat
 from os.path import dirname, join, exists
 from pytest import fixture
 from sqlalchemy import select, func
@@ -38,3 +38,13 @@ def test_importer(db_session, config, marker):
     rs_papient = db_session.execute(select(func.count(Patient.case_id).label('count'))).first()
     patient_entries = rs_papient.count
     assert patient_entries == 200
+
+    assert exists(config.import_marker_path)
+    mtime_of_marker_file = stat(config.import_marker_path).st_mtime
+
+    importer = get_importer()
+    importer.setup_database()
+
+    assert exists(config.import_marker_path)
+    new_mtime_of_marker_file = stat(config.import_marker_path).st_mtime
+    assert new_mtime_of_marker_file == mtime_of_marker_file

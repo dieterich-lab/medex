@@ -1,4 +1,5 @@
 from os.path import exists
+from pathlib import Path
 
 from medex.services.database import get_db_session, get_db_engine
 from medex.services.entity import EntityService
@@ -39,6 +40,8 @@ class Importer:
             self._dataset_importer.populate_patient_table()
             print('Optimizing tables ...')
             self._dataset_importer.optimize_tables()
+            print(f"Touching {self._config.import_marker_path}")
+            Path(self._config.import_marker_path).touch()
         print('Database setup completed.')
 
     def _do_import_preflight_check(self):
