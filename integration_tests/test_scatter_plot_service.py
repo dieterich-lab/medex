@@ -10,9 +10,9 @@ from integration_tests.fixtures.db_session import db_session
 @pytest.fixture
 def setup_scatter_plot_data(db_session):
     db_session.add_all([
-        NameType(orders=1, key='diabetes', type='String'),
-        NameType(orders=2, key='blood_pressure', type='Double'),
-        NameType(orders=3, key='temperature', type='Double'),
+        NameType(key='diabetes', type='String'),
+        NameType(key='blood_pressure', type='Double'),
+        NameType(key='temperature', type='Double'),
         TableNumerical(
             name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood_pressure', value=129
         ),

@@ -1,4 +1,4 @@
-from os.path import normpath, basename, join
+from os.path import normpath, dirname, join
 
 
 class Config:
@@ -12,7 +12,7 @@ class Config:
             dataset_path: str = None,
     ):
         if base_directory is None:
-            base_directory = normpath(basename(basename(basename(basename(__file__)))))
+            base_directory = normpath(dirname(dirname(dirname(__file__))))
         self.base_directory = base_directory
 
         if import_directory is None:
@@ -20,7 +20,7 @@ class Config:
         self.import_directory = import_directory
 
         if import_marker_path is None:
-            self.import_marker_path = join(import_directory, '__IMPORT_MARKER__')
+            import_marker_path = join(import_directory, '__IMPORT_MARKER__')
         self.import_marker_path = import_marker_path
 
         if header_path is None:
@@ -41,3 +41,8 @@ _config = Config()
 
 def get_config() -> Config:
     return _config
+
+
+def set_config(config: Config):
+    global _config
+    _config = config
