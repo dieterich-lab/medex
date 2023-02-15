@@ -9,9 +9,10 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font-awesome.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='select2.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='popper.min.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/setup.js') }}"></script>
+
     <script>
         window.table_browser_data_selected_entities = [
             {% for entity_id in entities_selected %}
