@@ -1,8 +1,6 @@
 __pycache__
 *egg-info
 
-data
-
 .env
 .idea
 .vscode

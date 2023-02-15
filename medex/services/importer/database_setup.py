@@ -19,9 +19,11 @@ class DatabaseSetup:
         self._db_session = db_session
         self._config = config
         self._is_import_required = None
+        self._db_engine_connection = None
 
     def do_it(self) -> None:
         self._is_import_required = False
+        self._connect_to_db_engine()
         self._check_if_legacy_setup()
         self._check_if_data_files_updated()
         if self._is_import_required:
@@ -29,8 +31,11 @@ class DatabaseSetup:
             self._configure_database()
         self._update_database_schema()
 
+    def _connect_to_db_engine(self):
+        self._db_engine_connection = self._db_engine.connect().execution_options(isolation_level="AUTOCOMMIT")
+
     def _check_if_legacy_setup(self):
-        if not self._db_engine.dialect.has_table(self._db_engine, 'alembic_version'):
+        if not self._db_engine_connection.dialect.has_table(self._db_engine_connection, 'alembic_version'):
             print('Database is legacy (no table alembic_version) - forcing data import.')
             self._is_import_required = True
 
@@ -40,6 +45,7 @@ class DatabaseSetup:
         if not exists(import_marker_path):
             print(f"File '{import_marker_path}' does not exist - forcing data import.")
             self._is_import_required = True
+            return
         marker_mtime = stat(import_marker_path).st_mtime
         for path in [
             config.header_path,
@@ -55,20 +61,18 @@ class DatabaseSetup:
         Base.metadata.drop_all(self._db_engine)
 
     def _configure_database(self):
-        c = self._db_engine.connect().execution_options(isolation_level="AUTOCOMMIT")
         for command in [
             "ALTER SYSTEM SET work_mem='2GB'",
             "ALTER SYSTEM SET max_parallel_workers_per_gather=7",
         ]:
-            c.execute(text(command))
+            self._db_engine_connection.execute(text(command))
 
-    @staticmethod
-    def _update_database_schema():
+    def _update_database_schema(self):
         cmd = ['alembic', 'upgrade', 'head']
         cmd_str = ' '.join(cmd)
         print('Ensure that database schema is up-to date:')
         print(f"Running {cmd_str} ...")
-        process = run(cmd)
+        process = run(cmd, cwd=self._config.base_directory)
         return_status = process.returncode
         if return_status != 0:
             raise DatabaseSchemaUpdateFailed(f"The command '{cmd_str}' exited with status {return_status}")

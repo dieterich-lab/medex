@@ -17,7 +17,6 @@ def test_it(db_session, filter_service):
         case_id='b',
     ))
     db_session.add(NameType(
-        orders=1,
         key='Bmi',
         type='Double',
     ))
