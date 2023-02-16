@@ -33,7 +33,7 @@ def test_expire_old_sessions_on_fresh_session(db_session, freezer):
 
     SessionService.expire_old_sessions(db_session)
 
-    assert db_session.query(Sessions).get('old-session') is None
+    assert db_session.get(Sessions, 'old-session') is None
     assert len(
         db_session.query(SessionNameIdsMatchingFilter)
         .where(SessionNameIdsMatchingFilter.session_id == 'old-session')
@@ -41,11 +41,11 @@ def test_expire_old_sessions_on_fresh_session(db_session, freezer):
     ) == 0
     assert len(
         db_session.query(SessionFilteredNameIds)
-        .where(SessionNameIdsMatchingFilter.session_id == 'old-session')
+        .where(SessionFilteredNameIds.session_id == 'old-session')
         .all()
     ) == 0
 
-    assert db_session.query(Sessions).get('fresh-session') is not None
+    assert db_session.get(Sessions, 'fresh-session') is not None
     assert len(
         db_session.query(SessionNameIdsMatchingFilter)
         .where(SessionNameIdsMatchingFilter.session_id == 'fresh-session')
@@ -53,6 +53,6 @@ def test_expire_old_sessions_on_fresh_session(db_session, freezer):
     ) == 1
     assert len(
         db_session.query(SessionFilteredNameIds)
-        .where(SessionNameIdsMatchingFilter.session_id == 'fresh-session')
+        .where(SessionFilteredNameIds.session_id == 'fresh-session')
         .all()
     ) == 1
