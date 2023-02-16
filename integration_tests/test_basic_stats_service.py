@@ -13,10 +13,10 @@ def setup_basic_stats_data(db_session):
         Patient(name_id='p1', case_id='c1'),
         Patient(name_id='p2', case_id='c2'),
         Patient(name_id='p3', case_id='c3'),
-        NameType(orders=1, key='blood pressure', type='Double'),
-        NameType(orders=2, key='temperature', type='Double'),
-        NameType(orders=3, key='diabetes', type='String'),
-        NameType(orders=4, key='biopsy', type='String'),
+        NameType(key='blood pressure', type='Double'),
+        NameType(key='temperature', type='Double'),
+        NameType(key='diabetes', type='String'),
+        NameType(key='biopsy', type='String'),
         TableNumerical(
             name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=129
         ),
