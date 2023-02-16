@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 import modules.load_data_to_select as ps
 from medex.services.database import get_database_url, init_db
 from medex.services.scheduler import Scheduler
-from modules.import_data import start_import
+from medex.services.importer import get_importer
 
 # create the application object
 app = Flask(__name__)
@@ -28,7 +28,7 @@ def check_for_env(key: str, default=None, cast=None):
 
 
 with app.app_context():
-    start_import()
+    get_importer().setup_database()
 
 if os.environ.get('IMPORT_DISABLED') is None:
     scheduler = Scheduler(app)

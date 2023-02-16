@@ -12,7 +12,6 @@ class EntityType(Enum):
 
 class Entity(BaseModel):
     key: str
-    orders: Optional[int]
     type: EntityType
     synonym: Optional[str]
     description: Optional[str]

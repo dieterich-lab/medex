@@ -10,8 +10,8 @@ from medex.dto.data import SortOrder, SortItem, SortDirection
 @pytest.fixture
 def setup_data_new(db_session):
     db_session.add_all([
-        NameType(orders=1, key='diabetes', type='String'),
-        NameType(orders=2, key='blood pressure', type='Double'),
+        NameType(key='diabetes', type='String'),
+        NameType(key='blood pressure', type='Double'),
         TableCategorical(
             name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='diabetes', value='nein'
         ),

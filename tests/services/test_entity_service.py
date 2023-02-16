@@ -40,10 +40,10 @@ def test_get_all_as_dict(db_session, setup_entities):
     assert service.get_all_as_dict() == [
         {
             'key': 'Blutdruck', 'type': 'Double', 'unit': 'mmHg', 'min': 123.0, 'max': 145.0,
-            'description': None, 'categories': None, 'orders': None, 'show': None, 'synonym': None
+            'description': None, 'categories': None, 'show': None, 'synonym': None
         },
         {
             'key': 'Diabetes', 'type': 'String', 'description': 'Diabetes ja/nein', 'categories': ['ja', 'nein'],
-            'orders': None, 'show': None, 'synonym': None, 'unit': None, 'min': None, 'max': None,
+            'show': None, 'synonym': None, 'unit': None, 'min': None, 'max': None,
         },
     ]

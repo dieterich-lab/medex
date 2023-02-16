@@ -21,7 +21,6 @@ class Patient(Base):
 
 class NameType(Base):
     __tablename__ = "name_type"
-    orders = Column(Integer)
     key = Column(String, primary_key=True)
     type = Column(String)
     synonym = Column(String)

@@ -10,8 +10,8 @@ from integration_tests.fixtures.db_session import db_session
 @pytest.fixture
 def setup_barchart_data(db_session):
     db_session.add_all([
-        NameType(orders=1, key='diabetes', type='String'),
-        NameType(orders=1, key='gender', type='String'),
+        NameType(key='diabetes', type='String'),
+        NameType(key='gender', type='String'),
         TableCategorical(
             name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='diabetes', value='nein'
         ),
