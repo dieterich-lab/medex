@@ -27,7 +27,10 @@ class DataService:
     ) -> (List[dict], int):
         query_select = self._get_union_of_tables(entities, measurements)
         query_with_filter = self._filter_service.apply_filter_to_complex_query(query_select)
-        query_with_total = self._get_query_with_total(query_with_filter)
+        query_with_total = self._get_query_with_total(
+            query_with_filter,
+            group_by=['name_id', 'measurement', 'key']
+        )
         query_ordered = self._get_ordered_data(query_with_total, sort_order)
         query_with_limit = self._get_query_with_limit(limit, offset, query_ordered)
         result_dict, total = self._get_all_results(query_with_limit)
@@ -43,10 +46,13 @@ class DataService:
     ) -> (List[dict], int):
         query_select_union = self._get_union_of_tables(entities, measurements)
         query_select = self._get_entities_as_columns(query_select_union, entities)
-        query_select_with_order = self._get_ordered_data(query_select, sort_order)
-        query_with_filter = self._filter_service.apply_filter_to_complex_query(query_select_with_order)
-        query_with_total = self._get_query_with_total(query_with_filter)
-        query_with_limit = self._get_query_with_limit(limit, offset, query_with_total)
+        query_with_filter = self._filter_service.apply_filter_to_complex_query(query_select)
+        query_with_total = self._get_query_with_total(
+            query_with_filter,
+            group_by=['name_id', 'measurement']
+        )
+        query_select_with_order = self._get_ordered_data(query_with_total, sort_order)
+        query_with_limit = self._get_query_with_limit(limit, offset, query_select_with_order)
         result_dict, total = self._get_all_results(query_with_limit)
         return result_dict, total
 
@@ -106,9 +112,10 @@ class DataService:
         return query_with_filter
 
     @staticmethod
-    def _get_query_with_total(query_with_filter):
+    def _get_query_with_total(query_with_filter, group_by):
         total_count = func.count(query_with_filter.exported_columns.name_id).over().label('total')
-        query_with_total = select(*query_with_filter.exported_columns, total_count)
+        query_with_total = select(*query_with_filter.exported_columns, total_count) \
+            .group_by(*[query_with_filter.exported_columns[x] for x in group_by])
         return query_with_total
 
     def _get_all_results(self, query_with_limit):
