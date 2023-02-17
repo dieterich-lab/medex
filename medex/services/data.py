@@ -26,10 +26,13 @@ class DataService:
             sort_order: Optional[SortOrder] = None,
     ) -> (List[dict], int):
         query_select = self._get_union_of_tables(entities, measurements)
-        query_ordered = self._get_ordered_data(query_select, sort_order)
-        query_with_filter = self._filter_service.apply_filter_to_complex_query(query_ordered)
-        query_with_total = self._get_query_with_total(query_with_filter)
-        query_with_limit = self._get_query_with_limit(limit, offset, query_with_total)
+        query_with_filter = self._filter_service.apply_filter_to_complex_query(query_select)
+        query_with_total = self._get_query_with_total(
+            query_with_filter,
+            group_by=['name_id', 'measurement', 'key']
+        )
+        query_ordered = self._get_ordered_data(query_with_total, sort_order)
+        query_with_limit = self._get_query_with_limit(limit, offset, query_ordered)
         result_dict, total = self._get_all_results(query_with_limit)
         return result_dict, total
 
@@ -43,10 +46,13 @@ class DataService:
     ) -> (List[dict], int):
         query_select_union = self._get_union_of_tables(entities, measurements)
         query_select = self._get_entities_as_columns(query_select_union, entities)
-        query_select_with_order = self._get_ordered_data(query_select, sort_order)
-        query_with_filter = self._filter_service.apply_filter_to_complex_query(query_select_with_order)
-        query_with_total = self._get_query_with_total(query_with_filter)
-        query_with_limit = self._get_query_with_limit(limit, offset, query_with_total)
+        query_with_filter = self._filter_service.apply_filter_to_complex_query(query_select)
+        query_with_total = self._get_query_with_total(
+            query_with_filter,
+            group_by=['name_id', 'measurement']
+        )
+        query_select_with_order = self._get_ordered_data(query_with_total, sort_order)
+        query_with_limit = self._get_query_with_limit(limit, offset, query_select_with_order)
         result_dict, total = self._get_all_results(query_with_limit)
         return result_dict, total
 
@@ -56,12 +62,12 @@ class DataService:
             select(table.name_id, table.measurement, table.key, cast(table.value, String))
             for table in [TableCategorical, TableNumerical, TableDate]
         ]
-        query_union = union(*list_query_tables)
+        query_union = union(*list_query_tables).subquery()
         query_select_union = (
-            select(*query_union.c)
+            select(query_union)
             .where(
-                and_(query_union.c.measurement.in_(measurements),
-                     query_union.c.key.in_(entities))
+                and_(query_union.exported_columns.measurement.in_(measurements),
+                     query_union.exported_columns.key.in_(entities))
             )
         )
 
@@ -94,7 +100,7 @@ class DataService:
                 desc(item.column) if item.direction.value == 'desc' else item.column
                 for idx, item in enumerate(sort_order.items)
             ]
-            query_select = query_select.order_by(*sort_columns)
+            return query_select.order_by(*sort_columns)
         return query_select
 
     @staticmethod
@@ -106,9 +112,10 @@ class DataService:
         return query_with_filter
 
     @staticmethod
-    def _get_query_with_total(query_with_filter):
-        total_count = func.count(query_with_filter.c.name_id).over().label('total')
-        query_with_total = select(*query_with_filter.c, total_count)
+    def _get_query_with_total(query_with_filter, group_by):
+        total_count = func.count(query_with_filter.exported_columns.name_id).over().label('total')
+        query_with_total = select(*query_with_filter.exported_columns, total_count) \
+            .group_by(*[query_with_filter.exported_columns[x] for x in group_by])
         return query_with_total
 
     def _get_all_results(self, query_with_limit):

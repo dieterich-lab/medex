@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, Index, text, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 from medex.services.database import get_db_engine, get_db_session
 

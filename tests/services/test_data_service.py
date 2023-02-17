@@ -37,7 +37,7 @@ def filter_service_mock():
     yield FilterServiceMock()
 
 
-def test_data_service_simple(db_session, filter_service_mock):
+def test_data_service_on_empty_database(db_session, filter_service_mock):
     service = DataService(
         database_session=db_session,
         filter_service=filter_service_mock

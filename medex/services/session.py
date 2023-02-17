@@ -18,7 +18,7 @@ class SessionService:
         if self._last_touched is not None and now < self._last_touched + self.TOUCH_GRACE_PERIOD:
             return
         db = self._database_session
-        session = db.query(Sessions).get(self._session_id)
+        session = db.get(Sessions, self._session_id)
         if session is None:
             session = Sessions(
                 id=self._session_id,
