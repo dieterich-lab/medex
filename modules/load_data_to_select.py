@@ -43,7 +43,7 @@ def get_number_of_patients():
 
 def get_entities():
     db_session = get_db_session()
-    query_select = select(NameType.key, NameType.type, NameType.description, NameType.synonym).order_by(NameType.orders)
+    query_select = select(NameType.key, NameType.type, NameType.description, NameType.synonym)
     results = db_session.execute(query_select).all()
     num_entities = [row.type == 'Double' for row in results]
     cat_entities = [row.type == 'String' for row in results]
