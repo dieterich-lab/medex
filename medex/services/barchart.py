@@ -71,16 +71,19 @@ class BarChartService:
     @staticmethod
     def _update_figure_layout(barchart_data, result):
         df = DataFrame(result.all())
-        df[barchart_data.key] = df[barchart_data.key].str.wrap(30).replace(to_replace=[r"\\n", "\n"],
-                                                                           value=["<br>", "<br>"],
-                                                                           regex=True)
-        df['%'] = 100 * df['count'] / df.groupby('measurement')['count'].transform('sum')
-        legend = textwrap.wrap(barchart_data.key, width=20)
-        y = 'count' if barchart_data.plot_type == 'count' else '%'
-        fig = px.bar(df, x='measurement', y=y, color=barchart_data.key, barmode='group', template="plotly_white")
-        fig.update_layout(
-            font=dict(size=16),
-            legend_title='<br>'.join(legend),
-            title={'text': barchart_data.key, 'x': 0.5, 'xanchor': 'center'}
-        )
+        if df.empty:
+            fig = {'data': [], 'layout': {}}
+        else:
+            df[barchart_data.key] = df[barchart_data.key].str.wrap(30).replace(to_replace=[r"\\n", "\n"],
+                                                                               value=["<br>", "<br>"],
+                                                                               regex=True)
+            df['%'] = 100 * df['count'] / df.groupby('measurement')['count'].transform('sum')
+            legend = textwrap.wrap(barchart_data.key, width=20)
+            y = 'count' if barchart_data.plot_type == 'count' else '%'
+            fig = px.bar(df, x='measurement', y=y, color=barchart_data.key, barmode='group', template="plotly_white")
+            fig.update_layout(
+                font=dict(size=16),
+                legend_title='<br>'.join(legend),
+                title={'text': barchart_data.key, 'x': 0.5, 'xanchor': 'center'}
+            )
         return fig

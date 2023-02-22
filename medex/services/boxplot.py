@@ -21,9 +21,12 @@ class BoxplotService:
 
     def get_boxplot_json(self, boxplot_data):
         df = self._histogram_service.get_dataframe_for_histogram_and_boxplot(boxplot_data)
-        fig_table = self._get_boxplot_count_table(boxplot_data, df)
-        figure = self._get_boxplot_figure(boxplot_data, df)
-        figure = self._update_figure_layout(boxplot_data, figure)
+        if df.empty:
+            figure = fig_table = {'data': [], 'layout': {}}
+        else:
+            fig_table = self._get_boxplot_count_table(boxplot_data, df)
+            figure = self._get_boxplot_figure(boxplot_data, df)
+            figure = self._update_figure_layout(boxplot_data, figure)
         merged_json = {
             'image_json': figure,
             'table_json': fig_table

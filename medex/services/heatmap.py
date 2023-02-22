@@ -21,8 +21,11 @@ class HeatmapService:
 
     def get_heatmap_json(self, heatmap_data):
         df = self._get_results_dataframe(heatmap_data)
-        correlated_values, number_of_values = self._get_pearson_correlation(df)
-        fig = self._get_updated_figure(correlated_values, number_of_values, heatmap_data)
+        if df.empty:
+            fig = {'data': [], 'layout': {}}
+        else:
+            correlated_values, number_of_values = self._get_pearson_correlation(df)
+            fig = self._get_updated_figure(correlated_values, number_of_values, heatmap_data)
         image_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return image_json
 
@@ -38,7 +41,8 @@ class HeatmapService:
         query_with_filter = self._filter_service.apply_filter(TableNumerical, query_select)
         results = self._database_session.execute(query_with_filter)
         df = DataFrame(results.all())
-        df = df.drop(columns=['name_id'])
+        if not df.empty:
+            df = df.drop(columns=['name_id'])
         return df
 
     @staticmethod
