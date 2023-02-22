@@ -100,7 +100,7 @@ class GenericImporter:
         for line in self._file_handle:
             self._line_number += 1
             self._process_line(line)
-            if self._line_number % 1000 == 0:
+            if self._line_number % 10000 == 0:
                 print(f"   ... at line {self._line_number} ...")
         self._finish()
 

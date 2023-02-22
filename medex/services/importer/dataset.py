@@ -77,7 +77,8 @@ class DatasetImporter(GenericImporter):
         try:
             cooked_values['value'] = float(cooked_values['value'])
         except ValueError:
-            raise ValueError("The 'value' column must be numeric for this key'")
+            key = cooked_values['key']
+            raise ValueError(f"The 'value' column must be numeric for key '{key}'")
         return cooked_values, TableNumerical
 
     @staticmethod
