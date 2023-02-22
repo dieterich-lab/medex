@@ -92,20 +92,23 @@ class ScatterPlotService:
 
     def _create_scatter_plot_figure(self, result, scatter_plot_data):
         df = DataFrame(result.all())
-        df.rename(
-            columns={
-                'value1': f'{scatter_plot_data.entity_x_axis}_{scatter_plot_data.measurement_x_axis}',
-                'value2': f'{scatter_plot_data.entity_y_axis}_{scatter_plot_data.measurement_y_axis}'
-            },
-            inplace=True
-        )
-        number_of_points = len(df.index)
-        x_axis, y_axis = scatter_plot_data.entity_x_axis + '_' + scatter_plot_data.measurement_x_axis, \
-            scatter_plot_data.entity_y_axis + '_' + scatter_plot_data.measurement_y_axis
-        figure = go.Figure()
-        figure = self._add_trace_to_figure(scatter_plot_data.add_group_by, df, figure, x_axis, y_axis)
-        figure = self._update_figure_layout(scatter_plot_data, figure, number_of_points, x_axis, y_axis)
-        figure = self._get_log_scale(figure, scatter_plot_data)
+        if df.empty:
+            figure = {'data': [], 'layout': {}}
+        else:
+            df.rename(
+                columns={
+                    'value1': f'{scatter_plot_data.entity_x_axis}_{scatter_plot_data.measurement_x_axis}',
+                    'value2': f'{scatter_plot_data.entity_y_axis}_{scatter_plot_data.measurement_y_axis}'
+                },
+                inplace=True
+            )
+            number_of_points = len(df.index)
+            x_axis, y_axis = scatter_plot_data.entity_x_axis + '_' + scatter_plot_data.measurement_x_axis, \
+                scatter_plot_data.entity_y_axis + '_' + scatter_plot_data.measurement_y_axis
+            figure = go.Figure()
+            figure = self._add_trace_to_figure(scatter_plot_data.add_group_by, df, figure, x_axis, y_axis)
+            figure = self._update_figure_layout(scatter_plot_data, figure, number_of_points, x_axis, y_axis)
+            figure = self._get_log_scale(figure, scatter_plot_data)
         return figure
 
     @staticmethod
