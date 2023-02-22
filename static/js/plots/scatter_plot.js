@@ -14,8 +14,14 @@ function display_scatter_plot() {
         .then(response => response.json())
         .then(data => {
             div.innerHTML = ``;
-            Plotly.react('scatter_plot', data, {});
-            get_svg_download();
+            if (data.data.length === 0) {
+                alert('No Matching Data Found to Display');
+                console.log('No matching records available in the database');
+            }
+            else {
+                Plotly.react('scatter_plot', data, {});
+                get_svg_download();
+            }
         })
     }
 }

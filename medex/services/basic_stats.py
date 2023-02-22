@@ -34,8 +34,9 @@ class BasicStatisticsService:
         query_statistics = self._get_statistics(query_with_filter)
         rv = self._database_session.execute(query_statistics)
         df = DataFrame(rv.all())
-        n = self._get_patient_count()
-        df['count NaN'] = n - df['count']
+        if not df.empty:
+            n = self._get_patient_count()
+            df['count NaN'] = n - df['count']
         result_dict = df.to_dict(orient='records')
         return result_dict
 
@@ -110,11 +111,12 @@ class BasicStatisticsService:
     def _get_dataframe(self, query_select_stats):
         rv = self._database_session.execute(query_select_stats)
         df = DataFrame(rv.all())
-        total_patient_count = self._get_patient_count()
-        df['count NaN'] = total_patient_count - df['count']
-        df[['min', 'max', 'mean', 'median', 'stddev', 'stderr']] = df[
-            ['min', 'max', 'mean', 'median', 'stddev', 'stderr']
-        ].astype(float).round(decimals=2)
+        if not df.empty:
+            total_patient_count = self._get_patient_count()
+            df['count NaN'] = total_patient_count - df['count']
+            df[['min', 'max', 'mean', 'median', 'stddev', 'stderr']] = df[
+                ['min', 'max', 'mean', 'median', 'stddev', 'stderr']
+            ].astype(float).round(decimals=2)
         return df
 
     def _get_patient_count(self):

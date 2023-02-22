@@ -31,7 +31,10 @@ class HistogramService:
 
     def _get_histogram_plot(self, histogram_data):
         df = self.get_dataframe_for_histogram_and_boxplot(histogram_data)
-        fig = self._get_figure_with_layout(df, histogram_data)
+        if df.empty:
+            fig = {'data': [], 'layout': {}}
+        else:
+            fig = self._get_figure_with_layout(df, histogram_data)
         return fig
 
     def get_dataframe_for_histogram_and_boxplot(self, histogram_data):
@@ -69,11 +72,12 @@ class HistogramService:
     def _get_dataframe(self, histogram_data, query_with_filter):
         results = self._database_session.execute(query_with_filter)
         df = DataFrame(results.all())
-        df[histogram_data.categorical_entity] = df[histogram_data.categorical_entity].str.wrap(30).replace(
-            to_replace=[r"\\n", "\n"],
-            value=["<br>", "<br>"],
-            regex=True
-        )
+        if not df.empty:
+            df[histogram_data.categorical_entity] = df[histogram_data.categorical_entity].str.wrap(30).replace(
+                to_replace=[r"\\n", "\n"],
+                value=["<br>", "<br>"],
+                regex=True
+            )
         return df
 
     @staticmethod

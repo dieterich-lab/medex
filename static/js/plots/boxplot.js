@@ -14,9 +14,15 @@ function display_boxplot() {
         .then(response => response.json())
         .then(data => {
             div.innerHTML = ``;
-            Plotly.react('boxplot_table', data.table_json, {});
-            Plotly.react('boxplot', data.image_json, {});
-            get_svg_for_download();
+            if (data.image_json.data.length === 0) {
+                alert('No Matching Data Found to Display');
+                console.log('No matching records available in the database');
+            }
+            else {
+                Plotly.react('boxplot_table', data.table_json, {});
+                Plotly.react('boxplot', data.image_json, {});
+                get_svg_for_download();
+            }
         })
     }
 }
