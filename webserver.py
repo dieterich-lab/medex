@@ -7,6 +7,19 @@ from medex.services.database import get_database_url, init_db
 from medex.services.scheduler import Scheduler
 from medex.services.importer import get_importer
 
+from medex.controller.measurement import measurement_controller
+from medex.controller.filter import filter_controller
+from medex.controller.entity import entity_controller
+from medex.controller.data import data_controller
+from medex.controller.basic_stats import basic_stats_controller
+from medex.controller.scatter_plot import scatter_plot_controller
+from medex.controller.barchart import barchart_controller
+from medex.controller.histogram import histogram_controller
+from medex.controller.boxplot import boxplot_controller
+from medex.controller.heatmap import heatmap_controller
+from medex.controller.tutorial import tutorial_controller
+from medex.controller.logout import logout_controller
+
 # create the application object
 app = Flask(__name__)
 CORS(app)
@@ -40,7 +53,6 @@ with app.app_context():
     size_num_tab, size_date_tab, size_cat_tab = ps.get_database_information()
     start_date, end_date = ps.get_date()
     number_of_patients = ps.get_number_of_patients()
-    all_measurement, block_measurement = ps.get_measurement()
     length = ps.get_entities()
 
 # change this
@@ -73,7 +85,6 @@ def data_information():
 
     return dict(database_information=(database, len_numeric, size_numeric, len_categorical, size_categorical,
                                       number_of_patients_str),
-                measurement_tuple=(all_measurement, '{}:'.format(measurement_name), block_measurement),
                 meddusa=(Meddusa, MEDDUSA_URL),
                 )
 
@@ -105,18 +116,8 @@ def message_count():
                 limit_offset=session.get('limit_offset')
                 )
 
-from medex.controller.filter import filter_controller  # noqa
-from medex.controller.entity import entity_controller  # noqa
-from medex.controller.data import data_controller  # noqa
-from medex.controller.basic_stats import basic_stats_controller  # noqa
-from medex.controller.scatter_plot import scatter_plot_controller # noqa
-from medex.controller.barchart import barchart_controller # noqa
-from medex.controller.histogram import histogram_controller # noqa
-from medex.controller.boxplot import boxplot_controller  # noqa
-from medex.controller.heatmap import heatmap_controller  # noqa
-from medex.controller.tutorial import tutorial_controller  # noqa
-from medex.controller.logout import logout_controller  # noqa
 
+app.register_blueprint(measurement_controller, url_prefix='/measurement')
 app.register_blueprint(filter_controller, url_prefix='/filter')
 app.register_blueprint(entity_controller, url_prefix='/entity')
 app.register_blueprint(data_controller, url_prefix='/filtered_data')

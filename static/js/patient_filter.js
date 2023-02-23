@@ -1,18 +1,17 @@
 import {get_entity_by_key} from './entity.js';
+import {configure_single_measurement_select} from './measurement.js';
 import {configure_entity_selection} from "./entity_selection.js";
 import {configure_category_selection} from "./categories_selection.js";
 
 async function init() {
     refresh_filter_panel();
+    await configure_single_measurement_select('filter_measurement', 'filter_measurement_div', null,true);
     await configure_entity_selection('selected_filter', [], false, false);
     setup_measurement_filter_select();
 }
 
 function setup_measurement_filter_select() {
     let filter_measurement_select = $("#filter_measurement");
-    filter_measurement_select.select2({
-        placeholder: "Search entity"
-    });
     filter_measurement_select.change(() => {
         set_filter_measurement(filter_measurement_select.val());
     });

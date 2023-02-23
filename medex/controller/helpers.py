@@ -9,6 +9,7 @@ from medex.services.data import DataService
 from medex.services.database import get_db_session
 from medex.services.heatmap import HeatmapService
 from medex.services.histogram import HistogramService
+from medex.services.measurement import MeasurementService
 from medex.services.scatter_plot import ScatterPlotService
 from medex.services.session import SessionService
 from medex.services.filter import FilterService
@@ -88,3 +89,6 @@ def get_basic_stats_service():
     db_session = get_db_session()
     filter_service = get_filter_service()
     return BasicStatisticsService(db_session, filter_service)
+
+def get_measurement_service():
+    return MeasurementService(db_session=get_db_session())

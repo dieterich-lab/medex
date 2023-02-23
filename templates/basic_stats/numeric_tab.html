@@ -26,10 +26,7 @@ are defined in basic_stats.html. #}
                 <div class="card-body">
                     <div id="error_basic_stats_numerical">
                     </div>
-                    {% import 'macro_template.html' as m %}
-
-                    {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement_numeric",name
-                    =measurement_tuple[0],class="measurement",value=entity,select=measurement_numeric,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                    <div id="measurement_numeric_div"></div>
                     <div class="form-group">
                         <label for="basic_stats_numerical_entities_select">Numeric entities:</label>
                         <select id="basic_stats_numerical_entities_select" name="numeric_entities_multiple" multiple style="width: 100%" class="js-example-basic-single"

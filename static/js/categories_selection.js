@@ -1,4 +1,4 @@
-import {handle_select_all_choices} from "./utility.js";
+import {handle_select_special_choices} from "./utility.js";
 
 function configure_category_selection(element_id, categorical_entity) {
     render_categories_select(element_id, categorical_entity);
@@ -6,7 +6,7 @@ function configure_category_selection(element_id, categorical_entity) {
     cat_select.select2({
         placeholder:"Search entity",
     });
-    cat_select.on("select2:select", (e) => handle_select_all_choices(e, element_id));
+    cat_select.on("select2:select", (e) => handle_select_special_choices(e, element_id));
 }
 
 function render_categories_select(element_id, categorical_entity) {
