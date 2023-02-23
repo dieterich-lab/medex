@@ -1,6 +1,7 @@
 import {configure_entity_selection} from "./entity_selection.js";
 import {configure_category_selection} from "./categories_selection.js";
 import {get_entity_by_key} from "./entity.js";
+import {configure_multiple_measurement_select} from "./measurement.js";
 
 const entity_placeholder = {
     key: 'x',
@@ -8,6 +9,7 @@ const entity_placeholder = {
 };
 
 async function init() {
+    await configure_multiple_measurement_select('measurement', 'measurement_div');
     await configure_entity_selection(
         'barchart_categorical_entities_select', [],
         false, false

@@ -7,7 +7,7 @@ from modules.models import Header
 
 
 class HeaderImporter:
-    DEFAULT_HEADERS = ['Name_ID', 'Case_ID', 'measurement']
+    DEFAULT_HEADERS = ['Name_ID', 'Case_ID', 'Measurement']
 
     def __init__(self, file_handle: Optional[TextIO], source_name: Optional[str], db_session: Session):
         self._file_handle = file_handle

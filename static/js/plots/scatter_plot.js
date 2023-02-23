@@ -39,9 +39,9 @@ function get_svg_download() {
 }
 
 function get_search_params() {
-    const measurement_x_axis = document.getElementById('x_measurement').value;
+    const measurement_x_axis = document.getElementById('scatter_plot_x_measurement').value;
     const entity_x_axis = document.getElementById('scatter_plot_x_axis_numerical_entities_select').value;
-    const measurement_y_axis = document.getElementById('y_measurement').value;
+    const measurement_y_axis = document.getElementById('scatter_plot_y_measurement').value;
     const entity_y_axis = document.getElementById('scatter_plot_y_axis_numerical_entities_select').value;
     const date_dict = get_date_dict();
     const scale = get_scale_type();

@@ -59,6 +59,7 @@ class DatabaseSetup:
     def _reset_database(self):
         print('Resetting database - dropping all tables ...')
         Base.metadata.drop_all(self._db_engine)
+        self._db_engine_connection.execute(text('DROP TABLE alembic_version'))  # noqa
 
     def _configure_database(self):
         for command in [

@@ -37,10 +37,8 @@
             <div class="card-body">
                 <div id="error_scatter_plot">
                 </div>
-                {% import 'macro_template.html' as m %}
 
-                {{ m.entity_form_single_measurement(id_single_measurement= "x_measurement",name =
-                measurement_tuple[0],value=entity,select=x_measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                <div id="scatter_plot_x_measurement_div"></div>
                 <div class="form-group">
                     <label for="scatter_plot_x_axis_numerical_entities_select">X axis:</label>
                     <select id="scatter_plot_x_axis_numerical_entities_select" name="x_axis" style="width: 100%" class="js-example-basic-single"
@@ -48,8 +46,7 @@
                     >
                     </select>
                 </div>
-                {{ m.entity_form_single_measurement(id_single_measurement= "y_measurement",name =
-                measurement_tuple[0],value=entity,select=y_measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                <div id="scatter_plot_y_measurement_div"></div>
                 <div class="form-group">
                     <label for="scatter_plot_y_axis_numerical_entities_select">Y axis:</label>
                     <select id="scatter_plot_y_axis_numerical_entities_select" name="y_axis" multiple style="width: 100%" class="js-example-basic-single"
@@ -98,7 +95,8 @@
     <div class="card-header" id="results_header">
         <h5 class="mb-0">
             <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
-                    {% if x_measurement %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                    aria-controls="#numeric_results"
+            >
                 Results
             </button>
         </h5>
