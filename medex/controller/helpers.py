@@ -42,9 +42,15 @@ def store_filter_status_in_session(filter_service: FilterService):
     session['filter_status'] = filter_service.dict()
 
 
+_entity_service = None
+
+
 def get_entity_service():
-    database_session = get_db_session()
-    return EntityService(database_session)
+    global _entity_service
+    if _entity_service is None:
+        database_session = get_db_session()
+        _entity_service = EntityService(database_session)
+    return _entity_service
 
 
 def get_data_service():
