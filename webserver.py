@@ -95,11 +95,6 @@ def message_count():
     if 'filtering' not in session:
         session['filtering'] = {'filter_update': '0', 'case_id': 'No', 'filter_num': {}, 'filter_cat': {}}
 
-    if session.get('filtering')['case_id'] == 'No':
-        case_display = 'none'
-    else:
-        case_display = 'block'
-
     if start_date == end_date:
         date_block = 'none'
     else:
@@ -112,7 +107,6 @@ def message_count():
 
     return dict(date_block=date_block,
                 date=session.get('date_filter'),
-                case_display=case_display,
                 limit_offset=session.get('limit_offset')
                 )
 
