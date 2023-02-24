@@ -24,7 +24,7 @@ def test_default(db_session):
 
     headers = get_headers(db_session)
     assert headers.name_id == 'Name_ID'
-    assert headers.measurement == 'measurement'
+    assert headers.measurement == 'Measurement'
 
 
 def test_simple(db_session):
@@ -53,4 +53,4 @@ def test_bad_headers(db_session, capsys):
     assert capsys.readouterr().out.startswith('WARNING')
     headers = get_headers(db_session)
     assert headers.name_id == 'Name_ID'
-    assert headers.measurement == 'measurement'
+    assert headers.measurement == 'Measurement'
