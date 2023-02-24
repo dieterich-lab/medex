@@ -91,5 +91,11 @@ def get_basic_stats_service():
     return BasicStatisticsService(db_session, filter_service)
 
 
+_measurement_service = None
+
+
 def get_measurement_service():
-    return MeasurementService(db_session=get_db_session())
+    global _measurement_service
+    if _measurement_service is None:  # noqa
+        _measurement_service = MeasurementService(db_session=get_db_session())
+    return _measurement_service  # noqa
