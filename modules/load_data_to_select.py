@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import func, union
+from sqlalchemy import func
 from sqlalchemy.sql import select
 
 from medex.services.database import get_db_session

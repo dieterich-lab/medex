@@ -90,5 +90,6 @@ def get_basic_stats_service():
     filter_service = get_filter_service()
     return BasicStatisticsService(db_session, filter_service)
 
+
 def get_measurement_service():
     return MeasurementService(db_session=get_db_session())
