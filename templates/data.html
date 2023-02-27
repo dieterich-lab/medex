@@ -38,15 +38,7 @@
         <div id="settings" class="collapse show "
              aria-labelledby="c_settings_header" data-parent="#accordion">
             <div class="card-body">
-
-                {% import 'macro_template.html' as m %}
-
-                {% if error %}
-                {{ m.show_error(error) }}
-                {% endif %}
-
-                {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name
-                =measurement_tuple[0],class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                <div id="measurement_div"></div>
                 <label for="table_browser_entities_select">Entities:</label>
                 <select id="table_browser_entities_select" name="entities" multiple style="width: 100%" class="js-example-basic-single"
                         data-entity-types="String,Double,Date"

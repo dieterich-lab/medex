@@ -38,10 +38,7 @@
             <div class="card-body">
                 <div id="error_histogram">
                 </div>
-                {% import 'macro_template.html' as m %}
-
-                {{ m.entity_form_measurement_multiple(id_multi_measurement="measurement",name=measurement_tuple[0],
-                class="measurement",value=entity,select=measurement,d=measurement_tuple[1],block=measurement_tuple[2]) }}
+                <div id="measurement_div"></div>
                 <div class="form-group">
                     <label for="histogram_numerical_entities_select">Numeric entities:</label>
                     <select id="histogram_numerical_entities_select" name="numeric_entities" style="width: 100%" class="js-example-basic-single"

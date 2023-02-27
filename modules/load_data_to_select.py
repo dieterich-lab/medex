@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import func, union
+from sqlalchemy import func
 from sqlalchemy.sql import select
 
 from medex.services.database import get_db_session
@@ -50,22 +50,3 @@ def get_entities():
     date_entities = [row.type == 'Date' for row in results]
     length = (str(sum(num_entities)), str(sum(cat_entities)), str(sum(date_entities)))
     return length
-
-
-def get_measurement():
-    all_measurements = union(
-        select(TableCategorical.measurement.label('measurement'), TableCategorical.date.label('date')),
-        select(TableNumerical.measurement.label('measurement'), TableNumerical.date.label('date')),
-        select(TableDate.measurement.label('measurement'), TableDate.date.label('date')),
-    ).cte('all_measurements')
-    first_date = func.min(all_measurements.c.date)
-    ordered_list = (
-        select(all_measurements.c.measurement, first_date)
-        .group_by(all_measurements.c.measurement)
-        .order_by(first_date)
-    )
-    db = get_db_session()
-    rv = db.execute(ordered_list).all()
-    measurement_list = [getattr(x, 'measurement') for x in rv]
-    measurement_display = 'block' if len(rv) > 1 else 'none'
-    return measurement_list, measurement_display
