@@ -5,7 +5,7 @@ from sqlalchemy.orm import query
 
 from medex.dto.data import SortOrder
 from medex.services.filter import FilterService
-from modules.models import TableCategorical, TableNumerical, TableDate
+from medex.database_schema import TableCategorical, TableNumerical, TableDate
 
 
 class DataService:

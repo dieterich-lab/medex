@@ -14,11 +14,6 @@ class ScaleScatterPlot(BaseModel):
     log_y: bool
 
 
-class DateRange(BaseModel):
-    from_date: date
-    to_date: date
-
-
 class ScatterPlotDataRequest(BaseModel):
     measurement_x_axis: str
     entity_x_axis: str
@@ -26,4 +21,3 @@ class ScatterPlotDataRequest(BaseModel):
     entity_y_axis: str
     scale: Optional[ScaleScatterPlot]
     add_group_by: Optional[GroupByCategoricalEntity]
-    date_range: Optional[DateRange]

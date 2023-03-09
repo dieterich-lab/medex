@@ -267,30 +267,6 @@ function set_filter_measurement(new_measurement) {
     refresh_filter_panel();
 }
 
-$(function () {
-    function cd(start, end) {
-        $('#Date span').html(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
-    }
-    $('#Date').daterangepicker({
-        startDate: start,
-        endDate: end,
-    },cd);
-
-    cd(start,end);
-
-    // Still needed? What is this good for?
-    //
-    // $(".range").ionRangeSlider({
-    //     type: "double",
-    //     skin: "big",
-    //     grid: true,
-    //     grid_num: 4,
-    //     step: 0.001,
-    //     to_fixed:true,//block the top
-    //     from_fixed:true//block the from
-    // });
-});
-
 export {
     init, select_filter, add_or_update_categorical_filter, set_numerical_filter_from, set_numerical_filter_to,
     clear_all_filters, add_or_update_numerical_filter, set_filter_measurement

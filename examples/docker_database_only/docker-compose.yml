@@ -11,11 +11,3 @@ services:
       - POSTGRES_PASSWORD=test
       - POSTGRES_DB=example
     restart: always
-
-networks:
-  express-medex-meddusa-network:
-    external: true
-
-
-
-

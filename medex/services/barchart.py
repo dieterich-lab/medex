@@ -5,8 +5,9 @@ import plotly
 from pandas import DataFrame
 from sqlalchemy import select, func, distinct, literal_column, and_
 
+from medex.dto.barchart import BarChartDataRequest
 from medex.services.filter import FilterService
-from modules.models import TableCategorical
+from medex.database_schema import TableCategorical
 import plotly.express as px
 
 
@@ -23,13 +24,13 @@ class BarChartService:
         self._database_session = database_session
         self._filter_service = filter_service
 
-    def get_barchart_json(self, barchart_data):
+    def get_barchart_json(self, barchart_data: BarChartDataRequest):
         result = self._get_result_from_database(barchart_data)
         fig = self._update_figure_layout(barchart_data, result)
         image_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return image_json
 
-    def get_barchart_svg(self, barchart_data):
+    def get_barchart_svg(self, barchart_data: BarChartDataRequest):
         result = self._get_result_from_database(barchart_data)
         fig = self._update_figure_layout(barchart_data, result)
         image_data = fig.to_image(format='svg')
@@ -52,9 +53,6 @@ class BarChartService:
                 TableCategorical.key == barchart_data.key,
                 TableCategorical.value.in_(barchart_data.categories),
                 TableCategorical.measurement.in_(barchart_data.measurements),
-                TableCategorical.date.between(
-                    barchart_data.date_range.from_date.strftime('%Y-%m-%d'),
-                    barchart_data.date_range.to_date.strftime('%Y-%m-%d'))
             )
         ).group_by(TableCategorical.name_id, TableCategorical.measurement)
         return query_select

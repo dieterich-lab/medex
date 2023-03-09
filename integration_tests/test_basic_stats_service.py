@@ -1,7 +1,7 @@
 import pytest
-from medex.dto.basic_stats import BasicStatsNumericalDataRequest, DateRange
+from medex.dto.basic_stats import BasicStatsNumericalDataRequest
 from medex.services.basic_stats import BasicStatisticsService
-from modules.models import TableNumerical, NameType, Patient, TableCategorical
+from medex.database_schema import TableNumerical, NameType, Patient, TableCategorical
 from tests.mocks.filter_service import FilterServiceMock
 # noinspection PyUnresolvedReferences
 from integration_tests.fixtures.db_session import db_session
@@ -75,7 +75,6 @@ def _get_parsed_data_numerical():
     basic_stats_data = BasicStatsNumericalDataRequest(
         measurements=['baseline', 'follow up1'],
         entities=['blood pressure', 'temperature'],
-        date_range=DateRange(from_date='2021-05-15', to_date='2022-09-27')
     )
     return basic_stats_data
 
@@ -84,6 +83,5 @@ def _get_parsed_data_categorical():
     basic_stats_data = BasicStatsNumericalDataRequest(
         measurements=['baseline', 'follow up1'],
         entities=['diabetes', 'biopsy'],
-        date_range=DateRange(from_date='2021-05-15', to_date='2022-09-27')
     )
     return basic_stats_data

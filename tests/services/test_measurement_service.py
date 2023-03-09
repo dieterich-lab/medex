@@ -1,5 +1,4 @@
-import pytest
-from modules.models import TableCategorical, TableNumerical, Header
+from medex.database_schema import TableCategorical, TableNumerical, Header
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
 from medex.services.measurement import MeasurementService

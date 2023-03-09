@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from medex.services.importer.entitity import EntityImporter
 from medex.services.importer.generic_importer import HeaderLineMissing, BadHeaderLine
-from modules.models import NameType
+from medex.database_schema import NameType
 
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session

@@ -4,7 +4,7 @@ from pytest import fixture
 from sqlalchemy import select, func
 
 from medex.services.config import Config, set_config
-from modules.models import TableNumerical, TableCategorical, Patient
+from medex.database_schema import TableNumerical, TableCategorical, Patient
 
 # noinspection PyUnresolvedReferences
 from integration_tests.fixtures.db_session import db_session

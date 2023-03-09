@@ -1,7 +1,7 @@
 import pytest
-from medex.dto.barchart import BarChartDataRequest, DateRange
+from medex.dto.barchart import BarChartDataRequest
 from medex.services.barchart import BarChartService
-from modules.models import TableCategorical, NameType
+from medex.database_schema import TableCategorical, NameType
 from tests.mocks.filter_service import FilterServiceMock
 # noinspection PyUnresolvedReferences
 from integration_tests.fixtures.db_session import db_session
@@ -57,6 +57,5 @@ def _get_barchart_data():
         key='diabetes',
         categories=['ja', 'nein'],
         plot_type='count',
-        date_range=DateRange(from_date='2021-05-15', to_date='2022-09-18'),
     )
     return barchart_data

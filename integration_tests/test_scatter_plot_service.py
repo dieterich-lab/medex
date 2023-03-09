@@ -1,7 +1,7 @@
 import pytest
-from medex.dto.scatter_plot import DateRange, GroupByCategoricalEntity, ScaleScatterPlot, ScatterPlotDataRequest
+from medex.dto.scatter_plot import GroupByCategoricalEntity, ScaleScatterPlot, ScatterPlotDataRequest
 from medex.services.scatter_plot import ScatterPlotService
-from modules.models import TableCategorical, TableNumerical, NameType
+from medex.database_schema import TableCategorical, TableNumerical, NameType
 from tests.mocks.filter_service import FilterServiceMock
 # noinspection PyUnresolvedReferences
 from integration_tests.fixtures.db_session import db_session
@@ -57,7 +57,6 @@ def test_scatter_plot_service(db_session, filter_service_mock, setup_scatter_plo
         measurement_y_axis='baseline',
         entity_y_axis='temperature',
         scale=ScaleScatterPlot(log_x=True, log_y=False),
-        date_range=DateRange(from_date='2021-05-15', to_date='2021-06-23'),
         add_group_by=GroupByCategoricalEntity(key='diabetes', categories=['ja', 'nein']))
     figure = service.get_image_svg(scatter_plot_data)
     byte_string = figure.decode('utf-8')

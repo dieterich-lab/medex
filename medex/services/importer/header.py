@@ -3,7 +3,7 @@ from typing import Optional, TextIO
 from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
-from modules.models import Header
+from medex.database_schema import Header
 
 
 class HeaderImporter:

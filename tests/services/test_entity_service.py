@@ -1,6 +1,6 @@
 import pytest
 
-from modules.models import NameType, TableCategorical, TableNumerical
+from medex.database_schema import NameType, TableCategorical, TableNumerical
 from medex.dto.entity import EntityType, Entity
 from medex.services.entity import EntityService
 # noinspection PyUnresolvedReferences

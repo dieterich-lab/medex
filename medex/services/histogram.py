@@ -6,7 +6,7 @@ from pandas import DataFrame
 from sqlalchemy import select, func, and_
 
 from medex.services.filter import FilterService
-from modules.models import TableNumerical, TableCategorical
+from medex.database_schema import TableNumerical, TableCategorical
 import plotly.express as px
 
 
@@ -62,9 +62,6 @@ class HistogramService:
                 TableCategorical.value.in_(histogram_data.categories),
                 TableNumerical.measurement.in_(histogram_data.measurements),
                 TableCategorical.name_id == TableNumerical.name_id,
-                TableNumerical.date.between(
-                    histogram_data.date_range.from_date.strftime('%Y-%m-%d'),
-                    histogram_data.date_range.to_date.strftime('%Y-%m-%d'))
             )
         ).group_by(TableNumerical.name_id, TableNumerical.measurement, TableCategorical.value)
         return query_select_with_where

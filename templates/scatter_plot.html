@@ -10,7 +10,6 @@
 {# imports #}
 {# our own js #}
 <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
-<script src="{{ url_for('static', filename='js/plots/scatter_plot.js') }}"></script>
 
 
 {# plotly and jquery #}
@@ -84,7 +83,7 @@
                     </div>
                 </div>
 
-                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="display_scatter_plot()"
+                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="plot_scatter_plot.display()"
                 >
                     Result
                 </button>

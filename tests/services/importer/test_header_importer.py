@@ -2,7 +2,7 @@ from io import StringIO
 
 from sqlalchemy import select
 
-from modules.models import Header
+from medex.database_schema import Header
 from medex.services.importer.header import HeaderImporter
 
 # noinspection PyUnresolvedReferences

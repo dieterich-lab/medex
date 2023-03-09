@@ -4,7 +4,7 @@ from typing import TextIO, List, Dict
 from flask_sqlalchemy.session import Session
 from sqlalchemy import insert
 
-from modules.models import Base
+from medex.database_schema import Base
 
 
 class HeaderLineMissing(Exception):

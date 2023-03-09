@@ -22,18 +22,23 @@
     {# navigation controls #}
     <ul class="nav nav-tabs" id="statistics_tab" role="tablist">
         <li class="nav-item">
-            <a class="nav-link show active" aria-selected="true"
-               id="numeric_link" data-toggle="tab"
-               href="#numeric_tab" role="tab" aria-controls="numeric_tab">Numerical</a>
+             <a class="nav-link show active" aria-selected="true"
+               id="database_link" data-toggle="tab"
+               href="#database_tab" role="tab" aria-controls="database_tab">Database</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if categorical_tab %}show active" aria-selected="true" {% endif %}
+            <a class="nav-link"
+               id="numerical_link" data-toggle="tab"
+               href="#numerical_tab" role="tab" aria-controls="numerical_tab">Numerical</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"
                id="categorical_link" data-toggle="tab"
                href="#categorical_tab" role="tab" aria-controls="categorical_tab">Categorical</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if date_tab %}show active" aria-selected="true" {% endif %} id="date_link"
-               data-toggle="tab"
+            <a class="nav-link"
+               id="date_link" data-toggle="tab"
                href="#date_tab" role="tab" aria-controls="date_tab">Date</a>
         </li>
     </ul>
@@ -41,8 +46,9 @@
     {# tabs content #}
     <div class="tab-content" id="statistics">
         {# each tab in a single file, for readability #}
+        {% include 'basic_stats/database_tab.html' %}
         {% include 'basic_stats/categorical_tab.html' %}
-        {% include 'basic_stats/numeric_tab.html' %}
+        {% include 'basic_stats/numerical_tab.html' %}
         {% include 'basic_stats/date_tab.html' %}
     </div>
 </div>

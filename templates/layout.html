@@ -12,37 +12,11 @@
     <script type="text/javascript" src="{{ url_for('static', filename='select2.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='popper.min.js') }}"></script>
-
-    <script>
-        window.table_browser_data_selected_entities = [
-            {% for entity_id in entities_selected %}
-                '{{ entity_id }}',
-            {% endfor %}
-        ];
-        window.selected_numerical_entities = [
-            {% for entity_id in numeric_entities %}
-                '{{ entity_id }}',
-            {% endfor %}
-        ];
-        window.basic_stats_selected_date_entities = [
-            {% for entity_id in date_entities %}
-                '{{ entity_id }}',
-            {% endfor %}
-        ];
-    </script>
 </head>
 <body>
 {# custom style #}
 {# requirements for bootstrap #}
 
-<div class="w3-bar w3-border w3-light-blue">
-    <div class="w3-bar-item">{{ database_information[0] }}</div>
-    <div class="w3-bar-item">{{ database_information[1] }}</div>
-    <div class="w3-bar-item">{{ database_information[2] }}</div>
-    <div class="w3-bar-item">{{ database_information[3] }}</div>
-    <div class="w3-bar-item">{{ database_information[4] }}</div>
-    <div class="w3-bar-item">{{ database_information[5] }}</div>
-</div>
 <div id="page" class="mx-4">
     <nav class="navbar navbar-light bg-light  ">
         <a class="navbar-brand" href="/tutorial/">Tutorial</a>

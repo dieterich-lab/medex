@@ -8,7 +8,7 @@ from sqlalchemy import select, insert
 from medex.dto.entity import Entity
 from medex.services.importer.dataset import DatasetImporter
 from medex.services.importer.generic_importer import HeaderLineMissing, BadHeaderLine
-from modules.models import NameType, TableCategorical, TableNumerical, TableDate
+from medex.database_schema import NameType, TableCategorical, TableNumerical, TableDate
 
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session

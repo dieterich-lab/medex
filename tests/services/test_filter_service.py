@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Query, InstrumentedAttribute
 
-from modules.models import Patient, NameType, TableCategorical, TableNumerical, SessionNameIdsMatchingFilter
+from medex.database_schema import Patient, NameType, TableCategorical, TableNumerical, SessionNameIdsMatchingFilter
 from medex.dto.filter import NumericalFilter, CategoricalFilter
 from medex.services.filter import FilterService
 

@@ -6,7 +6,7 @@ from pandas import DataFrame
 from sqlalchemy import select, func, and_, distinct, literal_column
 from sqlalchemy.orm import aliased
 from medex.services.filter import FilterService
-from modules.models import TableNumerical, TableCategorical
+from medex.database_schema import TableNumerical, TableCategorical
 import plotly.graph_objects as go
 
 
@@ -54,9 +54,6 @@ class ScatterPlotService:
                 table_alias.key == scatter_plot_data.entity_y_axis,
                 table_alias.measurement == scatter_plot_data.measurement_y_axis,
                 TableNumerical.name_id == table_alias.name_id,
-                TableNumerical.date.between(
-                    scatter_plot_data.date_range.from_date.strftime('%Y-%m-%d'),
-                    scatter_plot_data.date_range.to_date.strftime('%Y-%m-%d'))
             )
         ).group_by(TableNumerical.name_id)
         return query_select

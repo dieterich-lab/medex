@@ -3,7 +3,7 @@ from typing import List, Dict
 from sqlalchemy import select, inspect, func
 from sqlalchemy.orm import Session
 
-from modules.models import NameType, TableCategorical, TableNumerical
+from medex.database_schema import NameType, TableCategorical, TableNumerical
 from medex.dto.entity import Entity, EntityType
 
 

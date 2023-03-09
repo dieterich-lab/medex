@@ -1,5 +1,6 @@
 import os
 from flask import session
+from functools import cache
 
 from medex.dto.filter import FilterStatus
 from medex.services.barchart import BarChartService
@@ -7,6 +8,7 @@ from medex.services.basic_stats import BasicStatisticsService
 from medex.services.boxplot import BoxplotService
 from medex.services.data import DataService
 from medex.services.database import get_db_session
+from medex.services.database_info import DatabaseInfoService
 from medex.services.heatmap import HeatmapService
 from medex.services.histogram import HistogramService
 from medex.services.measurement import MeasurementService
@@ -43,15 +45,9 @@ def store_filter_status_in_session(filter_service: FilterService):
     session['filter_status'] = filter_service.dict()
 
 
-_entity_service = None
-
-
+@cache
 def get_entity_service():
-    global _entity_service
-    if _entity_service is None:
-        database_session = get_db_session()
-        _entity_service = EntityService(database_session)
-    return _entity_service
+    return EntityService(get_db_session())
 
 
 def get_data_service():
@@ -97,11 +93,11 @@ def get_basic_stats_service():
     return BasicStatisticsService(db_session, filter_service)
 
 
-_measurement_service = None
-
-
+@cache
 def get_measurement_service():
-    global _measurement_service
-    if _measurement_service is None:  # noqa
-        _measurement_service = MeasurementService(db_session=get_db_session())
-    return _measurement_service  # noqa
+    return MeasurementService(db_session=get_db_session())
+
+
+@cache
+def get_database_info_service():
+    return DatabaseInfoService(database_session=get_db_session())

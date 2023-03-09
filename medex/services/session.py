@@ -1,6 +1,6 @@
 from sqlalchemy import delete
 
-from modules.models import Sessions, SessionFilteredNameIds, SessionNameIdsMatchingFilter, SessionFilteredCaseIds
+from medex.database_schema import Sessions, SessionFilteredNameIds, SessionNameIdsMatchingFilter, SessionFilteredCaseIds
 from datetime import datetime, timedelta
 
 

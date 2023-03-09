@@ -1,4 +1,4 @@
-function display_heatmap_plot() {
+function display() {
     const result = get_query_parameter_string()
     let div = document.getElementById('error_heatmap');
     if (!!result.error) {
@@ -40,11 +40,9 @@ function get_svg_download() {
 
 function get_query_parameter_string() {
     const entities = get_entities_list()
-    const date_dict = get_date_dict();
     const query_string = new URLSearchParams({
         heatmap_data: JSON.stringify({
             entities: entities,
-            date_range: date_dict
         })
     });
     const error = perform_error_handling(entities)
@@ -60,18 +58,10 @@ function get_entities_list() {
     return children.filter((x) => x.selected).map((x) => x.value);
 }
 
-
-function get_date_dict() {
-    const date = document.getElementById('Date').value;
-    const date_string = date.split(' - ');
-    return {
-        from_date: moment(date_string[0], 'MM/DD/YYYY').format('YYYY-MM-DD'),
-        to_date: moment(date_string[1], 'MM/DD/YYYY').format('YYYY-MM-DD')
-    }
-}
-
 function perform_error_handling(entities) {
     if (entities.length < 2) {
         return 'Please select two or more numeric entities'
     }
 }
+
+export {display};

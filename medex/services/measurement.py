@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import select, union, func
 from sqlalchemy.orm import Session
 
-from modules.models import Header, TableNumerical, TableCategorical, TableDate
+from medex.database_schema import Header, TableNumerical, TableCategorical, TableDate
 from medex.dto.measurement import MeasurementInfo
 
 

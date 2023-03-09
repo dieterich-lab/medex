@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from medex.dto.entity import EntityType
 from medex.services.entity import EntityService
 from medex.services.importer.generic_importer import GenericImporter
-from modules.models import Base, TableNumerical, TableCategorical, TableDate, Patient
+from medex.database_schema import Base, TableNumerical, TableCategorical, TableDate, Patient
 
 
 class DatasetImporter(GenericImporter):

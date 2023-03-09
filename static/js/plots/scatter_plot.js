@@ -1,4 +1,4 @@
-function display_scatter_plot() {
+function display() {
     const result = get_search_params();
     let div = document.getElementById('error_scatter_plot');
     if (!!result.error) {
@@ -43,24 +43,14 @@ function get_search_params() {
     const entity_x_axis = document.getElementById('scatter_plot_x_axis_numerical_entities_select').value;
     const measurement_y_axis = document.getElementById('scatter_plot_y_measurement').value;
     const entity_y_axis = document.getElementById('scatter_plot_y_axis_numerical_entities_select').value;
-    const date_dict = get_date_dict();
     const scale = get_scale_type();
     const add_group_by = get_group_by_data();
     const error = perform_error_handling(entity_x_axis, entity_y_axis, add_group_by, measurement_x_axis, measurement_y_axis);
     const search_parameter_string = get_parameter_string(measurement_x_axis, entity_x_axis, measurement_y_axis, entity_y_axis,
-                                                        date_dict, scale, add_group_by);
+                                                        scale, add_group_by);
     return {
         search_params: search_parameter_string,
         error: error
-    }
-}
-
-function get_date_dict() {
-    const date = document.getElementById('Date').value;
-    const date_string = date.split(' - ');
-    return {
-        from_date: moment(date_string[0], 'MM/DD/YYYY').format('YYYY-MM-DD'),
-        to_date: moment(date_string[1], 'MM/DD/YYYY').format('YYYY-MM-DD')
     }
 }
 
@@ -105,14 +95,13 @@ function perform_error_handling(entity_x_axis, entity_y_axis, add_group_by, meas
     }
 }
 
-function get_parameter_string(measurement_x_axis, entity_x_axis, measurement_y_axis, entity_y_axis, date_dict, scale, add_group_by) {
+function get_parameter_string(measurement_x_axis, entity_x_axis, measurement_y_axis, entity_y_axis, scale, add_group_by) {
     return new URLSearchParams({
         scatter_plot_data: JSON.stringify({
             measurement_x_axis: measurement_x_axis,
             entity_x_axis: entity_x_axis,
             measurement_y_axis: measurement_y_axis,
             entity_y_axis: entity_y_axis,
-            date_range: date_dict,
             scale: scale,
             add_group_by: add_group_by
         })
@@ -134,3 +123,5 @@ $(function () {
         }
     });
 });
+
+export {display};

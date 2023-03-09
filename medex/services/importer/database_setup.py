@@ -5,7 +5,7 @@ from subprocess import run
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from modules.models import Base
+from medex.database_schema import Base
 from medex.services.config import Config
 
 

@@ -17,7 +17,6 @@
 {# pretty multiselect inputs #}
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/plots/boxplot.js') }}"></script>
 
 
 
@@ -69,7 +68,7 @@
                     <label for="log">log</label>
                 </div>
 
-                <button id="Result" name="plot_boxplot" class="btn btn-outline-info" onclick="display_boxplot()">Result</button>
+                <button id="Result" name="plot_boxplot" class="btn btn-outline-info" onclick="plot_boxplot.display()">Result</button>
 
             </div>
         </div>

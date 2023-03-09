@@ -1,6 +1,6 @@
 import pytest
 from medex.services.data import DataService
-from modules.models import TableCategorical, TableNumerical
+from medex.database_schema import TableCategorical, TableNumerical
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
 from tests.mocks.filter_service import FilterServiceMock

@@ -1,6 +1,6 @@
 import pytest
 
-from modules.models import Sessions, SessionNameIdsMatchingFilter, SessionFilteredNameIds
+from medex.database_schema import Sessions, SessionNameIdsMatchingFilter, SessionFilteredNameIds
 from medex.services.session import SessionService
 
 # noinspection PyUnresolvedReferences

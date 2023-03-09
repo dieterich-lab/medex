@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from medex.dto.entity import EntityType
 from medex.services.importer.generic_importer import GenericImporter
-from modules.models import Base, NameType
+from medex.database_schema import Base, NameType
 
 
 class EntityImporter(GenericImporter):

@@ -2,7 +2,7 @@ from typing import List
 from pandas import DataFrame
 from sqlalchemy import select, func, and_
 from medex.services.filter import FilterService
-from modules.models import TableNumerical, Patient, TableCategorical, TableDate
+from medex.database_schema import TableNumerical, Patient, TableCategorical, TableDate
 
 
 class BasicStatisticsService:
@@ -47,10 +47,6 @@ class BasicStatisticsService:
         ).where(
             and_(
                 table.key.in_(basic_stats_data.entities), table.measurement.in_(basic_stats_data.measurements),
-                table.date.between(
-                    basic_stats_data.date_range.from_date.strftime('%Y-%m-%d'),
-                    basic_stats_data.date_range.to_date.strftime('%Y-%m-%d')
-                )
             )
         ).group_by(table.name_id, table.key, table.measurement)
         return query_select
@@ -74,10 +70,6 @@ class BasicStatisticsService:
             and_(
                 TableNumerical.key.in_(basic_stats_data.entities),
                 TableNumerical.measurement.in_(basic_stats_data.measurements),
-                TableNumerical.date.between(
-                    basic_stats_data.date_range.from_date.strftime('%Y-%m-%d'),
-                    basic_stats_data.date_range.to_date.strftime('%Y-%m-%d')
-                )
             )
         ).group_by(TableNumerical.name_id, TableNumerical.key, TableNumerical.measurement)
         return query_select

@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from medex.dto.boxplot import BoxplotDataRequest, DateRange
+from medex.dto.boxplot import BoxplotDataRequest
 from medex.services.boxplot import BoxplotService
 from medex.services.histogram import HistogramService
 from tests.mocks.filter_service import FilterServiceMock
@@ -43,6 +43,5 @@ def _get_parsed_data():
         categorical_entity='diabetes',
         categories=['ja', 'nein'],
         plot_type='linear',
-        date_range=DateRange(from_date='2021-05-15', to_date='2022-06-28'),
     )
     return boxplot_data

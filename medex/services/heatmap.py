@@ -5,7 +5,7 @@ from pandas import DataFrame
 from scipy.stats import pearsonr
 from sqlalchemy import func, case, select
 from medex.services.filter import FilterService
-from modules.models import TableNumerical
+from medex.database_schema import TableNumerical
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 
@@ -52,11 +52,6 @@ class HeatmapService:
             for i in heatmap_data.entities
         ]
         query_select = select(TableNumerical.name_id, *case_when) \
-            .where(
-            TableNumerical.date.between(
-                heatmap_data.date_range.from_date.strftime('%Y-%m-%d'),
-                heatmap_data.date_range.to_date.strftime('%Y-%m-%d')
-            )) \
             .group_by(TableNumerical.name_id)
         return query_select
 

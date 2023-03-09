@@ -1,8 +1,8 @@
 import pytest
 
-from medex.dto.histogram import HistogramDataRequest, DateRange
+from medex.dto.histogram import HistogramDataRequest
 from medex.services.histogram import HistogramService
-from modules.models import TableNumerical, TableCategorical
+from medex.database_schema import TableNumerical, TableCategorical
 from tests.mocks.filter_service import FilterServiceMock
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
@@ -60,6 +60,5 @@ def _get_parsed_data():
         categorical_entity='diabetes',
         categories=['ja', 'nein'],
         bins=25,
-        date_range=DateRange(from_date='2021-05-15', to_date='2022-06-28'),
     )
     return histogram_data

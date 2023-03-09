@@ -1,4 +1,4 @@
-function display_histogram_plot() {
+function display() {
     const result = get_query_parameters();
     let div = document.getElementById('error_histogram');
     if (!!result.error) {
@@ -32,9 +32,8 @@ function get_query_parameters() {
     const categorical_entity = document.getElementById('histogram_categorical_entities_select').value;
     const categories = get_categories();
     const number_of_bins = document.getElementById('number_of_bins').value;
-    const date_dict = get_date_dict();
     const error = perform_error_handling(measurements, numerical_entity, categorical_entity, categories);
-    const query_parameter_string = get_query_parameter_string(measurements, numerical_entity, categorical_entity, categories, number_of_bins, date_dict);
+    const query_parameter_string = get_query_parameter_string(measurements, numerical_entity, categorical_entity, categories, number_of_bins);
     return {
         search_params: query_parameter_string,
         error: error
@@ -65,15 +64,6 @@ function get_categories() {
     return children.filter((x) => x.selected).map((x) => x.value);
 }
 
-function get_date_dict() {
-    const date = document.getElementById('Date').value;
-    const date_string = date.split(' - ');
-    return {
-        from_date: moment(date_string[0], 'MM/DD/YYYY').format('YYYY-MM-DD'),
-        to_date: moment(date_string[1], 'MM/DD/YYYY').format('YYYY-MM-DD')
-    }
-}
-
 function perform_error_handling(measurements, numerical_entity, categorical_entity, categories) {
     if (!measurements.length) {
         return "Please select one or more visits";
@@ -88,7 +78,7 @@ function perform_error_handling(measurements, numerical_entity, categorical_enti
     }
 }
 
-function get_query_parameter_string(measurements, numerical_entity, categorical_entity, categories, number_of_bins, date_dict) {
+function get_query_parameter_string(measurements, numerical_entity, categorical_entity, categories, number_of_bins) {
     return new URLSearchParams({
         histogram_data: JSON.stringify({
             measurements: measurements,
@@ -96,7 +86,6 @@ function get_query_parameter_string(measurements, numerical_entity, categorical_
             categorical_entity: categorical_entity,
             categories: categories,
             bins: number_of_bins,
-            date_range: date_dict
         })
     });
 }
@@ -104,3 +93,5 @@ function get_query_parameter_string(measurements, numerical_entity, categorical_
 function is_valid_entity(x){
     return (!!x && x !== '' && x !== 'Search Entity')
 }
+
+export {display};

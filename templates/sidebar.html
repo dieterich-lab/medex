@@ -14,38 +14,11 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='ion.rangeSlider.min.css') }}" />
 <script src="{{ url_for('static', filename='ion.rangeSlider.min.js') }}" ></script>
 
-<script type="text/javascript">
-    var start = moment({{date[0]}});
-    var end =  moment({{date[1]}});
-</script>
-
-<div class="card" style="display: {{ date_block }}">
-    <div class="card-body">
-        <label>Date range</label>
-        <input id="Date" name="Date"
-               style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
-    </div>
-</div>
-
 <div class="card">
     <div class="card-body">
         <label>Filter</label>
 
         <div id="filter_measurement_div"></div>
-
-        <div class="form-check mt-4" style="display: none">
-            <input class="form-check-input" type="checkbox" title="For large data, it may take longer to display the results
-                    (maximum 1 min, if the query takes longer, the query will be killed)" value='true' id="limit_yes"
-                   name="limit_yes" {% if limit_offset[2] %} checked {% endif %}>
-            <label class="form-check-label" for="limit_yes">Limit selected number to: </label>
-            <input style="width: 17%" id="limit" name="limit" title="For large data, it may take longer to display the results
-                    (maximum 1 min, if the query takes longer, the query will be killed)" type="text"
-                   class="js-input-from"
-                   value="{{ limit_offset[0] }}"/>
-            offset:
-            <input style="width: 17%" id="offset" name="offset" type="text" class="js-input-from"
-                   value="{{ limit_offset[1] }}">
-        </div>
 
         <label for="selected_filter">Entity</label>
         <select id="selected_filter" style="width: 100%" class="js-example-basic-single"
@@ -108,6 +81,5 @@
         </div>
     </div>
 </div>
-
 
 {% endblock %}

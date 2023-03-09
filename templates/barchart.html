@@ -18,7 +18,6 @@
 {# pretty multiselect inputs #}
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/plots/barchart.js') }}"></script>
 
 
 {# end of imports #}
@@ -57,7 +56,7 @@
                     <input type="radio" id="count" name="plot_type" value="count">
                     <label for="count">count</label>
                 </div>
-                <button id="Result" name="barchart" class="btn btn-outline-info" onclick="display_barchart()">Result</button>
+                <button id="Result" name="barchart" class="btn btn-outline-info" onclick="plot_barchart.display()">Result</button>
             </div>
         </div>
     </div>

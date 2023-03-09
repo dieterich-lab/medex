@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from modules.models import create_tables, drop_tables
+from medex.database_schema import create_tables, drop_tables
 from medex.services.database import init_db
 
 

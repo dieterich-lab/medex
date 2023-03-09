@@ -17,7 +17,6 @@
 {# pretty multiselect inputs #}
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/plots/histogram.js') }}"></script>
 
 {# end of imports #}
 
@@ -65,7 +64,7 @@
                     <input type="text" class="form-control" name="number_of_bins" id="number_of_bins" value="{{ number_of_bins }}">
                 </div>
 
-                <button id="Result" name="histogram" class="btn btn-outline-info" onclick="display_histogram_plot()">Result</button>
+                <button id="Result" name="histogram" class="btn btn-outline-info" onclick="plot_histogram.display()">Result</button>
 
             </div>
         </div>

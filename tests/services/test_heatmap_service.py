@@ -1,8 +1,8 @@
 import json
 import pytest
-from medex.dto.heatmap import HeatmapDataRequest, DateRange
+from medex.dto.heatmap import HeatmapDataRequest
 from medex.services.heatmap import HeatmapService
-from modules.models import TableNumerical
+from medex.database_schema import TableNumerical
 from tests.mocks.filter_service import FilterServiceMock
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
@@ -46,6 +46,5 @@ def test_get_heatmap_svg(db_session, filter_service_mock, setup_heatmap_data):
 def _get_parsed_data():
     heatmap_data = HeatmapDataRequest(
         entities=['blood_pressure', 'temperature', 'echo_lvef'],
-        date_range=DateRange(from_date='2021-05-15', to_date='2021-08-05')
     )
     return heatmap_data
