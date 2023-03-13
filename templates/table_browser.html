@@ -1,19 +1,19 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<script type="module" src="{{ url_for('static', filename='js/setup.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/table_browser.js') }}"></script>
+<script type="module">
+import '/static/js/setup.js'
+import * as table_browser from '/static/js/table_browser.js';
+
+table_browser.init();
+window.table_browser = table_browser;
+</script>
 
 <div id="menu">
     {% include 'sidebar.html' %}
 </div>
 
-{# imports #}
-{# our own js #}
-<script src="{{ url_for('static', filename='js/data.js') }}"></script>
 <script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
-
-{# plotly and jquery #}
 <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
 
 {# pretty multiselect inputs #}
@@ -56,7 +56,7 @@
                     </div>
                 </div>
 
-                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="display_table_with_selected_type()"
+                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="table_browser.display_results()"
                 >
                     Result
                 </button>

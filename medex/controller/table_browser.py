@@ -7,15 +7,15 @@ from flask import Blueprint, request, jsonify, send_file, render_template
 from medex.controller.helpers import get_data_service
 from medex.dto.data import FilteredDataRequest, SortOrder, SortDirection, SortItem, FilteredDataFlatResponse
 
-data_controller = Blueprint('data_controller', __name__)
+filtered_data_controller = Blueprint('filtered_data_controller', __name__)
 
 
-@data_controller.route('/', methods=['GET'])
-def init_data():
-    return render_template('data.html')
+@filtered_data_controller.route('/', methods=['GET'])
+def get_html():
+    return render_template('table_browser.html')
 
 
-@data_controller.route('/flat', methods=['GET'])
+@filtered_data_controller.route('/flat', methods=['GET'])
 def get_filtered_data_flat():
     data_service = get_data_service()
     args = request.args
@@ -36,7 +36,7 @@ def get_filtered_data_flat():
     return filtered_data_flat_response.json()
 
 
-@data_controller.route('/by_measurement', methods=['GET'])
+@filtered_data_controller.route('/by_measurement', methods=['GET'])
 def get_filtered_data_by_measurement():
     data_service = get_data_service()
     args = request.args
@@ -70,7 +70,7 @@ def _get_sort_order(args) -> SortOrder:
     return sort_order
 
 
-@data_controller.route('/flat_csv', methods=['GET'])
+@filtered_data_controller.route('/flat_csv', methods=['GET'])
 def get_filtered_data_flat_csv():
     data_service = get_data_service()
     args = request.args
@@ -86,7 +86,7 @@ def get_filtered_data_flat_csv():
                      download_name='filtered_data_flat.csv')
 
 
-@data_controller.route('/by_measurement_csv', methods=['GET'])
+@filtered_data_controller.route('/by_measurement_csv', methods=['GET'])
 def get_filtered_data_by_measurement_csv():
     data_service = get_data_service()
     args = request.args

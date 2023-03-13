@@ -11,7 +11,7 @@ from medex.services.importer import get_importer
 from medex.controller.measurement import measurement_controller
 from medex.controller.filter import filter_controller
 from medex.controller.entity import entity_controller
-from medex.controller.data import data_controller
+from medex.controller.table_browser import filtered_data_controller
 from medex.controller.basic_stats import basic_stats_controller
 from medex.controller.scatter_plot import scatter_plot_controller
 from medex.controller.barchart import barchart_controller
@@ -26,6 +26,7 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
 app.config["SQLALCHEMY_DATABASE_URI"] = get_database_url()
+app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 db = SQLAlchemy()
 db.init_app(app)
 
@@ -40,7 +41,7 @@ app.register_blueprint(database_info_controller, url_prefix='/database_info')
 app.register_blueprint(measurement_controller, url_prefix='/measurement')
 app.register_blueprint(filter_controller, url_prefix='/filter')
 app.register_blueprint(entity_controller, url_prefix='/entity')
-app.register_blueprint(data_controller, url_prefix='/filtered_data')
+app.register_blueprint(filtered_data_controller, url_prefix='/filtered_data')
 app.register_blueprint(basic_stats_controller, url_prefix='/basic_stats')
 app.register_blueprint(scatter_plot_controller, url_prefix='/scatter_plot')
 app.register_blueprint(barchart_controller, url_prefix='/barchart')

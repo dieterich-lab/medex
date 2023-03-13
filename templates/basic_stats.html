@@ -1,10 +1,13 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<script type="module" src="{{ url_for('static', filename='js/setup.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/basic_stats_numerical.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/basic_stats_categorical.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/basic_stats_date.js') }}"></script>
+<script type="module">
+import '/static/js/setup.js'
+import * as basic_stats from '/static/js/basic_stats.js';
+
+basic_stats.init();
+window.basic_stats = basic_stats;
+</script>
 
 <div id="menu">
     {% include 'sidebar.html' %}
@@ -16,6 +19,10 @@
 
 {# pretty multiselect inputs #}
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='datatables/datatables.min.css') }}"/>
+<script type="text/javascript" src="{{ url_for('static', filename='datatables/datatables.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='dataTables.select.min.js') }}"></script>
 
 {# end of imports #}
 <div id="content">

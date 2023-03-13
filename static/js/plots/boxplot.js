@@ -1,4 +1,4 @@
-import {get_categories, get_selected_measurements} from "../utility.js";
+import {get_selected_categories, get_selected_measurements} from "../utility.js";
 
 function display() {
     const result = get_query_parameters();
@@ -33,7 +33,7 @@ function get_query_parameters() {
     const measurements = get_selected_measurements();
     const numerical_entity = document.getElementById('boxplot_numerical_entities_select').value;
     const categorical_entity = document.getElementById('boxplot_categorical_entities_select').value;
-    const categories = get_categories();
+    const categories = get_selected_categories();
     const plot_type = get_plot_type();
     const query_parameter_string = get_parameter_string(measurements, numerical_entity, categorical_entity, categories, plot_type);
     const error = perform_error_handling(measurements, numerical_entity, categorical_entity, categories);

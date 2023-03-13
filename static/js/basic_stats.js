@@ -1,5 +1,7 @@
-import {configure_multiple_measurement_select} from "../measurement";
-import {configure_entity_selection} from "../entity_selection";
+import {configure_multiple_measurement_select} from "./measurement.js";
+import {configure_entity_selection} from "./entity_selection.js";
+import {get_database_info} from "./database_info.js";
+import {get_selected_items} from "./utility.js";
 
 const DEFAULT_TABLE_COLUMNS = [
     {data: 'key', title: 'Entity'},
@@ -21,19 +23,25 @@ const NUMERICAL_TABLE_COLUMNS = [
     {data: 'stderr', title: 'Std. Error'},
 ];
 
-const Entities_info = [
-    {
-        'name': 'numerical',
-        'table_columns': NUMERICAL_TABLE_COLUMNS,
-    },
-    {
-        'name': 'categorical',
-        'table_columns': DEFAULT_TABLE_COLUMNS,
-    },
-    {
-        'name': 'date',
-        'table_columns': DEFAULT_TABLE_COLUMNS,
-    }
+const NUMERICAL_DESCRIPTOR = {
+    'name': 'numerical',
+    'table_columns': NUMERICAL_TABLE_COLUMNS,
+};
+
+const CATEGORICAL_DESCRIPTOR = {
+    'name': 'categorical',
+    'table_columns': DEFAULT_TABLE_COLUMNS,
+};
+
+const DATE_DESCRIPTOR = {
+    'name': 'date',
+    'table_columns': DEFAULT_TABLE_COLUMNS,
+};
+
+const ALL_ENTITY_DESCRIPTORS = [
+    NUMERICAL_DESCRIPTOR,
+    CATEGORICAL_DESCRIPTOR,
+    DATE_DESCRIPTOR,
 ];
 
 
@@ -41,7 +49,7 @@ let init_promise = null;
 
 
 async function do_init() {
-    for( const descriptor of Entities_info ) {
+    for( const descriptor of ALL_ENTITY_DESCRIPTORS ) {
         const name = descriptor.name;
         await configure_multiple_measurement_select(
             `basic_stats_measurement_${name}`,
@@ -52,6 +60,7 @@ async function do_init() {
             true, false
         );
     }
+    await show_database_info();
 }
 
 
@@ -62,31 +71,30 @@ async function init() {
     return init_promise;
 }
 
-$('a[data-toggle="tab"]').on('shown.bs.tab', async (e) => {
-    for( const descriptor of Entities_info ) {
-        const name = descriptor.name;
-        if ( e.target.hash === `#${ name }_tab` ) {
-            await init();
-        }
-    }
-});
+async function show_database_info() {
+    const info = await get_database_info();
+    let element = document.getElementById('database_tab_table_id');
+    element.innerHTML = `
+        <tr><td>Number of patients:</td><td>${ info.number_of_patients }</td></tr>
+        <tr><td>Number of numerical entities:</td><td>${ info.number_of_numerical_entities }</td></tr>
+        <tr><td>Number of numerical data items:</td><td>${ info.number_of_numerical_data_items }</td></tr>
+        <tr><td>Number of categorical entities:</td><td>${ info.number_of_categorical_entities }</td></tr>
+        <tr><td>Number of categorical data items:</td><td>${ info.number_of_categorical_data_items }</td></tr>
+        <tr><td>Number of date entities:</td><td>${ info.number_of_date_entities }</td></tr>
+        <tr><td>Number of date data items:</td><td>${ info.number_of_date_data_items }</td></tr>
+    `;
+}
 
-function display_basic_stat(descriptor) {
+function display_results(descriptor) {
     const name = descriptor.name;
     const measurements = get_selected_items(`basic_stats_measurement_${name}`);
     const entities = get_selected_items(`basic_stats_${name}_entities_select`);
     const ok = check_for_user_errors(descriptor, measurements, entities);
-    if (ok) {
+    if ( ok ) {
         create_datatable(descriptor, measurements, entities);
         const base_url = '/basic_stats/numerical_csv?';
         set_url_for_download(descriptor, measurements, entities);
     }
-}
-
-function get_selected_items(element_id) {
-    const parent = document.getElementById(element_id);
-    const children = Array.from(parent.childNodes);
-    return children.filter((x) => x.selected).map((x) => x.value);
 }
 
 function check_for_user_errors(descriptor, measurements, entities) {
@@ -120,7 +128,7 @@ function create_datatable(descriptor, measurements, entities) {
     const url = `/basic_stats/${ name }`;
     const query = `#${ name }_table`;
     let element = $(query);
-    if ($.fn.DataTable.isDataTable(query)) {
+    if ( $.fn.DataTable.isDataTable(query) ) {
         let table = element.DataTable();
         table.destroy();
         element.empty();
@@ -140,7 +148,7 @@ function create_datatable(descriptor, measurements, entities) {
                 });
             },
         },
-        columns: column,
+        columns: descriptor.table_columns,
         sDom: 'lrtip',
     });
 }
@@ -162,4 +170,16 @@ function set_url_for_download(descriptor, measurements, entities) {
     `;
 }
 
-export {init};
+function display_numerical_results() {
+    display_results(NUMERICAL_DESCRIPTOR);
+}
+
+function display_categorical_results() {
+    display_results(CATEGORICAL_DESCRIPTOR);
+}
+
+function display_date_results() {
+    display_results(DATE_DESCRIPTOR);
+}
+
+export {init, display_numerical_results, display_categorical_results, display_date_results};

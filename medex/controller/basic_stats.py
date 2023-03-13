@@ -11,7 +11,7 @@ basic_stats_controller = Blueprint('basic_stats_controller', __name__)
 
 @basic_stats_controller.route('/', methods=['GET'])
 def init_basic_stats():
-    return render_template('basic_stats/basic_stats.html')
+    return render_template('basic_stats.html')
 
 
 @basic_stats_controller.route('/numerical', methods=['GET'])

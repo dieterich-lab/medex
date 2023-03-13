@@ -3,7 +3,7 @@ import json
 import pytest
 from flask import Flask
 
-from medex.controller.data import data_controller
+from medex.controller.table_browser import filtered_data_controller
 from tests.mocks.data_service import DataServiceMock
 
 
@@ -15,7 +15,7 @@ def data_service_mock():
 @pytest.fixture
 def helper_mock(mocker):
     mocker.patch(
-        'medex.controller.data.get_data_service',  # noqa
+        'medex.controller.table_browser.get_data_service',  # noqa
         return_value=DataServiceMock()
     )
 
@@ -23,7 +23,7 @@ def helper_mock(mocker):
 @pytest.fixture
 def test_client():
     app = Flask(__name__)
-    app.register_blueprint(data_controller)
+    app.register_blueprint(filtered_data_controller)
     yield app.test_client()
 
 

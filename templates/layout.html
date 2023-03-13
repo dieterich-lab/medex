@@ -12,6 +12,12 @@
     <script type="text/javascript" src="{{ url_for('static', filename='select2.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='popper.min.js') }}"></script>
+
+    <script>
+        window.table_browser_data_selected_entities = [];
+        window.selected_numerical_entities = [];
+        window.basic_stats_selected_date_entities = [];
+    </script>
 </head>
 <body>
 {# custom style #}

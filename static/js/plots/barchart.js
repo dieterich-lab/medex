@@ -1,4 +1,4 @@
-import {get_categories, get_selected_measurements} from "../utility.js";
+import {get_selected_categories, get_selected_measurements} from "../utility.js";
 
 function display() {
     const result = get_search_parameters();
@@ -43,7 +43,7 @@ function get_svg_download() {
 function get_search_parameters() {
     const measurements = get_selected_measurements();
     const entity = document.getElementById('barchart_categorical_entities_select').value;
-    const categories = get_categories();
+    const categories = get_selected_categories();
     const plot_type = get_plot_type();
     const search_parameter_string = get_search_parameter_string(measurements, entity, categories, plot_type);
     const error = perform_error_handling(measurements, entity, categories)

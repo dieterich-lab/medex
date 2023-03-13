@@ -1,11 +1,6 @@
 {# Categorical tab. Using bootstrap classes. The tab container (div#statistics) and navigation links (ul#statistics_tab)
 are defined in basic_stats.html #}
 
-<script type="module" src="{{ url_for('static', filename='js/basic_stats_date.js') }}"></script>
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='datatables/datatables.min.css') }}"/>
-<script type="text/javascript" src="{{ url_for('static', filename='datatables/datatables.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='dataTables.select.min.js') }}"></script>
-
 <div class="tab-pane fade" id="date_tab" role="tabpanel"
      aria-labelledby="d_settings_header">
     <div id="date_accordion">
@@ -32,7 +27,7 @@ are defined in basic_stats.html #}
                         >
                         </select>
                     </div>
-                    <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="basic_stats.display_date_statistics_results()"
+                    <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="basic_stats.display_date_results()"
                     >
                         Result
                     </button>

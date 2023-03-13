@@ -22,4 +22,21 @@ function show_collapsed(element_id) {
     }
 }
 
-export {handle_select_special_choices, show_collapsed};
+function get_selected_items(element_id) {
+    const parent = document.getElementById(element_id);
+    const children = Array.from(parent.childNodes);
+    return children.filter((x) => x.selected).map((x) => x.value);
+}
+
+function get_selected_categories() {
+    return get_selected_items('subcategory_entities');
+}
+
+function get_selected_measurements() {
+    return get_selected_items('measurement');
+}
+
+export {
+    handle_select_special_choices, show_collapsed,
+    get_selected_items, get_selected_measurements, get_selected_categories
+};
