@@ -182,4 +182,7 @@ function display_date_results() {
     display_results(DATE_DESCRIPTOR);
 }
 
-export {init, display_numerical_results, display_categorical_results, display_date_results};
+document.addEventListener("DOMContentLoaded", init);
+window.display_numerical_results = display_numerical_results;
+window.display_categorical_results = display_categorical_results;
+window.display_date_results = display_date_results;

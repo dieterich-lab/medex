@@ -97,4 +97,5 @@ function set_url_for_download(selected_table, measurements, entities) {
     `;
 }
 
-export {display_results, init};
+document.addEventListener("DOMContentLoaded", init);
+window.display_table_browser_results = display_results;

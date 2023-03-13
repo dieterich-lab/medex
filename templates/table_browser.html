@@ -1,29 +1,20 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<script type="module">
-import '/static/js/setup.js'
-import * as table_browser from '/static/js/table_browser.js';
-
-table_browser.init();
-window.table_browser = table_browser;
-</script>
-
 <div id="menu">
     {% include 'sidebar.html' %}
 </div>
 
-<script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
-<script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
-
-{# pretty multiselect inputs #}
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
+<script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='datatables/datatables.min.css') }}"/>
 <script type="text/javascript" src="{{ url_for('static', filename='datatables/datatables.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='dataTables.select.min.js') }}"></script>
-{# end of imports #}
+
+<script type="module" src="{{ url_for('static', filename='js/setup.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/table_browser.js') }}"></script>
 
 <div id="content">
     <div class="card">
@@ -56,7 +47,7 @@ window.table_browser = table_browser;
                     </div>
                 </div>
 
-                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="table_browser.display_results()"
+                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="display_table_browser_results()"
                 >
                     Result
                 </button>
