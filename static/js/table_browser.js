@@ -70,7 +70,7 @@ function define_table_columns(selected_table) {
             {data: 'value', title: 'value'},
         ]);
     } else if (selected_table === 'short') {
-        const entities = get_selected_entities();
+        const entities = get_selected_items('table_browser_entities_select');
         const entity_columns = entities.map((x) => {
             return {data: `${x}`, title: `${x}`};
         });
