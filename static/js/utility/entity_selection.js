@@ -1,4 +1,4 @@
-import {try_get_entity_list, get_entity_list, try_get_entity_by_key} from "./entity.js";
+import {try_get_entity_list, get_entity_list, try_get_entity_by_key} from "../services/entity.js";
 
 
 function format_entity(state) {
@@ -6,12 +6,20 @@ function format_entity(state) {
 	if ( !entity ) {
 		return `<div>(not loaded yet)</div>`;
 	}
-	return $(
-		`<div>
-			 <div>${entity.key}</div>
-			 <div class="description">${entity.description}</div>
-		 </div>`
-    );
+	if ( entity.description === null ) {
+		return $(
+			`<div>
+				 <div>${entity.key}</div>
+			 </div>`
+		);
+	} else {
+		return $(
+			`<div>
+				 <div>${entity.key}</div>
+				 <div class="description">${entity.description}</div>
+			 </div>`
+		);
+	}
 }
 
 function contains(text, search_string) {

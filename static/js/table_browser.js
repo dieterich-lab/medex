@@ -1,6 +1,6 @@
-import {configure_entity_selection} from "./entity_selection.js";
-import {configure_multiple_measurement_select} from "./measurement.js";
-import {get_selected_items, get_selected_measurements, show_collapsed} from "./utility.js";
+import {configure_entity_selection} from "./utility/entity_selection.js";
+import {configure_multiple_measurement_select} from "./services/measurement.js";
+import {get_selected_items, get_selected_measurements, show_collapsed} from "./utility/misc.js";
 
 async function init() {
     await configure_multiple_measurement_select('measurement', 'measurement_div');
@@ -13,18 +13,21 @@ async function init() {
 document.addEventListener("DOMContentLoaded", init);
 
 function display_results() {
-    const all_table_types = document.querySelectorAll('input[name="what_table"]');
+    const table_type = get_selected_table_type();
     const measurements = get_selected_measurements();
     const entities = get_selected_items('table_browser_entities_select');
-    let selected_table;
-    for (const table_type of all_table_types) {
-        if (table_type.checked) {
-            selected_table = table_type.value;
-            create_datatable(selected_table, measurements, entities);
-            set_url_for_download(selected_table, measurements, entities);
+    create_datatable(table_type, measurements, entities);
+    set_url_for_download(table_type, measurements, entities);
+    show_collapsed('numeric_results');
+}
+
+function get_selected_table_type() {
+    const options = document.querySelectorAll('input[name="what_table"]');
+    for ( const option of options ) {
+        if ( option.checked ) {
+            return option.value;
         }
     }
-    show_collapsed('numeric_results');
 }
 
 function create_datatable(selected_table, measurements, entities) {

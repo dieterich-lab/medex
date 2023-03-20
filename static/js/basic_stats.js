@@ -1,7 +1,7 @@
-import {configure_multiple_measurement_select} from "./measurement.js";
-import {configure_entity_selection} from "./entity_selection.js";
-import {get_database_info} from "./database_info.js";
-import {get_selected_items} from "./utility.js";
+import {configure_multiple_measurement_select} from "./services/measurement.js";
+import {configure_entity_selection} from "./utility/entity_selection.js";
+import {get_database_info} from "./services/database_info.js";
+import {get_selected_items} from "./utility/misc.js";
 
 const DEFAULT_TABLE_COLUMNS = [
     {data: 'key', title: 'Entity'},

@@ -1,4 +1,4 @@
-import {handle_select_special_choices} from "./utility.js";
+import {handle_select_special_choices} from "../utility/misc.js";
 
 let measurement_list_promise = null;
 let measurement_list = null;

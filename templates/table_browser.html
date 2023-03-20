@@ -6,7 +6,6 @@
 </div>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
-<script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='datatables/datatables.min.css') }}"/>
@@ -29,6 +28,8 @@
         <div id="settings" class="collapse show "
              aria-labelledby="c_settings_header" data-parent="#accordion">
             <div class="card-body">
+                <div id="error_div">
+                </div>
                 <div id="measurement_div"></div>
                 <label for="table_browser_entities_select">Entities:</label>
                 <select id="table_browser_entities_select" name="entities" multiple style="width: 100%" class="js-example-basic-single"
