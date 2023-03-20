@@ -1,4 +1,4 @@
-import {handle_select_special_choices} from "./utility.js";
+import {handle_select_special_choices} from "./misc.js";
 
 function configure_category_selection(element_id, categorical_entity) {
     render_categories_select(element_id, categorical_entity);

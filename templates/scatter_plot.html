@@ -7,19 +7,11 @@
 <div id="menu">
     {% include 'sidebar.html' %}
 </div>
-{# imports #}
-{# our own js #}
-<script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
 
-
-{# plotly and jquery #}
 <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
-
-{# pretty multiselect inputs #}
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
-{# end of imports #}
 <div id="content">
     <div class="card">
         <div class="card-header" id="settings_header">
@@ -34,7 +26,7 @@
         <div id="settings" class="collapse show "
              aria-labelledby="c_settings_header" data-parent="#accordion">
             <div class="card-body">
-                <div id="error_scatter_plot">
+                <div id="error_div">
                 </div>
 
                 <div id="scatter_plot_x_measurement_div"></div>
@@ -101,7 +93,7 @@
         </h5>
     </div>
     <div id="numeric_results" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-        <div id="svg_download">
+        <div id="download_div">
         </div>
         <div id="scatter_plot">
         </div>

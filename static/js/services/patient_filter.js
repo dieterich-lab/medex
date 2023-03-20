@@ -1,7 +1,7 @@
 import {get_entity_by_key} from './entity.js';
 import {configure_single_measurement_select} from './measurement.js';
-import {configure_entity_selection} from "./entity_selection.js";
-import {configure_category_selection} from "./categories_selection.js";
+import {configure_entity_selection} from "../utility/entity_selection.js";
+import {configure_category_selection} from "../utility/categories_selection.js";
 
 async function init() {
     refresh_filter_panel();

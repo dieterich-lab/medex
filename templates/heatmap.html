@@ -1,21 +1,14 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<script type="module" src="{{ url_for('static', filename='js/setup.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/heatmap.js') }}"></script>
+
 
 <div id="menu">
     {% include 'sidebar.html' %}
 </div>
-{# imports #}
-{# our own js #}
-<script src="{{ url_for('static', filename='js/error_and_spinning.js') }}"></script>
 
-{# pretty multiselect inputs #}
-{# plotly and jquery #}
+<script type="module" src="{{ url_for('static', filename='js/panels/heatmap.js') }}"></script>
 <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
-
-{# pretty multiselect inputs #}
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
 
@@ -33,7 +26,7 @@
         </div>
         <div id="settings" class="collapse show" aria-labelledby="c_settings_header" data-parent="#accordion">
             <div class="card-body">
-                <div id="error_heatmap">
+                <div id="error_div">
                 </div>
                 <div class="form-group">
                     <label for="heatmap_numerical_entities_select">Numeric entities:</label>
@@ -42,21 +35,21 @@
                     >
                     </select>
                 </div>
-                <button id="Result" name="heatmap" class="btn btn-outline-info" onclick="plot_heatmap.display()">Result</button>
+                <button id="Result" name="heatmap" class="btn btn-outline-info" onclick="display_results()">Result</button>
             </div>
         </div>
     </div>
 
     <div class="card-header" id="results_header">
         <h5 class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#results_div"
                     {% if plot %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
                 Results
             </button>
         </h5>
     </div>
-    <div id="numeric_results" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-        <div id="heatmap_svg_download">
+    <div id="results_div" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+        <div id="download_div">
         </div>
         <div id="heatmap">
         </div>
