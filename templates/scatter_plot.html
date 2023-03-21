@@ -1,13 +1,11 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<script type="module" src="{{ url_for('static', filename='js/setup.js') }}"></script>
-<script type="module" src="{{ url_for('static', filename='js/scatter_plot.js') }}" xmlns="http://www.w3.org/1999/html"></script>
-
 <div id="menu">
-    {% include 'sidebar.html' %}
+    {% include 'patient_filter.html' %}
 </div>
 
+<script type="module" src="{{ url_for('static', filename='js/panels/scatter_plot.js') }}" xmlns="http://www.w3.org/1999/html"></script>
 <script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
 <script src="{{ url_for('static', filename='select2.min.js') }}"></script>
@@ -75,7 +73,7 @@
                     </div>
                 </div>
 
-                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="plot_scatter_plot.display()"
+                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="display_results()"
                 >
                     Result
                 </button>
@@ -85,17 +83,17 @@
 
     <div class="card-header" id="results_header">
         <h5 class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#numeric_results"
+            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#results_div"
                     aria-controls="#numeric_results"
             >
                 Results
             </button>
         </h5>
     </div>
-    <div id="numeric_results" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+    <div id="results_div" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
         <div id="download_div">
         </div>
-        <div id="scatter_plot">
+        <div id="plot_div">
         </div>
     </div>
 </div>
