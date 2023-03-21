@@ -1,4 +1,4 @@
-import {report_error, clear_error} from "./error.js";
+import {report_error, clear_error, UserError, HTTPError} from "./error.js";
 
 function handle_select_special_choices(event, element_id) {
     const selected_item = event.params.data.text;
@@ -51,13 +51,33 @@ function process_fetch(method, uri, process_data) {
         process_data(data);
     })
     .catch(error => {
-        const message = ( 'status' in error && 'statusText' in error ) ? `${error.status} ${error.statusText}` : error;
-        report_error(`Failed on ${method} ${uri}: ${message}`);
+        const annotation = `Failed on ${method} ${uri}:`;
+        handle_fetch_error(error, annotation);
+
     });
 }
 
+function handle_fetch_error(error, annotation) {
+    if ( error instanceof UserError ) {
+        report_error(error);
+        return;
+    }
+    if ( 'status' in error && 'statusText' in error ) {
+        report_error(new HTTPError(`${annotation} ${error.status} ${error.statusText}`));
+        return;
+    }
+    if ( error instanceof Error ) {
+        error.message = `${annotation} ${error.message}`;
+        report_error(error);
+        return;
+    }
+    report_error(`${annotation} ${error}`);
+}
+
+const DOWNLOAD_DIV_ID = 'download_div';
+
 function create_download_link(uri, file_name) {
-    let div = document.getElementById('download_div');
+    let div = document.getElementById(DOWNLOAD_DIV_ID);
     div.innerHTML = `
         <div class="card-body">
             <a href="${uri}" class="btn btn-outline-info" download="${file_name}">Download</a>
@@ -65,9 +85,14 @@ function create_download_link(uri, file_name) {
     `;
 }
 
+function remove_download_link() {
+    let div = document.getElementById(DOWNLOAD_DIV_ID);
+    div.innerHTML = '';
+}
+
 export {
     handle_select_special_choices, show_collapsed,
     get_selected_items, get_selected_measurements, get_selected_categories,
     process_fetch,
-    create_download_link
+    create_download_link, remove_download_link, DOWNLOAD_DIV_ID
 };

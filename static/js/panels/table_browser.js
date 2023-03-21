@@ -1,6 +1,6 @@
-import {configure_entity_selection} from "./utility/entity_selection.js";
-import {configure_multiple_measurement_select} from "./services/measurement.js";
-import {get_selected_items, get_selected_measurements, show_collapsed} from "./utility/misc.js";
+import {configure_entity_selection} from "../utility/entity_selection.js";
+import {configure_multiple_measurement_select} from "../services/measurement.js";
+import {get_selected_items, get_selected_measurements, show_collapsed} from "../utility/misc.js";
 
 async function init() {
     await configure_multiple_measurement_select('measurement', 'measurement_div');

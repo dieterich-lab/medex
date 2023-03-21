@@ -1,4 +1,13 @@
-function report_error(message) {
+
+class UserError extends Error {}
+
+class HTTPError extends Error {}
+
+function report_error(error) {
+    const message = error instanceof Error ? error.message : error;
+    if ( !(error instanceof UserError) && !(error instanceof HTTPError) && error instanceof Error ) {
+        console.log(error.stack)
+    }
     let div = document.getElementById('error_div');
     div.innerHTML = `
         <div class="alert alert-danger mt-2" role="alert">
@@ -15,4 +24,4 @@ function clear_error() {
     div.innerHTML = null;
 }
 
-export {report_error, clear_error};
+export {report_error, clear_error, UserError, HTTPError};

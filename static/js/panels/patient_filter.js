@@ -1,5 +1,5 @@
-import {get_entity_by_key} from './entity.js';
-import {configure_single_measurement_select} from './measurement.js';
+import {get_entity_by_key} from '../services/entity.js';
+import {configure_single_measurement_select} from '../services/measurement.js';
 import {configure_entity_selection} from "../utility/entity_selection.js";
 import {configure_category_selection} from "../utility/categories_selection.js";
 
@@ -267,7 +267,14 @@ function set_filter_measurement(new_measurement) {
     refresh_filter_panel();
 }
 
-export {
-    init, select_filter, add_or_update_categorical_filter, set_numerical_filter_from, set_numerical_filter_to,
-    clear_all_filters, add_or_update_numerical_filter, set_filter_measurement
+window.patient_filter = {
+    select_filter: select_filter,
+    add_or_update_categorical_filter: add_or_update_categorical_filter,
+    set_numerical_filter_from: set_numerical_filter_from,
+    set_numerical_filter_to: set_numerical_filter_to,
+    clear_all_filters: clear_all_filters,
+    add_or_update_numerical_filter: add_or_update_numerical_filter,
+    set_filter_measurement: set_filter_measurement,
 };
+
+document.addEventListener("DOMContentLoaded", init);

@@ -1,6 +1,9 @@
 import {try_get_entity_list, get_entity_list, try_get_entity_by_key} from "../services/entity.js";
 
 
+const SEARCH_ENTITY_PLACEHOLDER = 'Search Entity';
+
+
 function format_entity(state) {
 	const entity = try_get_entity_by_key(state.value);
 	if ( !entity ) {
@@ -23,10 +26,13 @@ function format_entity(state) {
 }
 
 function contains(text, search_string) {
+	if ( !text ) {
+		return false;
+	}
 	return text.toLowerCase().includes(search_string.toLowerCase());
 }
 
-function is_valid_entity(entity, valid_entity_types, search_string) {
+function is_matching_entity(entity, valid_entity_types, search_string) {
 	if ( ! valid_entity_types.includes(entity['type']) ) {
 		return false;
 	}
@@ -52,7 +58,7 @@ $.fn.select2.amd.define('select2/data/EntityData',
 			const entity_list = try_get_entity_list();
 			const entity_types = this.$element.attr('data-entity-types').split(',');
 			const results = entity_list.map( (x) => {
-				if (is_valid_entity(x, entity_types, params.term)) {
+				if (is_matching_entity(x, entity_types, params.term)) {
 					return {
 						id: x['key'],
 						text: x['key'],
@@ -96,7 +102,7 @@ async function render_select_entity_box(element_id, selected_entities, multiple_
     let select_box = document.getElementById(element_id);
     const all_entities = await get_entity_list();
 	const entity_types = select_box.getAttribute('data-entity-types').split(',');
-	const prefix = multiple_allowed ? '': '<option>Search Entity</option>';
+	const prefix = multiple_allowed ? '': `<option>${SEARCH_ENTITY_PLACEHOLDER}</option>`;
 	const options_html = all_entities
 		.filter((x) => entity_types.includes(x.type))
 		.map((x) => {
@@ -107,4 +113,8 @@ async function render_select_entity_box(element_id, selected_entities, multiple_
     select_box.innerHTML = prefix + options_html.join('') + '\n';
 }
 
-export {configure_entity_selection};
+function is_valid_entity(x){
+	return (!!x && x !== '' && x !== SEARCH_ENTITY_PLACEHOLDER)
+}
+
+export {configure_entity_selection, is_valid_entity};

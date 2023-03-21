@@ -2,7 +2,7 @@
 {% block body %}
 
 <div id="menu">
-    {% include 'sidebar.html' %}
+    {% include 'patient_filter.html' %}
 </div>
 
 <script type="module" src="{{ url_for('static', filename='js/panels/histogram.js') }}"></script>
@@ -70,7 +70,7 @@
     <div id="results_div" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
         <div id="download_div">
         </div>
-        <div id="histogram">
+        <div id="plot_div">
         </div>
     </div>
 </div>
