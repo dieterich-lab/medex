@@ -2,6 +2,7 @@ import {get_selected_items} from "../utility/misc.js";
 import {Plot} from "../utility/plot.js";
 import {configure_entity_selection} from "../utility/entity_selection.js";
 import {UserError} from "../utility/error.js";
+import {switch_nav_item} from "../utility/nav.js";
 
 class HeatMap extends Plot {
     get_name() {
@@ -35,6 +36,7 @@ function display_results() {
 }
 
 async function init() {
+    switch_nav_item('heatmap');
     await configure_entity_selection(
         'heatmap_numerical_entities_select', window.selected_numerical_entities,
         true, false

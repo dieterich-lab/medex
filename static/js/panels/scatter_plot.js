@@ -3,8 +3,8 @@ import {Plot} from "../utility/plot.js";
 import {configure_single_measurement_select, get_measurement_display_name} from "../services/measurement.js";
 import {configure_entity_selection, is_valid_entity} from "../utility/entity_selection.js";
 import {configure_category_selection} from "../utility/categories_selection.js";
-import {get_entity_by_key} from "../services/entity.js";
 import {UserError} from "../utility/error.js";
+import {switch_nav_item} from "../utility/nav.js";
 
 
 class ScatterPlot extends Plot {
@@ -99,6 +99,7 @@ $(function () {
 });
 
 async function init() {
+    switch_nav_item('scatter_plot');
     await configure_single_measurement_select('scatter_plot_x_measurement', 'scatter_plot_x_measurement_div');
     await configure_single_measurement_select('scatter_plot_y_measurement', 'scatter_plot_y_measurement_div');
     await configure_entity_selection(

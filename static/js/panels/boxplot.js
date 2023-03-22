@@ -4,6 +4,7 @@ import {Plot} from "../utility/plot.js";
 import {configure_multiple_measurement_select, get_measurement_display_name} from "../services/measurement.js";
 import {configure_entity_selection, is_valid_entity} from "../utility/entity_selection.js";
 import {configure_category_selection} from "../utility/categories_selection.js";
+import {switch_nav_item} from "../utility/nav.js";
 
 class BoxPlot extends Plot {
     get_name() {
@@ -79,6 +80,7 @@ function display_results() {
 }
 
 async function init() {
+    switch_nav_item('boxplot');
     await configure_multiple_measurement_select('measurement', 'measurement_div');
     await configure_entity_selection(
         'boxplot_numerical_entities_select', window.selected_numerical_entities,

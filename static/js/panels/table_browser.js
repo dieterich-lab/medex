@@ -1,8 +1,10 @@
 import {configure_entity_selection} from "../utility/entity_selection.js";
 import {configure_multiple_measurement_select} from "../services/measurement.js";
 import {get_selected_items, get_selected_measurements, show_collapsed} from "../utility/misc.js";
+import {switch_nav_item} from "../utility/nav.js";
 
 async function init() {
+    switch_nav_item('table_browser');
     await configure_multiple_measurement_select('measurement', 'measurement_div');
     await configure_entity_selection(
         'table_browser_entities_select', window.table_browser_data_selected_entities,

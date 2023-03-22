@@ -2,6 +2,7 @@ import {configure_multiple_measurement_select} from "../services/measurement.js"
 import {configure_entity_selection} from "../utility/entity_selection.js";
 import {get_database_info} from "../services/database_info.js";
 import {get_selected_items} from "../utility/misc.js";
+import {switch_nav_item} from "../utility/nav.js";
 
 const DEFAULT_TABLE_COLUMNS = [
     {data: 'key', title: 'Entity'},
@@ -49,6 +50,7 @@ let init_promise = null;
 
 
 async function do_init() {
+    switch_nav_item('basic_stats');
     for( const descriptor of ALL_ENTITY_DESCRIPTORS ) {
         const name = descriptor.name;
         await configure_multiple_measurement_select(
