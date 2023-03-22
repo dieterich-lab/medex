@@ -1,6 +1,6 @@
 import {get_selected_measurements, get_selected_items} from "../utility/misc.js";
 import {Plot} from "../utility/plot.js";
-import {configure_multiple_measurement_select} from "../services/measurement.js";
+import {configure_multiple_measurement_select, get_measurement_display_name} from "../services/measurement.js";
 import {configure_entity_selection, is_valid_entity} from "../utility/entity_selection.js";
 import {configure_category_selection} from "../utility/categories_selection.js";
 import {UserError} from "../utility/error.js";
@@ -28,7 +28,8 @@ class Histogram extends Plot {
 
     validate_parameters(measurements, numerical_entity, categorical_entity, categories) {
         if (!measurements.length) {
-            throw new UserError("Please select one or more visits");
+            const name = get_measurement_display_name(true);
+            throw new UserError(`Please select one or more ${name}`);
         }
         if (!is_valid_entity(numerical_entity)) {
             throw new UserError("Please select the numerical entity");

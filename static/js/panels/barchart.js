@@ -1,7 +1,7 @@
 import {get_selected_categories, get_selected_measurements} from "../utility/misc.js";
 import {UserError} from "../utility/error.js";
 import {Plot} from "../utility/plot.js";
-import {configure_multiple_measurement_select} from "../services/measurement.js";
+import {configure_multiple_measurement_select, get_measurement_display_name} from "../services/measurement.js";
 import {configure_entity_selection, is_valid_entity} from "../utility/entity_selection.js";
 import {configure_category_selection} from "../utility/categories_selection.js";
 
@@ -37,7 +37,8 @@ class BarChart extends Plot {
 
     validate_parameters(measurements, entity, categories) {
         if ( !measurements.length ) {
-            throw new UserError("Please select one or more measurements.");
+            const name = get_measurement_display_name(true);
+            throw new UserError(`Please select one or more ${name}.`);
         }
         if ( !is_valid_entity(entity) ) {
             throw new UserError("Please select the entity to group by.");

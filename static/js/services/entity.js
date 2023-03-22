@@ -1,23 +1,25 @@
+import {http_fetch} from "../utility/http.js";
+
 let entity_list_promise = null;
 let entity_list = null;
 let entities_by_key = null;
 
 async function init() {
     if ( ! entity_list_promise ) {
-         entity_list_promise = fetch('/entity/all', {method: 'GET'})
-            .then(response => response.json())
-            .then(async new_entity_list => {
-                entity_list = await new_entity_list;
-                entities_by_key = {};
-                for (const entity of entity_list) {
-                    entities_by_key[entity[['key']]] = entity;
-                }
-            })
-            .catch(error => {
-                console.log(error)
-        })
+        entity_list_promise = http_fetch(
+            'GET', '/entity/all',
+            load_data, null, false
+        );
     }
     await entity_list_promise;
+}
+
+async function load_data(new_entity_list) {
+    entity_list = await new_entity_list;
+    entities_by_key = {};
+    for (const entity of entity_list) {
+        entities_by_key[entity[['key']]] = entity;
+    }
 }
 
 async function get_entity_list() {

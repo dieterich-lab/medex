@@ -113,8 +113,8 @@ async function render_select_entity_box(element_id, selected_entities, multiple_
     select_box.innerHTML = prefix + options_html.join('') + '\n';
 }
 
-function is_valid_entity(x){
-	return (!!x && x !== '' && x !== SEARCH_ENTITY_PLACEHOLDER)
+function is_valid_entity(name){
+	return (!!name && name !== '' && name !== SEARCH_ENTITY_PLACEHOLDER)
 }
 
 export {configure_entity_selection, is_valid_entity};

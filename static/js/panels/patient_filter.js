@@ -2,9 +2,10 @@ import {get_entity_by_key} from '../services/entity.js';
 import {configure_single_measurement_select} from '../services/measurement.js';
 import {configure_entity_selection} from "../utility/entity_selection.js";
 import {configure_category_selection} from "../utility/categories_selection.js";
+import {http_fetch, http_send_as_json} from "../utility/http.js";
 
 async function init() {
-    refresh_filter_panel();
+    await refresh_filter_panel();
     await configure_single_measurement_select('filter_measurement', 'filter_measurement_div', null,true);
     await configure_entity_selection('selected_filter', [], false, false);
     setup_measurement_filter_select();
@@ -12,8 +13,8 @@ async function init() {
 
 function setup_measurement_filter_select() {
     let filter_measurement_select = $("#filter_measurement");
-    filter_measurement_select.change(() => {
-        set_filter_measurement(filter_measurement_select.val());
+    filter_measurement_select.change(async () => {
+        await set_filter_measurement(filter_measurement_select.val());
     });
 }
 
@@ -100,24 +101,12 @@ async function set_numerical_filter_to() {
     get_numerical_filter_range_slider().update({to: new_value});
 }
 
-function clear_all_filters() {
-    fetch('/filter/all', {
-        method: 'DELETE',
-    }).then(() => {
-        refresh_filter_panel();
-    }).catch(error => {
-        console.log(error);
-        refresh_filter_panel();
-    });
+async function clear_all_filters() {
+    await http_fetch('DELETE', '/filter/all', refresh_filter_panel, refresh_filter_panel, false);
 }
 
-function refresh_filter_panel() {
-    fetch('/filter/all', {method: 'GET'})
-    .then(response => response.json())
-    .then(data => render_all_filters(data))
-    .catch(error => {
-        console.log(error)
-    })
+async function refresh_filter_panel() {
+    await http_fetch('GET', '/filter/all', render_all_filters, null, false);
 }
 
 async function render_all_filters(data) {
@@ -170,22 +159,15 @@ function render_filter(entity_key, measurement, inner_html) {
     `;
     div.appendChild(child);
     let remover = document.getElementById(`remove_filter_${entity_key}`);
-    remover.addEventListener('click', () => { remove_filter(entity_key) }, false);
+    remover.addEventListener('click', async () => { await remove_filter(entity_key) }, false);
 }
 
-function remove_filter(entity_key) {
-    fetch('/filter/delete', {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({'entity': entity_key}),
-    }).then(() => {
-        refresh_filter_panel();
-    }).catch(error => {
-        console.log(error);
-        refresh_filter_panel();
-    })
+async function remove_filter(entity_key) {
+    await http_send_as_json(
+        'DELETE', '/filter/delete',
+        {'entity': entity_key},
+        refresh_filter_panel, refresh_filter_panel, false
+    );
 }
 
 async function render_numerical_filter(entity_key, filter) {
@@ -210,18 +192,11 @@ async function add_or_update_categorical_filter() {
     const entity = await get_selected_entity();
     const categories = get_selected_categories();
 
-    fetch('/filter/add_categorical', {
-        method: 'POST',
-        headers:{
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({'entity': entity['key'], 'measurement': measurement, 'categories': categories}),
-    }).then(() => {
-        refresh_filter_panel();
-    }).catch(error => {
-        console.log(error)
-        refresh_filter_panel();
-    })
+    await http_send_as_json(
+        'POST', '/filter/add_categorical',
+        {'entity': entity['key'], 'measurement': measurement, 'categories': categories},
+        refresh_filter_panel, refresh_filter_panel, false
+    );
 }
 function get_selected_categories() {
     const parent = document.getElementById('categorical_filter_panel_categories');
@@ -243,28 +218,20 @@ async function add_or_update_numerical_filter() {
         'to_value': parseFloat(from_to[1]),
     };
 
-    fetch('/filter/add_numerical', {
-        method: 'POST',
-        headers:{
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(request_json),
-    }).then(() => {
-        refresh_filter_panel();
-    }).catch(error => {
-        console.log(error);
-        refresh_filter_panel();
-    })
+    await http_send_as_json(
+        'POST','/filter/add_numerical', request_json,
+        refresh_filter_panel, refresh_filter_panel, false
+    );
 }
 
 let present_filter_measurement = null;
 
-function set_filter_measurement(new_measurement) {
+async function set_filter_measurement(new_measurement) {
     if ( new_measurement === present_filter_measurement ) {
         return;
     }
     present_filter_measurement = new_measurement;
-    refresh_filter_panel();
+    await refresh_filter_panel();
 }
 
 window.patient_filter = {
@@ -274,7 +241,6 @@ window.patient_filter = {
     set_numerical_filter_to: set_numerical_filter_to,
     clear_all_filters: clear_all_filters,
     add_or_update_numerical_filter: add_or_update_numerical_filter,
-    set_filter_measurement: set_filter_measurement,
 };
 
 document.addEventListener("DOMContentLoaded", init);
