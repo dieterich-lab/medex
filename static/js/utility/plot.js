@@ -1,5 +1,6 @@
-import {create_download_link, remove_download_link, process_fetch, show_collapsed} from "./misc.js";
+import {create_download_link, remove_download_link, show_collapsed} from "./misc.js";
 import {report_error, UserError} from "./error.js";
+import {http_fetch} from "./http.js";
 
 class Plot {
     handle_plot() {
@@ -7,7 +8,7 @@ class Plot {
             const query_parameters = this.get_query_parameters();
             const base_url = this.get_plot_url();
             const url = `${base_url}?${query_parameters}`;
-            process_fetch('GET', url, data => this.process_results(data, query_parameters));
+            http_fetch('GET', url, data => this.process_results(data, query_parameters));
         } catch (error) {
             this.clear_result();
             report_error(error);

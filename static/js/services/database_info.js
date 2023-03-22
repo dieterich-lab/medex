@@ -1,23 +1,21 @@
+import {http_fetch} from "../utility/http.js";
 
 let info_promise = null;
 let info = null;
 
-async function load_data() {
+async function init() {
     if ( ! info_promise ) {
-         info_promise = fetch('/database_info/', {method: 'GET'})
-            .then(response => response.json())
-            .then(async db_info => {
-                info = await db_info;
-            })
-            .catch(error => {
-                console.log(error)
-        })
+        info_promise = http_fetch(
+            'GET', '/database_info/',
+            async db_info => { info = await db_info },
+            null, false
+        );
     }
     await info_promise;
 }
 
 async function get_database_info() {
-    await load_data();
+    await init();
     return info;
 }
 

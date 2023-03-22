@@ -1,4 +1,5 @@
 import {handle_select_special_choices} from "../utility/misc.js";
+import {http_fetch} from "../utility/http.js";
 
 let measurement_list_promise = null;
 let measurement_list = null;
@@ -6,23 +7,28 @@ let measurement_display_name = null;
 
 async function init() {
     if ( ! measurement_list_promise ) {
-         measurement_list_promise = fetch('/measurement/', {method: 'GET'})
-            .then(response => response.json())
-            .then(async measurement_info => {
-                const info = await measurement_info;
-                measurement_display_name = info['display_name'];
-                measurement_list = info['values'];
-            })
-            .catch(error => {
-                console.log(error)
-        })
+        measurement_list_promise = http_fetch(
+            'GET', '/measurement/',
+            load_data, null, false
+        )
     }
     await measurement_list_promise;
 }
 
-async function get_measurement_display_name() {
+async function load_data(measurement_info) {
+    const info = await measurement_info;
+    measurement_display_name = info['display_name'];
+    measurement_list = info['values'];
+}
+
+async function get_measurement_display_name_async(plural=false) {
     await init();
-    return measurement_display_name;
+    return get_measurement_display_name(plural);
+}
+
+function get_measurement_display_name(plural=false) {
+    const name = measurement_display_name ? measurement_display_name : 'Measurement';
+    return plural ? `${name}s` : name;
 }
 
 async function configure_single_measurement_select(id, parent_id, initial_value=null, allow_none=false) {
@@ -33,7 +39,7 @@ async function configure_single_measurement_select(id, parent_id, initial_value=
 
 async function render_select_html(id, parent_id, allow_multiple, allow_none) {
     const multiple = allow_multiple ? 'multiple' : '';
-    const label = await get_measurement_display_name();
+    const label = await get_measurement_display_name_async(allow_multiple);
     const measurement_values = await get_measurement_list();
     const display = measurement_values.length > 1 ? 'block' : 'none';
     const options = await get_options(allow_multiple, allow_none);
@@ -93,4 +99,4 @@ async function get_measurement_list() {
     return measurement_list;
 }
 
-export {init, configure_single_measurement_select, configure_multiple_measurement_select};
+export {init, configure_single_measurement_select, configure_multiple_measurement_select, get_measurement_display_name};

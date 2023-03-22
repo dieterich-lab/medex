@@ -1,6 +1,6 @@
 import {get_selected_categories} from "../utility/misc.js";
 import {Plot} from "../utility/plot.js";
-import {configure_single_measurement_select} from "../services/measurement.js";
+import {configure_single_measurement_select, get_measurement_display_name} from "../services/measurement.js";
 import {configure_entity_selection, is_valid_entity} from "../utility/entity_selection.js";
 import {configure_category_selection} from "../utility/categories_selection.js";
 import {get_entity_by_key} from "../services/entity.js";
@@ -57,7 +57,8 @@ class ScatterPlot extends Plot {
             throw new UserError("Please select y_axis");
         }
         if (entity_x_axis === entity_y_axis && measurement_x_axis === measurement_y_axis) {
-            throw new UserError("You can't compare same entity for the same visit");
+            const name = get_measurement_display_name();
+            throw new UserError(`You can't compare same entity for the same ${name}`);
         }
         if (group_by && !is_valid_entity(add_group_by.key)) {
             throw new UserError("Please select 'group by' entity");
