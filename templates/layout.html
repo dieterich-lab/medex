@@ -3,15 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Research Data Warehouse</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='w3.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font-awesome.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='select2.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='popper.min.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/layout.js') }}"></script>
 
     <script>
         window.table_browser_data_selected_entities = [];
@@ -20,11 +12,8 @@
     </script>
 </head>
 <body>
-{# custom style #}
-{# requirements for bootstrap #}
-
-<div id="page" class="mx-4">
-    <nav class="navbar navbar-light bg-light  ">
+<div id="page" class="mx-4" style="display: none">
+    <nav id="nav_bar" class="navbar navbar-light bg-light">
         <ul class="nav nav-pills mx-auto">
             <li class="nav-item">
                 <a class="nav-link" href="/tutorial/" id="tutorial_nav">Tutorial</a>

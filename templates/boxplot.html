@@ -5,10 +5,8 @@
     {% include 'patient_filter.html' %}
 </div>
 
-<script type="module" src="{{ url_for('static', filename='js/panels/boxplot.js') }}"></script>
-<script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
-<script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/boxplot.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plotly.min.js') }}"></script>
 
 <div id="content">
     <div class="card">
@@ -67,7 +65,7 @@
                 </button>
             </h5>
         </div>
-        <div id="results_div" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
+        <div id="results_div" class="collapse show" aria-labelledby="n_results_header">
             <div id="download_div">
             </div>
             <div id="boxplot_table">

@@ -9,3 +9,8 @@ __pycache__
 import/*
 !import/.gitkeep
 dev_import.ini
+/node_modules/
+/static/js/*
+/static/third_party/css/
+/static/third_party/js/
+/build/

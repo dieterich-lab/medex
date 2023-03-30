@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<script type="module" src="{{ url_for('static', filename='js/panels/tutorial.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/tutorial.js') }}"></script>
 
 <div class="container">
     <div class="col-12">
@@ -11,11 +11,6 @@
                 <div class="tab-content" id="pills-tabContent">
                     <div class="tab-pane fade show active" id="example_of_usage" role="tabpanel"
                          aria-labelledby="random_example">
-                        <p style="font-size:18px;">A blue background displays information about the data.</p>
-                        <div class="thumbnail">
-                            <img src="{{ url_for('static', filename='images/baruu.png') }}"
-                                 width="100%" class="img-responsive">
-                        </div>
                         <br/>
                         <br/>
                         <p style="font-size:18px;"> When loading data into the database from an entities.csv file, it is
@@ -162,7 +157,6 @@
                         <br/>
                         <h4>Scatter plot</h4>
                         <h5>Selector Panel</h5>
-                        <!-- Scatter plot panel jest troche bardziej rozbudowany tutaj mozemy wybrac -->
                         <div class="thumbnail">
                             <img src="{{ url_for('static', filename='images/scatter_plot_selector.png') }}"
                                  width="100%" class="img-responsive">

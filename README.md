@@ -43,9 +43,12 @@ Test it out at http://localhost:8000. No mounted folders. To apply changes, the 
 
 ### Requirements
 
-* Linux/MacOS
+* Linux (maybe MacOS works too)
 * [Python](https://www.python.org/) >= 3.8
 * [Docker-CE](https://docs.docker.com/install/) >= 18.09.07
+* [NodeJS](https://nodejs.org) with npm>= 14.21
+* Recommended: A Python IDE e.g. PyCharm - PyCharm Professional preferred due to
+  the better JavaScript support.
 
 ### Usage
 
@@ -60,21 +63,25 @@ Test it out at http://localhost:8000. No mounted folders. To apply changes, the 
 
        pip install pipenv
 
-3. Go to your mdex working copy
+3. Go to your Medex working copy.
 
 4. Install both the run-time and the development dependencies:
 
        pipenv install
        pipenv install --dev
+       npm install --save-dev
 
-5. Bring up a database. You may use the configuration under ./examples for that:
+5. Compile the TypeScript files - needs to be repeated after any changes in src_ts:
+
+       npm run build
+
+6. Bring up a database. You may use the configuration under ./examples for that:
 
        ( cd examples/docker_database_only && docker-compose up -d )
 
-6. Bring up application itself:
+7. Bring up application itself:
 
        ./scripts/start.sh
-   
 
 Test it out at http://localhost:5000. The "web" folder is mounted into the container and your code changes apply automatically.
 

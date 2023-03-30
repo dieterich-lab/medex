@@ -5,10 +5,8 @@
     {% include 'patient_filter.html' %}
 </div>
 
-<script type="module" src="{{ url_for('static', filename='js/panels/scatter_plot.js') }}" xmlns="http://www.w3.org/1999/html"></script>
-<script src="{{ url_for('static', filename='plotly-latest.min.js') }}"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='select2.css') }}">
-<script src="{{ url_for('static', filename='select2.min.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/scatter_plot.js') }}"></script>
+<script src="{{ url_for('static', filename='js/plotly.min.js') }}"></script>
 
 <div id="content">
     <div class="card">
