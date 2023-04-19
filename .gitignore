@@ -14,3 +14,4 @@ dev_import.ini
 /static/third_party/css/
 /static/third_party/js/
 /build/
+/stack-compose.yml

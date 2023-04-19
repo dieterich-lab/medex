@@ -2,7 +2,6 @@ version: '3.6'
 services:
   medex:
     image: medex:latest
-    container_name: medex
     ports:
       - "8000:8000"
     depends_on: # other containers it needs in order to run
@@ -20,7 +19,6 @@ services:
 
   database_medex:
     image: postgres
-    container_name: database_medex
     shm_size: 1g
     ports:
       - "127.0.0.1:5429:5432"
