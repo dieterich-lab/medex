@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('Prepare venv') {
+        stage('Prepare Python venv') {
             steps {
                 sh '''
                     python3 -m venv venv
@@ -12,7 +12,7 @@ pipeline {
             }
 
         }
-        stage('Linting') {
+        stage('Python Linting') {
             steps {
                 sh '''
                     . ./venv/bin/activate
@@ -20,13 +20,23 @@ pipeline {
                 '''
             }
         }
-        stage('Testing') {
+        stage('Python Testing') {
             steps {
                 sh '''
                     . ./venv/bin/activate
                     export PYTHONPATH=$(pwd)
                     pytest --junitxml results.xml tests --cov=medex --cov-report xml
                 '''
+            }
+        }
+        stage('Setup NodeJS') {
+            steps {
+                sh 'npm install --save-dev'
+            }
+        }
+        stage('Test TypeScript') {
+            steps {
+                sh 'npm run test'
             }
         }
     }
