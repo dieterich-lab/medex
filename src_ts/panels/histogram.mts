@@ -7,7 +7,11 @@ import {UserError} from "../utility/error.mjs";
 import {switch_nav_item} from "../utility/nav.mjs";
 import {get_input_value_by_id} from "../utility/dom.mjs";
 
-class Histogram extends Plot {
+interface HistogramData {
+    data: Object[]
+}
+
+class Histogram extends Plot<HistogramData> {
     get_name() {
         return 'histogram';
     }
@@ -54,6 +58,10 @@ class Histogram extends Plot {
                 bins: number_of_bins,
             })
         });
+    }
+
+    is_empty(data) {
+        return data.data.length === 0;
     }
 }
 

@@ -4,7 +4,11 @@ import {configure_entity_selection} from "../utility/entity_selection.mjs";
 import {UserError} from "../utility/error.mjs";
 import {switch_nav_item} from "../utility/nav.mjs";
 
-class Heatmap extends Plot {
+interface HeatmapData {
+    data: Object[]
+}
+
+class Heatmap extends Plot<HeatmapData> {
     get_name() {
         return 'heatmap';
     }
@@ -27,6 +31,10 @@ class Heatmap extends Plot {
         if (entities.length < 2) {
             throw new UserError('Please select two or more numeric entities');
         }
+    }
+
+    is_empty(data) {
+        return data.data.length === 0;
     }
 }
 
