@@ -41,7 +41,7 @@ pipeline {
         }
         stage('Check TypeScript Test Coverage') {
             steps {
-                clover(cloverReportDir: 'clover', cloverReportFileName: 'clover.xml',
+                clover(cloverReportDir: 'clover', cloverReportFileName: 'clover.xml')
             }
         }
     }
