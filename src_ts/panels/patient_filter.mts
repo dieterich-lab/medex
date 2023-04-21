@@ -62,7 +62,8 @@ function display_categorical_filter_settings(entity) {
 }
 
 function display_numerical_filter_settings(entity) {
-    $('#numerical_filter_panel_range_slider').ionRangeSlider({
+    let element = $('#numerical_filter_panel_range_slider');
+    element.ionRangeSlider({
         type: "double",
         skin: "big",
         grid: true,
@@ -75,7 +76,7 @@ function display_numerical_filter_settings(entity) {
     });
     set_input_element_by_id('numerical_filter_settings_from_field', entity.min);
     set_input_element_by_id('numerical_filter_settings_to_field', entity.max);
-    range_slider = $('#numerical_filter_panel_range_slider').data('ionRangeSlider');
+    range_slider = element.data('ionRangeSlider');
     range_slider.update({from: entity.min, to: entity.max, min: entity.min, max: entity.max});
     document.getElementById('categorical_filter_panel').style.display = 'none';
     document.getElementById('numerical_filter_panel').style.display = 'block';

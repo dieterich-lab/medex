@@ -7,7 +7,13 @@ import {configure_category_selection} from "../utility/categories_selection.mjs"
 import {switch_nav_item} from "../utility/nav.mjs";
 import {get_input_value_by_id, get_radio_input_by_name} from "../utility/dom.mjs";
 
-class Boxplot extends Plot {
+interface BoxplotData {
+    table_json: Object[]
+    image_json: Object[]
+}
+
+
+class Boxplot extends Plot<BoxplotData> {
     get_name() {
         return 'boxplot';
     }

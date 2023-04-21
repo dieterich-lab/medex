@@ -5,14 +5,14 @@ import {http_fetch} from "./http.mjs";
 declare global {
     interface Window {
         display_results: () => void;
-        // Plotly violently resits to be lowed via rollup ... so we load  separately
+        // Plotly violently resits to be lowed via rollup ... so we load it separately
         Plotly: {
             react: (any, data, p: {}) => any,
         }
     }
 }
 
-class Plot {
+abstract class Plot<Data> {
     handle_plot() {
         try {
             const query_parameters = this.get_query_parameters();
@@ -26,17 +26,10 @@ class Plot {
         }
     }
 
-    get_query_parameters() {
-        throw TypeError('Please overwrite abstract method');
-    }
-
-    decode_data(data) {
-        throw TypeError('Please overwrite abstract method');
-    }
-
-    get_name() {  // Used as default for many others
-        throw TypeError('Please overwrite abstract method');
-    }
+    abstract get_query_parameters(): URLSearchParams;
+    abstract decode_data(data: Data): void;
+    abstract get_name(): string;
+    abstract is_empty(data: Data): boolean;
 
     get_plot_url() {
         return `/${this.get_name()}/json`;
@@ -65,10 +58,6 @@ class Plot {
         show_collapsed('results_div')
     }
 
-    is_empty(data) {
-            return data.data.length === 0;
-    }
-
     clear_result() {
         remove_download_link();
         for (const element_id of this.get_plot_divs()) {
@@ -79,7 +68,7 @@ class Plot {
     }
 }
 
-function setup_plot(plot: Plot, init: () => void) {
+function setup_plot<Data>(plot: Plot<Data>, init: () => void) {
     window.display_results = () => plot.handle_plot();
     document.addEventListener("DOMContentLoaded", init);
 }

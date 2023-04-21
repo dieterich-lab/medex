@@ -7,8 +7,11 @@ import {UserError} from "../utility/error.mjs";
 import {switch_nav_item} from "../utility/nav.mjs";
 import {get_input_value_by_id, is_checked_by_id} from "../utility/dom.mjs";
 
+interface ScatterPlotData {
+    data: Object[]
+}
 
-class ScatterPlot extends Plot {
+class ScatterPlot extends Plot<ScatterPlotData> {
 
     get_name() {
         return 'scatter_plot';
@@ -80,6 +83,10 @@ class ScatterPlot extends Plot {
                 add_group_by: add_group_by
             })
         });
+    }
+
+    is_empty(data) {
+        return data.data.length === 0;
     }
 }
 

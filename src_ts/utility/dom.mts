@@ -39,6 +39,6 @@ function is_checked_by_id(id: string): boolean {
 }
 
 export {
-    set_input_element_by_id, get_input_value_by_id, get_input_number_by_id, get_input_elements_by_query,
+    set_input_element_by_id, get_input_value_by_id, get_input_number_by_id,
     get_radio_input_by_name, get_selected_child_values_by_id, is_checked_by_id
 };
