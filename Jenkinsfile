@@ -36,7 +36,10 @@ pipeline {
         }
         stage('Test TypeScript') {
             steps {
-                sh 'npm run test'
+                sh '''
+                    export PATH="$PATH:$(pwd)/node_modules/.bin"
+                    npm run test
+                '''
             }
         }
         stage('Check TypeScript Test Coverage') {
