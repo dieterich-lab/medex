@@ -39,6 +39,11 @@ pipeline {
                 sh 'npm run test'
             }
         }
+        stage('Check TypeScript Test Coverage') {
+            steps {
+                clover(cloverReportDir: 'clover', cloverReportFileName: 'clover.xml',
+            }
+        }
     }
     post {
         always {
