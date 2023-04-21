@@ -30,6 +30,6 @@
   },
   "scripts": {
     "build": "scripts/build.sh",
-    "test": "tsc && node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "tsc && node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
   }
 }
