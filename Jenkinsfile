@@ -42,7 +42,7 @@ pipeline {
         stage('Check TypeScript Test Coverage') {
             steps {
                 clover(
-                    cloverReportDir: 'clover', cloverReportFileName: 'clover.xml',
+                    cloverReportDir: 'coverage', cloverReportFileName: 'clover.xml',
                     healthyTarget: [methodCoverage: 70, conditionalCoverage: 80, statementCoverage: 80],
                     unhealthyTarget: [methodCoverage: 50, conditionalCoverage: 50, statementCoverage: 50],
                     failingTarget: [methodCoverage: 0, conditionalCoverage: 0, statementCoverage: 0]
