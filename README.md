@@ -113,14 +113,24 @@ For details see: https://github.com/dieterich-lab/medex/tree/master/dataset_exam
 
 ## Running the Tests
 
-The **unit tests** are just pytest tests located in the **'tests'** folder. They use
-sqlite to simulate database when needed. That limits their ability to test code,
-which uses Postgres features.
+The **Python unit tests** are just pytest tests located in the **'tests'** folder. They use
+sqlite to simulate database when needed. As a result they can't cover code using
+Postgres features. To run the tests manually, you may to have to point PYTHONPATH
+to your Medex Git clone:
 
-The **integration tests** are als pytest tests but are located in **'integrations_tests'**
+    export PYTHONPATH=$(pwd)
+    pytest tests
+
+The **Python integration tests** are als pytest tests but are located in **'integrations_tests'**
 and will use docker to run a Postgres Database on port 5477. Either the old
 docker-compose binary or a modern docker with the plugin for compose subcommand
 must be installed.
+
+The **TypeScript tests** are located in the same folders as the source (`*.test.mts`).
+To execute them, the TypeScript compiler (tsc) must be executable. So you may
+have to add `node_modules/.bin` to your path. To execute the tests run:
+
+    npm run test
 
 ## Citation
 
