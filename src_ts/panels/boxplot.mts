@@ -6,6 +6,7 @@ import {configure_entity_selection, is_valid_entity} from "../utility/entity_sel
 import {configure_category_selection} from "../utility/categories_selection.mjs";
 import {switch_nav_item} from "../utility/nav.mjs";
 import {get_input_value_by_id, get_radio_input_by_name} from "../utility/dom.mjs";
+import {EntityType} from "../services/entity.mjs";
 
 interface BoxplotData {
     table_json: Object[]
@@ -75,11 +76,11 @@ async function init() {
     await configure_multiple_measurement_select('measurement', 'measurement_div');
     await configure_entity_selection(
         'boxplot_numerical_entities_select', [],
-        false, false
+        false, false, [EntityType.NUMERICAL]
     );
     await configure_entity_selection(
         'boxplot_categorical_entities_select', [],
-        false, false
+        false, false, [EntityType.CATEGORICAL]
     );
     configure_category_selection(
         'subcategory_entities',

@@ -6,6 +6,12 @@ enum EntityType {
     DATE = 'Date',
 }
 
+const ALL_ENTITIES = [
+    EntityType.NUMERICAL,
+    EntityType.CATEGORICAL,
+    EntityType.DATE,
+];
+
 enum ShowMarker {
     SHOW = '+'
 }
@@ -77,5 +83,7 @@ function try_get_entity_by_key(entity_key): Entity|null {
     return entities_by_key[entity_key];
 }
 
-
-export {get_entity_list, get_entity_by_key, try_get_entity_list, try_get_entity_by_key, Entity, EntityType, ShowMarker};
+export {
+    get_entity_list, get_entity_by_key, try_get_entity_list, try_get_entity_by_key,
+    Entity, EntityType, ALL_ENTITIES, ShowMarker
+};

@@ -1,11 +1,12 @@
 import {Plot, Plotly, setup_plot} from "../utility/plot.mjs";
-import {get_selected_measurements, get_selected_items} from "../utility/misc.mjs";
+import {get_selected_items, get_selected_measurements} from "../utility/misc.mjs";
 import {configure_multiple_measurement_select, get_measurement_display_name} from "../services/measurement.mjs";
 import {configure_entity_selection, is_valid_entity} from "../utility/entity_selection.mjs";
 import {configure_category_selection} from "../utility/categories_selection.mjs";
 import {UserError} from "../utility/error.mjs";
 import {switch_nav_item} from "../utility/nav.mjs";
 import {get_input_value_by_id} from "../utility/dom.mjs";
+import {EntityType} from "../services/entity.mjs";
 
 interface HistogramData {
     data: Object[]
@@ -70,11 +71,11 @@ async function init() {
     await configure_multiple_measurement_select('measurement', 'measurement_div');
     await configure_entity_selection(
         'histogram_numerical_entities_select', [],
-        false, false
+        false, false, [EntityType.NUMERICAL]
     );
     await configure_entity_selection(
         'histogram_categorical_entities_select', [],
-        false, false
+        false, false, [EntityType.CATEGORICAL]
     );
     configure_category_selection(
         'histogram_subcategory_entities',

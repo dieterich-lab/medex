@@ -1,13 +1,16 @@
 import $ from 'jquery';
 import 'ion-rangeslider';
 import 'ion-rangeslider/css/ion.rangeSlider.css';
-import {get_entity_by_key} from '../services/entity.mjs';
+import {ALL_ENTITIES, get_entity_by_key} from '../services/entity.mjs';
 import {configure_single_measurement_select} from '../services/measurement.mjs';
 import {configure_entity_selection} from "../utility/entity_selection.mjs";
 import {configure_category_selection} from "../utility/categories_selection.mjs";
 import {http_fetch, http_send_as_json} from "../utility/http.mjs";
 import {
-    get_input_value_by_id, set_input_element_by_id, get_input_number_by_id, get_selected_child_values_by_id
+    get_input_number_by_id,
+    get_input_value_by_id,
+    get_selected_child_values_by_id,
+    set_input_element_by_id
 } from "../utility/dom.mjs";
 
 let range_slider = null;
@@ -28,7 +31,10 @@ declare global {
 async function init() {
     await refresh_filter_panel();
     await configure_single_measurement_select('filter_measurement', 'filter_measurement_div', null,true);
-    await configure_entity_selection('selected_filter', [], false, false);
+    await configure_entity_selection(
+        'selected_filter', [], false, false,
+        ALL_ENTITIES
+    );
     setup_measurement_filter_select();
 }
 

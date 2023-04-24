@@ -5,6 +5,7 @@ import {get_selected_items, show_collapsed} from "../utility/misc.mjs";
 import {switch_nav_item} from "../utility/nav.mjs";
 import Datatable from 'datatables.net-dt';
 import 'datatables.net-dt/css/jquery.dataTables.min.css';
+import {EntityType} from "../services/entity.mjs";
 
 declare global {
     interface Window {
@@ -18,14 +19,25 @@ interface BasicStatsData {
     basic_stats_data: string
 }
 
-const DEFAULT_TABLE_COLUMNS = [
+interface TabDescriptor {
+    name: string,
+    entity_type: EntityType,
+    table_columns: ColumnDescriptor[],
+}
+
+interface ColumnDescriptor {
+    data: string,
+    title: string,
+}
+
+const DEFAULT_TABLE_COLUMNS: ColumnDescriptor[] = [
     {data: 'key', title: 'Entity'},
     {data: 'measurement', title: 'Visit'},
     {data: 'count', title: 'Counts'},
     {data: 'count NaN', title: 'Counts NaN'},
 ];
 
-const NUMERICAL_TABLE_COLUMNS = [
+const NUMERICAL_TABLE_COLUMNS:ColumnDescriptor[] = [
     {data: 'key', title: 'Entity'},
     {data: 'measurement', title: 'Visit'},
     {data: 'count', title: 'Counts'},
@@ -38,22 +50,25 @@ const NUMERICAL_TABLE_COLUMNS = [
     {data: 'stderr', title: 'Std. Error'},
 ];
 
-const NUMERICAL_DESCRIPTOR = {
+const NUMERICAL_DESCRIPTOR: TabDescriptor = {
     'name': 'numerical',
+    'entity_type': EntityType.NUMERICAL,
     'table_columns': NUMERICAL_TABLE_COLUMNS,
 };
 
-const CATEGORICAL_DESCRIPTOR = {
+const CATEGORICAL_DESCRIPTOR: TabDescriptor = {
     'name': 'categorical',
+    'entity_type': EntityType.CATEGORICAL,
     'table_columns': DEFAULT_TABLE_COLUMNS,
 };
 
-const DATE_DESCRIPTOR = {
+const DATE_DESCRIPTOR: TabDescriptor = {
     'name': 'date',
+    'entity_type': EntityType.DATE,
     'table_columns': DEFAULT_TABLE_COLUMNS,
 };
 
-const ALL_ENTITY_DESCRIPTORS = [
+const ALL_DESCRIPTORS: TabDescriptor[] = [
     NUMERICAL_DESCRIPTOR,
     CATEGORICAL_DESCRIPTOR,
     DATE_DESCRIPTOR,
@@ -67,15 +82,16 @@ let datatable = null;
 
 async function do_init() {
     switch_nav_item('basic_stats');
-    for( const descriptor of ALL_ENTITY_DESCRIPTORS ) {
+    for( const descriptor of ALL_DESCRIPTORS ) {
         const name = descriptor.name;
+        const entity_type = descriptor.entity_type;
         await configure_multiple_measurement_select(
             `basic_stats_measurement_${name}`,
             `basic_stats_measurement_${name}_div`
         );
         await configure_entity_selection(
             `basic_stats_${name}_entities_select`, [],
-            true, false
+            true, false, [entity_type]
         );
     }
     await show_database_info();

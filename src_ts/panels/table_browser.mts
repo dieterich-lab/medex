@@ -5,6 +5,7 @@ import {switch_nav_item} from "../utility/nav.mjs";
 import {get_radio_input_by_name} from '../utility/dom.mjs';
 import Datatable from 'datatables.net-dt';
 import 'datatables.net-dt/css/jquery.dataTables.min.css';
+import {ALL_ENTITIES} from "../services/entity.mjs";
 
 let datatable = null;
 
@@ -23,7 +24,7 @@ async function init() {
     await configure_multiple_measurement_select('measurement', 'measurement_div');
     await configure_entity_selection(
         'table_browser_entities_select', [],
-        true, false
+        true, false, ALL_ENTITIES
     );
 }
 
