@@ -20,12 +20,18 @@ interface HTMLElementWithOptionalSlimSelect extends HTMLHtmlElement{
     slim?: SlimSelect,
 }
 
-function configure_selection(id: string, initial_values: string[]|null = [], settings: object = DEFAULT_SETTINGS) {
+function configure_selection(
+    id: string,
+    initial_values: string[]|null = [],
+    settings: object = DEFAULT_SETTINGS,
+    extra_events: object = {}
+) {
     const all_normal_values = get_all_normal_values(id);
     let select_box = new SlimSelect({
         select: `#${id}`,
         events: {
-            afterChange: (new_values) => handle_select_special_choices(select_box, id, new_values, all_normal_values)
+            afterChange: (new_values) => handle_select_special_choices(select_box, id, new_values, all_normal_values),
+            ...extra_events
         }
     });
     select_box.setSelected(initial_values);

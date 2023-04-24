@@ -45,7 +45,15 @@ button {
   overflow-x: hidden !important;
 }
 
-.description { color: #808080; text-size: smaller; }
+.option_container {
+    display: inline;
+}
+
+.option_description {
+    color: #A0A0A0;
+    font-size: smaller;
+    vertical-align: baseline;
+}
 
 .columns {
   display: flex;
