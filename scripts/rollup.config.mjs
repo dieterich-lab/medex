@@ -3,7 +3,6 @@ import { createBasicConfig } from '@open-wc/building-rollup';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
-import builtins from 'rollup-plugin-node-builtins';
 import styles from "rollup-plugin-styles";
 
 const baseConfig = createBasicConfig();
@@ -33,6 +32,5 @@ export default merge(baseConfig, {
       styles(),
       nodeResolve({browser: true, preferBuiltins: false}),
       commonjs(),
-      builtins(),
   ],
 });

@@ -16,7 +16,7 @@
     <div class="card">
         <div class="card-header" id="settings_header">
             <h5 class="mb-0">
-                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#settings"
                         aria-expanded="true" aria-controls="settings">
                     Settings
                 </button>
@@ -26,28 +26,30 @@
             <div class="card-body">
                 <div id="error_div">
                 </div>
-                <div class="form-group">
+                <div class="sub-card">
                     <label for="heatmap_numerical_entities_select">Numeric entities:</label>
                     <select id="heatmap_numerical_entities_select" name="numeric_entities_multiple" multiple style="width: 100%" class="js-example-basic-single">
                     </select>
                 </div>
-                <button id="Result" name="heatmap" class="btn btn-outline-info" onclick="display_results()">Result</button>
+                <button id="Result" name="heatmap" class="btn btn-outline-info card-submit" onclick="display_results()">Result</button>
             </div>
         </div>
     </div>
 
-    <div class="card-header" id="results_header">
-        <h5 class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#results_div"
-                    {% if plot %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
-                Results
-            </button>
-        </h5>
-    </div>
-    <div id="results_div" class="collapse show" aria-labelledby="n_results_header">
-        <div id="download_div">
+    <div class="card">
+        <div class="card-header" id="results_header">
+            <h5 class="mb-0">
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#results_div"
+                        {% if plot %} aria-expanded="true" {% endif %} aria-controls="#numeric_results">
+                    Results
+                </button>
+            </h5>
         </div>
-        <div id="plot_div">
+        <div id="results_div" class="collapse">
+            <div id="download_div">
+            </div>
+            <div id="plot_div">
+            </div>
         </div>
     </div>
 </div>

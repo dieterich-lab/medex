@@ -9,8 +9,10 @@ test('simple nav check', () => {
                 <li class="nav-item"><a class="nav-link active" href="/item3/" id="item3_nav">Item 3</a></li>
             </ul>
         </nav>
+        <button id="different_nav" class="nav-link active">X</button>
     `;
     switch_nav_item('item2');
     expect(document.getElementById('item2_nav').classList).toContain('active');
     expect(document.getElementById('item3_nav').classList).not.toContain('active');
+    expect(document.getElementById('different_nav').classList).toContain('active');
 });

@@ -12,7 +12,7 @@
     <div class="card">
         <div class="card-header" id="settings_header">
             <h5 class="mb-0">
-                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#settings"
                         aria-expanded="true" aria-controls="settings">
                     Settings
                 </button>
@@ -22,40 +22,49 @@
             <div class="card-body">
                 <div id="error_div">
                 </div>
-                <div class="form-group">
-                    <div id="measurement_div"></div>
-                    <div class="form-group">
-                        <label for="barchart_categorical_entities_select">Group by:</label>
-                        <select id="barchart_categorical_entities_select" name="categorical_entities" style="width: 100%" class="js-example-basic-single">
-                        </select>
-                    </div>
+                <div id="measurement_div" class="sub-card"></div>
+                <div class="sub-card">
+                    <label for="barchart_categorical_entities_select">Group by:</label>
+                    <select id="barchart_categorical_entities_select" name="categorical_entities" style="width: 100%" class="js-example-basic-single">
+                    </select>
+                </div>
 
+                <div class="sub-card">
                     <label>Subcategory: </label>
                     <select multiple id="subcategory_entities" class="subcategory_entities" name="subcategory_entities"  style="width: 100%">
                     </select>
-
-                    <label>Show in: </label>
-                    <input id="percent" type="radio" name="plot_type" value="percent" checked="checked">
-                    <label for="percent">%</label>&nbsp
-                    <input type="radio" id="count" name="plot_type" value="count">
-                    <label for="count">count</label>
                 </div>
-                <button id="Result" name="barchart" class="btn btn-outline-info" onclick="display_results()">Result</button>
+
+                <div class="sub-card">
+                    <label>Show in: </label>
+                    <div class="form-check form-check-inline">
+                        <input id="percent" type="radio" name="plot_type" value="percent" checked="checked">
+                        <label for="percent">%</label>&nbsp
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" id="count" name="plot_type" value="count">
+                        <label for="count">count</label>
+                    </div>
+                </div>
+
+                <button id="Result" name="barchart" class="btn btn-outline-info card-submit" onclick="display_results()">Result</button>
             </div>
         </div>
     </div>
 
-    <div class="card-header" id="results_header">
-        <h5 class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#results_div">
-                Results
-            </button>
-        </h5>
-    </div>
-    <div id="results_div" class="collapse show" aria-labelledby="n_results_header">
-        <div id="download_div">
+    <div class="card">
+        <div class="card-header" id="results_header">
+            <h5 class="mb-0">
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#results_div">
+                    Results
+                </button>
+            </h5>
         </div>
-        <div id="plot_div">
+        <div id="results_div" class="collapse">
+            <div id="download_div">
+            </div>
+            <div id="plot_div">
+            </div>
         </div>
     </div>
 </div>

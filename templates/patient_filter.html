@@ -4,67 +4,64 @@
 
 <div class="card">
     <div class="card-body">
-        <label>Filter</label>
+        <h5 class="card-title">Filter</h5>
 
-        <div id="filter_measurement_div"></div>
+        <div id="filter_measurement_div" class="sub-card"></div>
 
-        <label for="selected_filter">Entity</label>
+        <label for="selected_filter">Entity:</label>
         <select id="selected_filter" style="width: 100%" class="js-example-basic-single"
                 onchange="patient_filter.select_filter()"
         >
         </select>
 
         <div id="categorical_filter_panel" style="display:none">
-            <label for="categorical_filter_panel_categories">is</label>
-            <select multiple id="categorical_filter_panel_categories" name="subcategory_filter" style="width: 100%">
-            </select>
-            <br/><br/>
-            <button id="add_or_update_categorical_filter_btn" type="button" class="btn btn-outline-info"
+            <div class="sub-card">
+                <label for="categorical_filter_panel_categories">is</label>
+                <select multiple id="categorical_filter_panel_categories" name="subcategory_filter" style="width: 100%">
+                </select>
+            </div>
+            <button id="add_or_update_categorical_filter_btn" type="button" class="btn btn-outline-info card-submit"
                 onclick="patient_filter.add_or_update_categorical_filter()"
             >
                 Add or Update Filter
             </button>
         </div>
 
-        <div style="display:none" id="numerical_filter_panel">
-            <br/>
-            <div class="range-slider">
-                <input type="text" name="my-slider" id="numerical_filter_panel_range_slider" class="js-range-slider"/>
+        <div style="display:none" id="numerical_filter_panel" class="sub-card">
+            <div class="sub-card">
+                <div class="range-slider">
+                    <input type="text" name="my-slider" id="numerical_filter_panel_range_slider" class="js-range-slider"/>
+                </div>
+                <div class="extra-controls">
+                    from
+                    <input style="width: 30%" id="numerical_filter_settings_from_field" type="text" class="js-input-from"
+                        onchange="patient_filter.set_numerical_filter_from()"
+                    />
+                    to
+                    <input style="width: 30%" id="numerical_filter_settings_to_field" type="text" class="js-input-to"
+                        onchange="patient_filter.set_numerical_filter_to()"
+                    />
+                </div>
             </div>
-            <br>
-            <div class="extra-controls">
-                from
-                <input style="width: 30%" id="numerical_filter_settings_from_field" type="text" class="js-input-from"
-                    onchange="patient_filter.set_numerical_filter_from()"
-                />
-                to
-                <input style="width: 30%" id="numerical_filter_settings_to_field" type="text" class="js-input-to"
-                    onchange="patient_filter.set_numerical_filter_to()"
-                />
-            </div>
-            <br/>
-            <button id="add_or_update_numerical_filter_btn" type="button" class="btn btn-outline-info"
+            <button id="add_or_update_numerical_filter_btn" type="button" class="btn btn-outline-info card-submit"
                 onclick="patient_filter.add_or_update_numerical_filter()"
             >
                 Add or Update Filter
             </button>
         </div>
-        <br>
     </div>
 </div>
 
 <div id='id_filter_results' class="card" style="display: block ">
     <div class="card-body">
-        <p>
-            <label>Filters<span id="filtered_patient_count"></span>:</label>
-            <button id="clean" type="button" name='clean' value="clean" class="btn btn-outline-info" style="float: right"
-                onclick="patient_filter.clear_all_filters()"
+            Active Filters<span id="filtered_patient_count"></span>
+            <button id="clean" type="button" name='clean' value="clean" class="btn btn-sm btn-outline-info"
+                    onclick="patient_filter.clear_all_filters()" style="float: right"
             >
-                Clear All
+                Delete All
             </button>
-        </p>
-        <div id="active_filters">
-        </div>
+    </div>
+    <div id="active_filters">
     </div>
 </div>
 

@@ -6,12 +6,14 @@ import {switch_nav_item} from "../utility/nav.mjs";
 import Datatable from 'datatables.net-dt';
 import 'datatables.net-dt/css/jquery.dataTables.min.css';
 import {EntityType} from "../services/entity.mjs";
+import {clear_error, report_error} from "../utility/error.mjs";
 
 declare global {
     interface Window {
         display_numerical_results: () => void;
         display_categorical_results: () => void;
         display_date_results: () => void;
+        clear_errors: () => void;
     }
 }
 
@@ -120,10 +122,11 @@ async function show_database_info() {
 }
 
 function display_results(descriptor) {
+    clear_error();
     const name = descriptor.name;
     const measurements = get_selected_items(`basic_stats_measurement_${name}`);
     const entities = get_selected_items(`basic_stats_${name}_entities_select`);
-    const ok = check_for_user_errors(descriptor, measurements, entities);
+    const ok = check_user_input(descriptor, measurements, entities);
     if ( ok ) {
         create_datatable(descriptor, measurements, entities);
         set_url_for_download(descriptor, measurements, entities);
@@ -131,30 +134,16 @@ function display_results(descriptor) {
     }
 }
 
-function check_for_user_errors(descriptor, measurements, entities) {
-    let error = null;
+function check_user_input(descriptor, measurements, entities) {
     if (!measurements.length) {
-        error = "Please select one or more visits";
-    } else if (!entities.length) {
-        error = "Please select one or more entities";
+        report_error("Please select one or more visits");
+        return false;
     }
-    handle_error(descriptor, error);
-    return error === null;
-}
-
-function handle_error(descriptor, error) {
-    const name = descriptor.name;
-    let div = document.getElementById(`basic_stats_error_${ name }`);
-    if ( error ) {
-        div.innerHTML = `
-        <div class="alert alert-danger mt-2" role="alert">
-            ${error}
-            <span class="close" aria-label="Close"> &times;</span>
-        </div>
-        `;
-    } else {
-        div.innerHTML = '';
+    if (!entities.length) {
+        report_error("Please select one or more entities");
+        return false;
     }
+    return true;
 }
 
 function create_datatable(descriptor, measurements, entities) {
@@ -217,3 +206,4 @@ document.addEventListener("DOMContentLoaded", init);
 window.display_numerical_results = display_numerical_results;
 window.display_categorical_results = display_categorical_results;
 window.display_date_results = display_date_results;
+window.clear_errors = clear_error;

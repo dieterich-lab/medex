@@ -79,6 +79,18 @@ figcaption {
 
 select { white-space: pre-wrap;}
 
-.select2-container {
-    width: 100%;
+.sub-card {
+    margin-bottom: 0.5rem;
+}
+
+.card-submit {
+    margin-top: 1rem;
+}
+
+.filter-item {
+    margin: 0.5rem;
+}
+
+.radio-item {
+    margin-left: 3em;
 }

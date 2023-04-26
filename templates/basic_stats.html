@@ -8,33 +8,53 @@
 <script type="module" src="{{ url_for('static', filename='js/basic_stats.js') }}"></script>
 
 <div id="content">
+    <div id="error_div">
+    </div>
     {# navigation controls #}
     <ul class="nav nav-tabs" id="statistics_tab" role="tablist">
-        <li class="nav-item">
-             <a class="nav-link show active" aria-selected="true"
-               id="database_link" data-toggle="tab"
-               href="#database_tab" role="tab" aria-controls="database_tab">Database</a>
+        <li class="nav-item" role="presentation">
+             <button class="nav-link active" id="database_link"
+                 data-bs-toggle="tab" data-bs-target="#database_tab"
+                 type="button" role="tab"
+                 aria-selected="true" aria-controls="database_tab"
+                 onclick="clear_errors()"
+             >
+                 Database
+             </button>
         </li>
-        <li class="nav-item">
-            <a class="nav-link"
-               id="numerical_link" data-toggle="tab"
-               href="#numerical_tab" role="tab" aria-controls="numerical_tab">Numerical</a>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="numerical_link"
+                data-bs-toggle="tab" data-bs-target="#numerical_tab"
+                type="button" role="tab"
+                aria-selected="false" aria-controls="numerical_tab"
+                onclick="clear_errors()"
+            >
+                Numerical
+            </button>
         </li>
-        <li class="nav-item">
-            <a class="nav-link"
-               id="categorical_link" data-toggle="tab"
-               href="#categorical_tab" role="tab" aria-controls="categorical_tab">Categorical</a>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="categorical_link"
+                data-bs-toggle="tab" data-bs-target="#categorical_tab"
+                type="button" role="tab"
+                aria-selected="false" aria-controls="categorical_tab"
+                onclick="clear_errors()"
+            >
+                Categorical
+            </button>
         </li>
-        <li class="nav-item">
-            <a class="nav-link"
-               id="date_link" data-toggle="tab"
-               href="#date_tab" role="tab" aria-controls="date_tab">Date</a>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="date_link"
+                data-bs-toggle="tab" data-bs-target="#date_tab"
+                type="button" role="tab"
+                aria-selected="false" aria-controls="date_tab"
+                onclick="clear_errors()"
+            >
+                Date
+            </button>
         </li>
     </ul>
 
-    {# tabs content #}
     <div class="tab-content" id="statistics">
-        {# each tab in a single file, for readability #}
         {% include 'basic_stats/database_tab.html' %}
         {% include 'basic_stats/categorical_tab.html' %}
         {% include 'basic_stats/numerical_tab.html' %}

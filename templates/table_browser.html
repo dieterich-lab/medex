@@ -11,7 +11,7 @@
     <div class="card">
         <div class="card-header" id="settings_header">
             <h5 class="mb-0">
-                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#settings"
                         aria-expanded="true" aria-controls="settings">
                     Settings
                 </button>
@@ -21,23 +21,27 @@
             <div class="card-body">
                 <div id="error_div">
                 </div>
-                <div id="measurement_div"></div>
-                <label for="table_browser_entities_select">Entities:</label>
-                <select id="table_browser_entities_select" name="entities" multiple style="width: 100%" class="js-example-basic-single">
-                </select>
-                <div class="form-group">
-                    <label>Table: </label>
-                    <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="long" name="what_table" value="long" checked="checked">
-                        <label class="custom-control-label" for="long">long format</label>
-                    </div>
-                    <div class="custom-control custom-radio">
-                        <input type="radio" class="custom-control-input" id="short" name="what_table" value="short">
-                        <label class="custom-control-label" for="short">entities as columns</label>
+                <div id="measurement_div" class="sub-card"></div>
+                <div class="sub-card">
+                    <label for="table_browser_entities_select">Entities:</label>
+                    <select id="table_browser_entities_select" name="entities" multiple style="width: 100%" class="js-example-basic-single">
+                    </select>
+                </div>
+                <div class="sub-card">
+                    <label>Layout: </label>
+                    <div style="width: 100%">
+                        <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" id="long" name="what_table" value="long" checked="checked">
+                            <label class="form-check-label" for="long">long format</label>
+                        </div>
+                         <div class="form-check form-check-inline">
+                            <input type="radio" class="form-check-input" id="short" name="what_table" value="short">
+                            <label class="form-check-label" for="short">entities as columns</label>
+                        </div>
                     </div>
                 </div>
 
-                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="display_results()"
+                <button id="Result" name="Result" type="button" class="btn btn-outline-info card-submit" onclick="display_results()"
                 >
                     Result
                 </button>
@@ -45,19 +49,21 @@
         </div>
     </div>
 
-    <div class="card-header" id="results_header">
-        <h5 class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#results">
-                Results
-            </button>
-        </h5>
-    </div>
-
-    <div id="results" class="collapse show" aria-labelledby="n_results_header">
-        <div id="csv_download">
+    <div class="card">
+        <div class="card-header" id="results_header">
+            <h5 class="mb-0">
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#results">
+                    Results
+                </button>
+            </h5>
         </div>
-        <div class="card-body">
-            <table id="serverside_table" class="display" width="100%"></table>
+
+        <div id="results" class="collapse" aria-labelledby="n_results_header">
+            <div id="csv_download">
+            </div>
+            <div class="card-body">
+                <table id="serverside_table" class="display" width="100%"></table>
+            </div>
         </div>
     </div>
 </div>

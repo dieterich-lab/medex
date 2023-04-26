@@ -166,7 +166,7 @@ function render_categorical_filter(entity_key, filter) {
 function render_filter(entity_key, measurement, inner_html) {
     let div = document.getElementById('active_filters');
     let child = document.createElement('div');
-    child.setAttribute('class', 'card');
+    child.classList.add('card', 'filter-item');
     let span_entity = `${entity_key} (${measurement})`;
     if (!measurement) {
         span_entity = `${entity_key}`;

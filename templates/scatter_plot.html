@@ -12,7 +12,7 @@
     <div class="card">
         <div class="card-header" id="settings_header">
             <h5 class="mb-0">
-                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#settings"
                         aria-expanded="true" aria-controls="settings">
                     Settings
                 </button>
@@ -25,50 +25,55 @@
                 <div id="error_div">
                 </div>
 
-                <div id="scatter_plot_x_measurement_div"></div>
-                <div class="form-group">
+                <div id="scatter_plot_x_measurement_div" class="sub-card"></div>
+                <div class="sub-card">
                     <label for="scatter_plot_x_axis_numerical_entities_select">X axis:</label>
                     <select id="scatter_plot_x_axis_numerical_entities_select" name="x_axis" style="width: 100%" class="js-example-basic-single">
                     </select>
                 </div>
-                <div id="scatter_plot_y_measurement_div"></div>
-                <div class="form-group">
+                <div id="scatter_plot_y_measurement_div" class="sub-card"></div>
+                <div class="sub-card">
                     <label for="scatter_plot_y_axis_numerical_entities_select">Y axis:</label>
-                    <select id="scatter_plot_y_axis_numerical_entities_select" name="y_axis" multiple style="width: 100%" class="js-example-basic-single">
+                    <select id="scatter_plot_y_axis_numerical_entities_select" name="y_axis" style="width: 100%" class="js-example-basic-single">
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="sub-card">
                     <label>Scale:</label>
-                    <input id="log_x" type="checkbox" name="log_x" value="log_x">
-                    <label for="log_x">log_x</label>&nbsp
-                    <input id="log_y" type="checkbox" name="log_y" value="log_y">
-                    <label for="log_y">log_y</label>
-                </div>
-
-                <div class="form-group">
-                    <input type="checkbox" value="true" id="add_group_by" name="add_group_by">
-                    <label for="add_group_by">Add grouping by categorical value</label>
-                    <div class="col ml-6 {% if not add_group_by %}d-none {% endif %}" id="add_group" type="checkbox"
-                         style="width: 100%">
-
-                        <div class="form-group" style="width: 100%">
-                            <label for="scatter_plot_categorical_entities_select">Group by:</label>
-                            <select
-                                    id="scatter_plot_categorical_entities_select" name="categorical_entities"
-                                    class="js-example-basic-single" style="width: 100%"
-                            >
-                            </select>
-                        </div>
-
-                        <div class="tooltips" title="Please select category and next subcategory">
-                            <label for="subcategory_entities">Subcategory: </label>
-                            <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control">
-                            </select>
-                        </div>
+                    <div class="form-check form-check-inline">
+                        <input id="log_x" type="checkbox" name="log_x" value="log_x">
+                        <label for="log_x">log_x</label>&nbsp
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input id="log_y" type="checkbox" name="log_y" value="log_y">
+                        <label for="log_y">log_y</label>
                     </div>
                 </div>
 
-                <button id="Result" name="Result" type="button" class="btn btn-outline-info" onclick="display_results()"
+                <div class="sub-card">
+                    <label for="add_group_by">Group by categorical value:</label>
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" value="true" id="add_group_by" name="add_group_by">
+                    </div>
+                </div>
+
+                <div class="d-none" id="add_group" type="checkbox" style="width: 100%">
+                    <div class="sub-card">
+                        <label for="scatter_plot_categorical_entities_select">Group by:</label>
+                        <select
+                                id="scatter_plot_categorical_entities_select" name="categorical_entities"
+                                class="js-example-basic-single"
+                        >
+                        </select>
+                    </div>
+
+                    <div class="sub-card tooltips" title="Please select category and next subcategory">
+                        <label for="subcategory_entities">Subcategory: </label>
+                        <select style="width: 100%" multiple id="subcategory_entities" name="subcategory_entities" class="form-control">
+                        </select>
+                    </div>
+                </div>
+
+                <button id="Result" name="Result" type="button" class="btn btn-outline-info card-submit" onclick="display_results()"
                 >
                     Result
                 </button>
@@ -76,19 +81,21 @@
         </div>
     </div>
 
-    <div class="card-header" id="results_header">
-        <h5 class="mb-0">
-            <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#results_div"
-                    aria-controls="#numeric_results"
-            >
-                Results
-            </button>
-        </h5>
-    </div>
-    <div id="results_div" class="collapse show" aria-labelledby="n_results_header" data-parent="#numeric_accordion">
-        <div id="download_div">
+    <div class="card">
+        <div class="card-header" id="results_header">
+            <h5 class="mb-0">
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#results_div"
+                        aria-controls="#numeric_results"
+                >
+                    Results
+                </button>
+            </h5>
         </div>
-        <div id="plot_div">
+        <div id="results_div" class="collapse">
+            <div id="download_div">
+            </div>
+            <div id="plot_div">
+            </div>
         </div>
     </div>
 </div>

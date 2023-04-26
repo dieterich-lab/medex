@@ -12,7 +12,7 @@
     <div class="card">
         <div class="card-header" id="settings_header">
             <h5 class="mb-0">
-                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#settings"
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#settings"
                         aria-expanded="true" aria-controls="settings">
                     Settings
                 </button>
@@ -22,46 +22,50 @@
             <div class="card-body">
                 <div id="error_div">
                 </div>
-                <div id="measurement_div"></div>
-                <div class="form-group">
+                <div id="measurement_div" class="sub-card"></div>
+                <div class="sub-card">
                     <label for="boxplot_numerical_entities_select">Numeric entities:</label>
                     <select id="boxplot_numerical_entities_select" name="numeric_entities" style="width: 100%" class="js-example-basic-single">
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="sub-card">
                     <label for="boxplot_categorical_entities_select">Group by:</label>
                     <select id="boxplot_categorical_entities_select" name="categorical_entities" style="width: 100%" class="js-example-basic-single">
                     </select>
                 </div>
 
-                <div class="form-group" title="Please select category and next subcategory">
+                <div class="sub-card" title="Please select category and next subcategory">
                     <label>Subcategory: </label>
                     <select style="width: 100%" multiple id="subcategory_entities" class="subcategory_entities"
                             name="subcategory_entities" class="form-control">
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="sub-card">
                     <label>Scale: </label>
-                    <input type="radio" id="linear" name="plot_type_boxplot" value="linear" checked="checked">
-                    <label for="linear">linear</label>&nbsp
-                    <input type="radio" id="log" name="plot_type_boxplot" value="log">
-                    <label for="log">log</label>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" id="linear" name="plot_type_boxplot" value="linear" checked="checked">
+                        <label for="linear">linear</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" id="log" name="plot_type_boxplot" value="log">
+                        <label for="log">log</label>
+                    </div>
                 </div>
 
-                <button id="Result" name="plot_boxplot" class="btn btn-outline-info" onclick="display_results()">Result</button>
+                <button id="Result" name="plot_boxplot" class="btn btn-outline-info card-submit" onclick="display_results()">Result</button>
 
             </div>
         </div>
 
         <div class="card-header" id="results_header">
             <h5 class="mb-0">
-                <button type="button" class="btn btn-link" data-toggle="collapse" data-target="#results_div">
+                <button type="button" class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#results_div">
                     Results
                 </button>
             </h5>
         </div>
-        <div id="results_div" class="collapse show" aria-labelledby="n_results_header">
+        <div id="results_div" class="collapse">
             <div id="download_div">
             </div>
             <div id="boxplot_table">
