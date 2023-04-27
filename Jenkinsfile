@@ -41,7 +41,7 @@ pipeline {
                     set -e -u
                     if [ -L ~/.npm ]
                     then
-                        tmp_dir="$(readlink node_modules)"
+                        tmp_dir="$(readlink ~/.npm)"
                         [ -d "$tmp_dir" ] && rm -rf "$tmp_dir"
                     fi
                     rm -rf ~/.npm || true
