@@ -39,17 +39,17 @@ pipeline {
                     # So we need a file system with unrestricted hard links. We use /tmp
                     # and fill it with content from the last run.
                     set -e -u
-                    if [[ -L node_modules ]]
+                    if [ -L node_modules ]
                     then
                         rm -rf $(readlink node_modules)
                         rm node_modules
                     fi
                     ln -s $(mktemp -d /tmp/jenkins_medex_XXXXXXXXXX) node_modules
-                    if [[ -f node_modules.tgz ]]
+                    if [ -f node_modules.tgz ]
                     then
                         ( cd node_modules && tar xfz ../node_modules.tgz )
                     fi
-                    npm install --save-dev \
+                    npm install --save-dev
                 '''
             }
         }
@@ -77,7 +77,7 @@ pipeline {
             junit 'results.xml'
             cobertura coberturaReportFile: 'coverage.xml'
             sh '''
-                if [[ -L node_modules ]]
+                if [ -L node_modules ]
                 then
                     ( cd node_modules && tar cfz ../node_modules.tgz . )
                     rm -rf $(readlink node_modules)
