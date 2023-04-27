@@ -32,14 +32,24 @@ pipeline {
         stage('Setup NodeJS') {
             steps {
                 sh '''
-                    # When updating an existing installation on BeeGFS
-                    # npm may fail due to BeeGFS's hardlink limitation
+                    # Npm will fail due to BeeGFS's hardlink limitation
                     # (see https://doc.beegfs.io/latest/architecture/overview.html#limitations)
                     # in combination with an npm bug
                     # (see https://github.com/npm/cli/issues/5951).
-                    # If we fail we try again from scratch
+                    # So we need a file system with unrestricted hard links. We use /tmp
+                    # and fill it with content from the last run.
+                    set -e -u
+                    if [[ -L node_modules ]]
+                    then
+                        rm -rf $(readlink node_modules)
+                        rm node_modules
+                    fi
+                    ln -s $(mktemp -d /tmp/jenkins_medex_XXXXXXXXXX) node_modules
+                    if [[ -f node_modules.tgz ]]
+                    then
+                        ( cd node_modules && tar xfz ../node_modules.tgz )
+                    fi
                     npm install --save-dev \
-                    || ( rm -rf node_modules && npm install --save-dev)
                 '''
             }
         }
@@ -66,6 +76,15 @@ pipeline {
         always {
             junit 'results.xml'
             cobertura coberturaReportFile: 'coverage.xml'
+            sh '''
+                if [[ -L node_modules ]]
+                then
+                    ( cd node_modules && tar cfz ../node_modules.tgz . )
+                    tar cfz
+                    rm -rf $(readlink node_modules)
+                    rm node_modules
+                fi
+            '''
         }
         failure {
             emailext to: "medex@dieterichlab.org",
