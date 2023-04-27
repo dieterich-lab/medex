@@ -44,6 +44,7 @@ pipeline {
                         tmp_dir="$(readlink node_modules)"
                         [ -d "$tmp_dir" ] && rm -rf "$tmp_dir"
                     fi
+                    rm -rf ~/.npm || true
                     ln -s $(mktemp -d /tmp/jenkins_medex_XXXXXXXXXX) ~/.npm
                     npm install --save-dev
                 '''
