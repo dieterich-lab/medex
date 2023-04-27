@@ -25,7 +25,7 @@ export default merge(baseConfig, {
       dir: './static/js',
       entryFileNames: '[name].js',
       // Add for nicer debugging:
-      // sourcemap: true
+      sourcemap: true
   },
   plugins: [
       json(),

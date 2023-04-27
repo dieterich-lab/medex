@@ -24,10 +24,10 @@ h2              { font-size: 1.2em; }
 }
 
 div#menu {
-  width:400px;
-  float:left;
-  margin:10px 10px 10px 5px;
-  height:350px;
+  width: 20vw;
+  float: left;
+  margin: 10px 10px 10px 5px;
+  height: 350px;
 }
 div#content {
 
@@ -93,4 +93,9 @@ select { white-space: pre-wrap;}
 
 .radio-item {
     margin-left: 3em;
+}
+
+.js-plotly-plot,
+.plot-container {
+    width: 75vw;
 }
