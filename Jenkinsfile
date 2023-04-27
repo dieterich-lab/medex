@@ -80,7 +80,6 @@ pipeline {
                 if [[ -L node_modules ]]
                 then
                     ( cd node_modules && tar cfz ../node_modules.tgz . )
-                    tar cfz
                     rm -rf $(readlink node_modules)
                     rm node_modules
                 fi
