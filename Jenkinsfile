@@ -36,19 +36,15 @@ pipeline {
                     # (see https://doc.beegfs.io/latest/architecture/overview.html#limitations)
                     # in combination with an npm bug
                     # (see https://github.com/npm/cli/issues/5951).
-                    # So we need a file system with unrestricted hard links. We use /tmp
-                    # and fill it with content from the last run.
+                    # So we need a file system with unrestricted hard links.
+                    # We use /tmp.
                     set -e -u
-                    if [ -L node_modules ]
+                    if [ -L ~/.npm ]
                     then
-                        rm -rf $(readlink node_modules)
-                        rm node_modules
+                        tmp_dir="$(readlink node_modules)"
+                        [ -d "$tmp_dir" ] && rm -rf "$tmp_dir"
                     fi
-                    ln -s $(mktemp -d /tmp/jenkins_medex_XXXXXXXXXX) node_modules
-                    if [ -f node_modules.tgz ]
-                    then
-                        ( cd node_modules && tar xfz ../node_modules.tgz )
-                    fi
+                    ln -s $(mktemp -d /tmp/jenkins_medex_XXXXXXXXXX) ~/.npm
                     npm install --save-dev
                 '''
             }
@@ -77,12 +73,11 @@ pipeline {
             junit 'results.xml'
             cobertura coberturaReportFile: 'coverage.xml'
             sh '''
-                if [ -L node_modules ]
-                then
-                    ( cd node_modules && tar cfz ../node_modules.tgz . )
-                    rm -rf $(readlink node_modules)
-                    rm node_modules
-                fi
+                    if [ -L ~/.npm ]
+                    then
+                        tmp_dir="$(readlink node_modules)"
+                        [ -d "$tmp_dir" ] && rm -rf "$tmp_dir"
+                    fi
             '''
         }
         failure {
