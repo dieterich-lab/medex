@@ -31,7 +31,16 @@ pipeline {
         }
         stage('Setup NodeJS') {
             steps {
-                sh 'npm install --save-dev'
+                sh '''
+                    # When updating an existing installation on BeeGFS
+                    # npm may fail due to BeeGFS's hardlink limitation
+                    # (see https://doc.beegfs.io/latest/architecture/overview.html#limitations)
+                    # in combination with an npm bug
+                    # (see https://github.com/npm/cli/issues/5951).
+                    # If we fail we try again from scratch
+                    npm install --save-dev \
+                    || ( rm -rf node_modules && npm install --save-dev)
+                '''
             }
         }
         stage('Test TypeScript') {
