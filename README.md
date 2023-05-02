@@ -67,7 +67,7 @@ Test it out at http://localhost:8000. No mounted folders. To apply changes, the 
 
 4. Install both the run-time and the development dependencies:
 
-       pipenv install
+       pipenv install -e .
        pipenv install --dev
        npm install --save-dev
 
