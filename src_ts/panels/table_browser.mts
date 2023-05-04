@@ -44,6 +44,8 @@ function create_datatable(selected_table, measurements, entities) {
     const column = define_table_columns(selected_table);
     if ( datatable ) {
         datatable.destroy();
+        const element = document.getElementById('serverside_table');
+        element.innerHTML = '';
     }
 
     datatable = new Datatable(
