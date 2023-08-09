@@ -37,7 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShowMarker = exports.EntityType = exports.try_get_entity_by_key = exports.try_get_entity_list = exports.get_entity_by_key = exports.get_entity_list = void 0;
-var http_js_1 = require("../utility/http.js");
+var http_js_1 = require("../utility/http.ts");
 var EntityType;
 (function (EntityType) {
     EntityType["NUMERICAL"] = "Double";

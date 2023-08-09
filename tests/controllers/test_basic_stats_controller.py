@@ -28,6 +28,8 @@ def test_get_basic_stats_numerical(test_client, helper_mock):
     url = url.replace('%27', '%22')
     rv = test_client.get(url)
     assert rv.status == '200 OK'
+    result = rv.json
+    assert result['data'][3]['stddev'] is None
 
 
 def test_get_basic_stats_categorical(test_client, helper_mock):

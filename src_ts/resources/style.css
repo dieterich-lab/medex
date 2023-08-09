@@ -1,40 +1,118 @@
-body            { font-family: sans-serif; background: #eee; }
-a, h1, h2       { color: #377ba8; }
-h1, h2          { font-family: 'Georgia', serif; margin: 0; }
-h1              { border-bottom: 2px solid #eee; }
-h2              { font-size: 1.2em; }
+body {
+    font-family: sans-serif;
+    background: #eee;
+}
 
-.page           { margin: 2em auto; width: 35em; border: 5px solid #ccc;
-                  padding: 0.8em; background: white; }
-.entries        { list-style: none; margin: 0; padding: 0; }
-.entries li     { margin: 0.8em 1.2em; }
-.entries li h2  { margin-left: -1em; }
-.add-entry      { font-size: 0.9em; border-bottom: 1px solid #ccc; }
-.add-entry dl   { font-weight: bold; }
-.metanav        { text-align: right; font-size: 0.8em; padding: 0.3em;
-                  margin-bottom: 1em; background: #fafafa; }
-.flash          { background: #cee5F5; padding: 0.5em;
-                  border: 1px solid #aacbe2; }
-.error          { background: #f0d6d6; padding: 0.5em; }
+a {
+    color: #377ba8;
+}
 
+h1 {
+    border-bottom: 2px solid #eee;
+}
+
+h2 {
+    font-size: 1.2em;
+}
+
+.page {
+    margin: 2em auto;
+    width: 35em;
+    border: 5px solid #ccc;
+    padding: 0.8em;
+    background: white;
+}
+
+.entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.entries li {
+    margin: 0.8em 1.2em;
+}
+
+.entries li h2 {
+    margin-left: -1em;
+}
+
+.add-entry {
+    font-size: 0.9em;
+    border-bottom: 1px solid #ccc;
+}
+
+.add-entry dl {
+    font-weight: bold;
+}
+
+.metanav {
+    text-align: right;
+    font-size: 0.8em;
+    padding: 0.3em;
+    margin-bottom: 1em;
+    background: #fafafa;
+}
+
+.flash {
+    background: #cee5F5;
+    padding: 0.5em;
+    border: 1px solid #aacbe2;
+}
+
+.error {
+    background: #f0d6d6;
+    padding: 0.5em;
+}
 
 
 .login-form {
     min-width: 250px;
 }
 
-div#menu {
-  width: 20vw;
-  float: left;
-  margin: 10px 10px 10px 5px;
-  height: 350px;
+.patient-filter-status {
+    display: block;
 }
-div#content {
 
-  margin:10px 0 10px 435px;
-  min-height:500px;
-  height:500px
+.patient-filter-item {
+    display: flex;
+    justify-content: space-between;
+}
 
+.patient-filter-all-delete-button {
+    float: right;
+}
+
+.patient-filter-delete-button {
+    word-wrap: normal;
+    white-space: normal;
+    text-align: right;
+    height: min-content;
+}
+
+.range-slider-text-input {
+    width: 30%;
+}
+
+.rangs-slider-extra-controls {
+    margin-top: 0.5rem;
+}
+
+.frame-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.patient-filter-frame {
+    flex-basis: 250px;
+    flex-grow: 1;
+    margin: 10px 10px 10px 0;
+}
+
+.tab-frame {
+    flex-basis: 50%;
+    margin: 10px 10px 10px 0;
+    flex-grow: 5;
 }
 
 a {
@@ -42,7 +120,7 @@ a {
 }
 
 button {
-  overflow-x: hidden !important;
+    overflow-x: hidden !important;
 }
 
 .option_container {
@@ -56,28 +134,34 @@ button {
 }
 
 .columns {
-  display: flex;
-  margin: 0 -5px;
-}
-.columns__item {
-  width: 50%;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-.columns__item img {
-  display: block;
-  width: 100%;
-}
-figure {
-  margin: 0;
-}
-figcaption {
-  background-color: #fff;
-  padding: 10px;
-  text-align: center;
+    display: flex;
+    margin: 0 -5px;
 }
 
-select { white-space: pre-wrap;}
+.columns__item {
+    width: 50%;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.columns__item img {
+    display: block;
+    width: 100%;
+}
+
+figure {
+    margin: 0;
+}
+
+figcaption {
+    background-color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+select {
+    white-space: pre-wrap;
+}
 
 .sub-card {
     margin-bottom: 0.5rem;
@@ -98,4 +182,31 @@ select { white-space: pre-wrap;}
 .js-plotly-plot,
 .plot-container {
     width: 75vw;
+}
+
+.dropdown-content {
+    z-index: 2 !important;
+}
+
+.btn-close {
+    float: right;
+}
+
+.card-tab {
+    min-width: 450px;
+}
+.database-stats-table {
+    max-width: 400px;
+}
+
+.image-small {
+    min-width: 15em;
+}
+
+.image-medium {
+    max-width: 30em;
+}
+
+.image-large {
+    width: 50em;
 }

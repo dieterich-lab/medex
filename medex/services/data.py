@@ -1,11 +1,16 @@
+from collections import namedtuple
 from typing import List, Optional
 
-from sqlalchemy import union, select, and_, desc, literal_column, func, case, cast, String
-from sqlalchemy.orm import query
+from sqlalchemy import union, select, and_, desc, func, cast, String
+from sqlalchemy.orm import query, aliased
 
 from medex.dto.data import SortOrder
+from medex.services.entity import EntityService
 from medex.services.filter import FilterService
 from medex.database_schema import TableCategorical, TableNumerical, TableDate
+
+
+PartialQuery = namedtuple('PartialQuery', 'table entity_key')
 
 
 class DataService:
@@ -13,9 +18,11 @@ class DataService:
             self,
             database_session,
             filter_service: FilterService,
+            entity_service: EntityService,
     ):
         self._database_session = database_session
         self._filter_service = filter_service
+        self._entity_service = entity_service
 
     def get_filtered_data_flat(
             self,
@@ -44,9 +51,60 @@ class DataService:
             offset: Optional[int] = None,
             sort_order: Optional[SortOrder] = None
     ) -> (List[dict], int):
-        query_select_union = self._get_union_of_tables(entities, measurements)
-        query_select = self._get_entities_as_columns(query_select_union, entities)
-        return self._do_query_with_extras(query_select, limit, offset, sort_order)
+        relevant_patients_query = self._relevant_patients_query(entities, measurements)
+        partial_queries = [self._get_partial_query(x) for x in entities]
+        base_query = self._join_partial_queries(relevant_patients_query, partial_queries)
+        return self._do_query_with_extras(base_query, limit, offset, sort_order)
+
+    @staticmethod
+    def _relevant_patients_query(entities: List[str], measurements: List[str]):
+        list_query_tables = [
+            select(table.name_id, table.measurement, table.key)
+            for table in [TableCategorical, TableNumerical, TableDate]
+        ]
+        query_union = union(*list_query_tables).subquery()
+        query_select_union = (
+            select(
+                query_union.exported_columns.name_id,
+                query_union.exported_columns.measurement,
+            )
+            .where(
+                and_(query_union.exported_columns.measurement.in_(measurements),
+                     query_union.exported_columns.key.in_(entities))
+            )
+        )
+        return query_select_union
+
+    def _get_partial_query(self, entity_key) -> PartialQuery:
+        entity = self._entity_service.get_entity_by_key(entity_key)
+        return PartialQuery(
+            table=self._entity_service.get_database_table_for_entity(entity),
+            entity_key=entity_key
+        )
+
+    @staticmethod
+    def _join_partial_queries(base_query, partial_queries: List[PartialQuery]):
+        select_items = [
+            base_query.exported_columns.name_id,
+            base_query.exported_columns.measurement,
+        ]
+        tables = []
+        for item in partial_queries:
+            join_table = aliased(item.table)
+            select_items.append(join_table.value.label(item.entity_key))
+            tables.append(join_table)
+
+        q = select(*select_items).distinct()
+        for i in range(0, len(partial_queries)):
+            q = q.outerjoin(
+                tables[i],
+                and_(
+                    tables[i].key == partial_queries[i].entity_key,
+                    base_query.exported_columns.name_id == tables[i].name_id,
+                    base_query.exported_columns.measurement == tables[i].measurement,
+                ),
+            )
+        return q
 
     @staticmethod
     def _get_union_of_tables(entities, measurements) -> query:
@@ -64,26 +122,6 @@ class DataService:
         )
 
         return query_select_union
-
-    @staticmethod
-    def _get_entities_as_columns(query_select_union, entities) -> query:
-        query_group_by = (
-            select(query_select_union.c.name_id, query_select_union.c.measurement, query_select_union.c.key,
-                   func.string_agg(query_select_union.c.value, literal_column("';'")).label('value'))
-            .group_by(query_select_union.c.name_id, query_select_union.c.measurement, query_select_union.c.key)
-        )
-
-        case_when = [
-            func.min(case((query_group_by.c.key == i, query_group_by.c.value))).label(i)
-            for i in entities
-        ]
-
-        query_select = (
-            select(query_group_by.c.name_id, query_group_by.c.measurement, *case_when)
-            .group_by(query_group_by.c.name_id, query_group_by.c.measurement)
-        )
-
-        return query_select
 
     @staticmethod
     def _get_ordered_data(query_select, sort_order) -> query:
@@ -115,7 +153,17 @@ class DataService:
         if len(all_results) > 0:
             total = all_results[0].total
         result_dict = [
-            item._asdict()  # noqa - workaround
-            for item in all_results
+            {
+                k: self._get_sanitized_value(k, v)
+                for k, v in row._asdict().items()  # noqa - workaround
+            }
+            for row in all_results
         ]
         return result_dict, total
+
+    @staticmethod
+    def _get_sanitized_value(key, value):
+        if value is None or key == 'total':
+            return value
+        else:
+            return str(value)

@@ -1,6 +1,7 @@
 import pytest
 from medex.services.data import DataService
-from medex.database_schema import TableCategorical, TableNumerical
+from medex.database_schema import TableCategorical, TableNumerical, NameType
+from medex.services.entity import EntityService
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
 from tests.mocks.filter_service import FilterServiceMock
@@ -40,7 +41,8 @@ def filter_service_mock():
 def test_data_service_on_empty_database(db_session, filter_service_mock):
     service = DataService(
         database_session=db_session,
-        filter_service=filter_service_mock
+        filter_service=filter_service_mock,
+        entity_service=EntityService(db_session)
     )
     actual_result, total = service.get_filtered_data_flat(
         entities=['diabetes'],
@@ -52,7 +54,8 @@ def test_data_service_on_empty_database(db_session, filter_service_mock):
 def test_get_filtered_data_flat(db_session, filter_service_mock, setup_data):
     service = DataService(
         database_session=db_session,
-        filter_service=filter_service_mock
+        filter_service=filter_service_mock,
+        entity_service=EntityService(db_session)
     )
     actual_result, total = service.get_filtered_data_flat(
         entities=['diabetes', 'blood pressure'],
@@ -72,3 +75,40 @@ def test_get_filtered_data_flat(db_session, filter_service_mock, setup_data):
         {'key': 'diabetes', 'measurement': 'baseline', 'name_id': 'p1', 'total': 6, 'value': 'nein'}
     ]
     assert total == 6
+
+@pytest.fixture
+def setup_numerical_data(db_session):
+    db_session.add_all([
+        NameType(key='blood pressure', type='Double'),
+        TableNumerical(
+            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=90
+        ),
+        TableNumerical(
+            name_id='p3', case_id='c3', measurement='baseline', date='2021-05-15', key='blood pressure', value=145
+        ),
+        TableNumerical(
+            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='blood pressure', value=130
+        ),
+    ])
+    db_session.commit()
+
+
+def test_numerical_sorting_by_measurement(db_session, filter_service_mock, setup_numerical_data):
+    service = DataService(
+        database_session=db_session,
+        filter_service=filter_service_mock,
+        entity_service=EntityService(db_session)
+    )
+    actual_result, total = service.get_filtered_data_by_measurement(
+        entities=['blood pressure'],
+        measurements=['baseline', 'follow up1'],
+        limit=10,
+        offset=0,
+        sort_order=SortOrder(
+            items=[
+                SortItem(column='blood pressure', direction=SortDirection.ASC),
+            ]
+        )
+    )
+    assert total == 3
+    assert [float(x['blood pressure']) for x in actual_result] == [90, 130, 145]

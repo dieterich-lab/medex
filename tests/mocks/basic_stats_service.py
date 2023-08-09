@@ -24,7 +24,7 @@ class BasicStatisticsServiceMock(BasicStatisticsService):
     def __init__(self):  # noqa
         pass
 
-    def get_basic_stats_for_numerical_entities(self, basis_stats_data) -> List[dict]:
+    def get_basic_stats_for_numerical_entities(self, basic_stats_data) -> List[dict]:
         return DEFAULT_DATA_NUMERICAL
 
     def get_basic_stats_for_categorical_entities(self, basic_stats_data) -> List[dict]:

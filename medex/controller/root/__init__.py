@@ -1,8 +1,8 @@
 import os
 
-from flask import Blueprint, render_template, send_from_directory, redirect
+from flask import Blueprint, render_template, send_from_directory
 
-root_controller = Blueprint('root_controller', __name__)
+root_controller = Blueprint('root_controller', __name__, template_folder='templates')
 
 
 @root_controller.route('/favicon.ico', methods=['GET'])
@@ -13,9 +13,4 @@ def favicon():
 
 @root_controller.route('/', methods=['GET'])
 def login_get():
-    return redirect('/filtered_data')
-
-
-@root_controller.route('/logout/', methods=['GET'])
-def logout():
-    return render_template('logout.html')
+    return render_template('index.html.j2')

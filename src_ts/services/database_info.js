@@ -37,7 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.get_database_info = void 0;
-var http_js_1 = require("../utility/http.js");
+var http_js_1 = require("../utility/http.ts");
 var info_promise = null;
 var info = null;
 function init() {

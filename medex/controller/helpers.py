@@ -53,7 +53,8 @@ def get_entity_service():
 def get_data_service():
     database_session = get_db_session()
     filter_service = get_filter_service()
-    return DataService(database_session, filter_service)
+    entity_service = get_entity_service()
+    return DataService(database_session, filter_service, entity_service)
 
 
 def get_scatter_plot_service():

@@ -8,6 +8,19 @@ from integration_tests.fixtures.db_session import db_session
 
 
 @pytest.fixture
+def setup_basic_stats_data_minimal(db_session):
+    db_session.add_all([
+        Patient(name_id='p1', case_id='c1'),
+        NameType(key='blood pressure', type='Double'),
+        TableNumerical(
+            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15',
+            key='blood pressure', value=129
+        ),
+    ])
+    db_session.commit()
+
+
+@pytest.fixture
 def setup_basic_stats_data(db_session):
     db_session.add_all([
         Patient(name_id='p1', case_id='c1'),
@@ -69,6 +82,19 @@ def test_get_basic_stats_for_categorical_entities(setup_basic_stats_data, db_ses
     assert len(actual_result) == 3
     assert actual_result[0]['count NaN']
     assert len(actual_result[0]) == 4
+
+
+def test_get_basic_stats_for_numerical_entities_minimal(
+        setup_basic_stats_data_minimal, db_session, filter_service_mock
+):
+    service = BasicStatisticsService(db_session, filter_service_mock)
+    basic_stats_data = _get_parsed_data_numerical()
+    actual_result = service.get_basic_stats_for_numerical_entities(basic_stats_data)
+    assert len(actual_result) == 1
+    assert actual_result[0]['count'] == 1
+    assert actual_result[0]['stderr'] is None
+    assert actual_result[0]['count NaN'] == 4710
+    assert len(actual_result[0]) == 10
 
 
 def _get_parsed_data_numerical():

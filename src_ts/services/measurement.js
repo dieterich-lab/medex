@@ -37,8 +37,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.get_measurement_display_name = exports.configure_multiple_measurement_select = exports.configure_single_measurement_select = exports.init = void 0;
-var misc_js_1 = require("../utility/misc.js");
-var http_js_1 = require("../utility/http.js");
+var misc_js_1 = require("../utility/misc.ts");
+var http_js_1 = require("../utility/http.ts");
 var measurement_list_promise = null;
 var measurement_list = null;
 var measurement_display_name = null;

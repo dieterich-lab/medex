@@ -181,3 +181,6 @@ class FilterService:
             )
             query = select(cte.c).select_from(join_with_filtered_name_ids)
         return query
+
+    def get_filtered_patient_count(self):
+        return self._filter_status.filtered_patient_count
