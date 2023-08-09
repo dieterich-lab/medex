@@ -1,6 +1,6 @@
 from flask_sqlalchemy.session import Session
 
-from medex.database_schema import Patient, TableNumerical, TableCategorical, TableDate, NameType
+from medex.database_schema import PatientTable, NumericalValueTable, CategoricalValueTable, DateValueTable, EntityTable
 from medex.dto.database_info import DatabaseInfo
 from medex.dto.entity import EntityType
 
@@ -13,13 +13,13 @@ class DatabaseInfoService:
     def get(self) -> DatabaseInfo:
         if self._cache is None:
             self._cache = DatabaseInfo(
-                number_of_patients=self._get_count(Patient.name_id),
+                number_of_patients=self._get_count(PatientTable.patient_id),
                 number_of_numerical_entities=self._get_entity_count_by_type(EntityType.NUMERICAL),
                 number_of_categorical_entities=self._get_entity_count_by_type(EntityType.CATEGORICAL),
                 number_of_date_entities=self._get_entity_count_by_type(EntityType.DATE),
-                number_of_numerical_data_items=self._get_count(TableNumerical.name_id),
-                number_of_categorical_data_items=self._get_count(TableCategorical.name_id),
-                number_of_date_data_items=self._get_count(TableDate.name_id),
+                number_of_numerical_data_items=self._get_count(NumericalValueTable.patient_id),
+                number_of_categorical_data_items=self._get_count(CategoricalValueTable.patient_id),
+                number_of_date_data_items=self._get_count(DateValueTable.patient_id),
             )
         return self._cache.copy(deep=True)
 
@@ -27,4 +27,4 @@ class DatabaseInfoService:
         return self._database_session.query(column).count()
 
     def _get_entity_count_by_type(self, entity_type):
-        return self._database_session.query(NameType.key).where(NameType.type == entity_type.value).count()
+        return self._database_session.query(EntityTable.key).where(EntityTable.type == entity_type.value).count()

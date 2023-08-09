@@ -6,7 +6,7 @@ from pandas import DataFrame
 from sqlalchemy import select, func, and_
 
 from medex.services.filter import FilterService
-from medex.database_schema import TableNumerical, TableCategorical
+from medex.database_schema import NumericalValueTable, CategoricalValueTable
 import plotly.express as px
 
 
@@ -40,16 +40,16 @@ class HistogramService:
     def get_dataframe_for_histogram_and_boxplot(self, histogram_data):
         query_select = self._select_table_columns(histogram_data)
         query_select_with_where = self._get_columns_with_data(histogram_data, query_select)
-        query_with_filter = self._filter_service.apply_filter(TableNumerical, query_select_with_where)
+        query_with_filter = self._filter_service.apply_filter(NumericalValueTable, query_select_with_where)
         df = self._get_dataframe(histogram_data, query_with_filter)
         return df
 
     @staticmethod
     def _select_table_columns(histogram_data):
         query_select = select(
-            TableNumerical.name_id, TableNumerical.measurement,
-            func.avg(TableNumerical.value).label(histogram_data.numerical_entity),
-            TableCategorical.value.label(histogram_data.categorical_entity)
+            NumericalValueTable.patient_id, NumericalValueTable.measurement,
+            func.avg(NumericalValueTable.value).label(histogram_data.numerical_entity),
+            CategoricalValueTable.value.label(histogram_data.categorical_entity)
         )
         return query_select
 
@@ -57,13 +57,13 @@ class HistogramService:
     def _get_columns_with_data(histogram_data, query_select):
         query_select_with_where = query_select.where(
             and_(
-                TableNumerical.key == histogram_data.numerical_entity,
-                TableCategorical.key == histogram_data.categorical_entity,
-                TableCategorical.value.in_(histogram_data.categories),
-                TableNumerical.measurement.in_(histogram_data.measurements),
-                TableCategorical.name_id == TableNumerical.name_id,
+                NumericalValueTable.key == histogram_data.numerical_entity,
+                CategoricalValueTable.key == histogram_data.categorical_entity,
+                CategoricalValueTable.value.in_(histogram_data.categories),
+                NumericalValueTable.measurement.in_(histogram_data.measurements),
+                CategoricalValueTable.patient_id == NumericalValueTable.patient_id,
             )
-        ).group_by(TableNumerical.name_id, TableNumerical.measurement, TableCategorical.value)
+        ).group_by(NumericalValueTable.patient_id, NumericalValueTable.measurement, CategoricalValueTable.value)
         return query_select_with_where
 
     def _get_dataframe(self, histogram_data, query_with_filter):

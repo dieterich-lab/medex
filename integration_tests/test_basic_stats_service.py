@@ -1,7 +1,9 @@
+from datetime import datetime
+
 import pytest
 from medex.dto.basic_stats import BasicStatsNumericalDataRequest
 from medex.services.basic_stats import BasicStatisticsService
-from medex.database_schema import TableNumerical, NameType, Patient, TableCategorical
+from medex.database_schema import NumericalValueTable, EntityTable, PatientTable, CategoricalValueTable
 from tests.mocks.filter_service import FilterServiceMock
 # noinspection PyUnresolvedReferences
 from integration_tests.fixtures.db_session import db_session
@@ -10,10 +12,10 @@ from integration_tests.fixtures.db_session import db_session
 @pytest.fixture
 def setup_basic_stats_data_minimal(db_session):
     db_session.add_all([
-        Patient(name_id='p1', case_id='c1'),
-        NameType(key='blood pressure', type='Double'),
-        TableNumerical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15',
+        PatientTable(patient_id='p1', case_id='c1'),
+        EntityTable(key='blood pressure', type='Double'),
+        NumericalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
             key='blood pressure', value=129
         ),
     ])
@@ -23,39 +25,51 @@ def setup_basic_stats_data_minimal(db_session):
 @pytest.fixture
 def setup_basic_stats_data(db_session):
     db_session.add_all([
-        Patient(name_id='p1', case_id='c1'),
-        Patient(name_id='p2', case_id='c2'),
-        Patient(name_id='p3', case_id='c3'),
-        NameType(key='blood pressure', type='Double'),
-        NameType(key='temperature', type='Double'),
-        NameType(key='diabetes', type='String'),
-        NameType(key='biopsy', type='String'),
-        TableNumerical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=129
+        PatientTable(patient_id='p1', case_id='c1'),
+        PatientTable(patient_id='p2', case_id='c2'),
+        PatientTable(patient_id='p3', case_id='c3'),
+        EntityTable(key='blood pressure', type='Double'),
+        EntityTable(key='temperature', type='Double'),
+        EntityTable(key='diabetes', type='String'),
+        EntityTable(key='biopsy', type='String'),
+    ])
+    db_session.commit()
+    db_session.add_all([
+        NumericalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=129
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='blood pressure', value=138
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=138
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-05-15', key='blood pressure', value=135
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='blood pressure', value=135
         ),
-        TableNumerical(
-            name_id='p3', case_id='c3', measurement='baseline', date='2021-09-27', key='temperature', value=38.5
+        NumericalValueTable(
+            patient_id='p3', case_id='c3', measurement='baseline', date_time=datetime(2021, 9, 27),
+            key='temperature', value=38.5
         ),
-        TableNumerical(
-            name_id='p3', case_id='c3', measurement='follow up1', date='2022-09-27', key='temperature', value=41.5
+        NumericalValueTable(
+            patient_id='p3', case_id='c3', measurement='follow up1', date_time=datetime(2022, 9, 27),
+            key='temperature', value=41.5
         ),
-        TableCategorical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='diabetes', value='nein'
+        CategoricalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 4, 15),
+            key='diabetes', value='nein'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-07-21', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 7, 21),
+            key='diabetes', value='ja'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-05-15', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='diabetes', value='ja'
         ),
-        TableCategorical(
-            name_id='p3', case_id='c3', measurement='baseline', date='2022-03-09', key='biopsy', value='ja'
+        CategoricalValueTable(
+            patient_id='p3', case_id='c3', measurement='baseline', date_time=datetime(2022, 3, 9),
+            key='biopsy', value='ja'
         ),
     ])
     db_session.commit()

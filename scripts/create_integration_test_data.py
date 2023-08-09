@@ -6,11 +6,11 @@ from random import randrange, random
 
 def get_random_data():
     key, value = get_random_key_and_value()
-    name_id, case_id = get_random_name_id_and_case_id()
+    patient_id, case_id = get_random_patient_id_and_case_id()
     measurement = get_random_measurement()
     date = get_random_date()
     time = get_random_time()
-    return ','.join([name_id, case_id, measurement, date, time, key, value])
+    return ','.join([patient_id, case_id, measurement, date, time, key, value])
 
 
 def get_random_key_and_value():
@@ -86,10 +86,10 @@ def get_categorical_key_and_value():
     return descriptor['key'], descriptor['categories'][randrange(len(descriptor['categories']))]
 
 
-def get_random_name_id_and_case_id():
+def get_random_patient_id_and_case_id():
     case_id_digits = randrange(200)
-    name_id_digits = case_id_digits % 100
-    return f"p{name_id_digits:06}", f"case{case_id_digits:06}"
+    patient_id_digits = case_id_digits % 100
+    return f"p{patient_id_digits:06}", f"case{case_id_digits:06}"
 
 
 def get_random_measurement():
@@ -106,6 +106,6 @@ def get_random_time():
 
 path = join(dirname(dirname(__file__)), 'integration_tests', 'data', 'dataset.csv')
 with open(path, 'w', encoding='utf-8') as handle:
-    print('name_id,case_id,measurement,date,time,key,value', file=handle)
+    print('patient_id,case_id,measurement,date,time,key,value', file=handle)
     for _ in range(2000):
         print(get_random_data(), file=handle)

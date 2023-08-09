@@ -7,7 +7,7 @@ from sqlalchemy.orm import query, aliased
 from medex.dto.data import SortOrder
 from medex.services.entity import EntityService
 from medex.services.filter import FilterService
-from medex.database_schema import TableCategorical, TableNumerical, TableDate
+from medex.database_schema import CategoricalValueTable, NumericalValueTable, DateValueTable
 
 
 PartialQuery = namedtuple('PartialQuery', 'table entity_key')
@@ -59,13 +59,13 @@ class DataService:
     @staticmethod
     def _relevant_patients_query(entities: List[str], measurements: List[str]):
         list_query_tables = [
-            select(table.name_id, table.measurement, table.key)
-            for table in [TableCategorical, TableNumerical, TableDate]
+            select(table.patient_id, table.measurement, table.key)
+            for table in [CategoricalValueTable, NumericalValueTable, DateValueTable]
         ]
         query_union = union(*list_query_tables).subquery()
         query_select_union = (
             select(
-                query_union.exported_columns.name_id,
+                query_union.exported_columns.patient_id,
                 query_union.exported_columns.measurement,
             )
             .where(
@@ -85,7 +85,7 @@ class DataService:
     @staticmethod
     def _join_partial_queries(base_query, partial_queries: List[PartialQuery]):
         select_items = [
-            base_query.exported_columns.name_id,
+            base_query.exported_columns.patient_id,
             base_query.exported_columns.measurement,
         ]
         tables = []
@@ -100,7 +100,7 @@ class DataService:
                 tables[i],
                 and_(
                     tables[i].key == partial_queries[i].entity_key,
-                    base_query.exported_columns.name_id == tables[i].name_id,
+                    base_query.exported_columns.patient_id == tables[i].patient_id,
                     base_query.exported_columns.measurement == tables[i].measurement,
                 ),
             )
@@ -109,8 +109,8 @@ class DataService:
     @staticmethod
     def _get_union_of_tables(entities, measurements) -> query:
         list_query_tables = [
-            select(table.name_id, table.measurement, table.key, cast(table.value, String))
-            for table in [TableCategorical, TableNumerical, TableDate]
+            select(table.patient_id, table.measurement, table.key, cast(table.value, String))
+            for table in [CategoricalValueTable, NumericalValueTable, DateValueTable]
         ]
         query_union = union(*list_query_tables).subquery()
         query_select_union = (
@@ -143,7 +143,7 @@ class DataService:
 
     @staticmethod
     def _get_query_with_total(query_with_filter):
-        total_count = func.count(query_with_filter.exported_columns.name_id).over().label('total')
+        total_count = func.count(query_with_filter.exported_columns.patient_id).over().label('total')
         query_with_total = select(*query_with_filter.exported_columns, total_count)
         return query_with_total
 

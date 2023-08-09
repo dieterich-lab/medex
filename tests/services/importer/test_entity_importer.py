@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from medex.services.importer.entitity import EntityImporter
 from medex.services.importer.generic_importer import HeaderLineMissing, BadHeaderLine
-from medex.database_schema import NameType
+from medex.database_schema import EntityTable
 
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
@@ -50,14 +50,14 @@ def test_minimal_import(db_session):
 
     importer.import_all()
 
-    result = db_session.execute(select(NameType.key, NameType.type)).all()
+    result = db_session.execute(select(EntityTable.key, EntityTable.type)).all()
     assert len(result) == 1
     assert result[0].key == 'some_num_entity'
     assert result[0].type == 'Double'
 
 
-ALL_FIELDS_IMPORT = """synonym,key,unit,type,description,show
-my_synonym,some_cat_entity,bogus unit,String,Dät könnt auch Dütßch sein,+
+ALL_FIELDS_IMPORT = """synonym,key,unit,type,description
+my_synonym,some_cat_entity,bogus unit,String,Dät könnt auch Dütßch sein
 """
 
 
@@ -71,7 +71,7 @@ def test_all_fields_import(db_session):
     importer.import_all()
 
     result = db_session.execute(select(
-        NameType.key, NameType.type, NameType.synonym, NameType.unit, NameType.description, NameType.show
+        EntityTable.key, EntityTable.type, EntityTable.synonym, EntityTable.unit, EntityTable.description
     )).all()
     assert len(result) == 1
     assert result[0].key == 'some_cat_entity'
@@ -79,7 +79,6 @@ def test_all_fields_import(db_session):
     assert result[0].synonym == 'my_synonym'
     assert result[0].unit == 'bogus unit'
     assert result[0].description == 'Dät könnt auch Dütßch sein'
-    assert result[0].show == '+'
 
 
 UNKNOWN_COLUMN_ENTITY_CSV = """key,type,bogus
@@ -96,7 +95,7 @@ def test_unknown_column_import(db_session, capsys):
 
     importer.import_all()
 
-    result = db_session.execute(select(NameType.key, NameType.type)).all()
+    result = db_session.execute(select(EntityTable.key, EntityTable.type)).all()
     assert len(result) == 1
     assert result[0].key == 'some_num_entity'
     assert result[0].type == 'Double'
@@ -117,7 +116,7 @@ def test_large_import(db_session):
 
     importer.import_all()
 
-    result = db_session.execute(select(NameType.key, NameType.type).order_by(NameType.key)).all()
+    result = db_session.execute(select(EntityTable.key, EntityTable.type).order_by(EntityTable.key)).all()
     assert len(result) == 150
     for i in range(150):
         assert result[i].key == f"some cat entity {i:03d}"
@@ -142,7 +141,7 @@ def test_empty_line_import(db_session, capsys):
 
     importer.import_all()
 
-    result = db_session.execute(select(NameType.key, NameType.type)).all()
+    result = db_session.execute(select(EntityTable.key, EntityTable.type)).all()
     assert len(result) == 1
     assert result[0].key == 'some_num_entity'
     assert result[0].type == 'Double'

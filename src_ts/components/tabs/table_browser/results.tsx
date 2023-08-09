@@ -101,7 +101,7 @@ function setup_datatable(
 
 function define_table_columns(parameters: TableBrowserResultParameters) {
     let column = [
-        {data: 'name_id', title: 'name_id'},
+        {data: 'patient_id', title: 'patient_id'},
         {data: 'measurement', title: 'measurement'},
     ]
     if (parameters.format == TableFormat.Flat) {

@@ -5,7 +5,7 @@ from pandas import DataFrame
 from scipy.stats import pearsonr
 from sqlalchemy import func, case, select
 from medex.services.filter import FilterService
-from medex.database_schema import TableNumerical
+from medex.database_schema import NumericalValueTable
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 
@@ -38,21 +38,21 @@ class HeatmapService:
 
     def _get_results_dataframe(self, heatmap_data):
         query_select = self._select_table_data(heatmap_data)
-        query_with_filter = self._filter_service.apply_filter(TableNumerical, query_select)
+        query_with_filter = self._filter_service.apply_filter(NumericalValueTable, query_select)
         results = self._database_session.execute(query_with_filter)
         df = DataFrame(results.all())
         if not df.empty:
-            df = df.drop(columns=['name_id'])
+            df = df.drop(columns=['patient_id'])
         return df
 
     @staticmethod
     def _select_table_data(heatmap_data):
         case_when = [
-            func.min(case((TableNumerical.key == i, TableNumerical.value))).label(i)
+            func.min(case((NumericalValueTable.key == i, NumericalValueTable.value))).label(i)
             for i in heatmap_data.entities
         ]
-        query_select = select(TableNumerical.name_id, *case_when) \
-            .group_by(TableNumerical.name_id)
+        query_select = select(NumericalValueTable.patient_id, *case_when) \
+            .group_by(NumericalValueTable.patient_id)
         return query_select
 
     @staticmethod

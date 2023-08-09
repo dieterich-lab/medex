@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from medex.dto.entity import EntityType
 from medex.services.entity import EntityService
 from medex.services.importer.generic_importer import GenericImporter
-from medex.database_schema import Base, TableNumerical, TableCategorical, TableDate, Patient
+from medex.database_schema import Base, NumericalValueTable, CategoricalValueTable, DateValueTable, PatientTable
 
 
 class DatasetImporter(GenericImporter):
@@ -18,13 +18,15 @@ class DatasetImporter(GenericImporter):
             db_session: Session,
             entity_service: EntityService
     ):
-        table_meta = inspect(TableNumerical)
-        known_columns = [x.key for x in table_meta.mapper.column_attrs]
+        table_meta = inspect(NumericalValueTable)
         super().__init__(
             file_handle=file_handle,
             source_name=source_name,
-            known_columns=known_columns,
-            required_columns=['name_id', 'key', 'value'],
+            known_columns=[
+                'patient_id', 'case_id', 'measurement', 'date', 'time',
+                'key', 'value'
+            ],
+            required_columns=['patient_id', 'key', 'value'],
             db_session=db_session
         )
         self._entities_by_key = None
@@ -34,20 +36,21 @@ class DatasetImporter(GenericImporter):
         cooked_values: Dict[str, any] = {**values}
         self._check_isolated_values(values)
         self._add_defaults(cooked_values)
+        self._convert_date_time(cooked_values)
         entity_type = self._get_validated_entity_type(values)
 
         if entity_type == EntityType.NUMERICAL:
             return self._parse_numerical_row(cooked_values)
         elif entity_type == EntityType.CATEGORICAL:
-            return cooked_values, TableCategorical
+            return cooked_values, CategoricalValueTable
         elif entity_type == EntityType.DATE:
             return self._parse_date_row(cooked_values)
         else:
             raise NotImplementedError(f"Not implemented: {entity_type.value}")
 
     def _check_isolated_values(self, values):
-        if len(values['name_id']) < 1:
-            raise ValueError('Gote empty name_id')
+        if len(values['patient_id']) < 1:
+            raise ValueError('Gote empty patient_id')
         if 'date' in values and not self._date_is_ok(values['date']):
             raise ValueError('Date column not in format YYYY-MM-DD')
 
@@ -55,6 +58,25 @@ class DatasetImporter(GenericImporter):
     def _add_defaults(cooked_values):
         if 'measurement' not in cooked_values:
             cooked_values['measurement'] = '1'
+
+    def _convert_date_time(self, cooked_values):
+        if not self._is_valid(cooked_values, 'date'):
+            final_date = None
+        elif not self._is_valid(cooked_values, 'time'):
+            final_date = datetime.strptime(cooked_values['date'], '%Y-%m-%d')
+        else:
+            combined = cooked_values['date'] + ' ' + cooked_values['time']
+            final_date = datetime.strptime(combined, '%Y-%m-%d %H:%M:%S')
+        if final_date is not None:
+            cooked_values['date_time'] = final_date
+
+        for key in ['date', 'time']:
+            if key in cooked_values:
+                del cooked_values[key]
+
+    @staticmethod
+    def _is_valid(data, key):
+        return key in data and data[key] is not None and data[key] != ''
 
     def _get_validated_entity_type(self, values):
         entity_key = values['key']
@@ -79,7 +101,7 @@ class DatasetImporter(GenericImporter):
         except ValueError:
             key = cooked_values['key']
             raise ValueError(f"The 'value' column must be numeric for key '{key}'")
-        return cooked_values, TableNumerical
+        return cooked_values, NumericalValueTable
 
     @staticmethod
     def _parse_date_row(cooked_values):
@@ -87,7 +109,7 @@ class DatasetImporter(GenericImporter):
             cooked_values['value'] = datetime.strptime(cooked_values['value'], '%Y-%m-%d')
         except ValueError:
             raise ValueError("The 'value' column must be in the format YYYY-MM-DD for this key'")
-        return cooked_values, TableDate
+        return cooked_values, DateValueTable
 
     @staticmethod
     def _date_is_ok(value):
@@ -99,27 +121,27 @@ class DatasetImporter(GenericImporter):
 
     def populate_patient_table(self):
         all_patient_references = union(
-            select(TableCategorical.name_id, TableCategorical.case_id),
-            select(TableNumerical.name_id, TableNumerical.case_id),
-            select(TableDate.name_id, TableDate.case_id)
+            select(CategoricalValueTable.patient_id, CategoricalValueTable.case_id),
+            select(NumericalValueTable.patient_id, NumericalValueTable.case_id),
+            select(DateValueTable.patient_id, DateValueTable.case_id)
         ).subquery()
 
         all_patients = select(
-            all_patient_references.c.name_id, all_patient_references.c.case_id
+            all_patient_references.c.patient_id, all_patient_references.c.case_id
         ).distinct()
 
-        bug_insert = insert(Patient).from_select(['name_id', 'case_id'], all_patients)
+        bug_insert = insert(PatientTable).from_select(['patient_id', 'case_id'], all_patients)
         self._db_session.execute(bug_insert)
         self._db_session.commit()
 
     def optimize_tables(self):
         for line in [
-            'CLUSTER examination_date USING idx_key_date',
-            'CLUSTER examination_numerical USING idx_key_num',
-            'CLUSTER examination_categorical USING idx_key_cat',
-            'ANALYZE examination_numerical',
-            'ANALYZE examination_categorical',
-            'ANALYZE examination_date',
+            'CLUSTER numerical_value USING idx_key_num',
+            'CLUSTER categorical_value USING idx_key_cat',
+            'CLUSTER date_value USING idx_key_date',
+            'ANALYZE numerical_value',
+            'ANALYZE categorical_value',
+            'ANALYZE date_value',
         ]:
             self._db_session.execute(text(line))
             self._db_session.commit()

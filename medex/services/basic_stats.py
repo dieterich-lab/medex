@@ -2,7 +2,7 @@ from math import isnan
 from typing import List
 from sqlalchemy import select, func, and_
 from medex.services.filter import FilterService
-from medex.database_schema import TableNumerical, TableCategorical, TableDate, Patient
+from medex.database_schema import NumericalValueTable, CategoricalValueTable, DateValueTable, PatientTable
 
 
 class BasicStatisticsService:
@@ -14,7 +14,7 @@ class BasicStatisticsService:
         self._filter_service = filter_service
 
     def get_basic_stats_for_numerical_entities(self, basic_stats_data) -> List[dict]:
-        return self._get_generic_data_as_dicts(basic_stats_data, TableNumerical, self.NUMERICAL_COLUMNS, True)
+        return self._get_generic_data_as_dicts(basic_stats_data, NumericalValueTable, self.NUMERICAL_COLUMNS, True)
 
     def _get_generic_data_as_dicts(self, basic_stats_data, table, columns, is_numerical) -> List[dict]:
         if is_numerical:
@@ -29,7 +29,7 @@ class BasicStatisticsService:
     @staticmethod
     def _get_base_query(table, basic_stats_data, extra_columns):
         query = select(
-            table.key, table.measurement, func.count(table.name_id).label('count'),
+            table.key, table.measurement, func.count(table.patient_id).label('count'),
             *extra_columns
         ).where(
             and_(
@@ -41,14 +41,14 @@ class BasicStatisticsService:
     @staticmethod
     def _get_extra_numerical_columns():
         return [
-            func.min(TableNumerical.value).label('min'),
-            func.max(TableNumerical.value).label('max'),
-            func.avg(TableNumerical.value).label('mean'),
-            func.percentile_cont(0.5).within_group(TableNumerical.value).label('median'),
-            func.stddev(TableNumerical.value).label('stddev'),
+            func.min(NumericalValueTable.value).label('min'),
+            func.max(NumericalValueTable.value).label('max'),
+            func.avg(NumericalValueTable.value).label('mean'),
+            func.percentile_cont(0.5).within_group(NumericalValueTable.value).label('median'),
+            func.stddev(NumericalValueTable.value).label('stddev'),
             (
-                    func.stddev(TableNumerical.value) /
-                    func.sqrt(func.count(TableNumerical.value))
+                    func.stddev(NumericalValueTable.value) /
+                    func.sqrt(func.count(NumericalValueTable.value))
             ).label('stderr')
         ]
 
@@ -60,10 +60,10 @@ class BasicStatisticsService:
         return group_query
 
     def get_basic_stats_for_categorical_entities(self, basic_stats_data) -> List[dict]:
-        return self._get_generic_data_as_dicts(basic_stats_data, TableCategorical, self.BASE_COLUMNS, False)
+        return self._get_generic_data_as_dicts(basic_stats_data, CategoricalValueTable, self.BASE_COLUMNS, False)
 
     def get_basic_stats_for_date_entities(self, basic_stats_data) -> List[dict]:
-        return self._get_generic_data_as_dicts(basic_stats_data, TableDate, self.BASE_COLUMNS, False)
+        return self._get_generic_data_as_dicts(basic_stats_data, DateValueTable, self.BASE_COLUMNS, False)
 
     def _get_query_as_dicts(self, query, columns):
         results = []
@@ -80,7 +80,7 @@ class BasicStatisticsService:
     def _get_patient_count(self):
         filtered_patients = self._filter_service.get_filtered_patient_count()
         if filtered_patients is None:
-            query = select(func.count(func.distinct(Patient.name_id)))
+            query = select(func.count(func.distinct(PatientTable.patient_id)))
             return self._database_session.execute(query).scalar()
         else:
             return filtered_patients

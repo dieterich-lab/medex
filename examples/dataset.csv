@@ -1,4 +1,4 @@
-name_id,case_id,measurement,date,time,key,value
+patient_id,case_id,measurement,date,time,key,value
 5f2b9323c39ee3c861a7b382d205c3d3,5f2b9323c39ee3c861a7b382d205c3d3,2,2011-04-16,17:50:41,NYHA,I
 5f2b9323c39ee3c861a7b382d205c3d3,5f2b9323c39ee3c861a7b382d205c3d3,2,2011-04-16,4:59:56,Diabetes,yes
 5f2b9323c39ee3c861a7b382d205c3d3,5f2b9323c39ee3c861a7b382d205c3d3,2,2011-04-16,4:53:25,Gender,male

@@ -4,7 +4,7 @@ from pytest import fixture
 from sqlalchemy import select, func
 
 from medex.services.config import Config, set_config
-from medex.database_schema import TableNumerical, TableCategorical, Patient
+from medex.database_schema import NumericalValueTable, CategoricalValueTable, PatientTable
 
 # noinspection PyUnresolvedReferences
 from integration_tests.fixtures.db_session import db_session
@@ -29,13 +29,13 @@ def test_importer(db_session, config, marker):
     importer = get_importer()
     importer.setup_database()
 
-    rs_num = db_session.execute(select(func.count(TableNumerical.id).label('count'))).first()
+    rs_num = db_session.execute(select(func.count(NumericalValueTable.id).label('count'))).first()
     numerical_values = rs_num.count
-    rs_cat = db_session.execute(select(func.count(TableCategorical.id).label('count'))).first()
+    rs_cat = db_session.execute(select(func.count(CategoricalValueTable.id).label('count'))).first()
     categorical_values = rs_cat.count
     assert numerical_values + categorical_values == 2000
 
-    rs_papient = db_session.execute(select(func.count(Patient.case_id).label('count'))).first()
+    rs_papient = db_session.execute(select(func.count(PatientTable.case_id).label('count'))).first()
     patient_entries = rs_papient.count
     assert patient_entries == 200
 

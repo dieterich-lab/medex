@@ -1,8 +1,10 @@
 import json
+from datetime import datetime
+
 import pytest
 from medex.dto.heatmap import HeatmapDataRequest
 from medex.services.heatmap import HeatmapService
-from medex.database_schema import TableNumerical
+from medex.database_schema import NumericalValueTable
 from tests.mocks.filter_service import FilterServiceMock
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
@@ -11,13 +13,13 @@ from tests.fixtures.db_session import db_session
 @pytest.fixture
 def setup_heatmap_data(db_session):
     db_session.add_all([
-        TableNumerical(name_id='p1', key='blood_pressure', value=135, date='2021-06-20'),
-        TableNumerical(name_id='p2', key='blood_pressure', value=139, date='2021-07-14'),
-        TableNumerical(name_id='p3', key='blood_pressure', value=128, date='2021-08-05'),
-        TableNumerical(name_id='p1', key='temperature', value=35, date='2021-05-15'),
-        TableNumerical(name_id='p2', key='temperature', value=38, date='2021-07-14'),
-        TableNumerical(name_id='p3', key='echo_lvef', value=55, date='2022-03-21'),
-        TableNumerical(name_id='p4', key='echo_lvef', value=80, date='2022-10-05')
+        NumericalValueTable(patient_id='p1', key='blood_pressure', value=135, date_time=datetime(2021, 6, 20)),
+        NumericalValueTable(patient_id='p2', key='blood_pressure', value=139, date_time=datetime(2021, 7, 14)),
+        NumericalValueTable(patient_id='p3', key='blood_pressure', value=128, date_time=datetime(2021, 8, 5)),
+        NumericalValueTable(patient_id='p1', key='temperature', value=35, date_time=datetime(2021, 5, 15)),
+        NumericalValueTable(patient_id='p2', key='temperature', value=38, date_time=datetime(2021, 7, 14)),
+        NumericalValueTable(patient_id='p3', key='echo_lvef', value=55, date_time=datetime(2022, 3, 21)),
+        NumericalValueTable(patient_id='p4', key='echo_lvef', value=80, date_time=datetime(2022, 10, 5))
     ])
     db_session.commit()
 

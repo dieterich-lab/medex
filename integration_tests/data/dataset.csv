@@ -1,4 +1,4 @@
-name_id,case_id,measurement,date,time,key,value
+patient_id,case_id,measurement,date,time,key,value
 p000022,case000122,baseline,1997-03-27,13:08:24,Diabetes,yes
 p000029,case000129,follow up 2 years,1997-10-18,04:26:39,MFCC6,1.7228968145904275
 p000087,case000087,follow up 2 years,1990-07-10,13:36:37,Gender,männlich

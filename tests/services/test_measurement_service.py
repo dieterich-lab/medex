@@ -1,4 +1,6 @@
-from medex.database_schema import TableCategorical, TableNumerical, Header
+from datetime import datetime
+
+from medex.database_schema import CategoricalValueTable, NumericalValueTable, HeaderTable
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
 from medex.services.measurement import MeasurementService
@@ -6,9 +8,10 @@ from medex.services.measurement import MeasurementService
 
 def test_measurement_simple(db_session):
     db_session.add_all([
-        Header(name_id='Name ID', measurement='Measurement'),
-        TableCategorical(
-            name_id='p1', case_id='c1', measurement='0', date='2021-05-15', key='diabetes', value='nein'
+        HeaderTable(patient_id='Name ID', measurement='Measurement'),
+        CategoricalValueTable(
+            patient_id='p1', case_id='c1', measurement='0', date_time=datetime(2021, 5, 15),
+            key='diabetes', value='nein'
         ),
     ])
 
@@ -20,15 +23,18 @@ def test_measurement_simple(db_session):
 
 def test_measurement_numerical(db_session):
     db_session.add_all([
-        Header(name_id='Name ID', measurement='Visit'),
-        TableNumerical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=129
+        HeaderTable(patient_id='Name ID', measurement='Visit'),
+        NumericalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=129
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='blood pressure', value=138
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=138
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-05-15', key='blood pressure', value=135
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='blood pressure', value=135
         )
     ])
 
@@ -40,24 +46,30 @@ def test_measurement_numerical(db_session):
 
 def test_measurement_complex(db_session):
     db_session.add_all([
-        Header(name_id='Name ID', measurement='Visit'),
-        TableCategorical(
-            name_id='p1', case_id='c1', measurement='follow up1', date='2022-05-15', key='diabetes', value='nein'
+        HeaderTable(patient_id='Name ID', measurement='Visit'),
+        CategoricalValueTable(
+            patient_id='p1', case_id='c1', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='diabetes', value='nein'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='diabetes', value='ja'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2022-05-15', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2022, 5, 15),
+            key='diabetes', value='ja'
         ),
-        TableNumerical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=129
+        NumericalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=129
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='blood pressure', value=138
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=138
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-05-15', key='blood pressure', value=135
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='blood pressure', value=135
         )
     ])
 

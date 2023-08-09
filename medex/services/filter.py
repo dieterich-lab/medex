@@ -6,7 +6,7 @@ from sqlalchemy.orm import Query
 
 from medex.dto.filter import FilterStatus, CategoricalFilter, NumericalFilter
 from medex.services.session import SessionService
-from medex.database_schema import SessionFilteredNameIds, SessionNameIdsMatchingFilter, TableCategorical, TableNumerical
+from medex.database_schema import SessionFilteredPatientTable, SessionPatientsMatchingFilterTable, CategoricalValueTable, NumericalValueTable
 
 
 class FilterService:
@@ -35,7 +35,7 @@ class FilterService:
         self._database_session.commit()
 
     def _clean_up_filter_for_entity(self, entity):
-        table = SessionNameIdsMatchingFilter
+        table = SessionPatientsMatchingFilterTable
         if len(self._filter_status.filters) == 0:
             self.delete_all_filters()
         else:
@@ -47,12 +47,12 @@ class FilterService:
 
     def _record_name_ids_for_filter(self, entity, new_filter):
         if isinstance(new_filter, CategoricalFilter):
-            data_table = TableCategorical
+            data_table = CategoricalValueTable
             entity_condition = [
                 data_table.value.in_(new_filter.categories),
             ]
         elif isinstance(new_filter, NumericalFilter):
-            data_table = TableNumerical
+            data_table = NumericalValueTable
             entity_condition = [
                 data_table.value.between(new_filter.from_value, new_filter.to_value),
             ]
@@ -69,7 +69,7 @@ class FilterService:
 
     def _purge_filter_tables_for_session(self):
         db = self._database_session
-        for table in [SessionFilteredNameIds, SessionNameIdsMatchingFilter]:
+        for table in [SessionFilteredPatientTable, SessionPatientsMatchingFilterTable]:
             db.execute(
                 delete(table)
                 .where(table.session_id == self._session_id)
@@ -81,15 +81,15 @@ class FilterService:
             select(
                 literal_column(f"'{self._session_id}'"),
                 literal_column(f"'{entity}'"),
-                data_table.name_id
+                data_table.patient_id
             ).distinct()
             .where(
                 self._get_filter_criteria(data_table, entity, entity_condition)
             )
         )
         self._database_session.execute(
-            insert(SessionNameIdsMatchingFilter).from_select(
-                ['session_id', 'filter', 'name_id'],
+            insert(SessionPatientsMatchingFilterTable).from_select(
+                ['session_id', 'filter', 'patient_id'],
                 name_ids_for_filter
             )
         )
@@ -109,30 +109,30 @@ class FilterService:
 
     def _reset_name_ids_for_all_filters(self):
         self._database_session.execute(
-            select(SessionFilteredNameIds)
-            .where(SessionFilteredNameIds.session_id == self._session_id)
+            select(SessionFilteredPatientTable)
+            .where(SessionFilteredPatientTable.session_id == self._session_id)
             .with_for_update()
         )
         self._database_session.execute(
-            delete(SessionFilteredNameIds)
-            .where(SessionFilteredNameIds.session_id == self._session_id)
+            delete(SessionFilteredPatientTable)
+            .where(SessionFilteredPatientTable.session_id == self._session_id)
         )
 
     def _generate_name_ids_for_all_filters(self):
         db = self._database_session
-        table = SessionNameIdsMatchingFilter
-        number_of_matching_filters = func.count(table.name_id).label('number_of_matching_filters')
+        table = SessionPatientsMatchingFilterTable
+        number_of_matching_filters = func.count(table.patient_id).label('number_of_matching_filters')
         name_ids_for_all_filters = (
             select(
-                literal_column(f"'{self._session_id}'"), table.name_id
+                literal_column(f"'{self._session_id}'"), table.patient_id
             )
             .where(table.session_id == self._session_id)
-            .group_by(table.name_id)
+            .group_by(table.patient_id)
             .having(number_of_matching_filters == len(self._filter_status.filters))
         )
         db.execute(
-            insert(SessionFilteredNameIds).from_select(
-                ['session_id', 'name_id'],
+            insert(SessionFilteredPatientTable).from_select(
+                ['session_id', 'patient_id'],
                 name_ids_for_all_filters
             )
         )
@@ -141,9 +141,9 @@ class FilterService:
         if len(self._filter_status.filters) == 0:
             self._filter_status.filtered_patient_count = None
             return
-        table = SessionFilteredNameIds
+        table = SessionFilteredPatientTable
         result = self._database_session.execute(
-            select(func.count(table.name_id)).where(table.session_id == self._session_id)
+            select(func.count(table.patient_id)).where(table.session_id == self._session_id)
         ).first()
         self._filter_status.filtered_patient_count = result[0]
 
@@ -157,10 +157,10 @@ class FilterService:
     def apply_filter(self, table, query: Query) -> Query:
         if len(self._filter_status.filters) != 0:
             join_with_filtered_name_ids = join(
-                table, SessionFilteredNameIds,
+                table, SessionFilteredPatientTable,
                 and_(
-                    table.name_id == SessionFilteredNameIds.name_id,
-                    SessionFilteredNameIds.session_id == self._session_id
+                    table.patient_id == SessionFilteredPatientTable.patient_id,
+                    SessionFilteredPatientTable.session_id == self._session_id
                 )
             )
             query = query.select_from(join_with_filtered_name_ids)
@@ -173,10 +173,10 @@ class FilterService:
         if len(self._filter_status.filters) != 0:
             cte = query.cte('cte')
             join_with_filtered_name_ids = join(
-                cte, SessionFilteredNameIds,
+                cte, SessionFilteredPatientTable,
                 and_(
-                    cte.c.name_id == SessionFilteredNameIds.name_id,
-                    SessionFilteredNameIds.session_id == self._session_id
+                    cte.c.patient_id == SessionFilteredPatientTable.patient_id,
+                    SessionFilteredPatientTable.session_id == self._session_id
                 )
             )
             query = select(cte.c).select_from(join_with_filtered_name_ids)
