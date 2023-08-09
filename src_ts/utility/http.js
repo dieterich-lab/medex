@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.http_send_as_json = exports.http_fetch = void 0;
-var error_js_1 = require("./error.js");
+var error_js_1 = require("./error.ts");
 function http_fetch(method, uri, process_data, process_error, clear_error_flag) {
     if (process_data === void 0) { process_data = null; }
     if (process_error === void 0) { process_error = null; }

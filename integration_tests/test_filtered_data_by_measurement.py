@@ -3,6 +3,7 @@ from medex.services.data import DataService
 from medex.database_schema import TableCategorical, TableNumerical, NameType
 # noinspection PyUnresolvedReferences
 from integration_tests.fixtures.db_session import db_session
+from medex.services.entity import EntityService
 from tests.mocks.filter_service import FilterServiceMock
 from medex.dto.data import SortOrder, SortItem, SortDirection
 
@@ -52,7 +53,8 @@ def filter_service_mock():
 def test_get_filtered_data_by_measurement(db_session, filter_service_mock, setup_data_new):
     service = DataService(
         database_session=db_session,
-        filter_service=filter_service_mock
+        filter_service=filter_service_mock,
+        entity_service=EntityService(db_session),
     )
     actual_result, total = service.get_filtered_data_by_measurement(
         entities=['diabetes', 'blood pressure'],

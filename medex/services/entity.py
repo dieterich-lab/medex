@@ -1,9 +1,9 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from sqlalchemy import select, inspect, func
 from sqlalchemy.orm import Session
 
-from medex.database_schema import NameType, TableCategorical, TableNumerical
+from medex.database_schema import NameType, TableCategorical, TableNumerical, TableDate
 from medex.dto.entity import Entity, EntityType
 
 
@@ -12,10 +12,11 @@ class EntityService:
 
     def __init__(self, database_session: Session):
         self._db = database_session
-        self._cache = None
+        self._dict_cache: Optional[Dict[str, Entity]] = None
+        self._list_cache = None
 
-    def get_all(self) -> List[Entity]:
-        if self._cache is None:
+    def _fill_cache(self):
+        if self._dict_cache is None:
             categories_by_entity = self._get_categories_by_entity()
             min_max_by_entity = self._get_min_max_by_entity()
             rv = self._db.execute(
@@ -25,10 +26,16 @@ class EntityService:
                 self._get_entity_from_row(x, categories_by_entity, min_max_by_entity)
                 for x in rv.all()
             ]
-            self._cache = sorted(raw_result, key=lambda x: x.key)
-        return self._cache
+            sorted_list = sorted(raw_result, key=lambda x: x.key)
+            self._dict_cache = {v.key: v for v in sorted_list}
+            self._list_cache = list(self._dict_cache.values())
+
+    def get_all(self) -> List[Entity]:
+        self._fill_cache()
+        return self._list_cache
 
     def get_all_as_dict(self) -> List[Dict[str, any]]:
+        self._fill_cache()
         result = [
             x.dict()
             for x in self.get_all()
@@ -67,7 +74,7 @@ class EntityService:
             for x in rv.all()
         }
 
-    def _get_entity_from_row(self, row, categories_by_entity, min_max_by_entity):
+    def _get_entity_from_row(self, row, categories_by_entity, min_max_by_entity) -> Entity:
         raw_entity = {
             col.key: getattr(row, col.key)
             for col in self.ENTITY_COLUMNS
@@ -88,4 +95,17 @@ class EntityService:
         return Entity.parse_obj(raw_entity)
 
     def refresh(self):
-        self._cache = None
+        self._dict_cache = None
+
+    def get_entity_by_key(self, entity_key: str) -> Entity:
+        self._fill_cache()
+        return self._dict_cache[entity_key]
+
+    @staticmethod
+    def get_database_table_for_entity(entity: Entity):
+        if entity.type == EntityType.NUMERICAL:
+            return TableNumerical
+        elif entity.type == EntityType.CATEGORICAL:
+            return TableCategorical
+        else:
+            return TableDate
