@@ -51,6 +51,12 @@ TABLES_WITH_DATE_TIME = [
     'date_value',
 ]
 
+SEQUENCE_NAME_MAP = [
+    ('examination_categorical_id_seq', 'categorical_value_id_seq'),
+    ('examination_numerical_id_seq', 'numerical_value_id_seq'),
+    ('examination_date_id_seq', 'date_value_id_seq'),
+]
+
 
 def upgrade() -> None:
     for old_name, new_name in TABLE_NAME_MAP:
@@ -61,6 +67,9 @@ def upgrade() -> None:
 
     for old_name, new_name in INDEX_NAME_MAP:
         op.execute(f"ALTER INDEX {old_name} RENAME TO {new_name}")
+
+    for old_name, new_name in SEQUENCE_NAME_MAP:
+        op.execute(f"ALTER SEQUENCE {old_name} RENAME TO {new_name}")
 
     op.drop_column('entity', 'show')
     for table in TABLES_WITH_DATE_TIME:
@@ -92,6 +101,9 @@ def downgrade() -> None:
         """)
         op.drop_column(table, 'date_time')
     op.add_column('entity', sa.Column('show', sa.String))
+
+    for old_name, new_name in SEQUENCE_NAME_MAP:
+        op.execute(f"ALTER SEQUENCE {new_name} RENAME TO {old_name}")
 
     for old_name, new_name in INDEX_NAME_MAP:
         op.execute(f"ALTER INDEX {new_name} RENAME TO {old_name}")
