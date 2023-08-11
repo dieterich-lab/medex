@@ -47,6 +47,8 @@ function get_options_from_strings(options: string[]): Option[] {
     return options.map((x) => get_option_from_string(x));
 }
 
+let option_cache = new Map<string, Option[]>();
+
 function set_entity_options(
     allowed_entity_types: EntityType[],
     set_options: (options: Option[]|null) => void,
@@ -55,13 +57,21 @@ function set_entity_options(
     if ( old_options ) {
         return;
     }
-    get_entity_list().then(
-        (all_entities) => set_options(
-            all_entities
-                .filter((x) => allowed_entity_types.includes(x.type))
-                .map((x) => get_option_from_entity(x))
-        )
-    );
+    const cache_key = allowed_entity_types.map(x => x.valueOf()).join('/');
+    const cached_options = option_cache.get(cache_key);
+    if ( cached_options ) {
+        set_options(cached_options);
+    } else {
+        get_entity_list().then(
+            (all_entities) => {
+                const new_cached_options = all_entities
+                    .filter((x) => allowed_entity_types.includes(x.type))
+                    .map((x) => get_option_from_entity(x));
+                option_cache.set(cache_key, new_cached_options);
+                set_options(new_cached_options);
+            }
+        );
+    }
 }
 
 function get_option_from_entity(entity: Entity): Option {
