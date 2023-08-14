@@ -25,7 +25,7 @@ function single_on_change<T>(
         if (new_value == initial_value) {
             continue;
         }
-        if (original_on_change != null) {
+        if ( original_on_change ) {
             original_on_change(new_value == NO_VALUE_SELECTED_MARKER ? null : new_value);
         }
         return;

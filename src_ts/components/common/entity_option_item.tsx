@@ -5,7 +5,8 @@ interface EntityOptionItemProps {
 	checked: boolean,
 	disabled: any;
 	onClick: ChangeEventHandler<HTMLDivElement> | undefined;
-	option: { value: Entity };
+	option: { value: Entity } | null;
+	label: string,
 }
 
 function EntityOptionItem(props: EntityOptionItemProps): JSX.Element {
@@ -18,17 +19,16 @@ function EntityOptionItem(props: EntityOptionItemProps): JSX.Element {
 				tabIndex={-1}
 				disabled={props.disabled}
 			/>
-			<MyEntityItem entity={props.option.value}/>
+			<MyEntityItem {... props}/>
 		</div>
 	);
 }
 
-interface MyEntityItemProps {
-	entity: Entity,
-}
-
-function MyEntityItem(props: MyEntityItemProps): JSX.Element {
-	const entity = props.entity;
+function MyEntityItem(props: EntityOptionItemProps): JSX.Element {
+	const entity = props?.option?.value;
+	if ( !entity ) {
+		return <span>{props.label}</span>
+	}
 	if ( !entity.description ) {
 		return <span>{entity.key}</span>;
 	}
