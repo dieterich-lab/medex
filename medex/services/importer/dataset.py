@@ -18,7 +18,6 @@ class DatasetImporter(GenericImporter):
             db_session: Session,
             entity_service: EntityService
     ):
-        table_meta = inspect(NumericalValueTable)
         super().__init__(
             file_handle=file_handle,
             source_name=source_name,

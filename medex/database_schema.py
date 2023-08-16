@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, Index, text, DateTime
+from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, Index, DateTime
 from sqlalchemy.orm import declarative_base
 
-from medex.services.database import get_db_engine, get_db_session
+from medex.services.database import get_db_engine
 
 Base = declarative_base()
 
