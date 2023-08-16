@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TextIO, Dict
 
-from sqlalchemy import inspect, union, select, insert, text
+from sqlalchemy import union, select, insert, text
 from sqlalchemy.orm import Session
 
 from medex.dto.entity import EntityType
