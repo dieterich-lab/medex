@@ -19,11 +19,11 @@ depends_on = None
 def upgrade() -> None:
     for table in ['numerical_value', 'categorical_value', 'date_value']:
         op.create_index(
-            f"idx_{table}_patient_id_measurement_key",  table,
-            ['patient_id', 'measurement', 'key']
+            f"idx_{table}_patient_id_measurement",  table,
+            ['patient_id', 'measurement']
         )
 
 
 def downgrade() -> None:
     for table in ['numerical_value', 'categorical_value', 'date_value']:
-        op.drop_index(f"idx_{table}_patient_id_measurement_key")
+        op.drop_index(f"idx_{table}_patient_id_measurement")
