@@ -1,8 +1,8 @@
 from collections import namedtuple
-from typing import List, Optional
+from typing import List, Optional, Any, Tuple
 
-from sqlalchemy import union, select, and_, desc, func, cast, String
-from sqlalchemy.orm import query, aliased
+from sqlalchemy import union, select, and_, desc, func, cast, String, Select
+from sqlalchemy.orm import query, aliased, Query
 
 from medex.dto.data import SortOrder
 from medex.services.entity import EntityService
@@ -33,10 +33,10 @@ class DataService:
             sort_order: Optional[SortOrder] = None,
     ) -> (List[dict], int):
         query_select = self._get_union_of_tables(entities, measurements)
-        return self._do_query_with_extras(query_select, limit, offset, sort_order)
-
-    def _do_query_with_extras(self, query_select, limit, offset, sort_order):
         query_with_filter = self._filter_service.apply_filter_to_complex_query(query_select)
+        return self._do_query_with_extras(query_with_filter, limit, offset, sort_order)
+
+    def _do_query_with_extras(self, query_with_filter, limit, offset, sort_order):
         query_with_total = self._get_query_with_total(query_with_filter.subquery())
         query_ordered = self._get_ordered_data(query_with_total, sort_order)
         query_with_limit = self._get_query_with_limit(limit, offset, query_ordered)
@@ -51,9 +51,10 @@ class DataService:
             offset: Optional[int] = None,
             sort_order: Optional[SortOrder] = None
     ) -> (List[dict], int):
-        relevant_patients_query = self._relevant_patients_query(entities, measurements)
+        patients_query = self._relevant_patients_query(entities, measurements)
+        patients_query_with_filter = self._filter_service.apply_filter_to_complex_query(patients_query)
         partial_queries = [self._get_partial_query(x) for x in entities]
-        base_query = self._join_partial_queries(relevant_patients_query, partial_queries)
+        base_query = self._join_partial_queries(patients_query_with_filter, partial_queries)
         return self._do_query_with_extras(base_query, limit, offset, sort_order)
 
     @staticmethod
