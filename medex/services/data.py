@@ -1,8 +1,8 @@
 from collections import namedtuple
-from typing import List, Optional, Any, Tuple
+from typing import List, Optional
 
-from sqlalchemy import union, select, and_, desc, func, cast, String, Select
-from sqlalchemy.orm import query, aliased, Query
+from sqlalchemy import union, select, and_, desc, func, cast, String
+from sqlalchemy.orm import query, aliased
 
 from medex.dto.data import SortOrder
 from medex.services.entity import EntityService
