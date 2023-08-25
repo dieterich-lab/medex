@@ -60,7 +60,12 @@ class DataService:
     @staticmethod
     def _relevant_patients_query(entities: List[str], measurements: List[str]):
         list_query_tables = [
-            select(table.patient_id, table.measurement, table.key)
+            select(table.patient_id, table.measurement, table.key).where(
+                and_(
+                    table.measurement.in_(measurements),
+                    table.key.in_(entities)
+                )
+            )
             for table in [CategoricalValueTable, NumericalValueTable, DateValueTable]
         ]
         query_union = union(*list_query_tables).subquery()
@@ -68,10 +73,6 @@ class DataService:
             select(
                 query_union.exported_columns.patient_id,
                 query_union.exported_columns.measurement,
-            )
-            .where(
-                and_(query_union.exported_columns.measurement.in_(measurements),
-                     query_union.exported_columns.key.in_(entities))
             )
         )
         return query_select_union
