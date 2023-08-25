@@ -52,18 +52,18 @@ class DataService:
             sort_order: Optional[SortOrder] = None
     ) -> (List[dict], int):
         patients_query = self._relevant_patients_query(entities, measurements)
-        patients_query_with_filter = self._filter_service.apply_filter_to_complex_query(patients_query)
         partial_queries = [self._get_partial_query(x) for x in entities]
-        base_query = self._join_partial_queries(patients_query_with_filter, partial_queries)
+        base_query = self._join_partial_queries(patients_query, partial_queries)
         return self._do_query_with_extras(base_query, limit, offset, sort_order)
 
-    @staticmethod
-    def _relevant_patients_query(entities: List[str], measurements: List[str]):
+    def _relevant_patients_query(self, entities: List[str], measurements: List[str]):
         list_query_tables = [
-            select(table.patient_id, table.measurement, table.key).where(
-                and_(
-                    table.measurement.in_(measurements),
-                    table.key.in_(entities)
+            self._filter_service.apply_filter_to_complex_query(
+                select(table.patient_id, table.measurement, table.key).where(
+                    and_(
+                        table.measurement.in_(measurements),
+                        table.key.in_(entities)
+                    )
                 )
             )
             for table in [CategoricalValueTable, NumericalValueTable, DateValueTable]
