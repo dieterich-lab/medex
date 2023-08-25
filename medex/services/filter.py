@@ -172,7 +172,7 @@ class FilterService:
 
     def apply_filter_to_complex_query(self, query: Query) -> Query:
         if len(self._filter_status.filters) != 0:
-            cte = query.cte('cte')
+            cte = query.cte()
             join_with_filtered_name_ids = join(
                 cte, SessionFilteredPatientTable,
                 and_(
