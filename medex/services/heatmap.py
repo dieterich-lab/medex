@@ -24,15 +24,15 @@ class HeatmapService:
         if df.empty:
             fig = {'data': [], 'layout': {}}
         else:
-            correlated_values, number_of_values = self._get_pearson_correlation(df)
-            fig = self._get_updated_figure(correlated_values, number_of_values, heatmap_data)
+            correlated_values = self._get_pearson_correlation(df)
+            fig = self._get_updated_figure(correlated_values, heatmap_data)
         image_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return image_json
 
     def get_heatmap_svg(self, heatmap_data):
         df = self._get_results_dataframe(heatmap_data)
-        correlated_values, number_of_values = self._get_pearson_correlation(df)
-        fig = self._get_updated_figure(correlated_values, number_of_values, heatmap_data)
+        correlated_values = self._get_pearson_correlation(df)
+        fig = self._get_updated_figure(correlated_values, heatmap_data)
         image_svg = fig.to_image(format='svg')
         return self.SVG_HEADER + image_svg
 
@@ -59,7 +59,6 @@ class HeatmapService:
     def _get_pearson_correlation(df):
         df_columns = DataFrame(columns=df.columns)
         correlated_values = df_columns.transpose().join(df_columns, how='outer')
-        number_of_values = df_columns.transpose().join(df_columns, how='outer')
         p_values = df_columns.transpose().join(df_columns, how='outer')
         for row in df.columns:
             for col in df.columns:
@@ -70,15 +69,13 @@ class HeatmapService:
                 if len(df_correlated) < 2:
                     correlated_values[row][col], p_values[row][col] = None, None
                 else:
-                    number_of_values[row][col] = len(df_correlated)
                     correlated_values[row][col], p_values[row][col] = pearsonr(df_correlated[row], df_correlated[col])
         correlated_values = correlated_values.astype(float).round(decimals=2)
-        return correlated_values, number_of_values
+        return correlated_values
 
     @staticmethod
-    def _get_updated_figure(correlated_values, number_of_values, heatmap_data):
+    def _get_updated_figure(correlated_values, heatmap_data):
         correlated_values_list = correlated_values.T.values.tolist()
-        number_of_values_list = number_of_values.T.values.tolist()
         fig = go.Figure(
             data=px.imshow(
                 correlated_values_list, text_auto=True,
@@ -88,6 +85,5 @@ class HeatmapService:
                 aspect='auto'
             )
         )
-        # fig.update_traces(text=number_of_values_list, texttemplate="%{text}")
         fig.update_layout(height=600, title='Heatmap shown with Pearson Correlation')
         return fig
