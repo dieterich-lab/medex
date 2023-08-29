@@ -8,6 +8,8 @@ from medex.dto.measurement import MeasurementInfo
 
 
 class MeasurementService:
+    DEFAULT_DISPLAY_NAME = 'Measurement'
+
     def __init__(self, db_session: Session):
         self._db_session = db_session
         self._cache: Optional[MeasurementInfo] = None
@@ -24,7 +26,11 @@ class MeasurementService:
         rs = self._db_session.execute(
             select(HeaderTable.measurement)
         )
-        return rs.first().measurement
+        first = rs.first()
+        if first is None:
+            return self.DEFAULT_DISPLAY_NAME
+        else:
+            return first.measurement
 
     def _get_measurements_sorted_by_first_appearance(self):
         list_query_tables = [
