@@ -1,10 +1,10 @@
 import {JSX, MutableRefObject, useLayoutEffect, useRef} from 'react';
 import {TableBrowserResultParameters, TableFormat} from './common';
-import {report_error, UserError} from '../../../utility/error';
 import 'datatables.net-dt';
 import 'datatables.net-dt/css/jquery.dataTables.min.css';
 import Datatable from "datatables.net-dt";
 import {DownloadLink} from "../common/download_link";
+import {ResultFrame} from "../common/result_frame";
 
 interface TableBrowserResultsProps {
     parameters: TableBrowserResultParameters | null;
@@ -20,55 +20,43 @@ const TABLE_ID = 'table_browser_table_id';
 
 function TableBrowserResults(props: TableBrowserResultsProps): JSX.Element {
     const container_ref = useRef<any>();
+    const error_message = props.parameters ? check_for_errors(props.parameters) : null;
     useLayoutEffect(
-        () => setup_datatable(props.parameters, container_ref),
+        () => setup_datatable(props.parameters, container_ref, error_message),
         [props.parameters, container_ref]
     );
 
-    if (props.parameters != null) {
-        try {
-            validate_parameters(props.parameters);
-            return (
-                <div className="card">
-                    <div className="card-body">
-                        <DownloadLink url={get_download_link(props.parameters)}/>
-                        <div ref={container_ref}>
-                        </div>
-                    </div>
-                </div>
-            );
-        } catch (e) {
-            handle_error(e, props);
-        }
+    if ( props.parameters == null ) {
+        return <div/>;
     }
-    return <div/>;
+    if ( error_message ) {
+        return <ResultFrame>{error_message}</ResultFrame>;
+    }
+    return (
+        <ResultFrame>
+            <DownloadLink url={get_download_link(props.parameters)}/>
+            <div ref={container_ref}>
+            </div>
+        </ResultFrame>
+    );
 }
 
-function validate_parameters(parameters: TableBrowserResultParameters) {
+function check_for_errors(parameters: TableBrowserResultParameters): string | null {
     if (parameters.measurements == null || parameters.measurements.length == 0) {
-        throw new UserError('Please select at least one measurement.');
+        return 'Please select at least one measurement.';
     }
     if (parameters.entities.length == 0) {
-        throw new UserError('Please select one or more entities.');
+        return 'Please select one or more entities.';
     }
-}
-
-function handle_error(e: any, props: TableBrowserResultsProps) {
-    if (e instanceof UserError) {
-        report_error(e);
-        if (props.onError) {
-            props.onError();
-        }
-    } else {
-        throw e;
-    }
+    return null;
 }
 
 function setup_datatable(
     parameters: TableBrowserResultParameters | null,
-    container_ref: MutableRefObject<any>
+    container_ref: MutableRefObject<any>,
+    error_message: string | null
 ) {
-    if ( !parameters ) {
+    if ( !parameters || error_message ) {
         return;
     }
     container_ref.current.innerHTML = `<table width="100%" id="${TABLE_ID}" class="display"></table>`;
@@ -93,9 +81,12 @@ function setup_datatable(
         pagingType: 'full_numbers',
         lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
     });
+
     return () => {
         datatable.destroy();
-        container_ref.current.innerHTML = '';
+        if ( container_ref.current ) {
+            container_ref.current.innerHTML = '';
+        }
     };
 }
 
