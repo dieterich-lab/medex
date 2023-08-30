@@ -3,12 +3,12 @@ from typing import List, Dict, Optional
 from sqlalchemy import select, inspect, func
 from sqlalchemy.orm import Session
 
-from medex.database_schema import NameType, TableCategorical, TableNumerical, TableDate
+from medex.database_schema import EntityTable, CategoricalValueTable, NumericalValueTable, DateValueTable
 from medex.dto.entity import Entity, EntityType
 
 
 class EntityService:
-    ENTITY_COLUMNS = inspect(NameType).mapper.column_attrs
+    ENTITY_COLUMNS = inspect(EntityTable).mapper.column_attrs
 
     def __init__(self, database_session: Session):
         self._db = database_session
@@ -46,7 +46,7 @@ class EntityService:
 
     def _get_categories_by_entity(self):
         rv = self._db.execute(
-            select(TableCategorical.key, TableCategorical.value).distinct()
+            select(CategoricalValueTable.key, CategoricalValueTable.value).distinct()
         )
         result = {}
         for row in rv.all():
@@ -63,11 +63,11 @@ class EntityService:
     def _get_min_max_by_entity(self):
         rv = self._db.execute(
             select(
-                TableNumerical.key,
-                func.min(TableNumerical.value).label('min_value'),
-                func.max(TableNumerical.value).label('max_value'),
+                NumericalValueTable.key,
+                func.min(NumericalValueTable.value).label('min_value'),
+                func.max(NumericalValueTable.value).label('max_value'),
             )
-            .group_by(TableNumerical.key)
+            .group_by(NumericalValueTable.key)
         )
         return {
             x.key: (x.min_value, x.max_value)
@@ -104,8 +104,8 @@ class EntityService:
     @staticmethod
     def get_database_table_for_entity(entity: Entity):
         if entity.type == EntityType.NUMERICAL:
-            return TableNumerical
+            return NumericalValueTable
         elif entity.type == EntityType.CATEGORICAL:
-            return TableCategorical
+            return CategoricalValueTable
         else:
-            return TableDate
+            return DateValueTable

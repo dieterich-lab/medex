@@ -6,20 +6,33 @@ However, it is not limited to clinical data, but can be used to do exploratory d
 
 ## Production Setup
 
+### Overview
+
+The recommended way to run MedEx in production is via Docker. To do so
+you will need first a docker image. You may build that elsewhere and
+copy it over e.g. via a Docker Registry to your production server.
+
 ### Requirements
 
-* Linux/MacOs
+Building the Docker image:
+
 * [Docker-CE](https://docs.docker.com/install/) >= 18.09.07
+* NodeJS with npm
 
-### Usage
+Running the docker image:
 
-1. Make sure that Docker Swarm is enabled. In doubt do:
+* docker-compose or an replacement (but not Docker Swarm/docker stack)
 
-       sudo docker swarm init
+### Building the Image
 
-2. Go to your medex copy.
+1. Get a copy of the MedEx repository.
 
-3. Build the medex image:
+2. Compile the frontend:
+
+        npm install --save-dev
+        npm run build
+
+3. Build the MedEx image:
 
         docker build .
 
@@ -27,17 +40,62 @@ However, it is not limited to clinical data, but can be used to do exploratory d
 
         docker tag <ID from above command> medex:latest
 
-5. Create your stack-compose.yml based on the example in the folder ./examples.
+### Running the Docker Image
 
-6. Run a docker stack with that:
+1. Create your docker-compose.yml in based on the 
+   one in the folder ./examples. Make sure that file has restrictive 
+   permissions because it contains sensitive information - most importantly
+   the database password. If you plan to run multiple instances on the same
+   server, make sure that  the public ports for both the applications and
+   the databases don't collide.
 
-        docker stack deploy medex --compose-file <the configuration file>
+   In the default configuration the database will be destroyed and imported
+   again everytime the database container is created. For large datasets
+   that may be undesirable. The easiest way to change that is to create
+   bind mount in the database container's definition. A docker volume may
+   work too.
 
-Setups with 'docker-compose', or the 'docker compose' sub command in newer
-Docker versions are known to work too, but may require minor changes to
-the configuration file.
+2. Create a folder 'import' in the same directory your docker-compose.yml
+   file resides. Place here your data:
+   * entities.csv:
+     * A CSV file defining the types of data (entities) may have.
+     * The header line must at least contain the following fields: key,type
+     * The type may be 'String' for categorical data or 'Double' for numerical
+       data. The type 'Date' is also allowed but not fully implemented.
+   * dataset.csv:
+     * A CSV file, which contains the actual data.
+     * The header line must include at least these: patient_id,key,value
+     * The 'key' field must contain values defined in 'entities.csv'.
+     * The allowed values depend on the entities type. 'Date' values must
+       be in format 'YYYY-MM-DD'.
+     * The following optional fields may be included: case_id, measurement,
+       date (YYYY-MM-DD), time (HH:MM:SS).
 
-Test it out at http://localhost:8000. No mounted folders. To apply changes, the image must be re-built. <br>
+3. Bring up the containers:
+
+        docker-compose up -d
+
+On the initial run the database will be loaded. Dependending on the size of
+the data that may take some time. Use "docker log *container-ID*"
+to observe that. After the successful load a marker file will be created.
+If the input data is changed on the next start of the container a new import
+will be done.
+
+## Upgrade
+
+MedEx 1.0 and newer used Alembic to track the version of database schema.
+When upgrading from older versions it is recommended to recreate the database
+from scratch.
+
+Some development versions MedEx recommended the use of Docker Swarm via "docker stack".
+This approach is not considered reasonable anymore because of the incomplete
+support of the Docker Compose File format. Most notable the shared memory
+configuration is only possible with obscure workarounds. For details see:
+
+* https://github.com/moby/moby/issues/26714
+* https://stackoverflow.com/questions/55416904/increase-dev-shm-in-docker-container-in-swarm-environment-docker-stack-deploy
+
+As a consequence the recommended method to run MedEx is now using "docker compose".
 
 ## Development Setup
 
@@ -50,20 +108,20 @@ Test it out at http://localhost:8000. No mounted folders. To apply changes, the 
 * Recommended: A Python IDE e.g. PyCharm - PyCharm Professional preferred due to
   the better JavaScript support.
 
-### Usage
+### Installation
 
 1. Create a Python venv with your preferred method and activate it:
    * E.g. using your IDE's mechanism (PyCharm)
    * or manually:
 
          python3 -m venv /where/ever/my/venv
-         . /where/ever/my/venv
+         . /where/ever/my/venv/bin/activate
 
 2. Install pipenv in this venv:
 
        pip install pipenv
 
-3. Go to your Medex working copy.
+3. Go to your MeDex working copy.
 
 4. Install both the run-time and the development dependencies:
 
@@ -96,7 +154,6 @@ you need to copy the environment variables from that script to the run configura
   * medex: Python packages
   * tests: Unit Tests
   * integration_tests: Tests for Postgres specific functionality - use Docker container with Postgres database
-  * templates: Jinga2 templates for the web pages
   * schema: Alemic database migration scripts - must be in sync wit medex/database_schema.py
 * Frontend (TypeScript)
   * src_ts: Actual TypeScript Code
@@ -131,6 +188,18 @@ To execute them, the TypeScript compiler (tsc) must be executable. So you may
 have to add `node_modules/.bin` to your path. To execute the tests run:
 
     npm run test
+
+## Revision History
+
+* v1.0.0 - 2023-08-30:
+  * Caching filter data per session in database to allow efficient and correct filtering
+  * Migrated frontend to TypeScript with ReactJS
+  * Replacing Bootstrap v4 by v5
+  * Updated almost all JavaScript dependencies
+  * Using schema versioning with Alembic
+  * Refactoring database schema to match naming conventions in source
+
+* v0.1.4 - 2022-08-08: First official release
 
 ## Citation
 

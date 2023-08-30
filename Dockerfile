@@ -11,7 +11,8 @@ COPY webserver.py alembic.ini /app/
 COPY medex /app/medex/
 COPY static /app/static/
 COPY schema /app/schema/
-COPY templates /app/templates/
+
+
 
 ENV TZ=Europe/Berlin
 

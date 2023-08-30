@@ -1,6 +1,8 @@
 version: '3.6'
 services:
   database_medex:
+    # You may tag the image build from the docker file in this directory
+    # as postgres-debug:latest and use it instead
     image: postgres
     container_name: database_medex
     shm_size: 1g

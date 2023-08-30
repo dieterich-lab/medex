@@ -6,7 +6,7 @@ from pandas import DataFrame
 from sqlalchemy import select, func, and_, distinct, literal_column
 from sqlalchemy.orm import aliased
 from medex.services.filter import FilterService
-from medex.database_schema import TableNumerical, TableCategorical
+from medex.database_schema import NumericalValueTable, CategoricalValueTable
 import plotly.graph_objects as go
 
 
@@ -35,46 +35,46 @@ class ScatterPlotService:
 
     def _get_result_from_database(self, scatter_plot_data):
         query_select = self._get_table_self_join(scatter_plot_data)
-        query_with_filter = self._filter_service.apply_filter(TableNumerical, query_select)
+        query_with_filter = self._filter_service.apply_filter(NumericalValueTable, query_select)
         query_with_group = self._get_group_by(scatter_plot_data.add_group_by, query_with_filter)
         result = self._database_session.execute(query_with_group)
         return result
 
     @staticmethod
     def _get_table_self_join(scatter_plot_data):
-        table_alias = aliased(TableNumerical)
+        table_alias = aliased(NumericalValueTable)
         query_select = select(
-            TableNumerical.name_id,
-            func.avg(TableNumerical.value).label('value1'),
+            NumericalValueTable.patient_id,
+            func.avg(NumericalValueTable.value).label('value1'),
             func.avg(table_alias.value).label('value2')
         ).where(
             and_(
-                TableNumerical.key == scatter_plot_data.entity_x_axis,
-                TableNumerical.measurement == scatter_plot_data.measurement_x_axis,
+                NumericalValueTable.key == scatter_plot_data.entity_x_axis,
+                NumericalValueTable.measurement == scatter_plot_data.measurement_x_axis,
                 table_alias.key == scatter_plot_data.entity_y_axis,
                 table_alias.measurement == scatter_plot_data.measurement_y_axis,
-                TableNumerical.name_id == table_alias.name_id,
+                NumericalValueTable.patient_id == table_alias.patient_id,
             )
-        ).group_by(TableNumerical.name_id)
+        ).group_by(NumericalValueTable.patient_id)
         return query_select
 
     @staticmethod
     def _get_group_by(add_group_by, query_with_filter):
         if add_group_by:
             query_with_filter = select(
-                query_with_filter.c.name_id,
+                query_with_filter.c.patient_id,
                 func.avg(query_with_filter.c.value1).label('value1'),
                 func.avg(query_with_filter.c.value2).label('value2'),
-                func.string_agg(distinct(TableCategorical.value), literal_column("'<br>'")).label(add_group_by.key)
+                func.string_agg(distinct(CategoricalValueTable.value), literal_column("'<br>'")).label(add_group_by.key)
             ).join(
-                TableCategorical,
-                TableCategorical.name_id == query_with_filter.c.name_id
+                CategoricalValueTable,
+                CategoricalValueTable.patient_id == query_with_filter.c.patient_id
             ).where(
                 and_(
-                    TableCategorical.key == add_group_by.key,
-                    TableCategorical.value.in_(add_group_by.categories)
+                    CategoricalValueTable.key == add_group_by.key,
+                    CategoricalValueTable.value.in_(add_group_by.categories)
                 )
-            ).group_by(query_with_filter.c.name_id)
+            ).group_by(query_with_filter.c.patient_id)
         return query_with_filter
 
     def _get_svg(self, scatter_plot_data, result):

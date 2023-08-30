@@ -30,7 +30,7 @@ class FilteredDataRequest(BaseModel):
 
 
 class SingleDataItem(BaseModel):
-    name_id: str
+    patient_id: str
     measurement: str
     key: str
     value: str
@@ -43,7 +43,7 @@ class FilteredDataFlatResponse(BaseModel):
 
 
 class MeasurementDataItem(BaseModel):
-    name_id: str
+    patient_id: str
     measurement: str
     data_by_entity_id: Dict[str, Union[str, float, datetime]]
 

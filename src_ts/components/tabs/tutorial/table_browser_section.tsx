@@ -12,12 +12,12 @@ function TableBrowserSection() {
                     <ul>
                         <li>
                             <b>Long:</b> Each row contains exactly one data item, described by four fields:
-                            name_id (the patient), measurement, key (the entity), and value.
+                            patient_id, measurement, key (the entity), and value.
                         </li>
                         <li>
                             <b>Short:</b> All data for one patient and measurement is accumulated in one row.
                             The length of the rows depends on the number of selected entities. The first
-                            two fields identify the patient (name_id) and measurement. One field for each
+                            two fields identify the patient and measurement. One field for each
                             selected entity follows.
                         </li>
                     </ul>

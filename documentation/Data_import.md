@@ -9,7 +9,7 @@ The data for the input is supplied in these files:
 * **entities.csv:** List of types of data that have to be loaded. The data needs to contain at least a
   key to identify the entity and a type which may be 'String' for categorical data, 'Double' for numerical
   data or 'Date' for dates.
-* **dataset.csv:** List of data items, which must contain at least a 'name_id' to identify
+* **dataset.csv:** List of data items, which must contain at least a 'patient_id' to identify
   the patient, a 'key' referring to an entity defined in the above file and a 'value'
   in a format matching the entity.
 
@@ -40,7 +40,7 @@ The `entities.csv` file may contain the following fields:
 
 The `dataset.csv` may contain these fields:
 
-* name_id (required, identifies the patient)
+* patient_id (required, identifies the patient)
 * case_id (required, but unused?)
 * measurement (optional, a string which identifies the visit or examination the data was collected at, e.g. 'baseline', '1 year follow up')
 * date (optional, format YYYY-MM-DD)

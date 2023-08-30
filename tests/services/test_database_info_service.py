@@ -1,7 +1,7 @@
 from datetime import datetime
 from medex.dto.entity import EntityType
 from medex.services.database_info import DatabaseInfoService
-from medex.database_schema import NameType, TableCategorical, TableNumerical, Patient, TableDate
+from medex.database_schema import EntityTable, CategoricalValueTable, NumericalValueTable, PatientTable, DateValueTable
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
 
@@ -20,19 +20,19 @@ def test_empty_database(db_session):
 
 def test_simple_database(db_session):
     db_session.add_all([
-        Patient(name_id='nn', case_id='1'),
-        NameType(key='n1', type=str(EntityType.NUMERICAL.value)),
-        NameType(key='n2', type=str(EntityType.NUMERICAL.value)),
-        NameType(key='c1', type=str(EntityType.CATEGORICAL.value)),
-        NameType(key='c2', type=str(EntityType.CATEGORICAL.value)),
-        NameType(key='c3', type=str(EntityType.CATEGORICAL.value)),
-        NameType(key='d1', type=str(EntityType.DATE.value)),
-        TableNumerical(key='n1', value=1.1),
-        TableNumerical(key='n1', value=2.1),
-        TableNumerical(key='n1', value=3.1),
-        TableCategorical(key='c1', value='x'),
-        TableCategorical(key='c1', value='x'),
-        TableDate(key='d1', value=datetime(year=1970, month=1, day=1)),
+        PatientTable(patient_id='nn', case_id='1'),
+        EntityTable(key='n1', type=str(EntityType.NUMERICAL.value)),
+        EntityTable(key='n2', type=str(EntityType.NUMERICAL.value)),
+        EntityTable(key='c1', type=str(EntityType.CATEGORICAL.value)),
+        EntityTable(key='c2', type=str(EntityType.CATEGORICAL.value)),
+        EntityTable(key='c3', type=str(EntityType.CATEGORICAL.value)),
+        EntityTable(key='d1', type=str(EntityType.DATE.value)),
+        NumericalValueTable(key='n1', value=1.1),
+        NumericalValueTable(key='n1', value=2.1),
+        NumericalValueTable(key='n1', value=3.1),
+        CategoricalValueTable(key='c1', value='x'),
+        CategoricalValueTable(key='c1', value='x'),
+        DateValueTable(key='d1', value=datetime(year=1970, month=1, day=1)),
     ])
     service = DatabaseInfoService(db_session)
     result = service.get()

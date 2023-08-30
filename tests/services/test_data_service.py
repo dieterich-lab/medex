@@ -1,6 +1,8 @@
+from datetime import datetime
+
 import pytest
 from medex.services.data import DataService
-from medex.database_schema import TableCategorical, TableNumerical, NameType
+from medex.database_schema import CategoricalValueTable, NumericalValueTable, EntityTable
 from medex.services.entity import EntityService
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
@@ -11,23 +13,29 @@ from medex.dto.data import SortOrder, SortItem, SortDirection
 @pytest.fixture
 def setup_data(db_session):
     db_session.add_all([
-        TableCategorical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='diabetes', value='nein'
+        CategoricalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='diabetes', value='nein'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='diabetes', value='ja'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-05-15', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='diabetes', value='ja'
         ),
-        TableNumerical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=129
+        NumericalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=129
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='blood pressure', value=138
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=138
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-05-15', key='blood pressure', value=135
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='blood pressure', value=135
         )
     ])
     db_session.commit()
@@ -64,30 +72,33 @@ def test_get_filtered_data_flat(db_session, filter_service_mock, setup_data):
         offset=2,
         sort_order=SortOrder(
             items=[
-                SortItem(column='name_id', direction=SortDirection.DESC),
+                SortItem(column='patient_id', direction=SortDirection.DESC),
                 SortItem(column='key', direction=SortDirection.DESC),
             ]
         )
     )
     assert actual_result == [
-        {'key': 'blood pressure', 'measurement': 'baseline', 'name_id': 'p2', 'total': 6, 'value': '138'},
-        {'key': 'blood pressure', 'measurement': 'follow up1', 'name_id': 'p2', 'total': 6, 'value': '135'},
-        {'key': 'diabetes', 'measurement': 'baseline', 'name_id': 'p1', 'total': 6, 'value': 'nein'}
+        {'key': 'blood pressure', 'measurement': 'baseline', 'patient_id': 'p2', 'total': 6, 'value': '138'},
+        {'key': 'blood pressure', 'measurement': 'follow up1', 'patient_id': 'p2', 'total': 6, 'value': '135'},
+        {'key': 'diabetes', 'measurement': 'baseline', 'patient_id': 'p1', 'total': 6, 'value': 'nein'}
     ]
     assert total == 6
 
 @pytest.fixture
 def setup_numerical_data(db_session):
     db_session.add_all([
-        NameType(key='blood pressure', type='Double'),
-        TableNumerical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=90
+        EntityTable(key='blood pressure', type='Double'),
+        NumericalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=90
         ),
-        TableNumerical(
-            name_id='p3', case_id='c3', measurement='baseline', date='2021-05-15', key='blood pressure', value=145
+        NumericalValueTable(
+            patient_id='p3', case_id='c3', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=145
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='blood pressure', value=130
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=130
         ),
     ])
     db_session.commit()

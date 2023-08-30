@@ -5,14 +5,14 @@ from sqlalchemy.orm import Session
 
 from medex.dto.entity import EntityType
 from medex.services.importer.generic_importer import GenericImporter
-from medex.database_schema import Base, NameType
+from medex.database_schema import Base, EntityTable
 
 
 class EntityImporter(GenericImporter):
     ALLOWED_TYPES: Set[str] = set([x.value for x in EntityType])
 
     def __init__(self, file_handle: TextIO, source_name: str, db_session: Session):
-        table_meta = inspect(NameType)
+        table_meta = inspect(EntityTable)
         known_columns = [x.key for x in table_meta.mapper.column_attrs]
 
         super().__init__(
@@ -39,4 +39,4 @@ class EntityImporter(GenericImporter):
             raise ValueError(f"Type column ({type_value}) is not in ({allowed})")
 
         self._seen_keys.add(key_value)
-        return values, NameType
+        return values, EntityTable

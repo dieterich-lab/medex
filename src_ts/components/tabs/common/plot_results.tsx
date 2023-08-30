@@ -1,9 +1,10 @@
 import Plot from 'react-plotly.js';
-import {PropsWithChildren, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {http_fetch} from "../../../utility/http";
 import {report_error} from "../../../utility/error";
 import {AbstractPlot} from "../../../utility/plots/abstract_plot";
 import {DownloadLink} from "./download_link";
+import {ResultFrame} from "./result_frame";
 
 interface PlotResultsProps<Parameters> {
     plot: AbstractPlot<Parameters>,
@@ -24,10 +25,10 @@ function PlotResults<Parameters>(props: PlotResultsProps<Parameters>) {
     }
 
     if ( error_message ) {
-        return <PlotFrame>{error_message}</PlotFrame>;
+        return <ResultFrame>{error_message}</ResultFrame>;
     }
     if ( data == null ) {
-        return <PlotFrame>Loading ...</PlotFrame>;
+        return <ResultFrame>Loading ...</ResultFrame>;
     }
     const download_link = plot.get_download_link(props.parameters);
     const download_file_name = plot.get_download_file_name();
@@ -35,22 +36,10 @@ function PlotResults<Parameters>(props: PlotResultsProps<Parameters>) {
         x => <Plot {...x} />
     )
     return (
-        <PlotFrame>
+        <ResultFrame>
             <DownloadLink url={download_link} filename={download_file_name}/>
             {plots}
-        </PlotFrame>
-    );
-}
-
-interface PlotFrameProps {}
-
-function PlotFrame(props: PropsWithChildren<PlotFrameProps>) {
-    return (
-        <div className="card">
-            <div className="card-body">
-                {props.children}
-            </div>
-        </div>
+        </ResultFrame>
     );
 }
 

@@ -7,7 +7,7 @@ from sqlalchemy import select, func, distinct, literal_column, and_
 
 from medex.dto.barchart import BarChartDataRequest
 from medex.services.filter import FilterService
-from medex.database_schema import TableCategorical
+from medex.database_schema import CategoricalValueTable
 import plotly.express as px
 
 
@@ -38,7 +38,7 @@ class BarChartService:
 
     def _get_result_from_database(self, barchart_data):
         query_select = self._get_table_select(barchart_data)
-        query_with_filter = self._filter_service.apply_filter(TableCategorical, query_select)
+        query_with_filter = self._filter_service.apply_filter(CategoricalValueTable, query_select)
         query_select_count = self._get_entity_value_count(barchart_data, query_with_filter)
         result = self._database_session.execute(query_select_count)
         return result
@@ -46,15 +46,15 @@ class BarChartService:
     @staticmethod
     def _get_table_select(barchart_data):
         query_select = select(
-            func.string_agg(distinct(TableCategorical.value), literal_column("'<br>'")).label('value'),
-            TableCategorical.measurement
+            func.string_agg(distinct(CategoricalValueTable.value), literal_column("'<br>'")).label('value'),
+            CategoricalValueTable.measurement
         ).where(
             and_(
-                TableCategorical.key == barchart_data.key,
-                TableCategorical.value.in_(barchart_data.categories),
-                TableCategorical.measurement.in_(barchart_data.measurements),
+                CategoricalValueTable.key == barchart_data.key,
+                CategoricalValueTable.value.in_(barchart_data.categories),
+                CategoricalValueTable.measurement.in_(barchart_data.measurements),
             )
-        ).group_by(TableCategorical.name_id, TableCategorical.measurement)
+        ).group_by(CategoricalValueTable.patient_id, CategoricalValueTable.measurement)
         return query_select
 
     @staticmethod

@@ -19,6 +19,15 @@ POSTGRES_HOST = 'localhost'
 def db_session():
     _setup_environment()
     session = _get_db_session()
+    create_tables()
+    yield session
+    session.close()
+
+
+@pytest.fixture
+def db_session_clean():
+    _setup_environment()
+    session = _get_db_session()
     yield session
     session.close()
 
@@ -42,7 +51,6 @@ def _get_db_session():
             session = session_maker()
             init_db(engine, lambda: session)
             drop_tables()
-            create_tables()
             return session
         except Exception as e:
             retry_count += 1

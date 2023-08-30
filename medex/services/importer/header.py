@@ -3,11 +3,11 @@ from typing import Optional, TextIO
 from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
-from medex.database_schema import Header
+from medex.database_schema import HeaderTable
 
 
 class HeaderImporter:
-    DEFAULT_HEADERS = ['Name_ID', 'Case_ID', 'Measurement']
+    DEFAULT_HEADERS = ['Patient_ID', 'Case_ID', 'Measurement']
 
     def __init__(self, file_handle: Optional[TextIO], source_name: Optional[str], db_session: Session):
         self._file_handle = file_handle
@@ -36,6 +36,6 @@ class HeaderImporter:
         # Why don't we have a field case_id in the header table to store headers[1]?
         # Unknown so far ...
         self._db_session.execute(
-            insert(Header).values(name_id=headers[0], measurement=headers[2])
+            insert(HeaderTable).values(patient_id=headers[0], measurement=headers[2])
         )
         self._db_session.commit()

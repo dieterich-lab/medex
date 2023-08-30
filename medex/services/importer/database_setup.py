@@ -24,20 +24,15 @@ class DatabaseSetup:
     def do_it(self) -> None:
         self._is_import_required = False
         self._connect_to_db_engine()
-        self._check_if_legacy_setup()
+        self._update_database_schema()
         self._check_if_data_files_updated()
         if self._is_import_required:
             self._reset_database()
+            self._update_database_schema()
             self._configure_database()
-        self._update_database_schema()
 
     def _connect_to_db_engine(self):
         self._db_engine_connection = self._db_engine.connect().execution_options(isolation_level="AUTOCOMMIT")
-
-    def _check_if_legacy_setup(self):
-        if not self._db_engine_connection.dialect.has_table(self._db_engine_connection, 'alembic_version'):
-            print('Database is legacy (no table alembic_version) - forcing data import.')
-            self._is_import_required = True
 
     def _check_if_data_files_updated(self):
         config = self._config

@@ -1,8 +1,10 @@
+from datetime import datetime
+
 import pytest
 
 from medex.dto.histogram import HistogramDataRequest
 from medex.services.histogram import HistogramService
-from medex.database_schema import TableNumerical, TableCategorical
+from medex.database_schema import NumericalValueTable, CategoricalValueTable
 from tests.mocks.filter_service import FilterServiceMock
 # noinspection PyUnresolvedReferences
 from tests.fixtures.db_session import db_session
@@ -11,23 +13,29 @@ from tests.fixtures.db_session import db_session
 @pytest.fixture
 def setup_histogram_data(db_session):
     db_session.add_all([
-        TableNumerical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=129
+        NumericalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=129
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='blood pressure', value=138
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=138
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-05-15', key='blood pressure', value=135
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='blood pressure', value=135
         ),
-        TableCategorical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='diabetes', value='nein'
+        CategoricalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='diabetes', value='nein'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-06-28', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 6, 28),
+            key='diabetes', value='ja'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-06-28', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 6, 28),
+            key='diabetes', value='ja'
         )
     ])
     db_session.commit()

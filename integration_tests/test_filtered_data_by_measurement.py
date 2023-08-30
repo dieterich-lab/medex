@@ -1,6 +1,8 @@
+from datetime import datetime
+
 import pytest
 from medex.services.data import DataService
-from medex.database_schema import TableCategorical, TableNumerical, NameType
+from medex.database_schema import CategoricalValueTable, NumericalValueTable, EntityTable
 # noinspection PyUnresolvedReferences
 from integration_tests.fixtures.db_session import db_session
 from medex.services.entity import EntityService
@@ -11,31 +13,42 @@ from medex.dto.data import SortOrder, SortItem, SortDirection
 @pytest.fixture
 def setup_data_new(db_session):
     db_session.add_all([
-        NameType(key='diabetes', type='String'),
-        NameType(key='blood pressure', type='Double'),
-        TableCategorical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='diabetes', value='nein'
+        EntityTable(key='diabetes', type='String'),
+        EntityTable(key='blood pressure', type='Double'),
+    ])
+    db_session.commit()
+    db_session.add_all([
+        CategoricalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='diabetes', value='nein'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='diabetes', value='ja'
         ),
-        TableCategorical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-05-15', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='diabetes', value='ja'
         ),
-        TableCategorical(
-            name_id='p3', case_id='c3', measurement='baseline', date='2021-05-20', key='diabetes', value='ja'
+        CategoricalValueTable(
+            patient_id='p3', case_id='c3', measurement='baseline', date_time=datetime(2021, 5, 20),
+            key='diabetes', value='ja'
         ),
-        TableCategorical(
-            name_id='p3', case_id='c3', measurement='follow up1', date='2022-05-20', key='diabetes', value='nein'
+        CategoricalValueTable(
+            patient_id='p3', case_id='c3', measurement='follow up1', date_time=datetime(2022, 5, 20),
+            key='diabetes', value='nein'
         ),
-        TableNumerical(
-            name_id='p1', case_id='c1', measurement='baseline', date='2021-05-15', key='blood pressure', value=129
+        NumericalValueTable(
+            patient_id='p1', case_id='c1', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=129
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='baseline', date='2021-05-15', key='blood pressure', value=138
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='baseline', date_time=datetime(2021, 5, 15),
+            key='blood pressure', value=138
         ),
-        TableNumerical(
-            name_id='p2', case_id='c2', measurement='follow up1', date='2022-05-15', key='blood pressure', value=135
+        NumericalValueTable(
+            patient_id='p2', case_id='c2', measurement='follow up1', date_time=datetime(2022, 5, 15),
+            key='blood pressure', value=135
         )
     ])
     db_session.commit()
@@ -63,16 +76,16 @@ def test_get_filtered_data_by_measurement(db_session, filter_service_mock, setup
         offset=1,
         sort_order=SortOrder(
             items=[
-                SortItem(column='name_id', direction=SortDirection.DESC),
+                SortItem(column='patient_id', direction=SortDirection.DESC),
                 SortItem(column='diabetes', direction=SortDirection.DESC),
                 SortItem(column='blood pressure', direction=SortDirection.ASC),
             ]
         )
     )
     assert actual_result == [
-        {'blood pressure': None, 'diabetes': 'ja', 'measurement': 'baseline', 'name_id': 'p3', 'total': 5},
-        {'blood pressure': '135', 'diabetes': 'ja', 'measurement': 'follow up1', 'name_id': 'p2', 'total': 5},
-        {'blood pressure': '138', 'diabetes': 'ja', 'measurement': 'baseline', 'name_id': 'p2', 'total': 5},
-        {'blood pressure': '129', 'diabetes': 'nein', 'measurement': 'baseline', 'name_id': 'p1', 'total': 5}
+        {'blood pressure': None, 'diabetes': 'ja', 'measurement': 'baseline', 'patient_id': 'p3', 'total': 5},
+        {'blood pressure': '135', 'diabetes': 'ja', 'measurement': 'follow up1', 'patient_id': 'p2', 'total': 5},
+        {'blood pressure': '138', 'diabetes': 'ja', 'measurement': 'baseline', 'patient_id': 'p2', 'total': 5},
+        {'blood pressure': '129', 'diabetes': 'nein', 'measurement': 'baseline', 'patient_id': 'p1', 'total': 5}
     ]
     assert total == 5
