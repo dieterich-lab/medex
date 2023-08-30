@@ -49,6 +49,12 @@ Running the docker image:
    server, make sure that  the public ports for both the applications and
    the databases don't collide.
 
+   In the default configuration the database will be destroyed and imported
+   again everytime the database container is created. For large datasets
+   that may be undesirable. The easiest way to change that is to create
+   bind mount in the database container's definition. A docker volume may
+   work too.
+
 2. Create a folder 'import' in the same directory your docker-compose.yml
    file resides. Place here your data:
    * entities.csv:
@@ -182,6 +188,18 @@ To execute them, the TypeScript compiler (tsc) must be executable. So you may
 have to add `node_modules/.bin` to your path. To execute the tests run:
 
     npm run test
+
+## Revision History
+
+* v1.0.0 - 2023-08-30:
+  * Caching filter data per session in database to allow efficient and correct filtering
+  * Migrated frontend to TypeScript with ReactJS
+  * Replacing Bootstrap v4 by v5
+  * Updated almost all JavaScript dependencies
+  * Using schema versioning with Alembic
+  * Refactoring database schema to match naming conventions in source
+
+* v0.1.4 - 2022-08-08: First official release
 
 ## Citation
 

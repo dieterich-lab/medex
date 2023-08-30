@@ -5,6 +5,6 @@ To use PostgreSQL database queries directly. First you need to create an image f
 If we created the image and the image is running, we can go to medex directory and log into database using the commands:
 * `docker-compose run database bash`
 * `psql --host=database --username=test --dbname=example` log in to PostgreSQL
-* database password - `test`
+* database password - `test` (or what ever was configured in your docker compose file)
 
 Password, username and database name can be changed in the file `./docker-compose.yml`.

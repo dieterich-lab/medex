@@ -4,7 +4,7 @@ services:
     image: medex:latest
     ports:
       - "8000:8000"
-    depends_on: # other containers it needs in order to run
+    depends_on:
       - database_medex
     environment:
       - PYTHONUNBUFFERED=1
@@ -27,3 +27,6 @@ services:
       - POSTGRES_PASSWORD=test
       - POSTGRES_DB=example
     restart: always
+# Uncomment if you want the database to survive a recration of the database container
+#    volumes:
+#      - ./data:/var/lib/postgresql/data
