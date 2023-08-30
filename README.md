@@ -199,7 +199,35 @@ have to add `node_modules/.bin` to your path. To execute the tests run:
   * Using schema versioning with Alembic
   * Refactoring database schema to match naming conventions in source
 
-* v0.1.4 - 2022-08-08: First official release
+* v0.1.4 - 2022-08-08:
+  * multiple database sessions
+  * SQlalchemy integrated into the tool
+  * restriction of data selection
+  * ajax for data filtering
+
+* v0.1.3 - 2021-10-14:
+  * selection a time range for data 
+  * filters IDs by categorical values 
+  * filter IDs by numerical values 
+  * possibility to connect with another web app
+
+* v0.1.2 - 2021-06-04:
+  * possibility to add visit 
+  * synonyms and description for entities 
+  * a table browser tab to display data from the database 
+  * categorical filters for data 
+  * better jQuery functionality
+
+* v0.1.1 - 2020-04-03:
+  * uniform plot visualization 
+  * added categorical value to the scatter plot 
+  * better error handling for unexpected actions and entries by the user
+
+* v0.1.0 - 2020-02-12:
+  * Frontend has been tested for possible bugs 
+  * Error handling for unexpected actions and entries by the user 
+  * Informative warnings 
+  * Adjustable binsize for the histogram
 
 ## Citation
 
