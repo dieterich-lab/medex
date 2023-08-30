@@ -166,7 +166,7 @@ you need to copy the environment variables from that script to the run configura
 Data is imported from the 'import' directory during the start of the application,
 when it seems necessary (e.g. first run or after change of the input files).
 
-For details see: https://github.com/dieterich-lab/medex/tree/master/dataset_examples/Data_import.md
+For details see: https://github.com/dieterich-lab/medex/blob/master/documentation/Data_import.md
 
 ## Running the Tests
 
