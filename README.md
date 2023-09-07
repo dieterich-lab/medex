@@ -191,6 +191,9 @@ have to add `node_modules/.bin` to your path. To execute the tests run:
 
 ## Revision History
 
+* v1.0.1 - 2023-09-07:
+  * Basic Stats/Database: Patient count is incorrect if case_id field is used.
+
 * v1.0.0 - 2023-08-30:
   * Caching filter data per session in database to allow efficient and correct filtering
   * Migrated frontend to TypeScript with ReactJS
