@@ -43,3 +43,22 @@ def test_simple_database(db_session):
     assert result.number_of_numerical_data_items == 3
     assert result.number_of_categorical_data_items == 2
     assert result.number_of_date_data_items == 1
+
+
+def test_multiple_case_ids(db_session):
+    db_session.add_all([
+        PatientTable(patient_id='nn', case_id='1'),
+        PatientTable(patient_id='nn', case_id='2'),
+        EntityTable(key='n1', type=str(EntityType.NUMERICAL.value)),
+        NumericalValueTable(key='n1', case_id='1', value=1.1),
+        NumericalValueTable(key='n1', case_id='2', value=2.1),
+    ])
+    service = DatabaseInfoService(db_session)
+    result = service.get()
+    assert result.number_of_patients == 1
+    assert result.number_of_numerical_entities == 1
+    assert result.number_of_categorical_entities == 0
+    assert result.number_of_date_entities == 0
+    assert result.number_of_numerical_data_items == 2
+    assert result.number_of_categorical_data_items == 0
+    assert result.number_of_date_data_items == 0

@@ -13,7 +13,7 @@ class DatabaseInfoService:
     def get(self) -> DatabaseInfo:
         if self._cache is None:
             self._cache = DatabaseInfo(
-                number_of_patients=self._get_count(PatientTable.patient_id),
+                number_of_patients=self._get_distinct_count(PatientTable.patient_id),
                 number_of_numerical_entities=self._get_entity_count_by_type(EntityType.NUMERICAL),
                 number_of_categorical_entities=self._get_entity_count_by_type(EntityType.CATEGORICAL),
                 number_of_date_entities=self._get_entity_count_by_type(EntityType.DATE),
@@ -25,6 +25,9 @@ class DatabaseInfoService:
 
     def _get_count(self, column):
         return self._database_session.query(column).count()
+
+    def _get_distinct_count(self, column):
+        return self._database_session.query(column).distinct().count()
 
     def _get_entity_count_by_type(self, entity_type):
         return self._database_session.query(EntityTable.key).where(EntityTable.type == entity_type.value).count()
