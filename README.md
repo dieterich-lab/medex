@@ -193,7 +193,8 @@ have to add `node_modules/.bin` to your path. To execute the tests run:
 
 * v1.0.1 - XXXX-XX-XX:
   * Basic Stats/Database: Patient count is incorrect if case_id field is used
-  * NodeJS modules: updated  -including tough-cookie (now 4.1.3)
+  * Histogram: Nicer measurement labels in some cases
+  * NodeJS modules: updated - including tough-cookie (now 4.1.3)
 
 * v1.0.0 - 2023-08-30:
   * Caching filter data per session in database to allow efficient and correct filtering
