@@ -10,6 +10,14 @@ from medex.database_schema import NumericalValueTable, CategoricalValueTable
 import plotly.express as px
 
 
+def _get_fix_annotation_text(orig: str):
+    value = orig.split('=')[-1]
+    if len(value) > 5:
+        return value
+    else:
+        return orig
+
+
 class HistogramService:
     SVG_HEADER = b"""<?xml version="1.0" encoding="UTF-8" standalone="no"?>
                      <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
@@ -77,8 +85,7 @@ class HistogramService:
             )
         return df
 
-    @staticmethod
-    def _get_figure_with_layout(df, histogram_data):
+    def _get_figure_with_layout(self, df, histogram_data):
         fig = px.histogram(df, x=histogram_data.numerical_entity, facet_row='measurement',
                            color=histogram_data.categorical_entity, barmode='overlay', nbins=histogram_data.bins,
                            opacity=0.7, template="plotly_white")
@@ -92,4 +99,9 @@ class HistogramService:
                    'x': 0.5,
                    'xanchor': 'center'}
         )
+        self._fix_measurement_labels(fig)
         return fig
+
+    @staticmethod
+    def _fix_measurement_labels(fig):
+        fig.for_each_annotation(lambda a: a.update(text=_get_fix_annotation_text(a.text)))
