@@ -191,7 +191,7 @@ have to add `node_modules/.bin` to your path. To execute the tests run:
 
 ## Revision History
 
-* v1.0.1 - XXXX-XX-XX:
+* v1.0.1 - 2023-09-08:
   * Basic Stats/Database: Patient count is incorrect if case_id field is used
   * Histogram: Nicer measurement labels in some cases
   * NodeJS modules: updated - including tough-cookie (now 4.1.3)
