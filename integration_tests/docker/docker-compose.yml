@@ -1,7 +1,7 @@
 version: '3.6'
 services:
   database_medex:
-    image: postgres
+    image: docker.io/library/postgres
     container_name: database_medex_int_test
     shm_size: 1g
     ports:

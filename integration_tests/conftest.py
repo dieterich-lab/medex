@@ -19,14 +19,14 @@ def pytest_sessionfinish(session, exitstatus):  # noqa
 
 
 def _get_docker_call() -> List[str]:
-    docker_compose = which('docker-compose')
-    if docker_compose is None:
-        docker = which('docker')
-        if docker is None:
-            raise Exception('No docker found!')
-        return [docker, 'compose']
-    else:
-        return [docker_compose]
+    for candidate in ['podman-compose', 'docker-compose']:
+        path = which(candidate)
+        if path is not None:
+            return [path]
+    docker = which('docker')
+    if docker is None:
+        raise Exception('No docker found!')
+    return [docker, 'compose']
 
 
 def _get_docker_folder():
