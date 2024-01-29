@@ -72,7 +72,7 @@ pipeline {
     post {
         always {
             junit 'results.xml'
-            cobertura coberturaReportFile: 'coverage.xml'
+            recordCoverage(tools: [[parser: 'COBERTURA', pattern: 'coverage.xml']])
             sh '''
                     if [ -L ~/.npm ]
                     then
