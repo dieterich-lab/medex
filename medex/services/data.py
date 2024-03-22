@@ -33,8 +33,7 @@ class DataService:
             sort_order: Optional[SortOrder] = None,
     ) -> (List[dict], int):
         query_select = self._get_union_of_tables(entities, measurements)
-        query_with_filter = self._filter_service.apply_filter_to_complex_query(query_select)
-        return self._do_query_with_extras(query_with_filter, limit, offset, sort_order)
+        return self._do_query_with_extras(query_select, limit, offset, sort_order)
 
     def _do_query_with_extras(self, query_with_filter, limit, offset, sort_order):
         query_with_total = self._get_query_with_total(query_with_filter.subquery())
@@ -108,22 +107,15 @@ class DataService:
             )
         return q
 
-    @staticmethod
-    def _get_union_of_tables(entities, measurements) -> query:
+    def _get_union_of_tables(self, entities, measurements) -> query:
         list_query_tables = [
-            select(table.patient_id, table.measurement, table.key, cast(table.value, String))
+            self._filter_service.apply_filter_to_complex_query(
+                select(table.patient_id, table.measurement, table.key, cast(table.value, String))
+                .where(and_(table.measurement.in_(measurements), table.key.in_(entities)))
+            )
             for table in [CategoricalValueTable, NumericalValueTable, DateValueTable]
         ]
-        query_union = union(*list_query_tables).subquery()
-        query_select_union = (
-            select(query_union)
-            .where(
-                and_(query_union.exported_columns.measurement.in_(measurements),
-                     query_union.exported_columns.key.in_(entities))
-            )
-        )
-
-        return query_select_union
+        return union(*list_query_tables)
 
     @staticmethod
     def _get_ordered_data(query_select, sort_order) -> query:

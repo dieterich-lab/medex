@@ -16,10 +16,12 @@ class MeasurementService:
 
     def get_info(self) -> MeasurementInfo:
         if self._cache is None:
+            print('Setting up measurement cache ...')
             self._cache = MeasurementInfo(
                 display_name=self._get_display_name(),
                 values=self._get_measurements_sorted_by_first_appearance(),
             )
+            print('Done setting up measurement cache.')
         return self._cache.copy(deep=True)
 
     def _get_display_name(self):

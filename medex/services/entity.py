@@ -17,6 +17,7 @@ class EntityService:
 
     def _fill_cache(self):
         if self._dict_cache is None:
+            print('Setting up entities cache ...')
             categories_by_entity = self._get_categories_by_entity()
             min_max_by_entity = self._get_min_max_by_entity()
             rv = self._db.execute(
@@ -29,6 +30,7 @@ class EntityService:
             sorted_list = sorted(raw_result, key=lambda x: x.key)
             self._dict_cache = {v.key: v for v in sorted_list}
             self._list_cache = list(self._dict_cache.values())
+            print('Done setting up entities cache.')
 
     def get_all(self) -> List[Entity]:
         self._fill_cache()
