@@ -111,9 +111,7 @@ class DataService:
         list_query_tables = [
             self._filter_service.apply_filter_to_complex_query(
                 select(table.patient_id, table.measurement, table.key, cast(table.value, String))
-                .where(and_(table.measurement.in_(measurements),
-                     table.key.in_(entities))
-               )
+                .where(and_(table.measurement.in_(measurements), table.key.in_(entities)))
             )
             for table in [CategoricalValueTable, NumericalValueTable, DateValueTable]
         ]
