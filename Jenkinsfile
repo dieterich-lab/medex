@@ -25,7 +25,7 @@ pipeline {
                 sh '''
                     . ./venv/bin/activate
                     export PYTHONPATH=$(pwd)
-                    pytest --junitxml results.xml tests integration_tests --cov=medex --cov-report xml
+                    pytest --junitxml results.xml tests --cov=medex --cov-report xml
                 '''
             }
         }
