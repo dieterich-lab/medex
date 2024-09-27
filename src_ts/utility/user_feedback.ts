@@ -3,6 +3,7 @@ class UserError extends Error {}
 class HTTPError extends Error {}
 
 let set_error_message: ((x: string|null) => void) | null = null;
+let set_busy_message: ((x: string|null) => void) | null = null;
 
 function report_error(error: unknown) {
     const message =
@@ -29,8 +30,30 @@ function clear_error() {
     }
 }
 
-function init_error_handling(new_set_error_message: (x: string|null) => void) {
-    set_error_message = new_set_error_message;
+function report_busy(message: string) {
+    document.body.style.cursor = 'wait';
+    if ( set_busy_message == null ) {
+        console.log(`report_busy('${message}') called before initialization!`);
+    } else {
+        set_busy_message(message);
+    }
 }
 
-export {init_error_handling, report_error, clear_error, UserError, HTTPError};
+function clear_busy() {
+    document.body.style.cursor = '';
+    if ( set_busy_message == null ) {
+        console.log('clear_busy() called before initialization!');
+    } else {
+        set_busy_message(null);
+    }
+}
+
+function init_user_feedback(
+    new_set_error_message: (x: string|null) => void,
+    new_set_busy_message: (x: string|null) => void,
+) {
+    set_error_message = new_set_error_message;
+    set_busy_message = new_set_busy_message;
+}
+
+export {init_user_feedback, report_error, clear_error, report_busy, clear_busy, UserError, HTTPError};

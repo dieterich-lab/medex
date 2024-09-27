@@ -2,12 +2,15 @@ import {useEffect, useState} from 'react';
 import {FilterStatus, get_filter_status} from '../services/patient_filter';
 import {PatientFilterEditor} from './patient_filter/editor';
 import {PatientFilterStatus} from './patient_filter/status';
+import {clear_busy, report_busy} from "../utility/user_feedback";
 
 function PatientFilter() {
     const [active_filters, set_active_filters] = useState<FilterStatus|null>(null);
 
     const refresh_filters = async () => {
+        report_busy('Refreshing filters ...');
         set_active_filters(await get_filter_status());
+        clear_busy();
     }
 
     useEffect(() => {

@@ -13,6 +13,8 @@ interface DatabaseInfo {
 
 let info_promise_raw = http_fetch(
     'GET', '/database_info/',
+    'loading database info',
+    false,
     false
 );
 let info_promise = async_assert_equals(info_promise_raw);

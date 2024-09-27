@@ -79,8 +79,9 @@ h2 {
     justify-content: space-between;
 }
 
-.patient-filter-all-delete-button {
+.patient-filter-menu {
     float: right;
+    height: min-content;
 }
 
 .patient-filter-delete-button {
@@ -209,4 +210,25 @@ select {
 
 .image-large {
     width: 50em;
+}
+
+.hidden {
+    display: none;
+}
+
+.busy-bar {
+    display: flex;
+    align-items: center;
+    gap: 2em;
+    background: #cee5F5;
+    padding: 5px;
+    border-radius: var(--bs-border-radius);
+}
+
+.busy-spinner {
+    flex: inherit;
+}
+
+.busy-message {
+    flex: max-content;
 }

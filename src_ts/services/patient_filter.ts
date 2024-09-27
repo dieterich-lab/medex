@@ -42,6 +42,8 @@ let filter_status_revision: number = 0;
 async function get_filter_status(): Promise<FilterStatus> {
     let work = await http_fetch(
         'GET', '/filter/all',
+        'refreshing filter status',
+        false,
         false
     );
     // Seems that typia has some limitations with Maps.
@@ -62,7 +64,7 @@ async function get_filter_status(): Promise<FilterStatus> {
 }
 
 async function delete_all_filters() {
-    await http_fetch('DELETE', '/filter/all', false);
+    await http_fetch('DELETE', '/filter/all', 'deleting filters').catch(() => {});
     filter_status_revision += 1;
 }
 
@@ -70,8 +72,8 @@ async function delete_filter(entity_key: string) {
     await http_send_as_json<DeleteRequest>(
         'DELETE', '/filter/delete',
         {entity: entity_key},
-        false
-    );
+        'deleting filter'
+    ).catch(() => {});
     filter_status_revision += 1;
 }
 
@@ -79,8 +81,8 @@ async function add_or_update_categorical_filter(entity_key: string, categories: 
     await http_send_as_json<AddOrUpdateCategoricalRequest>(
         'POST', '/filter/add_categorical',
         {'entity': entity_key, 'measurement': measurement, 'categories': categories},
-        false
-    );
+        'adding filter'
+    ).catch(() => {});
     filter_status_revision += 1;
 }
 
@@ -97,8 +99,8 @@ async function add_or_update_numerical_filter(
     await http_send_as_json<AddOrUpdateNumericalRequest>(
         'POST','/filter/add_numerical',
         request_json,
-        false
-    );
+        'adding filter'
+    ).catch(() => {});
     filter_status_revision += 1;
 }
 

@@ -185,3 +185,13 @@ class FilterService:
 
     def get_filtered_patient_count(self):
         return self._filter_status.filtered_patient_count
+
+    def set_filter_status(self, new_status: FilterStatus):
+        self._session_service.touch()
+        self.delete_all_filters()
+        for entity, new_filter in new_status.filters.items():
+            self._clean_up_filter_for_entity(entity)
+            self._record_name_ids_for_filter(entity, new_filter)
+            self._filter_status.filters[entity] = new_filter
+        self._record_name_ids_for_all_filters()
+        self._database_session.commit()

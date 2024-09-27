@@ -8,6 +8,8 @@ interface MeasurementInfoRaw {
 
 let raw_measurement_info_promise = http_fetch(
     'GET', '/measurement/',
+    'loading measurements',
+    false,
     false
 );
 let measurement_info_promise = async_assert_equals(raw_measurement_info_promise);

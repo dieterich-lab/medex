@@ -1,7 +1,7 @@
 import Plot from 'react-plotly.js';
 import {useEffect, useState} from "react";
 import {http_fetch} from "../../../utility/http";
-import {report_error} from "../../../utility/error";
+import {report_error} from "../../../utility/user_feedback";
 import {AbstractPlot} from "../../../utility/plots/abstract_plot";
 import {DownloadLink} from "./download_link";
 import {ResultFrame} from "./result_frame";
@@ -53,12 +53,11 @@ function fetch_data<Parameters>(
     }
     const params = props.parameters;
     const url = props.plot.get_json_link(params);
-    http_fetch('GET', url)
+    http_fetch('GET', url, 'loading plot data')
         .then(x => set_data(x))
         .catch(
-        (error) => {
+        () => {
             props.onError();
-            report_error(error);
         }
     )
 }

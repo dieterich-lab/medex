@@ -34,6 +34,8 @@ interface Entity {
 
 let untyped_entity_list_promise = http_fetch(
     'GET', '/entity/all',
+    'loading entity data',
+    false,
     false
 );
 let entity_list_promise = async_assert_equals(untyped_entity_list_promise);

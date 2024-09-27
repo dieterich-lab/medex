@@ -1,8 +1,8 @@
 import {JSX} from "react";
 import {FilterStatus} from '../../services/patient_filter';
 import {PatientFilterComponentProps} from './common';
-import {PatientFilterDeleteAllButton} from './delete_all_button';
 import {PatientFilterItem} from './item'
+import {PatientFilterMenu} from "./menu";
 
 interface PatientFilterStatusProps extends PatientFilterComponentProps {
     active_filters: FilterStatus|null,
@@ -15,7 +15,7 @@ function PatientFilterStatus(props: PatientFilterStatusProps) {
         <div className="card patient-filter-status">
             <div className="card-body">
                 Active Filters {count_text}
-                <PatientFilterDeleteAllButton refresh_filters={props.refresh_filters}/>
+                <PatientFilterMenu refresh_filters={props.refresh_filters}/>
             </div>
             <div>
                 {active_filters}
