@@ -2,10 +2,11 @@
 
 set -e -u
 
-rm -rf static/js
-tsc
-mkdir -p build/resources
-cp src_ts/resources/style.css build/resources
-rollup -c scripts/rollup.config.mjs
-# Plotly violently resits to be lowed via rollup ... so we load  separately
-cp node_modules/plotly.js/dist/plotly.min.js static/js
+script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+base_dir=$(dirname "$script_dir")
+
+cd "$base_dir/medex_client"
+rm -rf "$base_dir/medex_client/dist"
+npm run build
+cd "$base_dir"
+docker build --no-cache .

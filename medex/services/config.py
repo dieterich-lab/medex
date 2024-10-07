@@ -1,3 +1,4 @@
+from os import environ
 from os.path import normpath, dirname, join
 
 
@@ -10,6 +11,7 @@ class Config:
             header_path: str = None,
             entities_path: str = None,
             dataset_path: str = None,
+            frontend_path: str = None,
     ):
         if base_directory is None:
             base_directory = normpath(dirname(dirname(dirname(__file__))))
@@ -34,6 +36,12 @@ class Config:
         if dataset_path is None:
             dataset_path = join(import_directory, 'dataset.csv')
         self.dataset_path = dataset_path
+
+        if frontend_path is None:
+            frontend_path = environ.get('FRONTEND_PATH')
+            if not frontend_path:
+                frontend_path = '/app/static'
+        self.frontend_path = frontend_path
 
 
 _config = Config()

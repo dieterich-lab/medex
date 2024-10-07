@@ -14,5 +14,8 @@ dev_import.ini
 /static/third_party/css/
 /static/third_party/js/
 /build/
-/stack-compose.yml
+/docker-compose.yml
 /coverage/
+/medex_client/src/typia/
+/medex_client/tsconfig.app.tsbuildinfo
+/medex_client/tsconfig.node.tsbuildinfo

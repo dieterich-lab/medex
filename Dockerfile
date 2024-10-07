@@ -9,10 +9,8 @@ RUN cd /app/ && \
 
 COPY webserver.py alembic.ini /app/
 COPY medex /app/medex/
-COPY static /app/static/
+COPY medex_client/dist /app/static/
 COPY schema /app/schema/
-
-
 
 ENV TZ=Europe/Berlin
 

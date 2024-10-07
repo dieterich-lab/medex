@@ -1,4 +1,6 @@
 import os
+from os import environ
+
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -23,7 +25,10 @@ from medex.controller.root import root_controller
 
 # create the application object
 app = Flask(__name__)
-CORS(app)
+if 'FLASK_DEBUG' in environ and environ['FLASK_DEBUG'].lower() in ['1', 'true', 'yes']:
+    CORS(app, supports_credentials=True)
+else:
+    CORS(app)
 app.secret_key = os.urandom(24)
 app.config["SQLALCHEMY_DATABASE_URI"] = get_database_url()
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'

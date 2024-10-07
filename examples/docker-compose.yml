@@ -8,9 +8,9 @@ services:
       - database_medex
     environment:
       - PYTHONUNBUFFERED=1
-      - POSTGRES_USER=test
+      - POSTGRES_USER=medex
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=example
+      - POSTGRES_DB=medex
       - POSTGRES_PORT=5432
       - POSTGRES_HOST=database_medex
     volumes:
@@ -21,12 +21,12 @@ services:
     image: postgres
     shm_size: 1g
     ports:
-      - "127.0.0.1:5429:5432"
+      - "127.0.0.1:5430:5432"
     environment:
-      - POSTGRES_USER=test
+      - POSTGRES_USER=medex
       - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=example
+      - POSTGRES_DB=medex
     restart: always
-# Uncomment if you want the database to survive a recration of the database container
+# Uncomment if you want the database to survive a recreation of the database container
 #    volumes:
 #      - ./data:/var/lib/postgresql/data
