@@ -16,6 +16,7 @@ def index():
     frontend_path = get_config().frontend_path
     return send_from_directory(frontend_path, 'index.html', mimetype='text/html')
 
+
 @root_controller.route('/assets/<path:path>', methods=['GET'])
 def assers(path):
     assets_path = join(get_config().frontend_path, 'assets')
