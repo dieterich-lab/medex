@@ -127,19 +127,19 @@ As a consequence the recommended method to run MedEx is now using "docker compos
        pipenv install --dev
        npm install --save-dev
 
-5. Run the frontend DEV server:
-
-       ( cd medex_client && npm run dev )
-
-6. Bring up a database. You may use the configuration under ./examples for that:
+5. Bring up a database. You may use the configuration under ./examples for that:
 
        ( cd examples/docker_database_only && docker-compose up -d )
 
-7. Bring up the backend server:
+6. Bring up the backend DEV server:
 
        ./scripts/start.sh
 
-Test it out at http://localhost:5173.
+7. Run the frontend DEV server:
+
+       ( cd medex_client && npm run dev )
+
+To test connect to the frontend DEV server http://localhost:5173.
 
 **Important:** Due to an incompatibility of typia and vite we separately compile
 the validators defined in medex_client/typia_src to create medex_client/src/typia.
