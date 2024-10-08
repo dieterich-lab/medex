@@ -18,3 +18,4 @@ dev_import.ini
 /medex_client/src/typia/
 /medex_client/tsconfig.app.tsbuildinfo
 /medex_client/tsconfig.node.tsbuildinfo
+/medex_client/coverage/
