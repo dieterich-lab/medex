@@ -7,6 +7,8 @@
     "dev": "npx typia generate --input typia_src/typia --output src/typia --project tsconfig.node.json && vite",
     "build": "npx typia generate --input typia_src/typia --output src/typia --project tsconfig.node.json && tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest",
+    "coverage": "vitest run --coverage",
     "preview": "vite preview",
     "postinstall": "ts-patch install"
   },
@@ -34,6 +36,7 @@
     "@types/react-dom": "^18.3.0",
     "@types/react-plotly.js": "^2.6.0",
     "@vitejs/plugin-react": "^4.3.2",
+    "@vitest/coverage-v8": "^2.1.2",
     "deepmerge": "^4.3.1",
     "eslint": "^9.11.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
@@ -52,6 +55,7 @@
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.7.0",
     "typia": "^4.3.3",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "vitest": "^2.1.2"
   }
 }

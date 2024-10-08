@@ -1,3 +1,8 @@
+/**
+ * @vitest-environment jsdom
+ */
+
+import {test, expect} from "vitest";
 import {fireEvent, render} from '@testing-library/react';
 import {NavigationBar, NavigationTab} from './navigation';
 

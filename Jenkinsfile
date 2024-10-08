@@ -46,22 +46,31 @@ pipeline {
                     fi
                     rm -rf ~/.npm || true
                     ln -s $(mktemp -d /tmp/jenkins_medex_XXXXXXXXXX) ~/.npm
+                    cd medex_client
                     npm install --save-dev
                 '''
             }
         }
-        stage('Test TypeScript') {
+        stage('Linter MedEx Client') {
             steps {
                 sh '''
-                    export PATH="$PATH:$(pwd)/node_modules/typescript/bin"
-                    npm run test
+                    cd medex_client
+                    npm run lint
+                '''
+            }
+        }
+        stage('Test MedEx Client') {
+            steps {
+                sh '''
+                    cd medex_client
+                    npm run coverage
                 '''
             }
         }
         stage('Check TypeScript Test Coverage') {
             steps {
                 clover(
-                    cloverReportDir: 'coverage', cloverReportFileName: 'clover.xml',
+                    cloverReportDir: 'medex_client/coverage', cloverReportFileName: 'clover.xml',
                     healthyTarget: [methodCoverage: 70, conditionalCoverage: 80, statementCoverage: 80],
                     unhealthyTarget: [methodCoverage: 50, conditionalCoverage: 50, statementCoverage: 50],
                     failingTarget: [methodCoverage: 0, conditionalCoverage: 0, statementCoverage: 0]
