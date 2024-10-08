@@ -1,4 +1,4 @@
-from os.path import join, dirname
+from os.path import join
 from flask import Blueprint, send_from_directory
 from medex.services.config import get_config
 
