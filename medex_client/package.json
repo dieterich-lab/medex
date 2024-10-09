@@ -8,7 +8,7 @@
     "build": "npx typia generate --input typia_src/typia --output src/typia --project tsconfig.node.json && tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest",
-    "coverage": "vitest run --coverage",
+    "coverage": "npx typia generate --input typia_src/typia --output src/typia --project tsconfig.node.json && vitest run --coverage",
     "preview": "vite preview",
     "postinstall": "ts-patch install"
   },
