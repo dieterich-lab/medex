@@ -1,14 +1,16 @@
 import {PatientFilterComponentProps} from './common';
 import {Dropdown} from "react-bootstrap";
 import {delete_all_filters} from '../../services/patient_filter';
-import {ChangeEventHandler, useId} from "react";
+import {ChangeEventHandler} from "react";
 import {BASE_URL, http_send_blob} from "../../utility/http";
 
 
+const FILE_TO_LOAD_ID = 'patient-filter-menu-file-to-load-input';
+
+
 function PatientFilterMenu(props: PatientFilterComponentProps) {
-    const file_to_load_id = useId();
     const ask_for_file_to_load = async () => {
-        document.getElementById(file_to_load_id)?.click();
+        document.getElementById(FILE_TO_LOAD_ID)?.click();
     }
 
     const load_filters: ChangeEventHandler<HTMLInputElement> = async (event) => {
@@ -35,20 +37,20 @@ function PatientFilterMenu(props: PatientFilterComponentProps) {
         <Dropdown className="btn btn-sm patient-filter-menu">
             <input
                 type="file"
-                id={file_to_load_id}
+                id={FILE_TO_LOAD_ID}
                 className="hidden"
                 onChange={load_filters}
                 accept=".json"
             />
-            <Dropdown.Toggle>...</Dropdown.Toggle>
+            <Dropdown.Toggle id="patient-filter-menu-button">...</Dropdown.Toggle>
             <Dropdown.Menu>
-                <Dropdown.Item href={save_url}>
+                <Dropdown.Item href={save_url} id="patient-filter-menu-save">
                     Save
                 </Dropdown.Item>
-                <Dropdown.Item onClick={ask_for_file_to_load}>
+                <Dropdown.Item onClick={ask_for_file_to_load} id="patient-filter-menu-load">
                     Load
                 </Dropdown.Item>
-                <Dropdown.Item onClick={delete_all}>
+                <Dropdown.Item onClick={delete_all} id="patient-filter-menu-delete-all">
                     Delete all
                 </Dropdown.Item>
             </Dropdown.Menu>

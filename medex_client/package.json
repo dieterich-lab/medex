@@ -26,6 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^9.11.1",
     "@ryoppippi/unplugin-typia": "npm:@jsr/ryoppippi__unplugin-typia@^1.0.6",
+    "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^14.0.0",
     "@types/ion-rangeslider": "^2.3.2",
     "@types/jest": "^29.5.1",

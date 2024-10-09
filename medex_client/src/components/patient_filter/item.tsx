@@ -11,7 +11,7 @@ function PatientFilterItem(props: PatientFilterItemProps) {
     const measurement_text = props.item.measurement == null ? '' : ` (${props.item.measurement})`;
     const filter_text = get_filter_as_text(props.item);
     return (
-        <div className="card-body patient-filter-item">
+        <div id={`pateint-filter-item-${props.item.entity_key}`} className="card-body patient-filter-item">
             <span>{props.item.entity_key}{measurement_text}:&nbsp;&nbsp;&nbsp;&#32;{filter_text}</span>
             <PatientFilterDeleteButton entity_key={props.item.entity_key} refresh_filters={props.refresh_filters}/>
         </div>

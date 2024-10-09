@@ -11,7 +11,7 @@ abstract class Cache<T> {
 
     abstract decode(raw: unknown): T;
 
-    public async get_data(): Promise<T> {
+    public async get_data(): Promise<Readonly<T>> {
         if ( this.data === null ) {
             if ( this.promise === null) {
                 this.promise = this.get_raw_promise();
