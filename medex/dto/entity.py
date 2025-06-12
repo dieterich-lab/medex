@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, model_validator
 from enum import Enum
 
 
@@ -13,16 +13,16 @@ class EntityType(Enum):
 class Entity(BaseModel):
     key: str
     type: EntityType
-    synonym: Optional[str]
-    description: Optional[str]
-    unit: Optional[str]
-    show: Optional[str]
-    categories: Optional[List[str]]
-    min: Optional[float]
-    max: Optional[float]
+    synonym: Optional[str] = None
+    description: Optional[str] = None
+    unit: Optional[str] = None
+    show: Optional[str] = None
+    categories: Optional[List[str]] = None
+    min: Optional[float] = None
+    max: Optional[float] = None
 
     @classmethod
-    @root_validator
+    @model_validator(mode='after')
     def check_categories(cls, values):
         entity_type = values.get('type')
         categories = values.get('categories')
@@ -34,7 +34,7 @@ class Entity(BaseModel):
                 raise ValueError('only categorical entities can have categories')
 
     @classmethod
-    @root_validator
+    @model_validator(mode='after')
     def check_min_max(cls, values):
         entity_type = values.get('type')
         min_value = values.get('min')
