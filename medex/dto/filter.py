@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class GenericFilter(BaseModel):
-    measurement: Optional[str]
+    measurement: Optional[str] = None
 
 
 class CategoricalFilter(GenericFilter):
@@ -34,4 +34,4 @@ class DeleteFilterRequest(BaseModel):
 
 
 class SetMeasurementRequest(BaseModel):
-    measurement: Optional[str]
+    measurement: Optional[str] = None

@@ -4,7 +4,11 @@ import {TText} from "./text";
 
 function FilterSection() {
     return (
-        <TSection headline="Patient Filter">
+        <TSection headline="(Patient) Filter">
+            <p>
+                The data represented may be restricted to a subset of available individuals/patients using the
+                filter on the left side.
+            </p>
             <div className="row">
                 <TText>
                     If the data contains multiple measurements a filter may be restricted based on such a measurement.

@@ -18,5 +18,5 @@ class ScatterPlotDataRequest(BaseModel):
     entity_x_axis: str
     measurement_y_axis: str
     entity_y_axis: str
-    scale: Optional[ScaleScatterPlot]
-    add_group_by: Optional[GroupByCategoricalEntity]
+    scale: Optional[ScaleScatterPlot] = None
+    add_group_by: Optional[GroupByCategoricalEntity] = None
