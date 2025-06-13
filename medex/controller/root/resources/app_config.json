@@ -1,0 +1,12 @@
+{
+    "features": {
+        "tutorial": true,
+        "table_browser":  true,
+        "basic_stats":  true,
+        "scatter_plot":  true,
+        "barchart":  true,
+        "histogram":  true,
+        "boxplot": true,
+        "heatmap": true
+    }
+}
