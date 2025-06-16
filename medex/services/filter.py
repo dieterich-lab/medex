@@ -6,7 +6,7 @@ from sqlalchemy.orm import Query
 
 from medex.dto.filter import FilterStatus, CategoricalFilter, NumericalFilter
 from medex.services.session import SessionService
-from medex.database_schema import SessionFilteredPatientTable, SessionPatientsMatchingFilterTable,\
+from medex.database_schema import SessionFilteredPatientTable, SessionPatientsMatchingFilterTable, \
     CategoricalValueTable, NumericalValueTable
 
 
