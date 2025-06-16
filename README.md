@@ -79,6 +79,12 @@ to observe that. After the successful load a marker file will be created.
 If the input data is changed on the next start of the container a new import
 will be done.
 
+### Customizing
+
+Starting with version 1.1 MedEx supports basic customizing. For details see: 
+
+* [Customzing](documentation/customizing.md)
+
 ## Upgrade
 
 MedEx 1.0 and newer used Alembic to track the version of database schema.
