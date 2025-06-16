@@ -22,7 +22,7 @@ class MeasurementService:
                 values=self._get_measurements_sorted_by_first_appearance(),
             )
             print('Done setting up measurement cache.')
-        return self._cache.copy(deep=True)
+        return self._cache.model_copy(deep=True)
 
     def _get_display_name(self):
         rs = self._db_session.execute(
