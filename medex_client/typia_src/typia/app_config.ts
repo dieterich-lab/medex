@@ -3,7 +3,6 @@ import {assertEquals} from "typia";
 interface AppConfig {
     features: {
         tutorial: boolean,
-        table_browser: boolean,
         basic_stats:  boolean,
         scatter_plot:  boolean,
         barchart:  boolean,
