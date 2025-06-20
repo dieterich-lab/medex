@@ -5,7 +5,7 @@ import {SingleSelect} from "./single_select";
 import {Option} from "react-multi-select-component";
 import {entity_select_search, set_entity_options, SingleSelectProps} from "../../utility/selection";
 import {EntityOptionItem} from "./entity_option_item";
-import {get_label} from "../../utility/misc";
+import {M} from "./message_catalog.tsx";
 
 interface SingleEntitySelectProps extends SingleSelectProps<Entity> {
     allowedEntityTypes: EntityType[],
@@ -19,7 +19,6 @@ function SingleEntitySelect(props: SingleEntitySelectProps) {
         [props.value, props.allowedEntityTypes, set_options]
     );
     const label_id = useId();
-    const label = get_label('Entity', props.label);
     if ( options == null ) {
         return <div>Loading ...</div>;
     }
@@ -29,7 +28,7 @@ function SingleEntitySelect(props: SingleEntitySelectProps) {
 
     return (
         <ParameterItem>
-            <label id={label_id}>{label}:</label>
+            <label id={label_id}><M id="Entity" custom={props.label}/>:</label>
             <SingleSelect
                 options={options}
                 labelledBy={label_id}

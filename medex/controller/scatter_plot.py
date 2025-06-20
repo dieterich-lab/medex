@@ -33,5 +33,5 @@ def _get_parsed_request():
     args = request.args
     data = args.get('scatter_plot_data')
     json_data = json.loads(data)
-    scatter_plot_request = ScatterPlotDataRequest.parse_obj(json_data)
+    scatter_plot_request = ScatterPlotDataRequest.model_validate(json_data)
     return scatter_plot_request

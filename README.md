@@ -79,6 +79,12 @@ to observe that. After the successful load a marker file will be created.
 If the input data is changed on the next start of the container a new import
 will be done.
 
+### Customizing
+
+Starting with version 1.1 MedEx supports basic customizing. For details see: 
+
+* [Customzing](documentation/customizing.md)
+
 ## Upgrade
 
 MedEx 1.0 and newer used Alembic to track the version of database schema.
@@ -100,7 +106,7 @@ As a consequence the recommended method to run MedEx is now using "docker compos
 ### Requirements
 
 * Linux (maybe MacOS works too)
-* [Python](https://www.python.org/) >= 3.8
+* [Python](https://www.python.org/) >= 3.10 (Development done lately with Python 3.13)
 * [Docker-CE](https://docs.docker.com/install/) >= 18.09.07
 * [NodeJS](https://nodejs.org) with npm>= 14.21
 * Recommended: A Python IDE e.g. PyCharm - PyCharm Professional preferred due to
@@ -123,9 +129,9 @@ As a consequence the recommended method to run MedEx is now using "docker compos
 
 4. Install both the run-time and the development dependencies:
 
-       pipenv install -e .
+       pipenv install
        pipenv install --dev
-       npm install --save-dev
+       (cd medex_client; npm install --save-dev)
 
 5. Bring up a database. You may use the configuration under ./examples for that:
 
@@ -218,8 +224,12 @@ have to add `node_modules/.bin` to your path. To execute the tests run:
 
 ## Revision History
 
-* XXX
-  * Changed build system to vite, explicity compiling typia templates
+* (v1.1.0 - unreleased)
+  * Added feature to allow customisation/branding
+  * Upgrading to Python 3.13
+  * Updated client dependencies (npm update)
+  * Updated server dependencies (including pydantic 2.X)
+  * Changed build system to vite, explicitly compiling typia templates
 
 * v1.0.1 - 2023-09-08:
   * Basic Stats/Database: Patient count is incorrect if case_id field is used

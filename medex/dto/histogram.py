@@ -8,4 +8,4 @@ class HistogramDataRequest(BaseModel):
     numerical_entity: str
     categorical_entity: str
     categories: List[str]
-    bins: Optional[int]
+    bins: Optional[int] = None

@@ -1,11 +1,5 @@
 import {test, expect} from "vitest";
-import {get_label, capitalize} from "./misc";
-
-test('get_label', () => {
-    expect(get_label('default_label', 'custom_label')).toBe('custom_label');
-    expect(get_label('default_label', undefined)).toBe('default_label');
-    expect(get_label('default_label', 'custom %DEFAULT%')).toBe('custom default_label');
-});
+import {capitalize} from "./misc";
 
 test('capitalize', () => {
     expect(capitalize('test')).toBe('Test');

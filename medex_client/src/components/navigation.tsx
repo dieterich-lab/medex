@@ -4,7 +4,7 @@ import {NavigationButton} from './naviagtion_button';
 enum NavigationTab {
     Tutorial = 'Tutorial',
     TableBrowser = 'Table Browser',
-    BasicStats = ' Basic Stats',
+    BasicStats = 'Basic Stats',
     ScatterPlot = 'Scatter Plot',
     Barchart = 'Barchart',
     Histogram = 'Histogram',
@@ -12,24 +12,10 @@ enum NavigationTab {
     HeatMap = 'Heatmap',
 }
 
-
-// We will fix that once were is a better solution to get the keys
-// of an enum ...
-// See https://github.com/microsoft/TypeScript/issues/17198
-const NAVIGATION_ITEMS = [
-    NavigationTab.Tutorial,
-    NavigationTab.TableBrowser,
-    NavigationTab.BasicStats,
-    NavigationTab.ScatterPlot,
-    NavigationTab.Barchart,
-    NavigationTab.Histogram,
-    NavigationTab.Boxplot,
-    NavigationTab.HeatMap,
-]
-
 interface NavigationBarProps {
     active_tab: NavigationTab,
     set_active_tab: (x: NavigationTab) => void
+    all_tabs: NavigationTab[]
 }
 
 function NavigationBar(props: NavigationBarProps) {
@@ -37,7 +23,7 @@ function NavigationBar(props: NavigationBarProps) {
         <nav id="nav_bar" className="navbar navbar-light bg-light">
             <ul className="nav nav-pills mx-auto">
                 {
-                    NAVIGATION_ITEMS.map(x =>
+                    props.all_tabs.map(x =>
                         <NavigationButton
                             id={get_nav_button_id(x)}
                             key={x}

@@ -1,6 +1,6 @@
 "use client";
 
-import {JSX, RefObject, useLayoutEffect, useRef} from 'react';
+import {JSX, RefObject, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {TableBrowserResultParameters, TableFormat} from './common';
 import 'datatables.net-dt';
 import 'datatables.net-dt/css/jquery.dataTables.min.css';
@@ -8,6 +8,7 @@ import Datatable from "datatables.net-dt";
 import {DownloadLink} from "../common/download_link";
 import {ResultFrame} from "../common/result_frame";
 import {BASE_URL} from "../../../utility/http";
+import {get_message} from "../../../services/message_catalog.ts";
 
 interface TableBrowserResultsProps {
     parameters: TableBrowserResultParameters | null;
@@ -24,10 +25,20 @@ const TABLE_ID = 'table_browser_table_id';
 function TableBrowserResults(props: TableBrowserResultsProps): JSX.Element {
     const container_ref = useRef<HTMLDivElement>(null);
     const error_message = props.parameters ? check_for_errors(props.parameters) : null;
+    const [patient_id_label, set_patient_id_label] = useState<string>('patient_id')
+    const [measurement_label, set_measurement_label] = useState<string>('measurement')
     useLayoutEffect(
-        () => setup_datatable(props.parameters, container_ref, error_message),
-        [props.parameters, container_ref, error_message]
+        () => setup_datatable(props.parameters, container_ref, error_message, patient_id_label, measurement_label),
+        [props.parameters, container_ref, error_message, patient_id_label, measurement_label]
     );
+    useEffect(() => {
+            async function setup() {
+                set_patient_id_label(await get_message('patient_id'))
+                set_measurement_label(await get_message('measurement'))
+            }
+            setup().catch(e=> console.log(`Failed to load message catalog: ${e}`))
+        }, []
+    )
 
     if ( props.parameters == null ) {
         return <div/>;
@@ -57,7 +68,9 @@ function check_for_errors(parameters: TableBrowserResultParameters): string | nu
 function setup_datatable(
     parameters: TableBrowserResultParameters | null,
     container_ref: RefObject<HTMLDivElement>,
-    error_message: string | null
+    error_message: string | null,
+    patient_id_label: string,
+    measurement_label: string
 ) {
     if ( !parameters || error_message ) {
         return;
@@ -66,7 +79,7 @@ function setup_datatable(
         container_ref.current.innerHTML = `<table width="100%" id="${TABLE_ID}" class="display"></table>`;
     }
     const url = `${BASE_URL}/filtered_data/${parameters.format}`;
-    const column = define_table_columns(parameters);
+    const column = define_table_columns(parameters, patient_id_label, measurement_label);
     const datatable = new Datatable(`#${TABLE_ID}`, {
         destroy: true,
         processing: true,
@@ -95,10 +108,14 @@ function setup_datatable(
     };
 }
 
-function define_table_columns(parameters: TableBrowserResultParameters) {
+function define_table_columns(
+    parameters: TableBrowserResultParameters,
+    patient_id_label: string,
+    measurement_label: string
+) {
     let column = [
-        {data: 'patient_id', title: 'patient_id'},
-        {data: 'measurement', title: 'measurement'},
+        {data: 'patient_id', title: patient_id_label},
+        {data: 'measurement', title: measurement_label},
     ]
     if (parameters.format == TableFormat.Flat) {
         column = column.concat([

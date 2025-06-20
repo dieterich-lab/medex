@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class GenericFilter(BaseModel):
-    measurement: Optional[str]
+    measurement: Optional[str] = None
 
 
 class CategoricalFilter(GenericFilter):
@@ -25,7 +25,7 @@ class AddNumericalFilterRequest(NumericalFilter):
 
 
 class FilterStatus(BaseModel):
-    filtered_patient_count: Optional[int]
+    filtered_patient_count: Optional[int] = None
     filters: Dict[str, Union[CategoricalFilter, NumericalFilter]]
 
 
@@ -34,4 +34,4 @@ class DeleteFilterRequest(BaseModel):
 
 
 class SetMeasurementRequest(BaseModel):
-    measurement: Optional[str]
+    measurement: Optional[str] = None

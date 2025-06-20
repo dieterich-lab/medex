@@ -5,7 +5,7 @@ import {MultiSelect} from "./multi_select";
 import {Option} from "react-multi-select-component";
 import {entity_select_search, set_entity_options, MultiSelectProps} from "../../utility/selection";
 import {EntityOptionItem} from "./entity_option_item";
-import {get_label} from "../../utility/misc";
+import {M} from "./message_catalog.tsx";
 
 interface MultiEntitySelectProps extends MultiSelectProps<Entity> {
     allowedEntityTypes: EntityType[],
@@ -19,7 +19,6 @@ function MultiEntitySelect(props: MultiEntitySelectProps) {
         [props, set_options, props.values]
     );
     const label_id = useId();
-    const label = get_label('Entities', props.label);
     if ( options == null ) {
         return <div>Loading ...</div>;
     }
@@ -29,7 +28,7 @@ function MultiEntitySelect(props: MultiEntitySelectProps) {
 
     return (
         <ParameterItem>
-            <label id={label_id}>{label}:</label>
+            <label id={label_id}><M id="Entities" custom={props.label}/>:</label>
             <MultiSelect
                 options={options}
                 labelledBy={label_id}

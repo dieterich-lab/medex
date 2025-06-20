@@ -3,7 +3,7 @@ import {ParameterItem} from './parameter_item';
 import {MultiSelectProps} from "../../utility/selection";
 import {MultiSelect} from "./multi_select";
 import {MeasurementSelectionState, populate_measurement_selection_state} from "../../utility/measurement_selection";
-import {get_label} from "../../utility/misc";
+import {M} from "./message_catalog.tsx";
 
 function MultiMeasurementSelect(props: MultiSelectProps<string>) {
     const [state, set_state] = useState<MeasurementSelectionState|null>(null);
@@ -12,11 +12,10 @@ function MultiMeasurementSelect(props: MultiSelectProps<string>) {
     if ( state == null ) {
         return <div>Loading ...</div>;
     }
-    const label = get_label(state.display_name, props.label);
     return (
         <ParameterItem show={state.options.length > 1}>
             <label id={label_id}>
-                {label}:
+                <M id="Measurements" custom={props.label}/>:
             </label>
            <MultiSelect
                 options={state.options}

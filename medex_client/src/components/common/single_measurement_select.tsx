@@ -3,7 +3,7 @@ import {ParameterItem} from './parameter_item';
 import {SingleSelectProps} from "../../utility/selection";
 import {SingleSelect} from "./single_select";
 import {MeasurementSelectionState, populate_measurement_selection_state} from "../../utility/measurement_selection";
-import {get_label} from "../../utility/misc";
+import {M} from "./message_catalog.tsx";
 
 function SingleMeasurementSelect(props: SingleSelectProps<string>) {
     const [state, set_state] = useState<MeasurementSelectionState|null>(null);
@@ -12,10 +12,9 @@ function SingleMeasurementSelect(props: SingleSelectProps<string>) {
     if ( state == null ) {
         return <div>Loading ...</div>;
     }
-    const label = get_label(state.display_name, props.label);
     return (
         <ParameterItem show={state.options.length > 1}>
-            <label id={label_id}>{label}:</label>
+            <label id={label_id}><M id="Measurement" custom={props.label}/>:</label>
            <SingleSelect
                 options={state.options}
                 labelledBy={label_id}

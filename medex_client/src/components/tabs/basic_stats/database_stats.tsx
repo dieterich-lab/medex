@@ -1,5 +1,6 @@
 import {useEffect, useState} from "react";
 import {DatabaseInfo, get_database_info} from "../../../services/database_info";
+import {M} from "../../common/message_catalog.tsx";
 
 function DatabaseStats() {
     const [info, set_info] = useState<DatabaseInfo|null>(null);
@@ -13,7 +14,7 @@ function DatabaseStats() {
             <div className="card-body">
                 <table className="table database-stats-table">
                     <tr>
-                        <td>Number of patients</td>
+                        <td>Number of <M id="patients"/></td>
                         <td className="text-end">{ info.number_of_patients }</td>
                     </tr>
                     <tr>

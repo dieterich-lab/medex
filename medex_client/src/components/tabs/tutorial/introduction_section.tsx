@@ -12,9 +12,11 @@ function IntroductionSection() {
                     entities may be included, which are not yet fully implemented in the MedEx.
                 </p>
                 <p>
+                    This data entities are tied to individuals - in most MedEx instances human patients.
                     For a single patient multiple data items of the same entity may exist. To distinguish them, MedEx
-                    labels them with different <b>measurements</b>, which are also called &lsquo;visits&rsquo; in same data sets.
-                    A measurement usually represents a point in time, such as &lsquo;baseline&rsquo; or &lsquo;3 year followup&rsquo;.
+                    labels them with different <b>measurements</b>, which are also called &lsquo;visits&rsquo; or just
+                    &lsquo;points in time&rsquo; in same data sets. A measurement usually represents a point in time,
+                    such as &lsquo;baseline&rsquo; or &lsquo;3 year followup&rsquo;.
                     The possible values for the measurement depend on the dataset. In some datasets all data items are
                     assigned to the same measurement. In this case the user interface will skip all options related
                     to measurements.

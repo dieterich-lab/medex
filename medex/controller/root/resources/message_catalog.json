@@ -1,0 +1,12 @@
+{
+    "window_title": "MedEx",
+    "headline_title": "None",
+    "Entity": "Entity",
+    "Entities": "Entities",
+    "Measurement": "Measurement",
+    "measurement": "measurement",
+    "Measurements": "Measurements",
+    "patient": "patient",
+    "patients": "patients",
+    "patient_id": "patient_id"
+}
