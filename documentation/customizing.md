@@ -3,7 +3,7 @@
 Since version 1.1 it is possible to do minimal customizing for MedEx.
 To do so, add a line mapping to your docker-compose.yml file that maps
 a folder of your choice (e.g. /you/custom/data) to the folder
-/app/static/custom inside the container
+/app/medex/controller/root/resources/custom inside the container
 
 ```
 services:
@@ -11,7 +11,7 @@ services:
     ...
     volumes:
       ...
-      /you/custom/data:/app/static/custom
+      /you/custom/data:/app/medex/controller/root/resources/custom
 ```
 
 Your local folder may contain any of the following files to overwrite
